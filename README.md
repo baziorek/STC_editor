@@ -3,6 +3,8 @@ Prosty edytor tekstu w QT ułatwiający wstawianie znaczników [STC](https://cpp
 
 ## Prostota
 To nie jest bardzo zaawansowane narzędzie, jest to po prostu widget w QT z polem tekstowym, oraz przyciskami umożliwiającymi wstawianie wybranych tagów języka.
+![image](https://github.com/baziorek/STC_editor/assets/15332594/a38ca827-7477-4f0d-add2-916ddb4efe2b)
+
 
 ## Współpraca
 Chętnie zaakceptuje propozycje zmian do tego kodu aby był to wygodniejszy w użyciu edytor.
