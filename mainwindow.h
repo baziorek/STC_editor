@@ -7,6 +7,8 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
+class QTextCursor;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -19,7 +21,12 @@ public slots:
     void keyPressEvent(QKeyEvent *event) override;
 
 private:
-    void surroundSelectedTextWith(QString text, QString extraAttributes="", bool closable=true, QString color="");
+    void putTextBackToCursorPosition(const QString &tagColor, QTextCursor &cursor, const QString &selectedText,
+                                     const QString &textEnding, QString modifiedText);
+    void surroundSelectedTextWithTag(QString text, QString extraAttributes = "",
+                                     bool closable = true, QString color = "");
+    void surroundSelectedTextWithAHrefTag(QString tagColor = "");
+
 
     Ui::MainWindow *ui;
 };
