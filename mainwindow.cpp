@@ -37,6 +37,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->button_py, &QPushButton::clicked, [this](bool) {
         this->surroundSelectedTextWithTag("py", "", true, "brown");
     });
+    connect(ui->button_code, &QPushButton::clicked, [this](bool) {
+        this->surroundSelectedTextWithTag("code", "", true, "yellow", "black");
+    });
     connect(ui->button_div_tip, &QPushButton::clicked, [this](bool) {
         this->surroundSelectedTextWithTag("div", R"( class="tip")", true, "darkgreen");
     });
@@ -72,14 +75,20 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     }
 }
 
-void MainWindow::putTextBackToCursorPosition(const QString &tagColor, QTextCursor &cursor,
-                                             const QString &selectedText, const QString &textEnding,
-                                             QString modifiedText)
+void MainWindow::putTextBackToCursorPosition(QString tagColor, QTextCursor &cursor,
+                                             QString selectedText, QString textEnding,
+                                             QString modifiedText, QString backgroundColor)
 {
-    if (tagColor.size()) {
-        QString html =
-            "<div style='color: " + tagColor + ";'>" + modifiedText + "</div>";
+    if (tagColor.size())
+    {
+        QString html = "<div style='color: " + tagColor + ';';
+        if (backgroundColor.size())
+        {
+            html += "background-color:" + backgroundColor + ';';
+        }
+        html += "'>" + modifiedText + "</div>";
         cursor.insertHtml(html);
+        qDebug() << html;
     } else
         cursor.insertText(modifiedText);
 
@@ -94,7 +103,7 @@ void MainWindow::putTextBackToCursorPosition(const QString &tagColor, QTextCurso
 }
 void MainWindow::surroundSelectedTextWithTag(QString textBase,
                                              QString extraAttributes,
-                                             bool closable, QString tagColor) {
+                                             bool closable, QString tagColor, QString backgroundColor) {
     auto cursor = ui->plainTextEdit->textCursor();
     QString selectedText = cursor.selectedText();
     qDebug() << "Selected text size: " << selectedText.size();
@@ -103,7 +112,7 @@ void MainWindow::surroundSelectedTextWithTag(QString textBase,
     const auto textEnding = closable ? "[/" + textBase + "]" : "";
     QString modifiedText = textOpening + selectedText + textEnding;
 
-    putTextBackToCursorPosition(tagColor, cursor, selectedText, textEnding, modifiedText);
+    putTextBackToCursorPosition(tagColor, cursor, selectedText, textEnding, modifiedText, backgroundColor);
 }
 
 void MainWindow::surroundSelectedTextWithAHrefTag(QString tagColor)
@@ -118,7 +127,7 @@ void MainWindow::surroundSelectedTextWithAHrefTag(QString tagColor)
     if (0 == selectedText.size())
     {
         const QString modifiedText = QString(beginOfTag) + '"' + attributeName + endOfTag;
-        putTextBackToCursorPosition(tagColor, cursor, selectedText, "", modifiedText);
+        putTextBackToCursorPosition(tagColor, cursor, selectedText, "", modifiedText, "");
         return;
     }
 
@@ -131,5 +140,5 @@ void MainWindow::surroundSelectedTextWithAHrefTag(QString tagColor)
         modifiedText += QString('"') + attributeName + restOfText;
     }
     modifiedText += endOfTag;
-    putTextBackToCursorPosition(tagColor, cursor, selectedText, "", modifiedText);
+    putTextBackToCursorPosition(tagColor, cursor, selectedText, "", modifiedText, "");
 }

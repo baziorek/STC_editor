@@ -120,6 +120,13 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="button_code">
+         <property name="text">
+          <string>[code]</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </item>
