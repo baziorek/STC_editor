@@ -46,6 +46,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->button_div_warning, &QPushButton::clicked, [this](bool) {
         this->surroundSelectedTextWithTag("div", R"( class="uwaga")", true, "red");
     });
+    connect(ui->button_cytat, &QPushButton::clicked, [this](bool) {
+        this->surroundSelectedTextWithTag("cytat", "", true, "black", "orange");
+    });
     connect(ui->button_href, &QPushButton::clicked, [this](bool) {
         this->surroundSelectedTextWithAHrefTag("lightblue");
     });

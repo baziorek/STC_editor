@@ -91,6 +91,13 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="button_cytat">
+         <property name="text">
+          <string>[cytat]</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </item>
@@ -101,9 +108,6 @@
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
-      </property>
-      <property name="flat">
-       <bool>false</bool>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
@@ -128,6 +132,28 @@
         </widget>
        </item>
       </layout>
+     </widget>
+    </item>
+    <item row="10" column="1">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string extracomment="link do kursu">&lt;a href=&quot;https://cpp0x.pl/kursy/Kurs-STC/169&quot;&gt;Kurs STC&lt;/a&gt;</string>
+      </property>
+      <property name="textFormat">
+       <enum>Qt::RichText</enum>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
+      </property>
+      <property name="openExternalLinks">
+       <bool>true</bool>
+      </property>
+      <property name="textInteractionFlags">
+       <set>Qt::TextBrowserInteraction</set>
+      </property>
      </widget>
     </item>
    </layout>
