@@ -14,6 +14,6 @@ int main(int argc, char *argv[])
  *
  * TODO:
  * 1. Consider using syntax analizer: https://github.com/westes/flex https://stackoverflow.com/questions/2656809/how-do-you-implement-syntax-highlighting
- * 2. Maybe tags gray, normal text black?
+ * 2. Maybe tags gray, normal text black, or tags smaller?
  * 3. *Style sheet instead of style of each diff
  **/
