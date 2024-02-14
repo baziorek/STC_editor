@@ -21,9 +21,9 @@ public slots:
     void keyPressEvent(QKeyEvent *event) override;
 
 private:
-    void putTextBackToCursorPosition(QString tagColor, QTextCursor &cursor, QString selectedText,
-                                     QString textEnding, QString modifiedText, QString backgroundColor, QString divClass);
-    void surroundSelectedTextWithAHrefTag(QString tagColor = "");
+    void putTextBackToCursorPosition(QTextCursor &cursor, QString divClass, QString selectedText,
+                                     QString textEnding, QString modifiedText);
+    void surroundSelectedTextWithAHrefTag();
 
     void surroundSelectedTextWithTag(QString divClass, QString text, QString extraAttributes = "", bool closable = true);
 

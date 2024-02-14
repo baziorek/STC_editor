@@ -40,6 +40,10 @@
     font-weight: bold;
 }
 
+.a {
+    color: lightblue;
+}
+
 .tag {
     color: gray;
     font-size: smaller;

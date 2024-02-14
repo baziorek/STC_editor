@@ -84,7 +84,7 @@ MainWindow::MainWindow(QWidget *parent)
         this->surroundSelectedTextWithTag(tagsClasses[StdTags::QUOTE], tagsClasses[StdTags::QUOTE]);
     });
     connect(ui->button_href, &QPushButton::clicked, [this](bool) {
-        this->surroundSelectedTextWithAHrefTag("lightblue");
+        this->surroundSelectedTextWithAHrefTag();
     });
     connect(ui->button_pkt, &QPushButton::clicked, [this](bool) {
         this->surroundSelectedTextWithTag(tagsClasses[StdTags::PKT], tagsClasses[StdTags::PKT], " ext");
@@ -119,9 +119,8 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     }
 }
 
-void MainWindow::putTextBackToCursorPosition(QString tagColor, QTextCursor &cursor,
-                                             QString selectedText, QString textEnding,
-                                             QString modifiedText, QString backgroundColor, QString divClass)
+void MainWindow::putTextBackToCursorPosition(QTextCursor &cursor, QString divClass,
+                                             QString selectedText, QString textEnding, QString modifiedText)
 {
     if (divClass.size())
     {
@@ -153,10 +152,10 @@ void MainWindow::surroundSelectedTextWithTag(QString divClass, QString textBase,
     const auto textEnding = closable ? "[/" + textBase + "]" : "";
     QString modifiedText = textOpening + selectedText + textEnding;
 
-    putTextBackToCursorPosition("", cursor, selectedText, textEnding, modifiedText, "", divClass);
+    putTextBackToCursorPosition(cursor, divClass, selectedText, textEnding, modifiedText);
 }
 
-void MainWindow::surroundSelectedTextWithAHrefTag(QString tagColor)
+void MainWindow::surroundSelectedTextWithAHrefTag()
 {
     auto cursor = ui->plainTextEdit->textCursor();
     QString selectedText = cursor.selectedText();
@@ -168,7 +167,7 @@ void MainWindow::surroundSelectedTextWithAHrefTag(QString tagColor)
     if (0 == selectedText.size())
     {
         const QString modifiedText = QString(beginOfTag) + '"' + attributeName + endOfTag;
-        putTextBackToCursorPosition(tagColor, cursor, selectedText, "", modifiedText, "", "a_href");
+        putTextBackToCursorPosition(cursor, "a", selectedText, "", modifiedText);
         return;
     }
 
@@ -181,5 +180,5 @@ void MainWindow::surroundSelectedTextWithAHrefTag(QString tagColor)
         modifiedText += QString('"') + attributeName + restOfText;
     }
     modifiedText += endOfTag;
-    putTextBackToCursorPosition(tagColor, cursor, selectedText, "", modifiedText, "", "a_href");
+    putTextBackToCursorPosition(cursor, "a", selectedText, "", modifiedText);
 }
