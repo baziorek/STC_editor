@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0" rowspan="11">
-     <widget class="QPlainTextEdit" name="plainTextEdit">
+     <widget class="CodeEditor" name="plainTextEdit">
       <property name="font">
        <font>
         <pointsize>14</pointsize>
@@ -203,6 +203,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CodeEditor</class>
+   <extends>QPlainTextEdit</extends>
+   <header location="global">codeeditor.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

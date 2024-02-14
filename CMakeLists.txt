@@ -12,11 +12,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
+include_directories(${PROJECT_SOURCE_DIR}) # to make sure that promoted types are visible from generated designer's files
+
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        linenumberarea.h
+        linenumberarea.cpp
+        codeeditor.h
+        codeeditor.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
