@@ -1,0 +1,46 @@
+.div {
+    background-color: #dfd;
+}
+
+.div_tip {
+    background-color: darkgreen;
+}
+
+.div_warning {
+    background-color: red;
+}
+
+.cytat {
+    background-color: orange;
+}
+
+.pkt {
+}
+
+.code {
+    color: yellow;
+    background-color: black;
+    font-family: monospace;
+}
+
+.cpp {
+    color: black;
+    background-color: lightblue;
+    font-family: monospace;
+}
+
+.py {
+    color: black;
+    background-color: brown;
+    font-family: monospace;
+}
+
+
+.b {
+    font-weight: bold;
+}
+
+.tag {
+    color: gray;
+    font-size: smaller;
+}

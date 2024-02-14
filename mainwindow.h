@@ -22,12 +22,13 @@ public slots:
 
 private:
     void putTextBackToCursorPosition(QString tagColor, QTextCursor &cursor, QString selectedText,
-                                     QString textEnding, QString modifiedText, QString backgroundColor);
-    void surroundSelectedTextWithTag(QString text, QString extraAttributes = "",
-                                     bool closable = true, QString color = "", QString backgroundColor="white");
+                                     QString textEnding, QString modifiedText, QString backgroundColor, QString divClass);
     void surroundSelectedTextWithAHrefTag(QString tagColor = "");
+
+    void surroundSelectedTextWithTag(QString divClass, QString text, QString extraAttributes = "", bool closable = true);
 
 
     Ui::MainWindow *ui;
+    void setUpDocumentStyles();
 };
 #endif // MAINWINDOW_H
