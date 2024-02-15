@@ -92,6 +92,18 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->button_bold, &QPushButton::clicked, [this](bool) {
         this->surroundSelectedTextWithTag(tagsClasses[StdTags::BOLD], tagsClasses[StdTags::BOLD]);
     });
+    connect(ui->button_h1, &QPushButton::clicked, [this](bool) {
+        this->surroundSelectedTextWithTag("h1", "h1");
+    });
+    connect(ui->button_h2, &QPushButton::clicked, [this](bool) {
+        this->surroundSelectedTextWithTag("h2", "h2");
+    });
+    connect(ui->button_h3, &QPushButton::clicked, [this](bool) {
+        this->surroundSelectedTextWithTag("h3", "h3");
+    });
+    connect(ui->button_h4, &QPushButton::clicked, [this](bool) {
+        this->surroundSelectedTextWithTag("h4", "h4");
+    });
 }
 
 void MainWindow::setUpDocumentStyles()

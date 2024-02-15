@@ -48,3 +48,44 @@
     color: gray;
     font-size: smaller;
 }
+
+/* h1 - h4 are copied from cpp0x.pl */
+.h1
+{
+    margin: 0;
+    padding: 0;
+    text-align: left;
+    font-size: 2em;
+    color: #a33;
+    font-weight: 900;
+}
+
+.h2
+{
+    margin: 0;
+    padding: 0;
+    text-align: left;
+    font-size: 1.7em;
+    color: #a33;
+    font-weight: bold;
+}
+
+.h3
+{
+    margin: 0;
+    padding: 0;
+    text-align: left;
+    font-size: 1.4em;
+    color: #a33;
+    font-weight: 500;
+}
+
+.h4
+{
+    margin: 0;
+    padding: 0;
+    text-align: left;
+    font-size: 1.1em;
+    color: #a33;
+    font-weight: normal;
+}

@@ -15,7 +15,96 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0" rowspan="11">
+    <item row="7" column="1">
+     <widget class="QPushButton" name="button_bold">
+      <property name="text">
+       <string>[b]</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="1">
+     <widget class="QPushButton" name="button_pkt">
+      <property name="text">
+       <string>[pkt ext]</string>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="1">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string extracomment="link do kursu">&lt;a href=&quot;https://cpp0x.pl/kursy/Kurs-STC/169&quot;&gt;Kurs STC&lt;/a&gt;</string>
+      </property>
+      <property name="textFormat">
+       <enum>Qt::RichText</enum>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
+      </property>
+      <property name="openExternalLinks">
+       <bool>true</bool>
+      </property>
+      <property name="textInteractionFlags">
+       <set>Qt::TextBrowserInteraction</set>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QPushButton" name="button_run">
+      <property name="text">
+       <string>[run]</string>
+      </property>
+     </widget>
+    </item>
+    <item row="10" column="1">
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="2" column="1">
+     <widget class="QGroupBox" name="groupBox">
+      <property name="title">
+       <string>Code</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QPushButton" name="button_cpp">
+         <property name="text">
+          <string>[cpp]</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="button_py">
+         <property name="text">
+          <string>[py]</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="button_code">
+         <property name="text">
+          <string>[code]</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="0" rowspan="12">
      <widget class="CodeEditor" name="plainTextEdit">
       <property name="font">
        <font>
@@ -33,20 +122,6 @@
       </property>
      </widget>
     </item>
-    <item row="7" column="1">
-     <widget class="QPushButton" name="button_bold">
-      <property name="text">
-       <string>[b]</string>
-      </property>
-     </widget>
-    </item>
-    <item row="8" column="1">
-     <widget class="QPushButton" name="button_pkt">
-      <property name="text">
-       <string>[pkt ext]</string>
-      </property>
-     </widget>
-    </item>
     <item row="6" column="1">
      <widget class="QPushButton" name="button_href">
       <property name="toolTip">
@@ -54,26 +129,6 @@
       </property>
       <property name="text">
        <string>[a href=]</string>
-      </property>
-     </widget>
-    </item>
-    <item row="9" column="1">
-     <spacer name="verticalSpacer">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>40</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="4" column="1">
-     <widget class="QPushButton" name="button_run">
-      <property name="text">
-       <string>[run]</string>
       </property>
      </widget>
     </item>
@@ -110,59 +165,41 @@
       </layout>
      </widget>
     </item>
-    <item row="2" column="1">
-     <widget class="QGroupBox" name="groupBox">
+    <item row="9" column="1">
+     <widget class="QGroupBox" name="groupBox_3">
       <property name="title">
-       <string>Code</string>
+       <string/>
       </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QPushButton" name="button_cpp">
+      <layout class="QFormLayout" name="formLayout">
+       <item row="0" column="0">
+        <widget class="QPushButton" name="button_h1">
          <property name="text">
-          <string>[cpp]</string>
+          <string>h1</string>
          </property>
         </widget>
        </item>
-       <item>
-        <widget class="QPushButton" name="button_py">
+       <item row="0" column="1">
+        <widget class="QPushButton" name="button_h2">
          <property name="text">
-          <string>[py]</string>
+          <string>h2</string>
          </property>
         </widget>
        </item>
-       <item>
-        <widget class="QPushButton" name="button_code">
+       <item row="1" column="0">
+        <widget class="QPushButton" name="button_h3">
          <property name="text">
-          <string>[code]</string>
+          <string>h3</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QPushButton" name="button_h4">
+         <property name="text">
+          <string>h4</string>
          </property>
         </widget>
        </item>
       </layout>
-     </widget>
-    </item>
-    <item row="10" column="1">
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string extracomment="link do kursu">&lt;a href=&quot;https://cpp0x.pl/kursy/Kurs-STC/169&quot;&gt;Kurs STC&lt;/a&gt;</string>
-      </property>
-      <property name="textFormat">
-       <enum>Qt::RichText</enum>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-      <property name="wordWrap">
-       <bool>true</bool>
-      </property>
-      <property name="openExternalLinks">
-       <bool>true</bool>
-      </property>
-      <property name="textInteractionFlags">
-       <set>Qt::TextBrowserInteraction</set>
-      </property>
      </widget>
     </item>
    </layout>
