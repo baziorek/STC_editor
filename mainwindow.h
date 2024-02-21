@@ -20,6 +20,9 @@ public:
 public slots:
     void keyPressEvent(QKeyEvent *event) override;
 
+    void onUpdateContextRequested();
+    void onContextTableClicked(int row, int /*column*/);
+
 private:
     void putTextBackToCursorPosition(QTextCursor &cursor, QString divClass, QString selectedText,
                                      QString textEnding, QString modifiedText);

@@ -17,4 +17,6 @@ int main(int argc, char *argv[])
  * 2. Maybe tags gray, normal text black, or tags smaller?
  * 3. Add syntax highlighter:
  * https://doc.qt.io/qt-6.2/qtwidgets-richtext-syntaxhighlighter-example.html
+ * 4. Refactor context (h1, h2, h3...) - now it is single long function
+ * 5. Ctrl + F, Ctrl + R, Ctrl + S, Ctrl + O
  **/

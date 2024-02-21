@@ -61,6 +61,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     setUpDocumentStyles();
+    connect(ui->plainTextEdit, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateContextRequested);
+    connect(ui->contextTableWidget, &QTableWidget::cellClicked, this, &MainWindow::onContextTableClicked);
 
     connect(ui->button_run, &QPushButton::clicked, [this](bool) {
         this->surroundSelectedTextWithTag(tagsClasses[StdTags::RUN], tagsClasses[StdTags::RUN]);
@@ -129,6 +131,82 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     {
         QMainWindow::keyPressEvent(event);
     }
+}
+
+// TODO: Refactor
+void MainWindow::onUpdateContextRequested()
+{
+    QRegularExpression h1Regex("\\[h1\\](.*?)\\[/h1\\]");
+    QRegularExpression h2Regex("\\[h2\\](.*?)\\[/h2\\]");
+    QRegularExpression divRegex("\\[div(?:\\s+[^\\]]+)?\\](.*?)\\[/div\\]", QRegularExpression::DotMatchesEverythingOption);
+    std::map<int, pair<QString, QString>> textPerLine;
+
+    auto text = ui->plainTextEdit->toPlainText();
+
+    // Match tags and extract positions
+    QRegularExpressionMatchIterator h1Matches = h1Regex.globalMatch(text);
+    while (h1Matches.hasNext()) {
+        QRegularExpressionMatch match = h1Matches.next();
+        QStringList lines = match.captured(0).split("\n");
+        auto lineNumber = text.left(match.capturedStart(0)).count('\n') + 1;
+        textPerLine.insert({lineNumber, make_pair(QString("h1"), match.captured(1))});
+    }
+
+    QRegularExpressionMatchIterator h2Matches = h2Regex.globalMatch(text);
+    while (h2Matches.hasNext()) {
+        QRegularExpressionMatch match = h2Matches.next();
+        QStringList lines = match.captured(0).split("\n");
+        auto lineNumber = text.left(match.capturedStart(0)).count('\n') + 1;
+        textPerLine.insert({lineNumber, make_pair(QString("h2"), match.captured(1))});
+    }
+
+    QRegularExpressionMatchIterator divMatches = divRegex.globalMatch(text);
+    while (divMatches.hasNext()) {
+        QRegularExpressionMatch match = divMatches.next();
+        QStringList lines = match.captured(0).split("\n");
+        auto lineNumber = text.left(match.capturedStart(0)).count('\n') + 1;
+        textPerLine.insert({lineNumber, make_pair(QString("div"), match.captured(1))});
+    }
+
+    ui->contextTableWidget->clearContents();
+    ui->contextTableWidget->setRowCount(textPerLine.size());
+    unsigned rowNumber = 0;
+    for (const auto& [lineNumber, tagAndText] : textPerLine)
+    {
+        const auto& [tag, text] = tagAndText;
+        auto* cell = new QTableWidgetItem(QString::number(lineNumber));
+        cell->setFlags(cell->flags() & ~Qt::ItemIsEditable);
+        ui->contextTableWidget->setItem(rowNumber, 0, cell);
+
+        cell = new QTableWidgetItem(tag);
+        cell->setFlags(cell->flags() & ~Qt::ItemIsEditable);
+        ui->contextTableWidget->setItem(rowNumber, 1, cell);
+
+        cell = new QTableWidgetItem(text);
+        cell->setFlags(cell->flags() & ~Qt::ItemIsEditable);
+        ui->contextTableWidget->setItem(rowNumber, 2, new QTableWidgetItem(text));
+
+        ++rowNumber;
+    }
+}
+
+void MainWindow::onContextTableClicked(int row, int)
+{
+    QTableWidgetItem *item = ui->contextTableWidget->item(row, 0);
+    if (item) {
+        bool ok;
+        int lineNumber = item->text().toInt(&ok);
+        if (ok) {
+            QTextCursor cursor = ui->plainTextEdit->textCursor();
+            cursor.movePosition(QTextCursor::Start);
+            for (int i = 1; i < lineNumber; ++i) {
+                cursor.movePosition(QTextCursor::NextBlock);
+            }
+            ui->plainTextEdit->setTextCursor(cursor);
+            ui->plainTextEdit->ensureCursorVisible();
+        }
+    }
+    ui->plainTextEdit->setFocus();
 }
 
 void MainWindow::putTextBackToCursorPosition(QTextCursor &cursor, QString divClass,
