@@ -2,6 +2,7 @@
 #include <QKeyEvent>
 #include <QDebug>
 #include <QFile>
+#include <QFileDialog>
 #include <QRegularExpression>
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
@@ -21,6 +22,24 @@ std::pair<QString, QString> extractLink(const QString& text) {
 
     /// If no link is found, return just text
     return std::make_pair("", text);
+}
+
+QString chooseFileWithDialog(QWidget* parent, QFileDialog::AcceptMode acceptMode)
+{
+    QFileDialog dialog(parent);
+    QStringList nameFilters;
+    nameFilters << QWidget::tr("Text file (*.txt)");
+    dialog.setNameFilters(nameFilters);
+    dialog.setAcceptMode(acceptMode);
+    dialog.setDefaultSuffix(".txt");
+
+    if (dialog.exec())
+    {
+        const QString fileName = dialog.selectedFiles()[0];
+        qDebug() << "Selected: " << fileName.toStdString();
+        return fileName;
+    }
+    return {};
 }
 } // namespace
 
@@ -133,60 +152,60 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     }
 }
 
-// TODO: Refactor
+// TODO: Make finding lines more optimal
 void MainWindow::onUpdateContextRequested()
 {
-    QRegularExpression h1Regex("\\[h1\\](.*?)\\[/h1\\]");
-    QRegularExpression h2Regex("\\[h2\\](.*?)\\[/h2\\]");
-    QRegularExpression divRegex("\\[div(?:\\s+[^\\]]+)?\\](.*?)\\[/div\\]", QRegularExpression::DotMatchesEverythingOption);
+    static QRegularExpression hRegex("\\[(h[1-6])\\](.*?)\\[/h[1-6]\\]");
+    static QRegularExpression divRegex("\\[div(?:\\s+[^\\]]+)?\\](.*?)\\[/div\\]", QRegularExpression::DotMatchesEverythingOption);
     std::map<int, pair<QString, QString>> textPerLine;
 
     auto text = ui->plainTextEdit->toPlainText();
 
-    // Match tags and extract positions
-    QRegularExpressionMatchIterator h1Matches = h1Regex.globalMatch(text);
-    while (h1Matches.hasNext()) {
-        QRegularExpressionMatch match = h1Matches.next();
-        QStringList lines = match.captured(0).split("\n");
+    for (QRegularExpressionMatchIterator matches = hRegex.globalMatch(text); matches.hasNext(); )
+    {
+        QRegularExpressionMatch match = matches.next();
         auto lineNumber = text.left(match.capturedStart(0)).count('\n') + 1;
-        textPerLine.insert({lineNumber, make_pair(QString("h1"), match.captured(1))});
+        textPerLine.insert({lineNumber, make_pair(QString(match.captured(1)), match.captured(2))});
     }
 
-    QRegularExpressionMatchIterator h2Matches = h2Regex.globalMatch(text);
-    while (h2Matches.hasNext()) {
-        QRegularExpressionMatch match = h2Matches.next();
-        QStringList lines = match.captured(0).split("\n");
-        auto lineNumber = text.left(match.capturedStart(0)).count('\n') + 1;
-        textPerLine.insert({lineNumber, make_pair(QString("h2"), match.captured(1))});
-    }
-
-    QRegularExpressionMatchIterator divMatches = divRegex.globalMatch(text);
-    while (divMatches.hasNext()) {
-        QRegularExpressionMatch match = divMatches.next();
-        QStringList lines = match.captured(0).split("\n");
+    for (QRegularExpressionMatchIterator matches = divRegex.globalMatch(text); matches.hasNext(); )
+    {
+        QRegularExpressionMatch match = matches.next();
         auto lineNumber = text.left(match.capturedStart(0)).count('\n') + 1;
         textPerLine.insert({lineNumber, make_pair(QString("div"), match.captured(1))});
     }
 
-    ui->contextTableWidget->clearContents();
     ui->contextTableWidget->setRowCount(textPerLine.size());
+
+    auto insertText2Cell = [this](int row, int column, const QString& text)
+    {
+        if (auto* cell = ui->contextTableWidget->item(row, column); cell == nullptr)
+        {
+            cell = new QTableWidgetItem(text);
+            cell->setFlags(cell->flags() & ~Qt::ItemIsEditable);
+            ui->contextTableWidget->setItem(row, column, cell);
+        }
+        else
+        {
+            ui->contextTableWidget->item(row, column)->setText(text);
+        }
+    };
     unsigned rowNumber = 0;
     for (const auto& [lineNumber, tagAndText] : textPerLine)
     {
         const auto& [tag, text] = tagAndText;
-        auto* cell = new QTableWidgetItem(QString::number(lineNumber));
-        cell->setFlags(cell->flags() & ~Qt::ItemIsEditable);
-        ui->contextTableWidget->setItem(rowNumber, 0, cell);
-
-        cell = new QTableWidgetItem(tag);
-        cell->setFlags(cell->flags() & ~Qt::ItemIsEditable);
-        ui->contextTableWidget->setItem(rowNumber, 1, cell);
-
-        cell = new QTableWidgetItem(text);
-        cell->setFlags(cell->flags() & ~Qt::ItemIsEditable);
-        ui->contextTableWidget->setItem(rowNumber, 2, new QTableWidgetItem(text));
+        insertText2Cell(rowNumber, 0, QString::number(lineNumber));
+        insertText2Cell(rowNumber, 1, tag);
+        insertText2Cell(rowNumber, 2, text);
 
         ++rowNumber;
+    }
+    if (ui->contextTableWidget->columnCount())
+    {
+        ui->contextTableWidget->resizeColumnToContents(0);
+        ui->contextTableWidget->resizeColumnToContents(1);
+        auto width4LastColumn = ui->contextTableWidget->width() - ui->contextTableWidget->columnWidth(0) - ui->contextTableWidget->columnWidth(2);
+        ui->contextTableWidget->setColumnWidth(2, width4LastColumn);
     }
 }
 
@@ -207,6 +226,31 @@ void MainWindow::onContextTableClicked(int row, int)
         }
     }
     ui->plainTextEdit->setFocus();
+}
+
+void MainWindow::onSaveAsPressed()
+{
+    const auto fileName = chooseFileWithDialog(this, QFileDialog::AcceptSave);
+    if (!fileName.isEmpty())
+    {
+        QFile outputFile(fileName);
+        outputFile.open(QIODeviceBase::WriteOnly);
+        outputFile.write(ui->plainTextEdit->toPlainText().toLatin1());
+    }
+}
+
+void MainWindow::onOpenPressed()
+{ // TODO:
+    const auto fileName = chooseFileWithDialog(this, QFileDialog::AcceptOpen).trimmed();
+    // if (! FileHandling::fileExists(fileName.toStdString()))
+    // {
+    //     QMessageBox::warning(this, "Brak pliku!", "Plik o nazwie: '" + fileName + "' nie istnieje!");
+    //     return;
+    // }
+
+    // if (!fileName.isEmpty())
+    // {
+    // }
 }
 
 void MainWindow::putTextBackToCursorPosition(QTextCursor &cursor, QString divClass,

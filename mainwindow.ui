@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>780</height>
+    <height>887</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -56,6 +56,12 @@
       <layout class="QFormLayout" name="formLayout">
        <item row="0" column="0">
         <widget class="QPushButton" name="button_h1">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="text">
           <string>h1</string>
          </property>
@@ -162,6 +168,12 @@
     </item>
     <item row="11" column="1">
      <widget class="QTableWidget" name="contextTableWidget">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="alternatingRowColors">
        <bool>false</bool>
       </property>
@@ -243,9 +255,18 @@
      <string>File</string>
     </property>
     <addaction name="actionLoad_file"/>
+    <addaction name="actionSave"/>
     <addaction name="actionSave_as"/>
    </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="actionFind"/>
+    <addaction name="actionFind_replace"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionLoad_file">
@@ -258,10 +279,34 @@
   </action>
   <action name="actionSave_as">
    <property name="text">
-    <string>Save as</string>
+    <string>Save file as</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+S</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="text">
+    <string>Save file</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionFind">
+   <property name="text">
+    <string>Find</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="actionFind_replace">
+   <property name="text">
+    <string>Find &amp; replace</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
    </property>
   </action>
  </widget>
@@ -272,6 +317,61 @@
    <header location="global">codeeditor.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>plainTextEdit</tabstop>
+  <tabstop>button_cpp</tabstop>
+  <tabstop>button_py</tabstop>
+  <tabstop>button_code</tabstop>
+  <tabstop>button_div_tip</tabstop>
+  <tabstop>button_div_warning</tabstop>
+  <tabstop>button_cytat</tabstop>
+  <tabstop>button_run</tabstop>
+  <tabstop>button_href</tabstop>
+  <tabstop>button_bold</tabstop>
+  <tabstop>button_pkt</tabstop>
+  <tabstop>button_h1</tabstop>
+  <tabstop>button_h2</tabstop>
+  <tabstop>button_h3</tabstop>
+  <tabstop>button_h4</tabstop>
+  <tabstop>contextTableWidget</tabstop>
+ </tabstops>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>actionSave_as</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onSaveAsPressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>389</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionLoad_file</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onOpenPressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>443</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>onSaveAsPressed()</slot>
+  <slot>onOpenPressed()</slot>
+ </slots>
 </ui>

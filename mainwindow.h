@@ -23,6 +23,9 @@ public slots:
     void onUpdateContextRequested();
     void onContextTableClicked(int row, int /*column*/);
 
+    void onSaveAsPressed();
+    void onOpenPressed();
+
 private:
     void putTextBackToCursorPosition(QTextCursor &cursor, QString divClass, QString selectedText,
                                      QString textEnding, QString modifiedText);
