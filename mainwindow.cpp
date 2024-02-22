@@ -155,7 +155,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 // TODO: Make finding lines more optimal
 void MainWindow::onUpdateContextRequested()
 {
-    static QRegularExpression hRegex("\\[(h[1-6])\\](.*?)\\[/h[1-6]\\]");
+    static QRegularExpression hRegex("\\[(h[1-6])\\](.*?)\\[/\\1\\]");
     static QRegularExpression divRegex("\\[div(?:\\s+[^\\]]+)?\\](.*?)\\[/div\\]", QRegularExpression::DotMatchesEverythingOption);
     std::map<int, pair<QString, QString>> textPerLine;
 
@@ -202,9 +202,10 @@ void MainWindow::onUpdateContextRequested()
     }
     if (ui->contextTableWidget->columnCount())
     {
+        auto initialWidgetWidth = ui->contextTableWidget->width();
         ui->contextTableWidget->resizeColumnToContents(0);
         ui->contextTableWidget->resizeColumnToContents(1);
-        auto width4LastColumn = ui->contextTableWidget->width() - ui->contextTableWidget->columnWidth(0) - ui->contextTableWidget->columnWidth(2);
+        auto width4LastColumn = initialWidgetWidth - ui->contextTableWidget->columnWidth(0) - ui->contextTableWidget->columnWidth(2);
         ui->contextTableWidget->setColumnWidth(2, width4LastColumn);
     }
 }
