@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>887</height>
+    <height>904</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,7 +15,44 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="3" column="1">
+    <item row="6" column="1">
+     <widget class="QPushButton" name="button_bold">
+      <property name="text">
+       <string>[b]</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QPushButton" name="button_href">
+      <property name="toolTip">
+       <string>This works accorging to one of three scenarios: 1. If nothing selected - just put tags, 2. If selected text contains link, 3. If selected text does not contains link</string>
+      </property>
+      <property name="text">
+       <string>[a href=]</string>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="1">
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="7" column="1">
+     <widget class="QPushButton" name="button_pkt">
+      <property name="text">
+       <string>[pkt ext]</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
      <widget class="QGroupBox" name="groupBox_2">
       <property name="title">
        <string>Div</string>
@@ -48,12 +85,101 @@
       </layout>
      </widget>
     </item>
-    <item row="9" column="1">
+    <item row="0" column="0" rowspan="12">
+     <widget class="CodeEditor" name="plainTextEdit">
+      <property name="font">
+       <font>
+        <pointsize>14</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPlainText {
+	background-color: rgb(255, 255, 255);
+	color: rgb(0, 0, 0);
+    font-family: monospace;
+}
+
+</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QPushButton" name="button_run">
+      <property name="text">
+       <string>[run]</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QGroupBox" name="groupBox">
+      <property name="title">
+       <string>Code</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QPushButton" name="button_cpp">
+         <property name="text">
+          <string>[cpp]</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="button_py">
+         <property name="text">
+          <string>[py]</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="button_code">
+         <property name="text">
+          <string>[code]</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="10" column="1">
+     <widget class="QTableWidget" name="contextTableWidget">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="alternatingRowColors">
+       <bool>false</bool>
+      </property>
+      <property name="cornerButtonEnabled">
+       <bool>false</bool>
+      </property>
+      <column>
+       <property name="text">
+        <string>line</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>tag</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>text</string>
+       </property>
+      </column>
+     </widget>
+    </item>
+    <item row="8" column="1">
      <widget class="QGroupBox" name="groupBox_3">
       <property name="title">
        <string/>
       </property>
-      <layout class="QFormLayout" name="formLayout">
+      <layout class="QGridLayout" name="gridLayout_2">
        <item row="0" column="0">
         <widget class="QPushButton" name="button_h1">
          <property name="sizePolicy">
@@ -91,113 +217,7 @@
       </layout>
      </widget>
     </item>
-    <item row="6" column="1">
-     <widget class="QPushButton" name="button_href">
-      <property name="toolTip">
-       <string>This works accorging to one of three scenarios: 1. If nothing selected - just put tags, 2. If selected text contains link, 3. If selected text does not contains link</string>
-      </property>
-      <property name="text">
-       <string>[a href=]</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="0" rowspan="13">
-     <widget class="CodeEditor" name="plainTextEdit">
-      <property name="font">
-       <font>
-        <pointsize>14</pointsize>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPlainText {
-	background-color: rgb(255, 255, 255);
-	color: rgb(0, 0, 0);
-    font-family: monospace;
-}
-
-</string>
-      </property>
-     </widget>
-    </item>
-    <item row="7" column="1">
-     <widget class="QPushButton" name="button_bold">
-      <property name="text">
-       <string>[b]</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QGroupBox" name="groupBox">
-      <property name="title">
-       <string>Code</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QPushButton" name="button_cpp">
-         <property name="text">
-          <string>[cpp]</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="button_py">
-         <property name="text">
-          <string>[py]</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="button_code">
-         <property name="text">
-          <string>[code]</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item row="8" column="1">
-     <widget class="QPushButton" name="button_pkt">
-      <property name="text">
-       <string>[pkt ext]</string>
-      </property>
-     </widget>
-    </item>
     <item row="11" column="1">
-     <widget class="QTableWidget" name="contextTableWidget">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="alternatingRowColors">
-       <bool>false</bool>
-      </property>
-      <property name="cornerButtonEnabled">
-       <bool>false</bool>
-      </property>
-      <column>
-       <property name="text">
-        <string>line</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>tag</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>text</string>
-       </property>
-      </column>
-     </widget>
-    </item>
-    <item row="12" column="1">
      <widget class="QLabel" name="label">
       <property name="text">
        <string extracomment="link do kursu">&lt;a href=&quot;https://cpp0x.pl/kursy/Kurs-STC/169&quot;&gt;Kurs STC&lt;/a&gt;</string>
@@ -219,25 +239,8 @@
       </property>
      </widget>
     </item>
-    <item row="4" column="1">
-     <widget class="QPushButton" name="button_run">
-      <property name="text">
-       <string>[run]</string>
-      </property>
-     </widget>
-    </item>
-    <item row="10" column="1">
-     <spacer name="verticalSpacer">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>40</height>
-       </size>
-      </property>
-     </spacer>
+    <item row="12" column="0" colspan="2">
+     <widget class="FindDialog" name="findWidget" native="true"/>
     </item>
    </layout>
   </widget>
@@ -294,6 +297,9 @@
    </property>
   </action>
   <action name="actionFind">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Find</string>
    </property>
@@ -302,8 +308,11 @@
    </property>
   </action>
   <action name="actionFind_replace">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
-    <string>Find &amp; replace</string>
+    <string>Find and replace</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
@@ -315,6 +324,12 @@
    <class>CodeEditor</class>
    <extends>QPlainTextEdit</extends>
    <header location="global">codeeditor.h</header>
+  </customwidget>
+  <customwidget>
+   <class>FindDialog</class>
+   <extends>QWidget</extends>
+   <header location="global">finddialog.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <tabstops>
@@ -369,9 +384,26 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionFind</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>findWidget</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>866</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onSaveAsPressed()</slot>
   <slot>onOpenPressed()</slot>
+  <slot>onFindCheckChanged(bool)</slot>
  </slots>
 </ui>

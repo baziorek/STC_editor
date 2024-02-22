@@ -19,4 +19,7 @@ int main(int argc, char *argv[])
  * https://doc.qt.io/qt-6.2/qtwidgets-richtext-syntaxhighlighter-example.html
  * 4. Warn before closing when not saved changes
  * 5. Ctrl + F, Ctrl + R
+ * 6. Add checking: if all tags are closed
+ * 7. *Images preview
+ * 8. Tables creator
  **/

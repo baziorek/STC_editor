@@ -93,18 +93,18 @@ enum class StdTags: uint8_t
 };
 
 std::map<StdTags, QString> tagsClasses =
-    {
-        make_pair(StdTags::RUN, "run"),
-        make_pair(StdTags::CPP, "cpp"),
-        make_pair(StdTags::PY, "py"),
-        make_pair(StdTags::CODE, "code"),
-        make_pair(StdTags::DIV, "div"),
-        make_pair(StdTags::DIV_WARNING, "div_warning"),
-        make_pair(StdTags::DIV_TIP, "div_tip"),
-        make_pair(StdTags::A_HREF, "a_href"),
-        make_pair(StdTags::PKT, "pkt"),
-        make_pair(StdTags::BOLD, "b"),
-        make_pair(StdTags::QUOTE, "cytat"),
+{
+    make_pair(StdTags::RUN, "run"),
+    make_pair(StdTags::CPP, "cpp"),
+    make_pair(StdTags::PY, "py"),
+    make_pair(StdTags::CODE, "code"),
+    make_pair(StdTags::DIV, "div"),
+    make_pair(StdTags::DIV_WARNING, "div_warning"),
+    make_pair(StdTags::DIV_TIP, "div_tip"),
+    make_pair(StdTags::A_HREF, "a_href"),
+    make_pair(StdTags::PKT, "pkt"),
+    make_pair(StdTags::BOLD, "b"),
+    make_pair(StdTags::QUOTE, "cytat"),
 };
 
 
@@ -113,6 +113,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->findWidget->hide();
     setUpDocumentStyles();
 
     connectButtons();

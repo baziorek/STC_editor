@@ -23,6 +23,9 @@ set(PROJECT_SOURCES
         linenumberarea.cpp
         codeeditor.h
         codeeditor.cpp
+        finddialog.h
+        finddialog.cpp
+        finddialog.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
