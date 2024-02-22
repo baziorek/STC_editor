@@ -1,6 +1,5 @@
 /// the code of the class is copied from: https://doc.qt.io/qt-6.2/qtwidgets-widgets-codeeditor-example.html
-#ifndef LINENUMBERAREA_H
-#define LINENUMBERAREA_H
+#pragma once
 
 #include <QWidget>
 
@@ -19,14 +18,3 @@ protected:
 private:
     CodeEditor *codeEditor;
 };
-
-// class LineNumberArea : public QWidget
-// {
-//     Q_OBJECT
-// public:
-//     explicit LineNumberArea(QWidget *parent = nullptr);
-
-// signals:
-// };
-
-#endif // LINENUMBERAREA_H

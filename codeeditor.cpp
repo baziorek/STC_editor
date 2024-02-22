@@ -31,6 +31,15 @@ int CodeEditor::lineNumberAreaWidth()
     return space;
 }
 
+bool CodeEditor::canCloseWithoutWarning() const
+{
+    if (openedFileName.isEmpty())
+    {
+        return toPlainText().isEmpty();
+    }
+    return false; // TODO: Compare context of file with context of buffor
+}
+
 void CodeEditor::updateLineNumberAreaWidth(int /* newBlockCount */)
 {
     setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);

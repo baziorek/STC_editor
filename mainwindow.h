@@ -1,5 +1,4 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include <QMainWindow>
 
@@ -23,7 +22,8 @@ public slots:
     void onUpdateContextRequested();
     void onContextTableClicked(int row, int /*column*/);
 
-    void onSaveAsPressed();
+    bool onSaveAsPressed();
+    bool onSavePressed();
     void onOpenPressed();
 
 private: // methods
@@ -36,8 +36,8 @@ private: // methods
     void setUpDocumentStyles();
     void updateContextTable(auto taggedTextLinePositions);
     void connectButtons();
+    void closeApplication();
 
 private: // members
     Ui::MainWindow *ui;
 };
-#endif // MAINWINDOW_H

@@ -4,6 +4,7 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QRegularExpression>
+#include <QMessageBox>
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 using namespace std;
@@ -181,13 +182,37 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     if (Qt::Key_Escape == event->key())
     {
-        close();
-        qApp->quit();
+        closeApplication();
     }
     else
     {
         QMainWindow::keyPressEvent(event);
     }
+}
+
+void MainWindow::closeApplication()
+{
+    if (!ui->plainTextEdit->canCloseWithoutWarning())
+    {
+        QMessageBox::StandardButton reply =
+            QMessageBox::question(this,
+                                  "Close without saving?",
+                                  "Do You really want to exit without saving unsaved changes?",
+                                  QMessageBox::Discard|QMessageBox::No|QMessageBox::Save);
+        if (reply == QMessageBox::Save)
+        {
+            if (! onSavePressed())
+            {
+                return;
+            }
+        }
+        else if (reply == QMessageBox::No)
+        {
+            return;
+        }
+    }
+    close();
+    qApp->quit();
 }
 
 void MainWindow::onUpdateContextRequested()
@@ -251,14 +276,31 @@ void MainWindow::onContextTableClicked(int row, int)
     ui->plainTextEdit->setFocus();
 }
 
-void MainWindow::onSaveAsPressed()
+bool MainWindow::onSaveAsPressed()
 {
     const auto fileName = chooseFileWithDialog(this, QFileDialog::AcceptSave);
     if (!fileName.isEmpty())
     {
         QFile outputFile(fileName);
         outputFile.open(QIODeviceBase::WriteOnly);
+        return outputFile.write(ui->plainTextEdit->toPlainText().toLatin1()) != -1;
+    }
+    return false;
+}
+
+bool MainWindow::onSavePressed()
+{
+    auto outputFileName = ui->plainTextEdit->getFileName();
+    if (outputFileName.isEmpty())
+    {
+        return onSaveAsPressed();
+    }
+    else
+    {
+        QFile outputFile(outputFileName);
+        outputFile.open(QIODeviceBase::WriteOnly);
         outputFile.write(ui->plainTextEdit->toPlainText().toLatin1());
+        return true;
     }
 }
 
