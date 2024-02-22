@@ -10,6 +10,11 @@ using namespace std;
 
 namespace
 {
+struct TextInsideTags
+{
+    QString tag, text;
+};
+
 std::pair<QString, QString> extractLink(const QString& text) {
     static QRegularExpression regex("(https?://\\S+)");
     QRegularExpressionMatch match = regex.match(text);
@@ -23,6 +28,33 @@ std::pair<QString, QString> extractLink(const QString& text) {
     /// If no link is found, return just text
     return std::make_pair("", text);
 }
+
+std::map<int, TextInsideTags> findTagMatches(const QRegularExpression& regex, const QString& text)
+{
+    std::map<int, TextInsideTags> textPerLine;
+    for (QRegularExpressionMatchIterator matches = regex.globalMatch(text); matches.hasNext(); )
+    {
+        // TODO: Can we make finding line number more optimal?
+        QRegularExpressionMatch match = matches.next();
+        auto lineNumber = text.left(match.capturedStart(0)).count('\n') + 1;
+        textPerLine.insert({lineNumber, TextInsideTags{match.captured(1), match.captured(2)}});
+    }
+    return textPerLine;
+}
+
+void insertText2Cell(QTableWidget* table, int row, int column, const QString& text)
+{
+    if (auto* cell = table->item(row, column); cell == nullptr)
+    {
+        cell = new QTableWidgetItem(text);
+        cell->setFlags(cell->flags() & ~Qt::ItemIsEditable);
+        table->setItem(row, column, cell);
+    }
+    else
+    {
+        table->item(row, column)->setText(text);
+    }
+};
 
 QString chooseFileWithDialog(QWidget* parent, QFileDialog::AcceptMode acceptMode)
 {
@@ -42,6 +74,7 @@ QString chooseFileWithDialog(QWidget* parent, QFileDialog::AcceptMode acceptMode
     return {};
 }
 } // namespace
+
 
 enum class StdTags: uint8_t
 {
@@ -80,9 +113,21 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     setUpDocumentStyles();
-    connect(ui->plainTextEdit, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateContextRequested);
-    connect(ui->contextTableWidget, &QTableWidget::cellClicked, this, &MainWindow::onContextTableClicked);
 
+    connectButtons();
+    connect(ui->contextTableWidget, &QTableWidget::cellClicked, this, &MainWindow::onContextTableClicked);
+    connect(ui->plainTextEdit, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateContextRequested);
+}
+
+void MainWindow::setUpDocumentStyles()
+{
+    QFile styleFile(":/styles.css");
+    styleFile.open(QIODeviceBase::ReadOnly);
+    ui->plainTextEdit->document()->setDefaultStyleSheet(styleFile.readAll());
+}
+
+void MainWindow::connectButtons()
+{
     connect(ui->button_run, &QPushButton::clicked, [this](bool) {
         this->surroundSelectedTextWithTag(tagsClasses[StdTags::RUN], tagsClasses[StdTags::RUN]);
     });
@@ -127,13 +172,6 @@ MainWindow::MainWindow(QWidget *parent)
     });
 }
 
-void MainWindow::setUpDocumentStyles()
-{
-    QFile styleFile(":/styles.css");
-    styleFile.open(QIODeviceBase::ReadOnly);
-    ui->plainTextEdit->document()->setDefaultStyleSheet(styleFile.readAll());
-}
-
 MainWindow::~MainWindow()
 {
     delete ui;
@@ -152,51 +190,35 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     }
 }
 
-// TODO: Make finding lines more optimal
 void MainWindow::onUpdateContextRequested()
 {
+    if (ui->contextTableWidget->isHidden())
+    {
+        return;
+    }
+
     static QRegularExpression hRegex("\\[(h[1-6])\\](.*?)\\[/\\1\\]");
-    static QRegularExpression divRegex("\\[div(?:\\s+[^\\]]+)?\\](.*?)\\[/div\\]", QRegularExpression::DotMatchesEverythingOption);
-    std::map<int, pair<QString, QString>> textPerLine;
+    static QRegularExpression divRegex("\\[(div)(?:\\s+[^\\]]+)?\\](.*?)\\[/\\1\\]", QRegularExpression::DotMatchesEverythingOption);
 
-    auto text = ui->plainTextEdit->toPlainText();
+    const auto text = ui->plainTextEdit->toPlainText();
 
-    for (QRegularExpressionMatchIterator matches = hRegex.globalMatch(text); matches.hasNext(); )
-    {
-        QRegularExpressionMatch match = matches.next();
-        auto lineNumber = text.left(match.capturedStart(0)).count('\n') + 1;
-        textPerLine.insert({lineNumber, make_pair(QString(match.captured(1)), match.captured(2))});
-    }
+    auto taggedTextLinePositions = findTagMatches(hRegex, text);
+    taggedTextLinePositions.merge(findTagMatches(divRegex, text));
 
-    for (QRegularExpressionMatchIterator matches = divRegex.globalMatch(text); matches.hasNext(); )
-    {
-        QRegularExpressionMatch match = matches.next();
-        auto lineNumber = text.left(match.capturedStart(0)).count('\n') + 1;
-        textPerLine.insert({lineNumber, make_pair(QString("div"), match.captured(1))});
-    }
+    updateContextTable(taggedTextLinePositions);
+}
 
-    ui->contextTableWidget->setRowCount(textPerLine.size());
+void MainWindow::updateContextTable(auto taggedTextLinePositions)
+{
+    ui->contextTableWidget->setRowCount(taggedTextLinePositions.size());
 
-    auto insertText2Cell = [this](int row, int column, const QString& text)
-    {
-        if (auto* cell = ui->contextTableWidget->item(row, column); cell == nullptr)
-        {
-            cell = new QTableWidgetItem(text);
-            cell->setFlags(cell->flags() & ~Qt::ItemIsEditable);
-            ui->contextTableWidget->setItem(row, column, cell);
-        }
-        else
-        {
-            ui->contextTableWidget->item(row, column)->setText(text);
-        }
-    };
     unsigned rowNumber = 0;
-    for (const auto& [lineNumber, tagAndText] : textPerLine)
+    for (const auto& [lineNumber, tagAndText] : taggedTextLinePositions)
     {
         const auto& [tag, text] = tagAndText;
-        insertText2Cell(rowNumber, 0, QString::number(lineNumber));
-        insertText2Cell(rowNumber, 1, tag);
-        insertText2Cell(rowNumber, 2, text);
+        insertText2Cell(ui->contextTableWidget, rowNumber, 0, QString::number(lineNumber));
+        insertText2Cell(ui->contextTableWidget, rowNumber, 1, tag);
+        insertText2Cell(ui->contextTableWidget, rowNumber, 2, text);
 
         ++rowNumber;
     }

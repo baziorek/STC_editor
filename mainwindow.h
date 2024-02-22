@@ -26,15 +26,18 @@ public slots:
     void onSaveAsPressed();
     void onOpenPressed();
 
-private:
+private: // methods
     void putTextBackToCursorPosition(QTextCursor &cursor, QString divClass, QString selectedText,
                                      QString textEnding, QString modifiedText);
     void surroundSelectedTextWithAHrefTag();
 
     void surroundSelectedTextWithTag(QString divClass, QString text, QString extraAttributes = "", bool closable = true);
 
-
-    Ui::MainWindow *ui;
     void setUpDocumentStyles();
+    void updateContextTable(auto taggedTextLinePositions);
+    void connectButtons();
+
+private: // members
+    Ui::MainWindow *ui;
 };
 #endif // MAINWINDOW_H
