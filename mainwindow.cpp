@@ -192,7 +192,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
 void MainWindow::closeApplication()
 {
-    if (!ui->plainTextEdit->canCloseWithoutWarning())
+    if (!ui->plainTextEdit->noUnsavedChanges())
     {
         QMessageBox::StandardButton reply =
             QMessageBox::question(this,
@@ -305,17 +305,16 @@ bool MainWindow::onSavePressed()
 }
 
 void MainWindow::onOpenPressed()
-{ // TODO:
+{
     const auto fileName = chooseFileWithDialog(this, QFileDialog::AcceptOpen).trimmed();
-    // if (! FileHandling::fileExists(fileName.toStdString()))
-    // {
-    //     QMessageBox::warning(this, "Brak pliku!", "Plik o nazwie: '" + fileName + "' nie istnieje!");
-    //     return;
-    // }
-
-    // if (!fileName.isEmpty())
-    // {
-    // }
+    QFile file(fileName);
+    if (file.exists())
+    {
+        file.open(QFile::ReadOnly);
+        const auto textFromFile = file.readAll();
+        ui->plainTextEdit->setPlainText(textFromFile);
+        ui->plainTextEdit->setFileName(fileName);
+    }
 }
 
 void MainWindow::putTextBackToCursorPosition(QTextCursor &cursor, QString divClass,

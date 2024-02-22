@@ -1,4 +1,5 @@
 /// the code of the class is copied from: https://doc.qt.io/qt-6.2/qtwidgets-widgets-codeeditor-example.html
+#include <QFile>
 #include <QPainter>
 #include <QTextBlock>
 #include "codeeditor.h"
@@ -31,13 +32,23 @@ int CodeEditor::lineNumberAreaWidth()
     return space;
 }
 
-bool CodeEditor::canCloseWithoutWarning() const
+bool CodeEditor::noUnsavedChanges() const
 {
+    const auto currentlyVisibleText = toPlainText();
     if (openedFileName.isEmpty())
     {
-        return toPlainText().isEmpty();
+        return currentlyVisibleText.isEmpty();
     }
-    return false; // TODO: Compare context of file with context of buffor
+
+    QFile file(openedFileName);
+    if (!file.exists())
+    {
+        return false;
+    }
+    //  TODO: consider: !file.exists() && currentlyVisibleText.isEmpty()
+
+    file.open(QFile::ReadOnly);
+    return file.readAll() == currentlyVisibleText;
 }
 
 void CodeEditor::updateLineNumberAreaWidth(int /* newBlockCount */)

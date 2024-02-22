@@ -15,7 +15,7 @@ public:
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
 
-    bool canCloseWithoutWarning() const;
+    bool noUnsavedChanges() const;
 
     auto getFileName() const
     {
