@@ -114,6 +114,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     ui->findWidget->hide();
+    ui->findWidget->setCodeEditor(ui->plainTextEdit);
     setUpDocumentStyles();
 
     connectButtons();

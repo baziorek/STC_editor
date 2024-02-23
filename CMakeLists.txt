@@ -15,17 +15,17 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 include_directories(${PROJECT_SOURCE_DIR}) # to make sure that promoted types are visible from generated designer's files
 
 set(PROJECT_SOURCES
-        main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
-        linenumberarea.h
-        linenumberarea.cpp
-        codeeditor.h
-        codeeditor.cpp
-        finddialog.h
-        finddialog.cpp
-        finddialog.ui
+    main.cpp
+    mainwindow.cpp
+    mainwindow.h
+    mainwindow.ui
+    linenumberarea.h
+    linenumberarea.cpp
+    codeeditor.h
+    codeeditor.cpp
+    finddialog.h
+    finddialog.cpp
+    finddialog.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
