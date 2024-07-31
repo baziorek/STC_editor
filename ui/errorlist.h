@@ -1,5 +1,4 @@
-#ifndef ERRORLIST_H
-#define ERRORLIST_H
+#pragma once
 
 #include <QWidget>
 
@@ -21,5 +20,3 @@ public:
 private:
     Ui::ErrorList *ui;
 };
-
-#endif // ERRORLIST_H

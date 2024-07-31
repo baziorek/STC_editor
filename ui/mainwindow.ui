@@ -15,59 +15,135 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0" rowspan="13">
-     <widget class="CodeEditor" name="plainTextEdit">
-      <property name="font">
-       <font>
-        <pointsize>14</pointsize>
-       </font>
+    <item row="7" column="1">
+     <widget class="QPushButton" name="button_pkt">
+      <property name="text">
+       <string>[pkt ext]</string>
       </property>
-      <property name="styleSheet">
-       <string notr="true">QPlainText {
-	background-color: rgb(255, 255, 255);
-	color: rgb(0, 0, 0);
-    font-family: monospace;
-}
-
-</string>
+     </widget>
+    </item>
+    <item row="12" column="1">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string extracomment="link do kursu">&lt;a href=&quot;https://cpp0x.pl/kursy/Kurs-STC/169&quot;&gt;Kurs STC&lt;/a&gt;</string>
+      </property>
+      <property name="textFormat">
+       <enum>Qt::RichText</enum>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
+      </property>
+      <property name="openExternalLinks">
+       <bool>true</bool>
+      </property>
+      <property name="textInteractionFlags">
+       <set>Qt::TextBrowserInteraction</set>
       </property>
      </widget>
     </item>
     <item row="11" column="1">
-     <widget class="QTableWidget" name="contextTableWidget">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
+     <widget class="QGroupBox" name="contextGroup">
+      <property name="title">
+       <string>Short conspect</string>
       </property>
-      <property name="alternatingRowColors">
-       <bool>false</bool>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
       </property>
-      <property name="cornerButtonEnabled">
-       <bool>false</bool>
-      </property>
-      <column>
-       <property name="text">
-        <string>line</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>tag</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>text</string>
-       </property>
-      </column>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QTableWidget" name="contextTableWidget">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="alternatingRowColors">
+          <bool>false</bool>
+         </property>
+         <property name="cornerButtonEnabled">
+          <bool>false</bool>
+         </property>
+         <column>
+          <property name="text">
+           <string>line</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>tag</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>text</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
     <item row="3" column="1">
      <widget class="QPushButton" name="button_run">
       <property name="text">
        <string>[run]</string>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="1">
+     <widget class="ErrorList" name="errorsInText" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+    </item>
+    <item row="13" column="0" colspan="2">
+     <widget class="FindDialog" name="findWidget" native="true"/>
+    </item>
+    <item row="2" column="1">
+     <widget class="QGroupBox" name="groupBox_2">
+      <property name="title">
+       <string>Div</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QPushButton" name="button_div_tip">
+         <property name="text">
+          <string>[div tip]</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="button_div_warning">
+         <property name="text">
+          <string>[div warning]</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="button_cytat">
+         <property name="text">
+          <string>[cytat]</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="6" column="1">
+     <widget class="QPushButton" name="button_bold">
+      <property name="text">
+       <string>[b]</string>
       </property>
      </widget>
     </item>
@@ -114,42 +190,6 @@
       </layout>
      </widget>
     </item>
-    <item row="7" column="1">
-     <widget class="QPushButton" name="button_pkt">
-      <property name="text">
-       <string>[pkt ext]</string>
-      </property>
-     </widget>
-    </item>
-    <item row="12" column="1">
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string extracomment="link do kursu">&lt;a href=&quot;https://cpp0x.pl/kursy/Kurs-STC/169&quot;&gt;Kurs STC&lt;/a&gt;</string>
-      </property>
-      <property name="textFormat">
-       <enum>Qt::RichText</enum>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-      <property name="wordWrap">
-       <bool>true</bool>
-      </property>
-      <property name="openExternalLinks">
-       <bool>true</bool>
-      </property>
-      <property name="textInteractionFlags">
-       <set>Qt::TextBrowserInteraction</set>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="1">
-     <widget class="QPushButton" name="button_bold">
-      <property name="text">
-       <string>[b]</string>
-      </property>
-     </widget>
-    </item>
     <item row="10" column="1">
      <spacer name="verticalSpacer">
       <property name="orientation">
@@ -163,40 +203,22 @@
       </property>
      </spacer>
     </item>
-    <item row="13" column="0" colspan="2">
-     <widget class="FindDialog" name="findWidget" native="true"/>
-    </item>
-    <item row="2" column="1">
-     <widget class="QGroupBox" name="groupBox_2">
-      <property name="title">
-       <string>Div</string>
+    <item row="0" column="0" rowspan="13">
+     <widget class="CodeEditor" name="plainTextEdit">
+      <property name="font">
+       <font>
+        <pointsize>14</pointsize>
+       </font>
       </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
+      <property name="styleSheet">
+       <string notr="true">QPlainText {
+	background-color: rgb(255, 255, 255);
+	color: rgb(0, 0, 0);
+    font-family: monospace;
+}
+
+</string>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QPushButton" name="button_div_tip">
-         <property name="text">
-          <string>[div tip]</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="button_div_warning">
-         <property name="text">
-          <string>[div warning]</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="button_cytat">
-         <property name="text">
-          <string>[cytat]</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
      </widget>
     </item>
     <item row="5" column="1">
@@ -240,16 +262,6 @@
         </widget>
        </item>
       </layout>
-     </widget>
-    </item>
-    <item row="9" column="1">
-     <widget class="ErrorList" name="errorsInText" native="true">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
      </widget>
     </item>
    </layout>
@@ -376,7 +388,6 @@
   <tabstop>button_h2</tabstop>
   <tabstop>button_h3</tabstop>
   <tabstop>button_h4</tabstop>
-  <tabstop>contextTableWidget</tabstop>
  </tabstops>
  <resources/>
  <connections>
