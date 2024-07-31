@@ -287,7 +287,7 @@ bool MainWindow::onSaveAsPressed()
     {
         QFile outputFile(fileName);
         outputFile.open(QIODeviceBase::WriteOnly);
-        return outputFile.write(ui->plainTextEdit->toPlainText().toLatin1()) != -1;
+        return outputFile.write(ui->plainTextEdit->toPlainText().toLatin1()) > -1;
     }
     return false;
 }
@@ -299,11 +299,19 @@ bool MainWindow::onSavePressed()
     {
         return onSaveAsPressed();
     }
+    else if (ui->plainTextEdit->noUnsavedChanges())
+    {
+        return true;
+    }
     else
     {
         QFile outputFile(outputFileName);
         outputFile.open(QIODeviceBase::WriteOnly);
-        outputFile.write(ui->plainTextEdit->toPlainText().toLatin1());
+        if (outputFile.write(ui->plainTextEdit->toPlainText().toLatin1()) < 0)
+        {
+            return false;
+        }
+        outputFile.close();
         return true;
     }
 }

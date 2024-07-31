@@ -24,4 +24,5 @@ int main(int argc, char *argv[])
  * 8. Tables creator
  * 9. Better close event https://stackoverflow.com/questions/10417914/handling-exit-without-saving-in-qt https://forum.qt.io/topic/31194/the-right-way-to-do-something-before-closing-the-program-closeevent-abouttoquit-or-the-destructor/2
  * 10. Syntax highlinkk of Cpp & python: QCXXHighlighter https://github.com/Megaxela/QCodeEditor (MIT licence)
+ * 11. Listen external changes of file
  **/

@@ -455,11 +455,28 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionSave</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onSavePressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>451</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onSaveAsPressed()</slot>
   <slot>onOpenPressed()</slot>
   <slot>onFindCheckChanged(bool)</slot>
   <slot>onCheckTagsPressed()</slot>
+  <slot>onSavePressed()</slot>
  </slots>
 </ui>
