@@ -30,10 +30,17 @@ set(PROJECT_SOURCES
     checkers/PairedTagsChecker.cpp
 )
 
+set(TEXT_FILES
+    LICENSE
+    README.md
+)
+
+set(PROJECT_FILES ${PROJECT_SOURCES} ${TEXT_FILES})
+
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(${PROJECT_NAME}
         MANUAL_FINALIZATION
-        ${PROJECT_SOURCES}
+        ${PROJECT_FILES}
         resources.qrc
     )
 # Define target properties for Android with Qt 6 as:
@@ -43,13 +50,13 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 else()
     if(ANDROID)
         add_library(${PROJECT_NAME} SHARED
-            ${PROJECT_SOURCES}
+            ${PROJECT_FILES}
         )
 # Define properties for Android with Qt 5 after find_package() calls as:
 #    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
     else()
         add_executable(${PROJECT_NAME}
-            ${PROJECT_SOURCES}
+            ${PROJECT_FILES}
         )
     endif()
 endif()
