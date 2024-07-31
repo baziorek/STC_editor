@@ -340,7 +340,7 @@
   <customwidget>
    <class>FindDialog</class>
    <extends>QWidget</extends>
-   <header location="global">finddialog.h</header>
+   <header location="global">ui/finddialog.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
