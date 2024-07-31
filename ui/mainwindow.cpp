@@ -8,6 +8,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "checkers/PairedTagsChecker.h"
+#include "errorlist.h"
 using namespace std;
 
 namespace
@@ -322,8 +323,14 @@ void MainWindow::onOpenPressed()
 
 void MainWindow::onCheckTagsPressed()
 {
-    auto text = ui->plainTextEdit->toPlainText().toStdString();
-    PairedTagsChecker::checkTags(text); // TODO: show results
+    const auto text = ui->plainTextEdit->toPlainText().toStdString();
+    const auto tagsErrors = PairedTagsChecker::checkTags(text);
+
+    ui->errorsInText->clearErrors();
+    for (const auto [lineNumber, errorText] : tagsErrors)
+    {
+        ui->errorsInText->addError(lineNumber, QString::fromStdString(errorText));
+    }
 }
 
 void MainWindow::putTextBackToCursorPosition(QTextCursor &cursor, QString divClass,

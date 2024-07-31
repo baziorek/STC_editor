@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <iostream>
 #include <ranges>
 #include <vector>
 #include <regex>
@@ -106,11 +105,7 @@ std::vector<Tag> extractTags(const std::vector<std::string_view>& lines)
 std::vector<std::pair<unsigned int, std::string>> checkIfAllTagsAreClosed(const std::vector<Tag>& tags)
 {
     std::vector<std::pair<unsigned int, std::string>> errorPerLine;
-
-    for (int i{}; const auto& tag : tags)
-    {
-        cout << i++ << "\t" << tag.toString() << endl;
-    }
+    errorPerLine.reserve(tags.size());
 
     std::stack<Tag> openTags;
     bool insideRun = false, insideCpp = false, insideCode = false, insidePython = false;
@@ -123,7 +118,7 @@ std::vector<std::pair<unsigned int, std::string>> checkIfAllTagsAreClosed(const 
         }
         else if (insideCode && tag.tagShortname != "code")
         {
-            cout << "! Tags inside [code] will not work! Current tag: " << tag.toString() << endl;
+            // cout << "! Tags inside [code] will not work! Current tag: " << tag.toString() << endl;
             continue;
         }
         else if (insidePython && tag.tagShortname != "py")
@@ -146,7 +141,6 @@ std::vector<std::pair<unsigned int, std::string>> checkIfAllTagsAreClosed(const 
             {
                 auto errorText = std::format("{} is not opened! No tags are opened! You are trying to close the tag in line {} in position {}!", tag.tagShortname, tag.line, tag.startingPositionInLine);
                 errorPerLine.emplace_back(tag.line, errorText);
-                // cout << "!!! Closing tag which is not opened: " << tag.toString() << endl;
                 continue;
             }
             if (openTags.top().tagShortname == tag.tagShortname)
@@ -155,7 +149,6 @@ std::vector<std::pair<unsigned int, std::string>> checkIfAllTagsAreClosed(const 
             }
             else
             {
-                // cout << "!!!" << tag.toString() << " is closing something else than " << openTags.top().toString();
                 auto errorText = std::format("{} is not closing in line {} in position {} is not closing! Maybe you want to close {}",
                                              tag.tagShortname, tag.line, tag.startingPositionInLine, openTags.top().tagShortname);
                 errorPerLine.emplace_back(tag.line, errorText);
@@ -179,7 +172,6 @@ std::vector<std::pair<unsigned int, std::string>> checkIfAllTagsAreClosed(const 
     while (!openTags.empty())
     {
         const auto& tag = openTags.top();
-        // cout << "Unclosed tag: " << tag.toString() << endl;
         auto errorText = std::format("{} starting in line {} in position {} is not closing!", tag.tagShortname, tag.line, tag.startingPositionInLine);
         errorPerLine.emplace_back(tag.line, errorText);
         openTags.pop();

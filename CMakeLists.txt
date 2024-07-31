@@ -22,6 +22,9 @@ set(PROJECT_SOURCES
     ui/finddialog.h
     ui/finddialog.ui
     ui/finddialog.cpp
+    ui/errorlist.h
+    ui/errorlist.cpp
+    ui/errorlist.ui
     linenumberarea.h
     linenumberarea.cpp
     codeeditor.h
