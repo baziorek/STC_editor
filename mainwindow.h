@@ -26,6 +26,8 @@ public slots:
     bool onSavePressed();
     void onOpenPressed();
 
+    void onCheckTagsPressed();
+
 private: // methods
     void putTextBackToCursorPosition(QTextCursor &cursor, QString divClass, QString selectedText,
                                      QString textEnding, QString modifiedText);

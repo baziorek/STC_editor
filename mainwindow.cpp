@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "checkers/PairedTagsChecker.h"
 using namespace std;
 
 namespace
@@ -317,6 +318,12 @@ void MainWindow::onOpenPressed()
         ui->plainTextEdit->setPlainText(textFromFile);
         ui->plainTextEdit->setFileName(fileName);
     }
+}
+
+void MainWindow::onCheckTagsPressed()
+{
+    auto text = ui->plainTextEdit->toPlainText().toStdString();
+    PairedTagsChecker::checkTags(text); // TODO: show results
 }
 
 void MainWindow::putTextBackToCursorPosition(QTextCursor &cursor, QString divClass,
