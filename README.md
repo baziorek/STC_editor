@@ -18,3 +18,8 @@ Mi się to bardzo przydało w ostatnich dwóch artykułach, m.in. [porównujący
 
 ## Przydatne linki:
 [Interpreter STC on-line](https://cpp0x.pl/stc/)
+
+
+# Gwarancja
+Program jest zrobiony tak po prostu, sam mu nie do końca ufam (że nie zgubi mi ważnych treści), dlatego nie udzielam gwarancji na jego użytkowanie.
+Użycie na własne ryzyko ... co prawda mnie nie zawiódł jeszcze, no ale.

@@ -41,4 +41,7 @@ int main(int argc, char *argv[])
  * 11. Listen external changes of file
  * 12. Obrazki na serwerze - podmiana prefixów w linkach
  * 13. Jak jest jakiś tekst napisany od zera (bez wskazania pliku) to chyba dobrze byłoby zapytać użytkownika czy chce wyjść niezapisując?
+ * 14. Śledzenie TODOsów
+ * 15. Zakładki na miejsca w kodzie
+ * 16. ALT + <- lub ALT + -> umożliwiające skakanie po miejscach w kodzie
  **/
