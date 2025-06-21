@@ -18,6 +18,7 @@ public:
 
 public slots:
     void keyPressEvent(QKeyEvent *event) override;
+    void closeEvent(QCloseEvent *event) override;
 
     void onUpdateContextRequested();
     void onContextTableClicked(int row, int /*column*/);
@@ -38,7 +39,7 @@ private: // methods
     void setUpDocumentStyles();
     void updateContextTable(auto taggedTextLinePositions);
     void connectButtons();
-    void closeApplication();
+    bool closeApplicationReturningIfClosed();
 
 private: // members
     Ui::MainWindow *ui;

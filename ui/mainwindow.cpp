@@ -186,7 +186,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     if (Qt::Key_Escape == event->key())
     {
-        closeApplication();
+        closeApplicationReturningIfClosed();
     }
     else
     {
@@ -194,7 +194,19 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     }
 }
 
-void MainWindow::closeApplication()
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    if (closeApplicationReturningIfClosed())
+    {
+        QWidget::closeEvent(event);
+    }
+    else
+    {
+        event->ignore();
+    }
+}
+
+bool MainWindow::closeApplicationReturningIfClosed()
 {
     if (!ui->plainTextEdit->noUnsavedChanges())
     {
@@ -207,16 +219,17 @@ void MainWindow::closeApplication()
         {
             if (! onSavePressed())
             {
-                return;
+                return false;
             }
         }
         else if (reply == QMessageBox::No)
         {
-            return;
+            return false;
         }
     }
     close();
     qApp->quit();
+    return true;
 }
 
 void MainWindow::onUpdateContextRequested()

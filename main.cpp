@@ -44,4 +44,5 @@ int main(int argc, char *argv[])
  * 14. Śledzenie TODOsów
  * 15. Zakładki na miejsca w kodzie
  * 16. ALT + <- lub ALT + -> umożliwiające skakanie po miejscach w kodzie
+ * 17. Po uruchomieniu focus w edytorze tekstu od razu
  **/
