@@ -2,6 +2,7 @@
 #pragma once
 
 #include <QPlainTextEdit>
+#include <QFileSystemWatcher>
 
 class CodeEditor : public QPlainTextEdit
 {
@@ -25,9 +26,17 @@ public:
     {
         openedFileName = newFileName;
     }
+    void enableWatchingOfFile(const QString& newFileName);
+
+    void restoreStateWhichDoesNotRequireSaving(bool discardChanges=false);
+
+public slots:
+    void fileChanged(const QString &path);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
+
+    void reloadFromFile(bool discardChanges=false);
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
@@ -36,4 +45,5 @@ private slots:
 
 private:
     QWidget *lineNumberArea;
+    QFileSystemWatcher fileWatcher;
 };

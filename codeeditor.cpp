@@ -2,6 +2,7 @@
 #include <QFile>
 #include <QPainter>
 #include <QTextBlock>
+#include <qmessagebox.h>
 #include "codeeditor.h"
 #include "linenumberarea.h"
 
@@ -51,6 +52,20 @@ bool CodeEditor::noUnsavedChanges() const
     return file.readAll() == currentlyVisibleText;
 }
 
+void CodeEditor::enableWatchingOfFile(const QString &newFileName)
+{
+    auto watchedFilesCopy = fileWatcher.files();
+    fileWatcher.removePaths(watchedFilesCopy);
+    fileWatcher.addPath(newFileName);
+}
+
+void CodeEditor::fileChanged(const QString &path)
+{
+    // TODO:
+#warning tutaj
+    // https://doc.qt.io/qt-6/qfilesystemwatcher.html
+}
+
 void CodeEditor::updateLineNumberAreaWidth(int /* newBlockCount */)
 {
     setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
@@ -73,6 +88,34 @@ void CodeEditor::resizeEvent(QResizeEvent *e)
 
     QRect cr = contentsRect();
     lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
+}
+
+void CodeEditor::reloadFromFile(bool discardChanges)
+{
+    QFile file(openedFileName);
+    if (!file.exists())
+    {
+        // return false;
+        QMessageBox::warning(this, "Reloading error", "File '" + openedFileName + "' does not exist!");
+    }
+    //  TODO: consider: !file.exists() && currentlyVisibleText.isEmpty()
+    else
+    {
+        file.open(QFile::ReadOnly);
+        setPlainText(file.readAll());
+    }
+}
+
+void CodeEditor::restoreStateWhichDoesNotRequireSaving(bool discardChanges)
+{
+    if (openedFileName.isEmpty())
+    {
+        clear();
+    }
+    else
+    {
+        reloadFromFile(discardChanges);
+    }
 }
 
 void CodeEditor::highlightCurrentLine()
@@ -118,4 +161,3 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
         ++blockNumber;
     }
 }
-

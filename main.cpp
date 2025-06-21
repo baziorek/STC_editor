@@ -6,11 +6,12 @@
 void setUpIcon(QApplication& a)
 {
     QIcon appIcon(":/resources/icon.png");
-
-    if (appIcon.isNull()) {
+    if (appIcon.isNull())
+    {
         qWarning() << "Nie udało się załadować ikony aplikacji!";
-    } else {
-        qDebug() << "Ikona aplikacji została poprawnie załadowana.";
+    }
+    else
+    {
         a.setWindowIcon(appIcon);
     }
 }
@@ -31,7 +32,7 @@ int main(int argc, char *argv[])
  * 2. Maybe tags gray, normal text black, or tags smaller?
  * 3. Add syntax highlighter:
  * https://doc.qt.io/qt-6.2/qtwidgets-richtext-syntaxhighlighter-example.html
- * 4. Warn before closing when not saved changes
+ * 4. Skocz do linii
  * 5. Ctrl + F, Ctrl + R
  * 6. Add checking: if all tags are closed
  * 7. *Images preview
@@ -44,5 +45,4 @@ int main(int argc, char *argv[])
  * 14. Śledzenie TODOsów
  * 15. Zakładki na miejsca w kodzie
  * 16. ALT + <- lub ALT + -> umożliwiające skakanie po miejscach w kodzie
- * 17. Po uruchomieniu focus w edytorze tekstu od razu
  **/

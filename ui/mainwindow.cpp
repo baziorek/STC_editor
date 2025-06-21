@@ -118,6 +118,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->findWidget->hide();
     ui->findWidget->setCodeEditor(ui->plainTextEdit);
     setUpDocumentStyles();
+    ui->plainTextEdit->setFocus();
 
     connectButtons();
     connect(ui->contextTableWidget, &QTableWidget::cellClicked, this, &MainWindow::onContextTableClicked);
@@ -219,12 +220,17 @@ bool MainWindow::closeApplicationReturningIfClosed()
         {
             if (! onSavePressed())
             {
+                ui->plainTextEdit->restoreStateWhichDoesNotRequireSaving(/*discardChanges=*/true);
                 return false;
             }
         }
         else if (reply == QMessageBox::No)
         {
             return false;
+        }
+        else if (reply == QMessageBox::Discard)
+        {
+            ui->plainTextEdit->restoreStateWhichDoesNotRequireSaving(/*discardChanges=*/true);
         }
     }
     close();
@@ -300,6 +306,7 @@ bool MainWindow::onSaveAsPressed()
     {
         QFile outputFile(fileName);
         outputFile.open(QIODeviceBase::WriteOnly);
+        ui->plainTextEdit->setFileName(fileName);
         return outputFile.write(ui->plainTextEdit->toPlainText().toLatin1()) > -1;
     }
     return false;
