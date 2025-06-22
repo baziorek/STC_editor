@@ -28,12 +28,10 @@ set(PROJECT_SOURCES
     ui/gotolinewidget.h
     ui/gotolinewidget.cpp
     ui/gotolinewidget.ui
-    linenumberarea.h
-    linenumberarea.cpp
-    codeeditor.h
-    codeeditor.cpp
-    checkers/PairedTagsChecker.h
-    checkers/PairedTagsChecker.cpp
+    linenumberarea.h linenumberarea.cpp
+    codeeditor.h codeeditor.cpp
+    stcsyntaxhighlighter.h stcsyntaxhighlighter.cpp
+    checkers/PairedTagsChecker.h checkers/PairedTagsChecker.cpp
 )
 
 set(TEXT_FILES

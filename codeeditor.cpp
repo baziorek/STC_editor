@@ -5,6 +5,7 @@
 #include <qmessagebox.h>
 #include "codeeditor.h"
 #include "linenumberarea.h"
+#include "stcsyntaxhighlighter.h"
 
 
 CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
@@ -18,6 +19,8 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 
     updateLineNumberAreaWidth(0);
     // highlightCurrentLine();
+
+    STCSyntaxHighlighter *highlighter = new STCSyntaxHighlighter(document());
 }
 
 int CodeEditor::lineNumberAreaWidth()

@@ -90,6 +90,7 @@ enum class StdTags: std::uint8_t
     DIV_TIP,
     A_HREF,
     PKT,
+    CSV,
     BOLD,
     QUOTE
 };
@@ -105,6 +106,7 @@ std::map<StdTags, QString> tagsClasses =
     make_pair(StdTags::DIV_TIP, "div_tip"),
     make_pair(StdTags::A_HREF, "a_href"),
     make_pair(StdTags::PKT, "pkt"),
+    make_pair(StdTags::CSV, "csv"),
     make_pair(StdTags::BOLD, "b"),
     make_pair(StdTags::QUOTE, "cytat"),
 };
@@ -163,6 +165,9 @@ void MainWindow::connectButtons()
     });
     connect(ui->button_pkt, &QPushButton::pressed, [this] {
         this->surroundSelectedTextWithTag(tagsClasses[StdTags::PKT], tagsClasses[StdTags::PKT], " ext");
+    });
+    connect(ui->button_csv, &QPushButton::pressed, [this] {
+        this->surroundSelectedTextWithTag(tagsClasses[StdTags::CSV], tagsClasses[StdTags::CSV], " extended header");
     });
     connect(ui->button_bold, &QPushButton::pressed, [this] {
         this->surroundSelectedTextWithTag(tagsClasses[StdTags::BOLD], tagsClasses[StdTags::BOLD]);
