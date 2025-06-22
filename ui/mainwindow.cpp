@@ -119,11 +119,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->plainTextEdit->setFocus();
 
     connectButtons();
-    connectShortcuts();
+    connectShortcutsFromCodeWidget();
     connect(ui->contextTableWidget, &QTableWidget::cellClicked, this, &MainWindow::onContextTableClicked);
     connect(ui->plainTextEdit, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateContextRequested);
     connect(ui->plainTextEdit, &CodeEditor::totalLinesCountChanged, ui->goToLineGroupBox, &GoToLineWidget::setMaxLine);
     connect(ui->goToLineGroupBox, &GoToLineWidget::onGoToLineRequested, ui->plainTextEdit, &CodeEditor::go2LineRequested);
+
+    connectShortcuts();
 }
 
 void MainWindow::setUpDocumentStyles()
@@ -179,7 +181,7 @@ void MainWindow::connectButtons()
     });
 }
 
-void MainWindow::connectShortcuts()
+[[deprecated("Instead of them mnemoniks from Qt are being used")]] void MainWindow::connectShortcutsFromCodeWidget()
 {
     connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_bold, [this]() {
         this->surroundSelectedTextWithTag(tagsClasses[StdTags::BOLD], tagsClasses[StdTags::BOLD]);
@@ -208,6 +210,16 @@ void MainWindow::connectShortcuts()
     });
     connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_h4, [this] {
         this->surroundSelectedTextWithTag("h4", "h4");
+    });
+}
+
+void MainWindow::connectShortcuts()
+{
+    QAction *focusGo2LineWidgetAction = new QAction("Focus go2line", this);
+    focusGo2LineWidgetAction->setShortcut(QKeySequence("Ctrl+L"));
+    addAction(focusGo2LineWidgetAction);
+    connect(focusGo2LineWidgetAction, &QAction::triggered, [this]() {
+        ui->goToLineGroupBox->setFocus();
     });
 }
 

@@ -40,6 +40,7 @@ private: // methods
     void updateContextTable(auto taggedTextLinePositions);
     void connectButtons();
     void connectShortcuts();
+    void connectShortcutsFromCodeWidget();
     bool closeApplicationReturningIfClosed();
 
 private: // members
