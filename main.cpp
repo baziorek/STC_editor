@@ -43,4 +43,5 @@ int main(int argc, char *argv[])
  * 12. Obrazki na serwerze - podmiana prefixów w linkach
  * 13. Śledzenie TODOsów
  * 14. Zakładki na miejsca w kodzie
+ * 15. ! Ctrl + O does not ask if changes!
  **/
