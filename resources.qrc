@@ -1,7 +1,5 @@
 <RCC>
-    <qresource prefix="/">
-        <file>styles.css</file>
-    </qresource>
+    <qresource prefix="/"/>
     <qresource prefix="/resources">
         <file>icon.png</file>
     </qresource>

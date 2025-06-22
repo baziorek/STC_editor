@@ -28,10 +28,9 @@ int main(int argc, char *argv[])
 
 /**
  * TODOs:
- * 1. Consider using syntax analizer: https://github.com/westes/flex https://stackoverflow.com/questions/2656809/how-do-you-implement-syntax-highlighting
- * 2. Maybe tags gray, normal text black, or tags smaller?
- * 3. Add syntax highlighter:
- * https://doc.qt.io/qt-6.2/qtwidgets-richtext-syntaxhighlighter-example.html
+ * 1. Consider using syntax analizer for C++: https://github.com/westes/flex
+ * 2. ! Correct formatting: when multi-line code sections
+ * 3. ! Ctrl + O does not ask if changes!
  * 4. ALT + <- lub ALT + -> umożliwiające skakanie po miejscach w kodzie - wstecz i dalej
  * 5. Ctrl + F, Ctrl + R
  * 6. Add checking: if all tags are closed
@@ -43,5 +42,5 @@ int main(int argc, char *argv[])
  * 12. Obrazki na serwerze - podmiana prefixów w linkach
  * 13. Śledzenie TODOsów
  * 14. Zakładki na miejsca w kodzie
- * 15. ! Ctrl + O does not ask if changes!
+
  **/

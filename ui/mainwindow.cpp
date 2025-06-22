@@ -117,7 +117,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->setupUi(this);
     ui->findWidget->hide();
     ui->findWidget->setCodeEditor(ui->plainTextEdit);
-    setUpDocumentStyles();
     ui->plainTextEdit->setFocus();
 
     connectButtons();
@@ -128,13 +127,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->goToLineGroupBox, &GoToLineWidget::onGoToLineRequested, ui->plainTextEdit, &CodeEditor::go2LineRequested);
 
     connectShortcuts();
-}
-
-void MainWindow::setUpDocumentStyles()
-{
-    QFile styleFile(":/styles.css");
-    styleFile.open(QIODeviceBase::ReadOnly);
-    ui->plainTextEdit->document()->setDefaultStyleSheet(styleFile.readAll());
 }
 
 void MainWindow::connectButtons()

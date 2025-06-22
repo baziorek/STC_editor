@@ -36,7 +36,6 @@ private: // methods
 
     void surroundSelectedTextWithTag(QString divClass, QString text, QString extraAttributes = "", bool closable = true);
 
-    void setUpDocumentStyles();
     void updateContextTable(auto taggedTextLinePositions);
     void connectButtons();
     void connectShortcuts();

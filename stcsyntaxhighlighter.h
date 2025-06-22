@@ -6,6 +6,7 @@
 #include <QString>
 #include <QRegularExpression>
 
+/// class inspired with: https://doc.qt.io/qt-6.2/qtwidgets-richtext-syntaxhighlighter-example.html
 class STCSyntaxHighlighter : public QSyntaxHighlighter
 {
     Q_OBJECT
@@ -17,12 +18,14 @@ protected:
     void highlightBlock(const QString &text) override;
 
 private:
-    struct Rule {
+    struct Rule
+    {
         QRegularExpression pattern;
         QTextCharFormat format;
     };
 
-    struct StyledTag {
+    struct StyledTag
+    {
         QString tag;
         QTextCharFormat format;
     };
