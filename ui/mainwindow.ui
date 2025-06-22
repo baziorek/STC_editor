@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>928</height>
+    <height>969</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,108 +15,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0" rowspan="14">
-     <widget class="CodeEditor" name="plainTextEdit">
-      <property name="font">
-       <font>
-        <pointsize>14</pointsize>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPlainText {
-	background-color: rgb(255, 255, 255);
-	color: rgb(0, 0, 0);
-    font-family: monospace;
-}
-
-</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="1">
-     <widget class="QPushButton" name="button_run">
-      <property name="text">
-       <string>[&amp;run]</string>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="1">
-     <widget class="QPushButton" name="button_bold">
-      <property name="text">
-       <string>[&amp;b]</string>
-      </property>
-      <property name="icon">
-       <iconset theme="QIcon::ThemeIcon::FormatTextBold"/>
-      </property>
-      <property name="shortcut">
-       <string>Ctrl+B</string>
-      </property>
-     </widget>
-    </item>
-    <item row="10" column="1">
-     <widget class="ErrorList" name="errorsInText" native="true">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-     </widget>
-    </item>
-    <item row="9" column="1">
-     <widget class="QGroupBox" name="groupBox_3">
-      <property name="title">
-       <string/>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_2">
-       <item row="0" column="0">
-        <widget class="QPushButton" name="button_h1">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>h&amp;1</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QPushButton" name="button_h2">
-         <property name="text">
-          <string>h&amp;2</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QPushButton" name="button_h3">
-         <property name="text">
-          <string>h&amp;3</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QPushButton" name="button_h4">
-         <property name="text">
-          <string>h&amp;4</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item row="5" column="1">
-     <widget class="QPushButton" name="button_href">
-      <property name="toolTip">
-       <string>This works accorging to one of three scenarios: 1. If nothing selected - just put tags, 2. If selected text contains link, 3. If selected text does not contains link</string>
-      </property>
-      <property name="text">
-       <string>[&amp;a href=]</string>
-      </property>
-     </widget>
-    </item>
-    <item row="12" column="1">
+    <item row="4" column="1">
      <widget class="QGroupBox" name="contextGroup">
       <property name="title">
        <string>Short conspect</string>
@@ -172,53 +71,48 @@
       </layout>
      </widget>
     </item>
-    <item row="1" column="1">
-     <widget class="QGroupBox" name="groupBox">
-      <property name="title">
-       <string>Code</string>
+    <item row="6" column="0" colspan="2">
+     <widget class="FindDialog" name="findWidget" native="true"/>
+    </item>
+    <item row="2" column="1">
+     <widget class="ErrorList" name="errorsInText" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
       </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QPushButton" name="button_cpp">
-         <property name="text">
-          <string>[&amp;cpp]</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="button_py">
-         <property name="text">
-          <string>[p&amp;y]</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="button_code">
-         <property name="text">
-          <string>[c&amp;ode]</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
      </widget>
     </item>
-    <item row="11" column="1">
-     <spacer name="verticalSpacer">
-      <property name="orientation">
-       <enum>Qt::Orientation::Vertical</enum>
+    <item row="0" column="1">
+     <widget class="StcTagsButtons" name="buttonsEmittingStc">
+      <property name="frameShape">
+       <enum>QFrame::Shape::StyledPanel</enum>
       </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>40</height>
-       </size>
+      <property name="frameShadow">
+       <enum>QFrame::Shadow::Raised</enum>
       </property>
-     </spacer>
+     </widget>
     </item>
-    <item row="13" column="1">
+    <item row="0" column="0" rowspan="6">
+     <widget class="CodeEditor" name="plainTextEdit">
+      <property name="font">
+       <font>
+        <pointsize>14</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPlainText {
+	background-color: rgb(255, 255, 255);
+	color: rgb(0, 0, 0);
+    font-family: monospace;
+}
+
+</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
      <widget class="QLabel" name="label">
       <property name="text">
        <string extracomment="link do kursu">&lt;a href=&quot;https://cpp0x.pl/kursy/Kurs-STC/169&quot;&gt;Kurs STC&lt;/a&gt;</string>
@@ -240,55 +134,18 @@
       </property>
      </widget>
     </item>
-    <item row="2" column="1">
-     <widget class="QGroupBox" name="groupBox_2">
-      <property name="title">
-       <string>Div</string>
+    <item row="3" column="1">
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Orientation::Vertical</enum>
       </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QPushButton" name="button_div_tip">
-         <property name="text">
-          <string>[div &amp;tip]</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="button_div_warning">
-         <property name="text">
-          <string>[div &amp;warning]</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="button_cytat">
-         <property name="text">
-          <string>[cytat]</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item row="14" column="0" colspan="2">
-     <widget class="FindDialog" name="findWidget" native="true"/>
-    </item>
-    <item row="7" column="1">
-     <widget class="QPushButton" name="button_pkt">
-      <property name="text">
-       <string>[pkt &amp;ext]</string>
-      </property>
-     </widget>
-    </item>
-    <item row="8" column="1">
-     <widget class="QPushButton" name="button_csv">
-      <property name="text">
-       <string>[cs&amp;v extended header]</string>
-      </property>
-     </widget>
+     </spacer>
     </item>
    </layout>
   </widget>
@@ -403,23 +260,15 @@
    <header>ui/gotolinewidget.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>StcTagsButtons</class>
+   <extends>QFrame</extends>
+   <header>ui/stctagsbuttons.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <tabstops>
   <tabstop>plainTextEdit</tabstop>
-  <tabstop>button_cpp</tabstop>
-  <tabstop>button_py</tabstop>
-  <tabstop>button_code</tabstop>
-  <tabstop>button_div_tip</tabstop>
-  <tabstop>button_div_warning</tabstop>
-  <tabstop>button_cytat</tabstop>
-  <tabstop>button_run</tabstop>
-  <tabstop>button_href</tabstop>
-  <tabstop>button_bold</tabstop>
-  <tabstop>button_pkt</tabstop>
-  <tabstop>button_h1</tabstop>
-  <tabstop>button_h2</tabstop>
-  <tabstop>button_h3</tabstop>
-  <tabstop>button_h4</tabstop>
  </tabstops>
  <resources/>
  <connections>

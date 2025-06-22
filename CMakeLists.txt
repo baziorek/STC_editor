@@ -16,18 +16,11 @@ include_directories(${PROJECT_SOURCE_DIR}) # to make sure that promoted types ar
 
 set(PROJECT_SOURCES
     main.cpp
-    ui/mainwindow.h
-    ui/mainwindow.cpp
-    ui/mainwindow.ui
-    ui/finddialog.h
-    ui/finddialog.ui
-    ui/finddialog.cpp
-    ui/errorlist.h
-    ui/errorlist.cpp
-    ui/errorlist.ui
-    ui/gotolinewidget.h
-    ui/gotolinewidget.cpp
-    ui/gotolinewidget.ui
+    ui/mainwindow.h ui/mainwindow.cpp ui/mainwindow.ui
+    ui/finddialog.h ui/finddialog.ui ui/finddialog.cpp
+    ui/errorlist.h ui/errorlist.cpp ui/errorlist.ui
+    ui/gotolinewidget.h ui/gotolinewidget.cpp ui/gotolinewidget.ui
+    ui/stctagsbuttons.h ui/stctagsbuttons.cpp ui/stctagsbuttons.ui
     linenumberarea.h linenumberarea.cpp
     codeeditor.h codeeditor.cpp
     stcsyntaxhighlighter.h stcsyntaxhighlighter.cpp

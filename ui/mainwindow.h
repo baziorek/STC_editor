@@ -8,6 +8,8 @@ QT_END_NAMESPACE
 
 class QTextCursor;
 
+enum class StdTags: std::uint8_t;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -29,6 +31,8 @@ public slots:
 
     void onCheckTagsPressed();
 
+    void onStcTagsButtonPressed(StdTags stcTag);
+
 private: // methods
     void putTextBackToCursorPosition(QTextCursor &cursor, QString divClass, QString selectedText,
                                      QString textEnding, QString modifiedText);
@@ -37,7 +41,6 @@ private: // methods
     void surroundSelectedTextWithTag(QString divClass, QString text, QString extraAttributes = "", bool closable = true);
 
     void updateContextTable(auto taggedTextLinePositions);
-    void connectButtons();
     void connectShortcuts();
     void connectShortcutsFromCodeWidget();
     bool closeApplicationReturningIfClosed();

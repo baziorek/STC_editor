@@ -1,4 +1,3 @@
-#include <cstdint>
 #include <QKeyEvent>
 #include <QDebug>
 #include <QFile>
@@ -9,6 +8,7 @@
 #include "./ui_mainwindow.h"
 #include "checkers/PairedTagsChecker.h"
 #include "errorlist.h"
+#include "ui/stctagsbuttons.h"
 using namespace std;
 
 namespace
@@ -76,24 +76,6 @@ QString chooseFileWithDialog(QWidget* parent, QFileDialog::AcceptMode acceptMode
     }
     return {};
 }
-} // namespace
-
-
-enum class StdTags: std::uint8_t
-{
-    RUN,
-    CPP,
-    PY,
-    CODE,
-    DIV,
-    DIV_WARNING,
-    DIV_TIP,
-    A_HREF,
-    PKT,
-    CSV,
-    BOLD,
-    QUOTE
-};
 
 std::map<StdTags, QString> tagsClasses =
 {
@@ -109,7 +91,12 @@ std::map<StdTags, QString> tagsClasses =
     make_pair(StdTags::CSV, "csv"),
     make_pair(StdTags::BOLD, "b"),
     make_pair(StdTags::QUOTE, "cytat"),
+    make_pair(StdTags::H1, "h1"),
+    make_pair(StdTags::H2, "h2"),
+    make_pair(StdTags::H3, "h3"),
+    make_pair(StdTags::H4, "h4"),
 };
+} // namespace
 
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
@@ -119,63 +106,69 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->findWidget->setCodeEditor(ui->plainTextEdit);
     ui->plainTextEdit->setFocus();
 
-    connectButtons();
-    connectShortcutsFromCodeWidget();
+    connect(ui->buttonsEmittingStc, &StcTagsButtons::buttonPressed, this, &MainWindow::onStcTagsButtonPressed);
     connect(ui->contextTableWidget, &QTableWidget::cellClicked, this, &MainWindow::onContextTableClicked);
     connect(ui->plainTextEdit, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateContextRequested);
     connect(ui->plainTextEdit, &CodeEditor::totalLinesCountChanged, ui->goToLineGroupBox, &GoToLineWidget::setMaxLine);
     connect(ui->goToLineGroupBox, &GoToLineWidget::onGoToLineRequested, ui->plainTextEdit, &CodeEditor::go2LineRequested);
 
+    connectShortcutsFromCodeWidget();
     connectShortcuts();
 }
 
-void MainWindow::connectButtons()
+void MainWindow::onStcTagsButtonPressed(StdTags stcTag)
 {
-    connect(ui->button_run, &QPushButton::pressed, [this] {
-        this->surroundSelectedTextWithTag(tagsClasses[StdTags::RUN], tagsClasses[StdTags::RUN]);
-    });
-    connect(ui->button_cpp, &QPushButton::pressed, [this] {
-        this->surroundSelectedTextWithTag(tagsClasses[StdTags::CPP], tagsClasses[StdTags::CPP]);
-    });
-    connect(ui->button_py, &QPushButton::pressed, [this] {
-        this->surroundSelectedTextWithTag(tagsClasses[StdTags::PY], tagsClasses[StdTags::PY]);
-    });
-    connect(ui->button_code, &QPushButton::pressed, [this] {
-        this->surroundSelectedTextWithTag(tagsClasses[StdTags::CODE], tagsClasses[StdTags::CODE]);
-    });
-    connect(ui->button_div_tip, &QPushButton::pressed, [this] {
-        this->surroundSelectedTextWithTag(tagsClasses[StdTags::DIV_TIP], tagsClasses[StdTags::DIV], R"( class="tip")");
-    });
-    connect(ui->button_div_warning, &QPushButton::pressed, [this] {
-        this->surroundSelectedTextWithTag(tagsClasses[StdTags::DIV_WARNING], tagsClasses[StdTags::DIV], R"( class="uwaga")");
-    });
-    connect(ui->button_cytat, &QPushButton::pressed, [this] {
-        this->surroundSelectedTextWithTag(tagsClasses[StdTags::QUOTE], tagsClasses[StdTags::QUOTE]);
-    });
-    connect(ui->button_href, &QPushButton::pressed, [this] {
+    switch (stcTag)
+    {
+    case StdTags::RUN:
+        surroundSelectedTextWithTag(tagsClasses[StdTags::RUN], tagsClasses[StdTags::RUN]);
+        break;
+    case StdTags::CPP:
+        surroundSelectedTextWithTag(tagsClasses[StdTags::CPP], tagsClasses[StdTags::CPP]);
+        break;
+    case StdTags::PY:
+        surroundSelectedTextWithTag(tagsClasses[StdTags::PY], tagsClasses[StdTags::PY]);
+        break;
+    case StdTags::CODE:
+        surroundSelectedTextWithTag(tagsClasses[StdTags::CODE], tagsClasses[StdTags::CODE]);
+        break;
+    case StdTags::DIV_TIP:
+        surroundSelectedTextWithTag(tagsClasses[StdTags::DIV_TIP], tagsClasses[StdTags::DIV], R"( class="tip")");
+        break;
+    case StdTags::DIV_WARNING:
+        surroundSelectedTextWithTag(tagsClasses[StdTags::DIV_WARNING], tagsClasses[StdTags::DIV], R"( class="uwaga")");
+        break;
+    case StdTags::QUOTE:
+        surroundSelectedTextWithTag(tagsClasses[StdTags::QUOTE], tagsClasses[StdTags::QUOTE]);
+        break;
+    case StdTags::A_HREF:
         this->surroundSelectedTextWithAHrefTag();
-    });
-    connect(ui->button_pkt, &QPushButton::pressed, [this] {
-        this->surroundSelectedTextWithTag(tagsClasses[StdTags::PKT], tagsClasses[StdTags::PKT], " ext");
-    });
-    connect(ui->button_csv, &QPushButton::pressed, [this] {
+        break;
+    case StdTags::PKT:
+        surroundSelectedTextWithTag(tagsClasses[StdTags::PKT], tagsClasses[StdTags::PKT], " ext");
+        break;
+    case StdTags::CSV:
         this->surroundSelectedTextWithTag(tagsClasses[StdTags::CSV], tagsClasses[StdTags::CSV], " extended header");
-    });
-    connect(ui->button_bold, &QPushButton::pressed, [this] {
-        this->surroundSelectedTextWithTag(tagsClasses[StdTags::BOLD], tagsClasses[StdTags::BOLD]);
-    });
-    connect(ui->button_h1, &QPushButton::pressed, [this] {
-        this->surroundSelectedTextWithTag("h1", "h1");
-    });
-    connect(ui->button_h2, &QPushButton::pressed, [this] {
-        this->surroundSelectedTextWithTag("h2", "h2");
-    });
-    connect(ui->button_h3, &QPushButton::pressed, [this] {
-        this->surroundSelectedTextWithTag("h3", "h3");
-    });
-    connect(ui->button_h4, &QPushButton::pressed, [this] {
-        this->surroundSelectedTextWithTag("h4", "h4");
-    });
+        break;
+    case StdTags::BOLD:
+        surroundSelectedTextWithTag(tagsClasses[StdTags::BOLD], tagsClasses[StdTags::BOLD]);
+        break;
+    case StdTags::H1:
+        surroundSelectedTextWithTag(tagsClasses[StdTags::H1], tagsClasses[StdTags::H1]);
+        break;
+    case StdTags::H2:
+        surroundSelectedTextWithTag(tagsClasses[StdTags::H2], tagsClasses[StdTags::H2]);
+        break;
+    case StdTags::H3:
+        surroundSelectedTextWithTag(tagsClasses[StdTags::H3], tagsClasses[StdTags::H3]);
+        break;
+    case StdTags::H4:
+        surroundSelectedTextWithTag(tagsClasses[StdTags::H4], tagsClasses[StdTags::H4]);
+        break;
+    default:
+        qDebug() << "Unsupported option: " << std::to_underlying(stcTag);
+        break;
+    }
 }
 
 [[deprecated("Instead of them mnemoniks from Qt are being used")]] void MainWindow::connectShortcutsFromCodeWidget()
