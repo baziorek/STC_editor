@@ -39,6 +39,7 @@ private: // methods
     void setUpDocumentStyles();
     void updateContextTable(auto taggedTextLinePositions);
     void connectButtons();
+    void connectShortcuts();
     bool closeApplicationReturningIfClosed();
 
 private: // members

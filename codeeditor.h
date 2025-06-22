@@ -35,8 +35,19 @@ public:
         return std::max(static_cast<decltype(blockCount())>(1), blockCount());
     }
 
+    void keyPressEvent(QKeyEvent *event) override;
+
 signals:
     void totalLinesCountChanged(int currentLinesCount);
+    void shortcutPressed_bold();
+    void shortcutPressed_run();
+    void shortcutPressed_warning();
+    void shortcutPressed_tip();
+    void shortcutPressed_href();
+    void shortcutPressed_h1();
+    void shortcutPressed_h2();
+    void shortcutPressed_h3();
+    void shortcutPressed_h4();
 
 public slots:
     void fileChanged(const QString &path);

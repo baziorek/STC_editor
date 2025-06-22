@@ -175,3 +175,42 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
         ++blockNumber;
     }
 }
+
+void CodeEditor::keyPressEvent(QKeyEvent *event)
+{
+    if ((event->modifiers() & Qt::ControlModifier) && !(event->modifiers() & ~Qt::ControlModifier))
+    {
+        switch(event->key())
+        {
+        case Qt::Key_B:
+            emit shortcutPressed_bold();
+            return;
+        case Qt::Key_U:
+            emit shortcutPressed_run();
+            return;
+        case Qt::Key_W:
+            emit shortcutPressed_warning();
+            return;
+        case Qt::Key_T:
+            emit shortcutPressed_tip();
+            return;
+        case Qt::Key_H:
+            emit shortcutPressed_href();
+            return;
+        case Qt::Key_1:
+            emit shortcutPressed_h1();
+            return;
+        case Qt::Key_2:
+            emit shortcutPressed_h2();
+            return;
+        case Qt::Key_3:
+            emit shortcutPressed_h3();
+            return;
+        case Qt::Key_4:
+            emit shortcutPressed_h4();
+            return;
+        }
+    }
+
+    QPlainTextEdit::keyPressEvent(event);
+}

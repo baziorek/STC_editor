@@ -110,9 +110,7 @@ std::map<StdTags, QString> tagsClasses =
 };
 
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     ui->findWidget->hide();
@@ -121,11 +119,11 @@ MainWindow::MainWindow(QWidget *parent)
     ui->plainTextEdit->setFocus();
 
     connectButtons();
+    connectShortcuts();
     connect(ui->contextTableWidget, &QTableWidget::cellClicked, this, &MainWindow::onContextTableClicked);
     connect(ui->plainTextEdit, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateContextRequested);
-    connect(ui->goToLineGroupBox, &GoToLineWidget::onGoToLineRequested, ui->plainTextEdit, &CodeEditor::go2LineRequested);
-
     connect(ui->plainTextEdit, &CodeEditor::totalLinesCountChanged, ui->goToLineGroupBox, &GoToLineWidget::setMaxLine);
+    connect(ui->goToLineGroupBox, &GoToLineWidget::onGoToLineRequested, ui->plainTextEdit, &CodeEditor::go2LineRequested);
 }
 
 void MainWindow::setUpDocumentStyles()
@@ -137,46 +135,78 @@ void MainWindow::setUpDocumentStyles()
 
 void MainWindow::connectButtons()
 {
-    connect(ui->button_run, &QPushButton::clicked, [this](bool) {
+    connect(ui->button_run, &QPushButton::pressed, [this] {
         this->surroundSelectedTextWithTag(tagsClasses[StdTags::RUN], tagsClasses[StdTags::RUN]);
     });
-    connect(ui->button_cpp, &QPushButton::clicked, [this](bool) {
+    connect(ui->button_cpp, &QPushButton::pressed, [this] {
         this->surroundSelectedTextWithTag(tagsClasses[StdTags::CPP], tagsClasses[StdTags::CPP]);
     });
-    connect(ui->button_py, &QPushButton::clicked, [this](bool) {
+    connect(ui->button_py, &QPushButton::pressed, [this] {
         this->surroundSelectedTextWithTag(tagsClasses[StdTags::PY], tagsClasses[StdTags::PY]);
     });
-    connect(ui->button_code, &QPushButton::clicked, [this](bool) {
+    connect(ui->button_code, &QPushButton::pressed, [this] {
         this->surroundSelectedTextWithTag(tagsClasses[StdTags::CODE], tagsClasses[StdTags::CODE]);
     });
-    connect(ui->button_div_tip, &QPushButton::clicked, [this](bool) {
+    connect(ui->button_div_tip, &QPushButton::pressed, [this] {
         this->surroundSelectedTextWithTag(tagsClasses[StdTags::DIV_TIP], tagsClasses[StdTags::DIV], R"( class="tip")");
     });
-    connect(ui->button_div_warning, &QPushButton::clicked, [this](bool) {
+    connect(ui->button_div_warning, &QPushButton::pressed, [this] {
         this->surroundSelectedTextWithTag(tagsClasses[StdTags::DIV_WARNING], tagsClasses[StdTags::DIV], R"( class="uwaga")");
     });
-    connect(ui->button_cytat, &QPushButton::clicked, [this](bool) {
+    connect(ui->button_cytat, &QPushButton::pressed, [this] {
         this->surroundSelectedTextWithTag(tagsClasses[StdTags::QUOTE], tagsClasses[StdTags::QUOTE]);
     });
-    connect(ui->button_href, &QPushButton::clicked, [this](bool) {
+    connect(ui->button_href, &QPushButton::pressed, [this] {
         this->surroundSelectedTextWithAHrefTag();
     });
-    connect(ui->button_pkt, &QPushButton::clicked, [this](bool) {
+    connect(ui->button_pkt, &QPushButton::pressed, [this] {
         this->surroundSelectedTextWithTag(tagsClasses[StdTags::PKT], tagsClasses[StdTags::PKT], " ext");
     });
-    connect(ui->button_bold, &QPushButton::clicked, [this](bool) {
+    connect(ui->button_bold, &QPushButton::pressed, [this] {
         this->surroundSelectedTextWithTag(tagsClasses[StdTags::BOLD], tagsClasses[StdTags::BOLD]);
     });
-    connect(ui->button_h1, &QPushButton::clicked, [this](bool) {
+    connect(ui->button_h1, &QPushButton::pressed, [this] {
         this->surroundSelectedTextWithTag("h1", "h1");
     });
-    connect(ui->button_h2, &QPushButton::clicked, [this](bool) {
+    connect(ui->button_h2, &QPushButton::pressed, [this] {
         this->surroundSelectedTextWithTag("h2", "h2");
     });
-    connect(ui->button_h3, &QPushButton::clicked, [this](bool) {
+    connect(ui->button_h3, &QPushButton::pressed, [this] {
         this->surroundSelectedTextWithTag("h3", "h3");
     });
-    connect(ui->button_h4, &QPushButton::clicked, [this](bool) {
+    connect(ui->button_h4, &QPushButton::pressed, [this] {
+        this->surroundSelectedTextWithTag("h4", "h4");
+    });
+}
+
+void MainWindow::connectShortcuts()
+{
+    connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_bold, [this]() {
+        this->surroundSelectedTextWithTag(tagsClasses[StdTags::BOLD], tagsClasses[StdTags::BOLD]);
+    });
+    connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_run, [this]() {
+        this->surroundSelectedTextWithTag(tagsClasses[StdTags::RUN], tagsClasses[StdTags::RUN]);
+    });
+    connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_warning, [this]() {
+        this->surroundSelectedTextWithTag(tagsClasses[StdTags::DIV_WARNING], tagsClasses[StdTags::DIV], R"( class="uwaga")");
+    });
+    connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_tip, [this]() {
+        this->surroundSelectedTextWithTag(tagsClasses[StdTags::DIV_TIP], tagsClasses[StdTags::DIV], R"( class="tip")");
+    });
+    connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_href, [this]() {
+        this->surroundSelectedTextWithAHrefTag();
+    });
+
+    connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_h1, [this] {
+        this->surroundSelectedTextWithTag("h1", "h1");
+    });
+    connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_h2, [this] {
+        this->surroundSelectedTextWithTag("h2", "h2");
+    });
+    connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_h3, [this] {
+        this->surroundSelectedTextWithTag("h3", "h3");
+    });
+    connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_h4, [this] {
         this->surroundSelectedTextWithTag("h4", "h4");
     });
 }
