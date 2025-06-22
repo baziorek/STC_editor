@@ -30,8 +30,18 @@ public:
 
     void restoreStateWhichDoesNotRequireSaving(bool discardChanges=false);
 
+    auto linesCount() const
+    {
+        return std::max(static_cast<decltype(blockCount())>(1), blockCount());
+    }
+
+signals:
+    void totalLinesCountChanged(int currentLinesCount);
+
 public slots:
     void fileChanged(const QString &path);
+
+    void go2LineRequested(int lineNumber);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

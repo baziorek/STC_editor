@@ -79,7 +79,7 @@ QString chooseFileWithDialog(QWidget* parent, QFileDialog::AcceptMode acceptMode
 } // namespace
 
 
-enum class StdTags: uint8_t
+enum class StdTags: std::uint8_t
 {
     RUN,
     CPP,
@@ -123,6 +123,9 @@ MainWindow::MainWindow(QWidget *parent)
     connectButtons();
     connect(ui->contextTableWidget, &QTableWidget::cellClicked, this, &MainWindow::onContextTableClicked);
     connect(ui->plainTextEdit, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateContextRequested);
+    connect(ui->goToLineGroupBox, &GoToLineWidget::onGoToLineRequested, ui->plainTextEdit, &CodeEditor::go2LineRequested);
+
+    connect(ui->plainTextEdit, &CodeEditor::totalLinesCountChanged, ui->goToLineGroupBox, &GoToLineWidget::setMaxLine);
 }
 
 void MainWindow::setUpDocumentStyles()
@@ -220,6 +223,7 @@ bool MainWindow::closeApplicationReturningIfClosed()
         {
             if (! onSavePressed())
             {
+                /// the state needs to be restored to prevend asking again
                 ui->plainTextEdit->restoreStateWhichDoesNotRequireSaving(/*discardChanges=*/true);
                 return false;
             }
@@ -230,6 +234,7 @@ bool MainWindow::closeApplicationReturningIfClosed()
         }
         else if (reply == QMessageBox::Discard)
         {
+            /// the state needs to be restored to prevend asking again
             ui->plainTextEdit->restoreStateWhichDoesNotRequireSaving(/*discardChanges=*/true);
         }
     }

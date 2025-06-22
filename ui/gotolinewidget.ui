@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GoToLineWidget</class>
+ <widget class="QGroupBox" name="GoToLineWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>53</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>GroupBox</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <widget class="QSpinBox" name="lineNumberSpinBox">
+     <property name="prefix">
+      <string>Line number: </string>
+     </property>
+     <property name="minimum">
+      <number>1</number>
+     </property>
+     <property name="maximum">
+      <number>1</number>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="go2LinePushButton">
+     <property name="text">
+      <string>Go to line</string>
+     </property>
+     <property name="icon">
+      <iconset theme="QIcon::ThemeIcon::MailForward"/>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>go2LinePushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>GoToLineWidget</receiver>
+   <slot>onGoToLinePressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>237</x>
+     <y>30</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>265</x>
+     <y>44</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>onGoToLinePressed()</slot>
+ </slots>
+</ui>

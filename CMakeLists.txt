@@ -25,6 +25,9 @@ set(PROJECT_SOURCES
     ui/errorlist.h
     ui/errorlist.cpp
     ui/errorlist.ui
+    ui/gotolinewidget.h
+    ui/gotolinewidget.cpp
+    ui/gotolinewidget.ui
     linenumberarea.h
     linenumberarea.cpp
     codeeditor.h
