@@ -1,50 +1,36 @@
-#include <QRegularExpression>
 #include "stcsyntaxhighlighter.h"
+#include <QRegularExpression>
 
 STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
     : QSyntaxHighlighter(parent)
 {
-    // Formatowanie dla tagów – jak .tag
+    // Styl dla samych tagów: [b], [/b] — odpowiada klasie .tag w CSS
     QTextCharFormat tagFormat;
     tagFormat.setForeground(Qt::gray);
     tagFormat.setFontPointSize(8);
-    rules.append({ QRegularExpression("\\[/?\\w+(=[^\\]]+)?\\]"), tagFormat });
+    rules.append({ QRegularExpression(R"(\[/?\w+(=[^\]]+)?\])"), tagFormat });
 
-    // --- dodajemy blokowe tagi z formatowaniem z CSS ---
-
-    // h1
+    // Dodanie stylów zgodnych z CSS
     addBlockStyle("h1", QColor("#a33"), true, 20);
     addBlockStyle("h2", QColor("#a33"), true, 17);
     addBlockStyle("h3", QColor("#a33"), false, 14);
     addBlockStyle("h4", QColor("#a33"), false, 11);
 
-    // tip
     addBlockStyle("tip", Qt::white, false, -1, QColor("darkgreen"));
-
-    // warning
     addBlockStyle("warning", Qt::white, false, -1, QColor("red"));
-
-    // cytat
     addBlockStyle("cytat", Qt::black, false, -1, QColor("orange"));
 
-    // pkt – nie ma stylu w CSS, można pominąć lub nadać własny
-
-    // code
     addBlockStyle("code", QColor("yellow"), false, -1, QColor("black"), "monospace");
-
-    // cpp
     addBlockStyle("cpp", QColor("black"), false, -1, QColor("lightblue"), "monospace");
-
-    // py
     addBlockStyle("py", QColor("black"), false, -1, QColor("brown"), "monospace");
 
-    // a (href)
+    addBlockStyle("b", QColor::Invalid, true);
     addBlockStyle("href", QColor("lightblue"), false);
 }
 
 void STCSyntaxHighlighter::highlightBlock(const QString &text)
 {
-    // podświetlenie samych tagów
+    // Najpierw: pokoloruj same tagi (np. [b], [/b])
     for (const auto &rule : rules) {
         QRegularExpressionMatchIterator it = rule.pattern.globalMatch(text);
         while (it.hasNext()) {
@@ -53,15 +39,38 @@ void STCSyntaxHighlighter::highlightBlock(const QString &text)
         }
     }
 
-    // podświetlenie zawartości całych bloków
+    // Następnie: pokoloruj zawartość tagów
     for (const auto &styled : styledTags) {
-        QRegularExpression re(QString(R"(\[%1(?:=[^\]]*)?\](.*?)\[/%1\])").arg(styled.tag));
+        // Matchuje np. [b]tekst[/b], [tip]abc[/tip]
+        QRegularExpression re(QString(R"(\[(%1)(=[^\]]*)?\](.*?)\[/\1\])").arg(styled.tag));
         QRegularExpressionMatchIterator it = re.globalMatch(text);
+
         while (it.hasNext()) {
-            auto match = it.next();
-            int start = match.capturedStart();
-            int length = match.capturedLength();
-            setFormat(start, length, styled.format);
+            QRegularExpressionMatch match = it.next();
+
+            // Pozycje i długości
+            int fullStart = match.capturedStart(0);
+            int fullLen = match.capturedLength(0);
+
+            int tagOpenStart = match.capturedStart(0);
+            int tagOpenLen = match.capturedStart(3) - tagOpenStart;
+
+            int contentStart = match.capturedStart(3);
+            int contentLen = match.capturedLength(3);
+
+            int tagCloseStart = contentStart + contentLen;
+            int tagCloseLen = (fullStart + fullLen) - tagCloseStart;
+
+            // 1. Styl tagów [b], [/b]
+            QTextCharFormat tagFormat;
+            tagFormat.setForeground(Qt::gray);
+            tagFormat.setFontPointSize(8);
+
+            setFormat(tagOpenStart, tagOpenLen, tagFormat);
+            setFormat(tagCloseStart, tagCloseLen, tagFormat);
+
+            // 2. Styl środka
+            setFormat(contentStart, contentLen, styled.format);
         }
     }
 }
@@ -74,11 +83,16 @@ void STCSyntaxHighlighter::addBlockStyle(const QString &tag,
                                          const QString &fontFamily)
 {
     QTextCharFormat fmt;
-    if (foreground.isValid()) fmt.setForeground(foreground);
-    if (background.isValid()) fmt.setBackground(background);
-    if (bold) fmt.setFontWeight(QFont::Bold);
-    if (pointSize > 0) fmt.setFontPointSize(pointSize);
-    if (!fontFamily.isEmpty()) fmt.setFontFamily(fontFamily);
+    if (foreground.isValid())
+        fmt.setForeground(foreground);
+    if (background.isValid())
+        fmt.setBackground(background);
+    if (bold)
+        fmt.setFontWeight(QFont::Bold);
+    if (pointSize > 0)
+        fmt.setFontPointSize(pointSize);
+    if (!fontFamily.isEmpty())
+        fmt.setFontFamilies({fontFamily});
 
     styledTags.append({ tag, fmt });
 }

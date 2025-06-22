@@ -2,6 +2,8 @@
 
 #include <QSyntaxHighlighter>
 #include <QTextCharFormat>
+#include <QVector>
+#include <QString>
 #include <QRegularExpression>
 
 class STCSyntaxHighlighter : public QSyntaxHighlighter
