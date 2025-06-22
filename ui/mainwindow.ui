@@ -158,6 +158,12 @@
       <property name="text">
        <string>[&amp;b]</string>
       </property>
+      <property name="icon">
+       <iconset theme="QIcon::ThemeIcon::FormatTextBold"/>
+      </property>
+      <property name="shortcut">
+       <string>Ctrl+B</string>
+      </property>
      </widget>
     </item>
     <item row="8" column="1">

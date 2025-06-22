@@ -408,29 +408,6 @@ void MainWindow::onCheckTagsPressed()
     }
 }
 
-void MainWindow::putTextBackToCursorPosition(QTextCursor &cursor, QString divClass,
-                                             QString selectedText, QString textEnding, QString modifiedText)
-{
-    if (divClass.size())
-    {
-        QString html = "<div class=\"" + divClass + "\">"
-                       + modifiedText + "</div>";
-        cursor.insertHtml(html);
-        qDebug() << "HTML:" << html;
-    }
-    else
-        cursor.insertText(modifiedText);
-
-    if (0 == selectedText.size()) {
-        auto currentPosition = cursor.position();
-        auto positionMovedBeforeTextEnding = currentPosition - textEnding.size();
-        cursor.setPosition(positionMovedBeforeTextEnding);
-        ui->plainTextEdit->setTextCursor(cursor);
-    }
-
-    ui->plainTextEdit->setFocus();
-}
-
 void MainWindow::surroundSelectedTextWithTag(QString divClass, QString textBase, QString extraAttributes, bool closable)
 {
     auto cursor = ui->plainTextEdit->textCursor();
@@ -442,6 +419,32 @@ void MainWindow::surroundSelectedTextWithTag(QString divClass, QString textBase,
     QString modifiedText = textOpening + selectedText + textEnding;
 
     putTextBackToCursorPosition(cursor, divClass, selectedText, textEnding, modifiedText);
+}
+
+void MainWindow::putTextBackToCursorPosition(QTextCursor &cursor, QString divClass,
+                                             QString selectedText, QString textEnding, QString modifiedText)
+{
+    if (divClass.size())
+    {
+        QString safeModifiedText = modifiedText.toHtmlEscaped();
+
+        QString html = "<div class=\"" + divClass + "\">"
+                       + safeModifiedText + "</div>";
+        cursor.insertHtml(html);
+    }
+    else
+    {
+        cursor.insertText(modifiedText);
+    }
+
+    if (0 == selectedText.size()) {
+        auto currentPosition = cursor.position();
+        auto positionMovedBeforeTextEnding = currentPosition - textEnding.size();
+        cursor.setPosition(positionMovedBeforeTextEnding);
+        ui->plainTextEdit->setTextCursor(cursor);
+    }
+
+    ui->plainTextEdit->setFocus();
 }
 
 void MainWindow::surroundSelectedTextWithAHrefTag()

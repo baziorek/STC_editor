@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
  * 2. Maybe tags gray, normal text black, or tags smaller?
  * 3. Add syntax highlighter:
  * https://doc.qt.io/qt-6.2/qtwidgets-richtext-syntaxhighlighter-example.html
- * 4. Skocz do linii
+ * 4. ALT + <- lub ALT + -> umożliwiające skakanie po miejscach w kodzie - wstecz i dalej
  * 5. Ctrl + F, Ctrl + R
  * 6. Add checking: if all tags are closed
  * 7. *Images preview
@@ -41,8 +41,6 @@ int main(int argc, char *argv[])
  * 10. Syntax highlinkk of Cpp & python: QCXXHighlighter https://github.com/Megaxela/QCodeEditor (MIT licence)
  * 11. Listen external changes of file
  * 12. Obrazki na serwerze - podmiana prefixów w linkach
- * 13. Jak jest jakiś tekst napisany od zera (bez wskazania pliku) to chyba dobrze byłoby zapytać użytkownika czy chce wyjść niezapisując?
- * 14. Śledzenie TODOsów
- * 15. Zakładki na miejsca w kodzie
- * 16. ALT + <- lub ALT + -> umożliwiające skakanie po miejscach w kodzie
+ * 13. Śledzenie TODOsów
+ * 14. Zakładki na miejsca w kodzie
  **/
