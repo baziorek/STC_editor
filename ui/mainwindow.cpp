@@ -364,7 +364,7 @@ bool MainWindow::onSavePressed()
     {
         QFile outputFile(outputFileName);
         outputFile.open(QIODeviceBase::WriteOnly);
-        if (outputFile.write(ui->plainTextEdit->toPlainText().toLatin1()) < 0)
+        if (outputFile.write(ui->plainTextEdit->toPlainText().toUtf8()) < 0)
         {
             return false;
         }
