@@ -1,6 +1,8 @@
 #include "stcsyntaxhighlighter.h"
 #include <QRegularExpression>
 
+#warning "Chat helped me with the code, but it requires refactoring"
+// TODO: Chat helped me with the code, but it requires refactoring
 STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
     : QSyntaxHighlighter(parent)
 {
@@ -30,25 +32,14 @@ STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
 
 void STCSyntaxHighlighter::highlightBlock(const QString &text)
 {
-    // Najpierw: pokoloruj same tagi (np. [b], [/b])
-    for (const auto &rule : rules) {
-        QRegularExpressionMatchIterator it = rule.pattern.globalMatch(text);
-        while (it.hasNext()) {
-            auto match = it.next();
-            setFormat(match.capturedStart(), match.capturedLength(), rule.format);
-        }
-    }
-
-    // Następnie: pokoloruj zawartość tagów
+    // 1. Stylizacja pełnych tagów z zawartością, np. [b]tekst[/b]
     for (const auto &styled : styledTags) {
-        // Matchuje np. [b]tekst[/b], [tip]abc[/tip]
         QRegularExpression re(QString(R"(\[(%1)(=[^\]]*)?\](.*?)\[/\1\])").arg(styled.tag));
         QRegularExpressionMatchIterator it = re.globalMatch(text);
 
         while (it.hasNext()) {
             QRegularExpressionMatch match = it.next();
 
-            // Pozycje i długości
             int fullStart = match.capturedStart(0);
             int fullLen = match.capturedLength(0);
 
@@ -61,7 +52,7 @@ void STCSyntaxHighlighter::highlightBlock(const QString &text)
             int tagCloseStart = contentStart + contentLen;
             int tagCloseLen = (fullStart + fullLen) - tagCloseStart;
 
-            // 1. Styl tagów [b], [/b]
+            // Styl tagów
             QTextCharFormat tagFormat;
             tagFormat.setForeground(Qt::gray);
             tagFormat.setFontPointSize(8);
@@ -69,8 +60,66 @@ void STCSyntaxHighlighter::highlightBlock(const QString &text)
             setFormat(tagOpenStart, tagOpenLen, tagFormat);
             setFormat(tagCloseStart, tagCloseLen, tagFormat);
 
-            // 2. Styl środka
+            // Styl środka
             setFormat(contentStart, contentLen, styled.format);
+        }
+    }
+
+    // 2. Stylizacja tagów z atrybutami, np. [a href="..." name="..."]
+    QRegularExpression tagWithAttrs(R"(\[(\w+)((?:\s+\w+(="[^"]*")?)*)\s*\])");
+    QRegularExpressionMatchIterator it = tagWithAttrs.globalMatch(text);
+
+    while (it.hasNext()) {
+        QRegularExpressionMatch match = it.next();
+
+        int tagStart = match.capturedStart(0);
+        int tagLen = match.capturedLength(0);
+        int attrStart = match.capturedStart(2);
+        QString attrText = match.captured(2);
+
+        // Styl bazowy dla tagu
+        QTextCharFormat tagFormat;
+        tagFormat.setForeground(Qt::gray);
+        tagFormat.setFontPointSize(8);
+        setFormat(tagStart, tagLen, tagFormat); // domyślnie wszystko szare
+
+        // Dopasowanie poszczególnych atrybutów
+        QRegularExpression attrRe(R"attr((\w+)(="([^"]*)")?)attr");
+        QRegularExpressionMatchIterator attrIt = attrRe.globalMatch(attrText);
+
+        while (attrIt.hasNext()) {
+            QRegularExpressionMatch amatch = attrIt.next();
+
+            int keyStart = attrStart + amatch.capturedStart(1);
+            int keyLen = amatch.capturedLength(1);
+
+            int eqQuoteStart = attrStart + amatch.capturedStart(2);
+            int eqQuoteLen = amatch.capturedLength(2);
+
+            int valStart = attrStart + amatch.capturedStart(3);
+            int valLen = amatch.capturedLength(3);
+
+            // 2.1: Nazwa atrybutu i =" — szare, jak tag
+            if (eqQuoteLen > 0)
+                setFormat(keyStart, eqQuoteStart + eqQuoteLen - keyStart, tagFormat);
+            else
+                setFormat(keyStart, keyLen, tagFormat); // np. [pkt ext]
+
+            // 2.2: Wartość — niebieska
+            if (valLen > 0) {
+                QTextCharFormat valFormat;
+                valFormat.setForeground(QColor("#0033cc")); // linkowy niebieski
+                setFormat(valStart, valLen, valFormat);
+            }
+        }
+    }
+
+    // 3. Stylizacja samych tagów (fallback – np. [b], [/b], bez parowania)
+    for (const auto &rule : rules) {
+        QRegularExpressionMatchIterator ruleIt = rule.pattern.globalMatch(text);
+        while (ruleIt.hasNext()) {
+            auto match = ruleIt.next();
+            setFormat(match.capturedStart(), match.capturedLength(), rule.format);
         }
     }
 }
