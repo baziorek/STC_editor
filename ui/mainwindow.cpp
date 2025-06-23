@@ -232,7 +232,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    if (closeApplicationReturningIfClosed())
+    if (operationWhichDiscardsChangesRequestedReturningIfDiscarded())
     {
         QWidget::closeEvent(event);
     }
@@ -242,7 +242,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     }
 }
 
-bool MainWindow::closeApplicationReturningIfClosed()
+bool MainWindow::operationWhichDiscardsChangesRequestedReturningIfDiscarded()
 {
     if (!ui->plainTextEdit->noUnsavedChanges())
     {
@@ -270,9 +270,18 @@ bool MainWindow::closeApplicationReturningIfClosed()
             ui->plainTextEdit->restoreStateWhichDoesNotRequireSaving(/*discardChanges=*/true);
         }
     }
-    close();
-    qApp->quit();
     return true;
+}
+
+bool MainWindow::closeApplicationReturningIfClosed()
+{
+    if (operationWhichDiscardsChangesRequestedReturningIfDiscarded())
+    {
+        close();
+        qApp->quit();
+        return true;
+    }
+    return false;
 }
 
 void MainWindow::onUpdateContextRequested()
@@ -339,12 +348,17 @@ void MainWindow::onContextTableClicked(int row, int)
 bool MainWindow::onSaveAsPressed()
 {
     const auto fileName = chooseFileWithDialog(this, QFileDialog::AcceptSave);
+    return saveEntireContent2File(fileName);
+}
+
+bool MainWindow::saveEntireContent2File(QString fileName)
+{
     if (!fileName.isEmpty())
     {
         QFile outputFile(fileName);
         outputFile.open(QIODeviceBase::WriteOnly);
         ui->plainTextEdit->setFileName(fileName);
-        return outputFile.write(ui->plainTextEdit->toPlainText().toLatin1()) > -1;
+        return outputFile.write(ui->plainTextEdit->toPlainText().toUtf8()) > -1;
     }
     return false;
 }
@@ -362,19 +376,17 @@ bool MainWindow::onSavePressed()
     }
     else
     {
-        QFile outputFile(outputFileName);
-        outputFile.open(QIODeviceBase::WriteOnly);
-        if (outputFile.write(ui->plainTextEdit->toPlainText().toUtf8()) < 0)
-        {
-            return false;
-        }
-        outputFile.close();
-        return true;
+        return saveEntireContent2File(outputFileName);
     }
 }
 
 void MainWindow::onOpenPressed()
 {
+    if (! operationWhichDiscardsChangesRequestedReturningIfDiscarded())
+    {
+        return;
+    }
+
     const auto fileName = chooseFileWithDialog(this, QFileDialog::AcceptOpen).trimmed();
     QFile file(fileName);
     if (file.exists())

@@ -44,6 +44,8 @@ private: // methods
     void connectShortcuts();
     void connectShortcutsFromCodeWidget();
     bool closeApplicationReturningIfClosed();
+    bool operationWhichDiscardsChangesRequestedReturningIfDiscarded();
+    bool saveEntireContent2File(QString fileName);
 
 private: // members
     Ui::MainWindow *ui;
