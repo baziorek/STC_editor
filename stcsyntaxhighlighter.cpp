@@ -65,7 +65,41 @@ void STCSyntaxHighlighter::highlightBlock(const QString &text)
         }
     }
 
-    // 2. Stylizacja tagów z atrybutami, np. [a href="..." name="..."]
+    // 2. Stylizacja [div class="tip"]...[/div] lub [div class="uwaga"]...
+    // QRegularExpression divRe(R"(\[div\s+class="(tip|uwaga)"\](.*?)\[/div\])");
+    QRegularExpression divRe(R"divtag(\[div\s+class="(tip|uwaga)"\](.*?)\[/div\])divtag");
+    QRegularExpressionMatchIterator divIt = divRe.globalMatch(text);
+
+    while (divIt.hasNext()) {
+        QRegularExpressionMatch match = divIt.next();
+
+        const QString divClass = match.captured(1);
+        int fullStart = match.capturedStart(0);
+        int fullLen = match.capturedLength(0);
+
+        int contentStart = match.capturedStart(2);
+        int contentLen = match.capturedLength(2);
+
+        // Styl wspólny
+        QTextCharFormat fmt;
+        fmt.setFontItalic(true);
+
+        if (divClass == "tip")
+            fmt.setBackground(QColor("#229922"));  // zieleń
+        else if (divClass == "uwaga")
+            fmt.setBackground(QColor("#ff7777"));  // jasna czerwień
+
+        setFormat(fullStart, fullLen, fmt);  // całość: tag + zawartość
+
+        // Dodatkowo: tag na szaro
+        QTextCharFormat tagFmt;
+        tagFmt.setForeground(Qt::gray);
+        tagFmt.setFontPointSize(8);
+        setFormat(fullStart, contentStart - fullStart, tagFmt);  // otwierający
+        setFormat(contentStart + contentLen, fullStart + fullLen - (contentStart + contentLen), tagFmt);  // zamykający
+    }
+
+    // 3. Stylizacja tagów z atrybutami, np. [a href="..."]
     QRegularExpression tagWithAttrs(R"(\[(\w+)((?:\s+\w+(="[^"]*")?)*)\s*\])");
     QRegularExpressionMatchIterator it = tagWithAttrs.globalMatch(text);
 
@@ -77,13 +111,12 @@ void STCSyntaxHighlighter::highlightBlock(const QString &text)
         int attrStart = match.capturedStart(2);
         QString attrText = match.captured(2);
 
-        // Styl bazowy dla tagu
         QTextCharFormat tagFormat;
         tagFormat.setForeground(Qt::gray);
         tagFormat.setFontPointSize(8);
-        setFormat(tagStart, tagLen, tagFormat); // domyślnie wszystko szare
+        setFormat(tagStart, tagLen, tagFormat);
 
-        // Dopasowanie poszczególnych atrybutów
+        // Atrybuty np. href="link"
         QRegularExpression attrRe(R"attr((\w+)(="([^"]*)")?)attr");
         QRegularExpressionMatchIterator attrIt = attrRe.globalMatch(attrText);
 
@@ -99,30 +132,33 @@ void STCSyntaxHighlighter::highlightBlock(const QString &text)
             int valStart = attrStart + amatch.capturedStart(3);
             int valLen = amatch.capturedLength(3);
 
-            // 2.1: Nazwa atrybutu i =" — szare, jak tag
+            // Nazwa + =" – szare
             if (eqQuoteLen > 0)
                 setFormat(keyStart, eqQuoteStart + eqQuoteLen - keyStart, tagFormat);
             else
-                setFormat(keyStart, keyLen, tagFormat); // np. [pkt ext]
+                setFormat(keyStart, keyLen, tagFormat);
 
-            // 2.2: Wartość — niebieska
+            // Wartość – niebieska
             if (valLen > 0) {
                 QTextCharFormat valFormat;
-                valFormat.setForeground(QColor("#0033cc")); // linkowy niebieski
+                valFormat.setForeground(QColor("#0033cc"));
                 setFormat(valStart, valLen, valFormat);
             }
         }
     }
 
-    // 3. Stylizacja samych tagów (fallback – np. [b], [/b], bez parowania)
-    for (const auto &rule : rules) {
-        QRegularExpressionMatchIterator ruleIt = rule.pattern.globalMatch(text);
-        while (ruleIt.hasNext()) {
-            auto match = ruleIt.next();
-            setFormat(match.capturedStart(), match.capturedLength(), rule.format);
+    // 4. Fallback – stylizacja luźnych tagów [xyz] (ale tylko jeśli linia nie zawiera kodu C++)
+    if (!text.contains(QRegularExpression(R"(\b(int|char|return|#include|->|::|new|delete|using)\b)"))) {
+        for (const auto &rule : rules) {
+            QRegularExpressionMatchIterator ruleIt = rule.pattern.globalMatch(text);
+            while (ruleIt.hasNext()) {
+                auto match = ruleIt.next();
+                setFormat(match.capturedStart(), match.capturedLength(), rule.format);
+            }
         }
     }
 }
+
 
 void STCSyntaxHighlighter::addBlockStyle(const QString &tag,
                                          QColor foreground,
