@@ -72,12 +72,13 @@ void CodeEditor::go2LineRequested(int lineNumber)
     QTextBlock block = document()->findBlockByLineNumber(lineNumber - 1); // numeration from 0
     if (! block.isValid())
     {
+        qDebug() << "Invalid block for line" << lineNumber;
         return;
     }
 
     QTextCursor cursor(block);
     setTextCursor(cursor);
-    ensureCursorVisible();
+    centerCursor();
     setFocus();
 }
 
