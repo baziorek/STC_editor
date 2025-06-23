@@ -23,6 +23,8 @@ public slots:
     void currentLineChanged(int currentLineNumber);
     void onGoToLinePressed();
 
+    void focusInEvent(QFocusEvent *event) override;
+
 private:
     Ui::GoToLineWidget *ui;
 };

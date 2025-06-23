@@ -78,6 +78,7 @@ void CodeEditor::go2LineRequested(int lineNumber)
     QTextCursor cursor(block);
     setTextCursor(cursor);
     ensureCursorVisible();
+    setFocus();
 }
 
 void CodeEditor::updateLineNumberAreaWidth(int /* newBlockCount */)

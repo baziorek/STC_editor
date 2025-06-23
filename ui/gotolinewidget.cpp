@@ -1,6 +1,8 @@
 #include <QLineEdit>
+#include <QFocusEvent>
 #include "gotolinewidget.h"
 #include "ui_gotolinewidget.h"
+
 
 GoToLineWidget::GoToLineWidget(QWidget *parent)
     : QGroupBox(parent)
@@ -37,4 +39,14 @@ void GoToLineWidget::onGoToLinePressed()
 {
     auto lineNumber2Jump = ui->lineNumberSpinBox->value();
     emit onGoToLineRequested(lineNumber2Jump);
+}
+
+void GoToLineWidget::focusInEvent(QFocusEvent *event)
+{
+    if (event->gotFocus())
+    {
+        ui->lineNumberSpinBox->setFocus();
+        ui->lineNumberSpinBox->selectAll();
+    }
+    QWidget::focusInEvent(event);
 }
