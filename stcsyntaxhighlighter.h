@@ -28,10 +28,17 @@ private:
     {
         QString tag;
         QTextCharFormat format;
+
+        bool operator==(const StyledTag &other) const
+        {
+            return tag == other.tag;
+        }
     };
 
     QVector<Rule> rules;
     QVector<StyledTag> styledTags;
+
+    QMap<QString, StyledTag> styledTagsMap;
 
     void addBlockStyle(const QString &tag,
                        QColor foreground = Qt::black,

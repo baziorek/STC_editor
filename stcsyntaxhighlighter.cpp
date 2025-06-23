@@ -32,6 +32,53 @@ STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
 
 void STCSyntaxHighlighter::highlightBlock(const QString &text)
 {
+    // Multilinijkowy kod: [cpp]...[/cpp], [code]...[/code], [py]...[/py]
+    static const QMap<QString, QTextCharFormat> codeBlockFormats = {
+        { "cpp", styledTagsMap.value("cpp").format },
+        { "code", styledTagsMap.value("code").format },
+        { "py", styledTagsMap.value("py").format }
+    };
+
+    // 1. Czy aktualny blok rozpoczyna się od znacznika?
+    QRegularExpression openTagRe(QStringLiteral("^\\[(cpp|code|py)\\]"));
+    QRegularExpression closeTagRe(QStringLiteral("\\[/\\w+\\]"));
+
+    // Jeśli jesteśmy w środku bloku kodu (ustawionym wcześniej)
+    QString blockType;
+    if (previousBlockState() > 0) {
+        blockType = styledTags[previousBlockState() - 1].tag;
+    }
+
+    bool blockContinues = false;
+    if (!blockType.isEmpty()) {
+        // Stylizuj cały blok jako kod
+        auto fmt = codeBlockFormats.value(blockType);
+        setFormat(0, text.length(), fmt);
+
+        // Czy kończy się tu blok?
+        if (text.contains(QRegularExpression(QStringLiteral("\\[/%1\\]").arg(blockType)))) {
+            setCurrentBlockState(-1);  // reset
+        } else {
+            setCurrentBlockState(previousBlockState());
+            return;  // nie przetwarzamy dalej
+        }
+    } else {
+        // Czy to otwierający tag?
+        QRegularExpressionMatch match = openTagRe.match(text);
+        if (match.hasMatch()) {
+            blockType = match.captured(1);
+            if (styledTagsMap.contains(blockType)) {
+                int tagIndex = styledTags.indexOf(styledTagsMap.value(blockType));
+                setCurrentBlockState(tagIndex + 1);
+
+                // NOWOŚĆ: kolorujemy zawartość za tagiem
+                int tagEnd = match.capturedEnd(0);
+                QTextCharFormat fmt = styledTagsMap.value(blockType).format;
+                setFormat(tagEnd, text.length() - tagEnd, fmt);
+            }
+        }
+    }
+
     QVector<QPair<int, int>> protectedRanges;
 
     // 1. Stylizacja div[class=tip/uwaga]
@@ -186,6 +233,9 @@ void STCSyntaxHighlighter::addBlockStyle(const QString &tag,
         fmt.setFontPointSize(pointSize);
     if (!fontFamily.isEmpty())
         fmt.setFontFamilies({fontFamily});
+
+    styledTags.append({ tag, fmt });
+    styledTagsMap.insert(tag, { tag, fmt });
 
     styledTags.append({ tag, fmt });
 }
