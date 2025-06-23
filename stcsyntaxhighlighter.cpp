@@ -32,75 +32,41 @@ STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
 
 void STCSyntaxHighlighter::highlightBlock(const QString &text)
 {
-    // 1. Stylizacja pełnych tagów z zawartością, np. [b]tekst[/b]
-    for (const auto &styled : styledTags) {
-        QRegularExpression re(QString(R"(\[(%1)(=[^\]]*)?\](.*?)\[/\1\])").arg(styled.tag));
-        QRegularExpressionMatchIterator it = re.globalMatch(text);
+    QVector<QPair<int, int>> protectedRanges;
 
-        while (it.hasNext()) {
-            QRegularExpressionMatch match = it.next();
-
-            int fullStart = match.capturedStart(0);
-            int fullLen = match.capturedLength(0);
-
-            int tagOpenStart = match.capturedStart(0);
-            int tagOpenLen = match.capturedStart(3) - tagOpenStart;
-
-            int contentStart = match.capturedStart(3);
-            int contentLen = match.capturedLength(3);
-
-            int tagCloseStart = contentStart + contentLen;
-            int tagCloseLen = (fullStart + fullLen) - tagCloseStart;
-
-            // Styl tagów
-            QTextCharFormat tagFormat;
-            tagFormat.setForeground(Qt::gray);
-            tagFormat.setFontPointSize(8);
-
-            setFormat(tagOpenStart, tagOpenLen, tagFormat);
-            setFormat(tagCloseStart, tagCloseLen, tagFormat);
-
-            // Styl środka
-            setFormat(contentStart, contentLen, styled.format);
-        }
-    }
-
-    // 2. Stylizacja [div class="tip"]...[/div] lub [div class="uwaga"]...
-    // QRegularExpression divRe(R"(\[div\s+class="(tip|uwaga)"\](.*?)\[/div\])");
-    QRegularExpression divRe(R"divtag(\[div\s+class="(tip|uwaga)"\](.*?)\[/div\])divtag");
+    // 1. Stylizacja div[class=tip/uwaga]
+    QRegularExpression divRe(QStringLiteral("\\[div\\s+class=\"(tip|uwaga)\"\\](.*?)\\[/div\\]"));
     QRegularExpressionMatchIterator divIt = divRe.globalMatch(text);
 
     while (divIt.hasNext()) {
         QRegularExpressionMatch match = divIt.next();
-
-        const QString divClass = match.captured(1);
+        QString divClass = match.captured(1);
         int fullStart = match.capturedStart(0);
         int fullLen = match.capturedLength(0);
-
         int contentStart = match.capturedStart(2);
         int contentLen = match.capturedLength(2);
 
-        // Styl wspólny
-        QTextCharFormat fmt;
-        fmt.setFontItalic(true);
-
-        if (divClass == "tip")
-            fmt.setBackground(QColor("#229922"));  // zieleń
-        else if (divClass == "uwaga")
-            fmt.setBackground(QColor("#ff7777"));  // jasna czerwień
-
-        setFormat(fullStart, fullLen, fmt);  // całość: tag + zawartość
-
-        // Dodatkowo: tag na szaro
         QTextCharFormat tagFmt;
         tagFmt.setForeground(Qt::gray);
         tagFmt.setFontPointSize(8);
-        setFormat(fullStart, contentStart - fullStart, tagFmt);  // otwierający
+        setFormat(fullStart, contentStart - fullStart, tagFmt);  // tag otwierający
         setFormat(contentStart + contentLen, fullStart + fullLen - (contentStart + contentLen), tagFmt);  // zamykający
+
+        QTextCharFormat bgFmt;
+        bgFmt.setFontItalic(true);
+        if (divClass == "tip")
+            bgFmt.setBackground(QColor("#229922"));
+        else if (divClass == "uwaga")
+            bgFmt.setBackground(QColor("#ff7777"));
+
+        setFormat(contentStart, contentLen, bgFmt);
+
+        // Zapamiętaj zakres, żeby nie nadpisywać tła
+        protectedRanges.append({ contentStart, contentLen });
     }
 
-    // 3. Stylizacja tagów z atrybutami, np. [a href="..."]
-    QRegularExpression tagWithAttrs(R"(\[(\w+)((?:\s+\w+(="[^"]*")?)*)\s*\])");
+    // 2. Stylizacja tagów z atrybutami np. [a href="..."]
+    QRegularExpression tagWithAttrs(QStringLiteral("\\[(\\w+)((?:\\s+\\w+(=\"[^\"]*\")?)*)\\s*\\]"));
     QRegularExpressionMatchIterator it = tagWithAttrs.globalMatch(text);
 
     while (it.hasNext()) {
@@ -116,8 +82,7 @@ void STCSyntaxHighlighter::highlightBlock(const QString &text)
         tagFormat.setFontPointSize(8);
         setFormat(tagStart, tagLen, tagFormat);
 
-        // Atrybuty np. href="link"
-        QRegularExpression attrRe(R"attr((\w+)(="([^"]*)")?)attr");
+        QRegularExpression attrRe(QStringLiteral("(\\w+)(=\"([^\"]*)\")?"));
         QRegularExpressionMatchIterator attrIt = attrRe.globalMatch(attrText);
 
         while (attrIt.hasNext()) {
@@ -132,13 +97,11 @@ void STCSyntaxHighlighter::highlightBlock(const QString &text)
             int valStart = attrStart + amatch.capturedStart(3);
             int valLen = amatch.capturedLength(3);
 
-            // Nazwa + =" – szare
             if (eqQuoteLen > 0)
                 setFormat(keyStart, eqQuoteStart + eqQuoteLen - keyStart, tagFormat);
             else
                 setFormat(keyStart, keyLen, tagFormat);
 
-            // Wartość – niebieska
             if (valLen > 0) {
                 QTextCharFormat valFormat;
                 valFormat.setForeground(QColor("#0033cc"));
@@ -147,18 +110,63 @@ void STCSyntaxHighlighter::highlightBlock(const QString &text)
         }
     }
 
-    // 4. Fallback – stylizacja luźnych tagów [xyz] (ale tylko jeśli linia nie zawiera kodu C++)
+    // 3. Stylizacja pełnych tagów z zawartością, np. [b]tekst[/b]
+    for (const auto &styled : styledTags) {
+        QRegularExpression re(QStringLiteral("\\[(%1)(=[^\\]]*)?\\](.*?)\\[/\\1\\]").arg(styled.tag));
+        QRegularExpressionMatchIterator it = re.globalMatch(text);
+
+        while (it.hasNext()) {
+            QRegularExpressionMatch match = it.next();
+            int fullStart = match.capturedStart(0);
+            int fullLen = match.capturedLength(0);
+            int contentStart = match.capturedStart(3);
+            int contentLen = match.capturedLength(3);
+            int tagOpenStart = match.capturedStart(0);
+            int tagOpenLen = contentStart - tagOpenStart;
+            int tagCloseStart = contentStart + contentLen;
+            int tagCloseLen = fullStart + fullLen - tagCloseStart;
+
+            // Tag otwierający i zamykający — małe, szare
+            QTextCharFormat tagFmt;
+            tagFmt.setForeground(Qt::gray);
+            tagFmt.setFontPointSize(8);
+            setFormat(tagOpenStart, tagOpenLen, tagFmt);
+            setFormat(tagCloseStart, tagCloseLen, tagFmt);
+
+            // Treść — z zachowaniem tła (jeśli już jest)
+            QTextCharFormat finalFmt = styled.format;
+            QTextCharFormat current = format(contentStart);
+            if (current.hasProperty(QTextFormat::BackgroundBrush))
+                finalFmt.setBackground(current.background());
+
+            setFormat(contentStart, contentLen, finalFmt);
+        }
+    }
+
+    // 4. Fallback: stylizacja luźnych tagów, o ile to nie kod C++
     if (!text.contains(QRegularExpression(R"(\b(int|char|return|#include|->|::|new|delete|using)\b)"))) {
         for (const auto &rule : rules) {
             QRegularExpressionMatchIterator ruleIt = rule.pattern.globalMatch(text);
             while (ruleIt.hasNext()) {
                 auto match = ruleIt.next();
-                setFormat(match.capturedStart(), match.capturedLength(), rule.format);
+                int start = match.capturedStart();
+                int len = match.capturedLength();
+
+                // Pomijamy jeśli w protected zakresie
+                bool skip = false;
+                for (const auto& r : protectedRanges) {
+                    if (start >= r.first && start < r.first + r.second) {
+                        skip = true;
+                        break;
+                    }
+                }
+
+                if (!skip)
+                    setFormat(start, len, rule.format);
             }
         }
     }
 }
-
 
 void STCSyntaxHighlighter::addBlockStyle(const QString &tag,
                                          QColor foreground,
