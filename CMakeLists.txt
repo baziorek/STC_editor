@@ -25,6 +25,7 @@ set(PROJECT_SOURCES
     codeeditor.h codeeditor.cpp
     stcsyntaxhighlighter.h stcsyntaxhighlighter.cpp
     checkers/PairedTagsChecker.h checkers/PairedTagsChecker.cpp
+    types/stcTags.h types/stcTags.cpp
 )
 
 set(TEXT_FILES

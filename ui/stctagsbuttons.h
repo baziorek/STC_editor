@@ -1,29 +1,10 @@
 #pragma once
 #include <QFrame>
+#include "types/stcTags.h"
 
 namespace Ui {
 class StcTagsButtons;
 }
-
-enum class StdTags: std::uint8_t
-{
-    RUN,
-    CPP,
-    PY,
-    CODE,
-    DIV,
-    DIV_WARNING,
-    DIV_TIP,
-    A_HREF,
-    PKT,
-    CSV,
-    BOLD,
-    QUOTE,
-    H1,
-    H2,
-    H3,
-    H4
-};
 
 class StcTagsButtons : public QFrame
 {

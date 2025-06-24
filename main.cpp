@@ -19,6 +19,7 @@ void setUpIcon(QApplication& a)
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    a.setApplicationName("Cpp0x tags editor");
     setUpIcon(a);
 
     MainWindow w;

@@ -1,35 +1,36 @@
 #include "stcsyntaxhighlighter.h"
 #include <QRegularExpression>
+#include "types/stcTags.h"
 
-#warning "Chat helped me with the code, but it requires refactoring"
-// TODO: Chat helped me with the code, but it requires refactoring
+
 STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
     : QSyntaxHighlighter(parent)
 {
-    // Styl dla samych tagów: [b], [/b] — odpowiada klasie .tag w CSS
+    using enum StdTags;
+
     QTextCharFormat tagFormat;
     tagFormat.setForeground(Qt::gray);
     tagFormat.setFontPointSize(8);
     rules.append({ QRegularExpression(R"(\[/?\w+(=[^\]]+)?\])"), tagFormat });
 
-    // Dodanie stylów zgodnych z CSS
-    addBlockStyle("h1", QColor("#a33"), true, 20);
-    addBlockStyle("h2", QColor("#a33"), true, 17);
-    addBlockStyle("h3", QColor("#a33"), false, 14);
-    addBlockStyle("h4", QColor("#a33"), false, 11);
+    addBlockStyle(tagsClasses[H1], QColor("#a33"), true, 20);
+    addBlockStyle(tagsClasses[H2], QColor("#a33"), true, 17);
+    addBlockStyle(tagsClasses[H3], QColor("#a33"), false, 14);
+    addBlockStyle(tagsClasses[H4], QColor("#a33"), false, 11);
 
     addBlockStyle("tip", Qt::white, false, -1, QColor("darkgreen"));
     addBlockStyle("warning", Qt::white, false, -1, QColor("red"));
-    addBlockStyle("cytat", Qt::black, false, -1, QColor("orange"));
+    addBlockStyle(tagsClasses[QUOTE], Qt::black, false, -1, QColor("orange"));
 
-    addBlockStyle("code", QColor("yellow"), false, -1, QColor("black"), "monospace");
-    addBlockStyle("cpp", QColor("black"), false, -1, QColor("lightblue"), "monospace");
-    addBlockStyle("py", QColor("black"), false, -1, QColor("brown"), "monospace");
+    addBlockStyle(tagsClasses[CODE], QColor("yellow"), false, -1, QColor("black"), "monospace");
+    addBlockStyle(tagsClasses[CPP], QColor("black"), false, -1, QColor("lightblue"), "monospace");
+    addBlockStyle(tagsClasses[PY], QColor("black"), false, -1, QColor("brown"), "monospace");
 
-    addBlockStyle("b", QColor::Invalid, true);
+    addBlockStyle(tagsClasses[BOLD], QColor::Invalid, true);
     addBlockStyle("href", QColor("lightblue"), false);
 }
 
+#warning "Chat helped me with the code, but it requires refactoring and corrections"
 void STCSyntaxHighlighter::highlightBlock(const QString &text)
 {
     // Multilinijkowy kod: [cpp]...[/cpp], [code]...[/code], [py]...[/py]

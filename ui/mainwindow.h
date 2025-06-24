@@ -46,6 +46,7 @@ private: // methods
     bool closeApplicationReturningIfClosed();
     bool operationWhichDiscardsChangesRequestedReturningIfDiscarded();
     bool saveEntireContent2File(QString fileName);
+    void updateWindowTitle(QString fileName);
 
 private: // members
     Ui::MainWindow *ui;

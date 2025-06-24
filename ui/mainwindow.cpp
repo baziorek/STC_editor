@@ -71,31 +71,10 @@ QString chooseFileWithDialog(QWidget* parent, QFileDialog::AcceptMode acceptMode
     if (dialog.exec())
     {
         const QString fileName = dialog.selectedFiles()[0];
-        qDebug() << "Selected: " << fileName.toStdString();
         return fileName;
     }
     return {};
 }
-
-std::map<StdTags, QString> tagsClasses =
-{
-    make_pair(StdTags::RUN, "run"),
-    make_pair(StdTags::CPP, "cpp"),
-    make_pair(StdTags::PY, "py"),
-    make_pair(StdTags::CODE, "code"),
-    make_pair(StdTags::DIV, "div"),
-    make_pair(StdTags::DIV_WARNING, "div_warning"),
-    make_pair(StdTags::DIV_TIP, "div_tip"),
-    make_pair(StdTags::A_HREF, "a_href"),
-    make_pair(StdTags::PKT, "pkt"),
-    make_pair(StdTags::CSV, "csv"),
-    make_pair(StdTags::BOLD, "b"),
-    make_pair(StdTags::QUOTE, "cytat"),
-    make_pair(StdTags::H1, "h1"),
-    make_pair(StdTags::H2, "h2"),
-    make_pair(StdTags::H3, "h3"),
-    make_pair(StdTags::H4, "h4"),
-};
 } // namespace
 
 
@@ -355,12 +334,19 @@ bool MainWindow::saveEntireContent2File(QString fileName)
 {
     if (!fileName.isEmpty())
     {
+        updateWindowTitle(fileName);
         QFile outputFile(fileName);
         outputFile.open(QIODeviceBase::WriteOnly);
         ui->plainTextEdit->setFileName(fileName);
         return outputFile.write(ui->plainTextEdit->toPlainText().toUtf8()) > -1;
     }
     return false;
+}
+
+void MainWindow::updateWindowTitle(QString fileName)
+{
+    auto newFileName = qApp->applicationName() + ": " + fileName;
+    setWindowTitle(newFileName);
 }
 
 bool MainWindow::onSavePressed()
@@ -391,6 +377,8 @@ void MainWindow::onOpenPressed()
     QFile file(fileName);
     if (file.exists())
     {
+        updateWindowTitle(fileName);
+
         file.open(QFile::ReadOnly);
         const auto textFromFile = file.readAll();
         ui->plainTextEdit->setPlainText(textFromFile);
