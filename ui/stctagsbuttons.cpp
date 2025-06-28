@@ -44,6 +44,12 @@ StcTagsButtons::StcTagsButtons(QWidget *parent)
     connect(ui->button_italic, &QPushButton::pressed, [this] {
         emit buttonPressed(StdTags::ITALIC);
     });
+    connect(ui->button_stroke, &QPushButton::pressed, [this] {
+        emit buttonPressed(StdTags::STRUCK_OUT);
+    });
+    connect(ui->button_underlined, &QPushButton::pressed, [this] {
+        emit buttonPressed(StdTags::UNDERLINED);
+    });
     connect(ui->button_h1, &QPushButton::pressed, [this] {
         emit buttonPressed(StdTags::H1);
     });

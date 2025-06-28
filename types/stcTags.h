@@ -19,11 +19,13 @@ enum class StdTags: std::uint32_t
     CSV         = 0x200,
     BOLD        = 0x400,
     ITALIC      = 0x800,
-    QUOTE       = 0x1000,
-    H1          = 0x2000,
-    H2          = 0x4000,
-    H3          = 0x8000,
-    H4          = 0x10000
+    UNDERLINED  = 0x1000,
+    STRUCK_OUT  = 0x2000,
+    H1          = 0x4000,
+    H2          = 0x8000,
+    H3          = 0x10000,
+    H4          = 0x20000,
+    QUOTE       = 0x40000,
 };
 using StdTagsUnderlying = std::underlying_type_t<StdTags>;
 

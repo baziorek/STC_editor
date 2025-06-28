@@ -17,6 +17,8 @@ std::map<StdTags, QString> tagsClasses =
     make_pair(CSV, "csv"),
     make_pair(BOLD, "b"),
     make_pair(ITALIC, "i"),
+    make_pair(UNDERLINED, "u"),
+    make_pair(STRUCK_OUT, "s"),
     make_pair(QUOTE, "cytat"),
     make_pair(H1, "h1"),
     make_pair(H2, "h2"),

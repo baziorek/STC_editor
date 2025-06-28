@@ -135,6 +135,12 @@ void MainWindow::onStcTagsButtonPressed(StdTags stcTag)
     case StdTags::ITALIC:
         surroundSelectedTextWithTag(tagsClasses[StdTags::ITALIC], tagsClasses[StdTags::ITALIC]);
         break;
+    case StdTags::UNDERLINED:
+        surroundSelectedTextWithTag(tagsClasses[StdTags::UNDERLINED], tagsClasses[StdTags::UNDERLINED]);
+        break;
+    case StdTags::STRUCK_OUT:
+        surroundSelectedTextWithTag(tagsClasses[StdTags::STRUCK_OUT], tagsClasses[StdTags::STRUCK_OUT]);
+        break;
     case StdTags::H1:
         surroundSelectedTextWithTag(tagsClasses[StdTags::H1], tagsClasses[StdTags::H1]);
         break;

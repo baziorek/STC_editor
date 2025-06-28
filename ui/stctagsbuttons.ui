@@ -160,16 +160,17 @@
       <string>GroupBox</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
-      <item row="0" column="0">
-       <widget class="QPushButton" name="button_bold">
+      <item row="0" column="2">
+       <widget class="QPushButton" name="button_underlined">
+        <property name="styleSheet">
+         <string notr="true">font: 9pt &quot;Sans Serif&quot;;
+text-decoration: underline;</string>
+        </property>
         <property name="text">
-         <string>[&amp;b]</string>
+         <string>[&amp;u]</string>
         </property>
         <property name="icon">
-         <iconset theme="QIcon::ThemeIcon::FormatTextBold"/>
-        </property>
-        <property name="shortcut">
-         <string>Ctrl+B</string>
+         <iconset theme="QIcon::ThemeIcon::FormatTextUnderline"/>
         </property>
        </widget>
       </item>
@@ -183,6 +184,33 @@
         </property>
         <property name="icon">
          <iconset theme="QIcon::ThemeIcon::FormatTextItalic"/>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QPushButton" name="button_bold">
+        <property name="text">
+         <string>[&amp;b]</string>
+        </property>
+        <property name="icon">
+         <iconset theme="QIcon::ThemeIcon::FormatTextBold"/>
+        </property>
+        <property name="shortcut">
+         <string>Ctrl+B</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QPushButton" name="button_stroke">
+        <property name="styleSheet">
+         <string notr="true">font: 9pt &quot;Sans Serif&quot;;
+text-decoration: line-through;</string>
+        </property>
+        <property name="text">
+         <string>[s]</string>
+        </property>
+        <property name="icon">
+         <iconset theme="QIcon::ThemeIcon::FormatTextStrikethrough"/>
         </property>
        </widget>
       </item>

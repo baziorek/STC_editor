@@ -28,6 +28,8 @@ STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
 
     addBlockStyle(tagsClasses[BOLD], QColor::Invalid, std::to_underlying(BOLD));
     addBlockStyle(tagsClasses[ITALIC], QColor::Invalid, std::to_underlying(ITALIC));
+    addBlockStyle(tagsClasses[UNDERLINED], QColor::Invalid, std::to_underlying(UNDERLINED));
+    addBlockStyle(tagsClasses[STRUCK_OUT], QColor::Invalid, std::to_underlying(STRUCK_OUT));
     addBlockStyle("href", QColor("lightblue"), std::to_underlying(NONE));
 }
 
@@ -224,7 +226,6 @@ void STCSyntaxHighlighter::addBlockStyle(const QString &tag,
                                          QColor background,
                                          const QString &fontFamily)
 {
-    using stdTagsUnderlying = std::underlying_type<StdTags>();
     QTextCharFormat fmt;
     if (foreground.isValid())
         fmt.setForeground(foreground);
@@ -234,6 +235,10 @@ void STCSyntaxHighlighter::addBlockStyle(const QString &tag,
         fmt.setFontWeight(QFont::Bold);
     if (format & std::to_underlying(StdTags::ITALIC))
         fmt.setFontItalic(true);
+    if (format & std::to_underlying(StdTags::UNDERLINED))
+        fmt.setFontUnderline(true);
+    if (format & std::to_underlying(StdTags::STRUCK_OUT))
+        fmt.setFontStrikeOut(true);
     if (pointSize > 0)
         fmt.setFontPointSize(pointSize);
     if (!fontFamily.isEmpty())
