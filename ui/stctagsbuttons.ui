@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>208</width>
-    <height>574</height>
+    <height>653</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,6 +35,9 @@
      <layout class="QGridLayout" name="gridLayout_3">
       <item row="0" column="0">
        <widget class="QPushButton" name="button_cpp">
+        <property name="toolTip">
+         <string>cpp code</string>
+        </property>
         <property name="text">
          <string>[&amp;cpp]</string>
         </property>
@@ -42,6 +45,9 @@
       </item>
       <item row="0" column="1">
        <widget class="QPushButton" name="button_py">
+        <property name="toolTip">
+         <string>python code</string>
+        </property>
         <property name="text">
          <string>[p&amp;y]</string>
         </property>
@@ -49,6 +55,9 @@
       </item>
       <item row="2" column="0" colspan="2">
        <widget class="QPushButton" name="button_code">
+        <property name="toolTip">
+         <string>code (monospace text on black background)</string>
+        </property>
         <property name="text">
          <string>[c&amp;ode]</string>
         </property>
@@ -59,6 +68,9 @@
    </item>
    <item row="6" column="0">
     <widget class="QPushButton" name="button_pkt">
+     <property name="toolTip">
+      <string>Bullet list (you need to surround entire line with [run] to enable formatting</string>
+     </property>
      <property name="text">
       <string>[pkt &amp;ext]</string>
      </property>
@@ -70,7 +82,7 @@
    <item row="5" column="0">
     <widget class="QPushButton" name="button_href">
      <property name="toolTip">
-      <string>This works accorging to one of three scenarios: 1. If nothing selected - just put tags, 2. If selected text contains link, 3. If selected text does not contains link</string>
+      <string>Hyperlink: This works accorging to one of three scenarios: 1. If nothing selected - just put tags, 2. If selected text contains link, 3. If selected text does not contains link</string>
      </property>
      <property name="text">
       <string>[&amp;a href=]</string>
@@ -104,6 +116,9 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="toolTip">
+         <string>header h1 - greatest</string>
+        </property>
         <property name="text">
          <string>h&amp;1</string>
         </property>
@@ -111,6 +126,9 @@
       </item>
       <item row="0" column="1">
        <widget class="QPushButton" name="button_h2">
+        <property name="toolTip">
+         <string>header h2 - a little smaller than greatest</string>
+        </property>
         <property name="text">
          <string>h&amp;2</string>
         </property>
@@ -118,6 +136,9 @@
       </item>
       <item row="1" column="0">
        <widget class="QPushButton" name="button_h3">
+        <property name="toolTip">
+         <string>header h3 - medium</string>
+        </property>
         <property name="text">
          <string>h&amp;3</string>
         </property>
@@ -125,6 +146,9 @@
       </item>
       <item row="1" column="1">
        <widget class="QPushButton" name="button_h4">
+        <property name="toolTip">
+         <string>header h4 - bold text</string>
+        </property>
         <property name="text">
          <string>h&amp;4</string>
         </property>
@@ -141,25 +165,32 @@
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignCenter</set>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
-      <item>
-       <widget class="QPushButton" name="button_div_tip">
+     <layout class="QGridLayout" name="gridLayout_5">
+      <item row="2" column="1">
+       <widget class="QPushButton" name="button_cytat">
         <property name="text">
-         <string>[div &amp;tip]</string>
+         <string>[cytat]</string>
         </property>
        </widget>
       </item>
-      <item>
+      <item row="2" column="0">
+       <widget class="QPushButton" name="button_div">
+        <property name="text">
+         <string>[&amp;div]</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="2">
        <widget class="QPushButton" name="button_div_warning">
         <property name="text">
          <string>[div &amp;warning]</string>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QPushButton" name="button_cytat">
+      <item row="0" column="0" colspan="2">
+       <widget class="QPushButton" name="button_div_tip">
         <property name="text">
-         <string>[cytat]</string>
+         <string>[div &amp;tip]</string>
         </property>
        </widget>
       </item>
@@ -269,6 +300,9 @@ text-decoration: underline;</string>
       </item>
       <item row="3" column="0">
        <widget class="QPushButton" name="button_teleType">
+        <property name="toolTip">
+         <string>Tele type text (with monospace font)</string>
+        </property>
         <property name="text">
          <string>[tt]</string>
         </property>

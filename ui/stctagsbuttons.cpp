@@ -26,6 +26,9 @@ StcTagsButtons::StcTagsButtons(QWidget *parent)
     connect(ui->button_div_warning, &QPushButton::pressed, [this] {
         emit buttonPressed(StcTags::DIV_WARNING);
     });
+    connect(ui->button_div, &QPushButton::pressed, [this] {
+        emit buttonPressed(StcTags::DIV);
+    });
     connect(ui->button_cytat, &QPushButton::pressed, [this] {
         emit buttonPressed(StcTags::QUOTE);
     });

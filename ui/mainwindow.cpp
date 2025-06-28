@@ -111,6 +111,9 @@ void MainWindow::onStcTagsButtonPressed(StcTags stcTag)
     case StcTags::CODE:
         surroundSelectedTextWithTag(tagsClasses[StcTags::CODE], tagsClasses[StcTags::CODE]);
         break;
+    case StcTags::DIV:
+        surroundSelectedTextWithTag(tagsClasses[StcTags::DIV], tagsClasses[StcTags::DIV]);
+        break;
     case StcTags::DIV_TIP:
         surroundSelectedTextWithTag(tagsClasses[StcTags::DIV_TIP], tagsClasses[StcTags::DIV], R"( class="tip")");
         break;
@@ -420,7 +423,6 @@ void MainWindow::surroundSelectedTextWithTag(QString divClass, QString textBase,
 {
     auto cursor = ui->plainTextEdit->textCursor();
     QString selectedText = cursor.selectedText();
-    qDebug() << "Selected text size: " << selectedText.size();
 
     const auto textOpening = "[" + textBase + extraAttributes + "]";
     const auto textEnding = closable ? "[/" + textBase + "]" : "";
@@ -472,8 +474,6 @@ void MainWindow::surroundSelectedTextWithAHrefTag()
     }
 
     auto [link, restOfText] = extractLink(selectedText);
-    qDebug() << "Selected text size: " << selectedText.size() << ", link:" << link << ", rest of text:" << restOfText;
-
     QString modifiedText = beginOfTag + link;
     if (restOfText.size())
     {
