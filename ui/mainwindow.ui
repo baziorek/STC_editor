@@ -162,9 +162,17 @@
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuOpen_recent">
+     <property name="title">
+      <string>Open recent</string>
+     </property>
+     <addaction name="actionlast"/>
+    </widget>
     <addaction name="actionLoad_file"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_as"/>
+    <addaction name="menuOpen_recent"/>
+    <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -186,7 +194,7 @@
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionLoad_file">
    <property name="text">
-    <string>Load file</string>
+    <string>Open file</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -233,6 +241,21 @@
   <action name="actioncheck_if_tags_are_closed">
    <property name="text">
     <string>check if tags are closed</string>
+   </property>
+  </action>
+  <action name="actionOpen">
+   <property name="text">
+    <string>Open</string>
+   </property>
+  </action>
+  <action name="actionlast">
+   <property name="text">
+    <string>last</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
    </property>
   </action>
  </widget>
@@ -315,8 +338,8 @@
      <y>-1</y>
     </hint>
     <hint type="destinationlabel">
-     <x>399</x>
-     <y>866</y>
+     <x>408</x>
+     <y>937</y>
     </hint>
    </hints>
   </connection>
@@ -352,6 +375,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionExit</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onExitFromApplicationMenuPressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>484</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>menuOpen_recent</sender>
+   <signal>aboutToShow()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onRecentRecentFilesMenuOpened()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>70</x>
+     <y>37</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>484</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onSaveAsPressed()</slot>
@@ -359,5 +414,7 @@
   <slot>onFindCheckChanged(bool)</slot>
   <slot>onCheckTagsPressed()</slot>
   <slot>onSavePressed()</slot>
+  <slot>onExitFromApplicationMenuPressed()</slot>
+  <slot>onRecentRecentFilesMenuOpened()</slot>
  </slots>
 </ui>

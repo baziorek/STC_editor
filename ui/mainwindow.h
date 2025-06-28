@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QFileDialog>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -28,10 +29,13 @@ public slots:
     bool onSaveAsPressed();
     bool onSavePressed();
     void onOpenPressed();
+    void onExitFromApplicationMenuPressed();
 
     void onCheckTagsPressed();
 
     void onStcTagsButtonPressed(StcTags stcTag);
+
+    void onRecentRecentFilesMenuOpened();
 
 private: // methods
     void putTextBackToCursorPosition(QTextCursor &cursor, QString divClass, QString selectedText,
@@ -48,6 +52,17 @@ private: // methods
     bool saveEntireContent2File(QString fileName);
     void updateWindowTitle(QString fileName);
 
+    bool loadFileContentToEditor(QString fileName);
+
+    void loadSettings();
+    void saveSettings();
+    void updateRecentFiles(const QString& path);
+
+    QString chooseFileWithDialog(QFileDialog::AcceptMode acceptMode);
+
 private: // members
     Ui::MainWindow *ui;
+
+    QString lastDirectory;
+    QStringList recentFiles;
 };

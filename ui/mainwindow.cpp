@@ -4,6 +4,7 @@
 #include <QFileDialog>
 #include <QRegularExpression>
 #include <QMessageBox>
+#include <QSettings>
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "checkers/PairedTagsChecker.h"
@@ -58,28 +59,13 @@ void insertText2Cell(QTableWidget* table, int row, int column, const QString& te
         table->item(row, column)->setText(text);
     }
 };
-
-QString chooseFileWithDialog(QWidget* parent, QFileDialog::AcceptMode acceptMode)
-{
-    QFileDialog dialog(parent);
-    QStringList nameFilters;
-    nameFilters << QWidget::tr("Text file (*.txt)");
-    dialog.setNameFilters(nameFilters);
-    dialog.setAcceptMode(acceptMode);
-    dialog.setDefaultSuffix(".txt");
-
-    if (dialog.exec())
-    {
-        const QString fileName = dialog.selectedFiles()[0];
-        return fileName;
-    }
-    return {};
-}
 } // namespace
 
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
+    loadSettings();
+
     ui->setupUi(this);
     ui->findWidget->hide();
     ui->findWidget->setCodeEditor(ui->plainTextEdit);
@@ -171,6 +157,50 @@ void MainWindow::onStcTagsButtonPressed(StcTags stcTag)
     }
 }
 
+void MainWindow::onRecentRecentFilesMenuOpened()
+{
+    ui->menuOpen_recent->clear();
+
+    int shown = 0;
+    for (const QString& filePath : recentFiles)
+    {
+        if (!QFile::exists(filePath))
+            continue;
+
+        const QString fileName = QFileInfo(filePath).fileName();
+        QAction* recentAction = new QAction(fileName, ui->menuOpen_recent);
+        recentAction->setData(filePath);
+        recentAction->setToolTip(filePath);
+
+        connect(recentAction, &QAction::triggered, this, [this, filePath]() {
+            if (!QFile::exists(filePath)) {
+                QMessageBox::warning(this, "File not found", "Plik nie istnieje:\n" + filePath);
+                return;
+            }
+            updateRecentFiles(filePath);
+            onRecentRecentFilesMenuOpened();
+            loadFileContentToEditor(filePath);
+        });
+
+        ui->menuOpen_recent->addAction(recentAction);
+
+        if (++shown >= 5)
+            break;
+    }
+
+    if (shown > 0) {
+        ui->menuOpen_recent->addSeparator();
+
+        QAction* clearAction = new QAction(tr("Clear Recent Files"), ui->menuOpen_recent);
+        connect(clearAction, &QAction::triggered, this, [this]() {
+            recentFiles.clear();
+            onRecentRecentFilesMenuOpened();
+        });
+        ui->menuOpen_recent->addAction(clearAction);
+    }
+}
+#warning "TODO: Open recent is not working after we clean up this - new entries does not show up"
+
 [[deprecated("Instead of them mnemoniks from Qt are being used")]] void MainWindow::connectShortcutsFromCodeWidget()
 {
     connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_bold, [this]() {
@@ -215,6 +245,7 @@ void MainWindow::connectShortcuts()
 
 MainWindow::~MainWindow()
 {
+    saveSettings();
     delete ui;
 }
 
@@ -347,8 +378,34 @@ void MainWindow::onContextTableClicked(int row, int)
 
 bool MainWindow::onSaveAsPressed()
 {
-    const auto fileName = chooseFileWithDialog(this, QFileDialog::AcceptSave);
+    const auto fileName = chooseFileWithDialog(QFileDialog::AcceptSave);
     return saveEntireContent2File(fileName);
+}
+
+QString MainWindow::chooseFileWithDialog(QFileDialog::AcceptMode acceptMode)
+{
+    QFileDialog dialog(this);
+    QStringList nameFilters;
+    nameFilters << QWidget::tr("Text file (*.txt)");
+    dialog.setNameFilters(nameFilters);
+    dialog.setAcceptMode(acceptMode);
+    dialog.setDefaultSuffix(".txt");
+    if (! lastDirectory.isEmpty())
+    {
+        dialog.setDirectory(lastDirectory);
+    }
+
+    if (dialog.exec())
+    {
+        const QString fileName = dialog.selectedFiles()[0].trimmed();
+        if (! fileName.isEmpty())
+        {
+            lastDirectory = QFileInfo(fileName).absolutePath();
+            updateRecentFiles(fileName);
+        }
+        return fileName;
+    }
+    return {};
 }
 
 bool MainWindow::saveEntireContent2File(QString fileName)
@@ -394,7 +451,14 @@ void MainWindow::onOpenPressed()
         return;
     }
 
-    const auto fileName = chooseFileWithDialog(this, QFileDialog::AcceptOpen).trimmed();
+    const auto fileName = chooseFileWithDialog(QFileDialog::AcceptOpen).trimmed();
+    if (loadFileContentToEditor(fileName))
+    {
+        updateRecentFiles(fileName);
+    }
+}
+bool MainWindow::loadFileContentToEditor(QString fileName)
+{
     QFile file(fileName);
     if (file.exists())
     {
@@ -404,7 +468,15 @@ void MainWindow::onOpenPressed()
         const auto textFromFile = file.readAll();
         ui->plainTextEdit->setPlainText(textFromFile);
         ui->plainTextEdit->setFileName(fileName);
+        return true;
     }
+    return false;
+}
+
+void MainWindow::onExitFromApplicationMenuPressed()
+{
+#warning "Close event not implemented"
+    qDebug() << "Not implemented, TODO";
 }
 
 void MainWindow::onCheckTagsPressed()
@@ -482,3 +554,37 @@ void MainWindow::surroundSelectedTextWithAHrefTag()
     modifiedText += endOfTag;
     putTextBackToCursorPosition(cursor, "a", selectedText, "", modifiedText);
 }
+
+void MainWindow::loadSettings()
+{
+    QSettings settings;
+
+    restoreGeometry(settings.value("geometry").toByteArray());
+    restoreState(settings.value("windowState").toByteArray());
+
+    lastDirectory = settings.value("lastDirectory", QDir::homePath()).toString();
+    recentFiles = settings.value("recentFiles").toStringList();
+}
+
+void MainWindow::saveSettings()
+{
+    QSettings settings;
+
+    settings.setValue("geometry", saveGeometry());
+    settings.setValue("windowState", saveState());
+
+    settings.setValue("lastDirectory", lastDirectory);
+    settings.setValue("recentFiles", recentFiles);
+}
+
+void MainWindow::updateRecentFiles(const QString& path)
+{
+    constexpr int maxElementsInListOfLastElements = 5;
+    recentFiles.removeAll(path);   // remove duplicates duplikaty
+    recentFiles.prepend(path);     // add in the beginning
+    while (recentFiles.size() > maxElementsInListOfLastElements)
+    {
+        recentFiles.removeLast();  // remove too much elements
+    }
+}
+
