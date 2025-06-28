@@ -8,7 +8,7 @@ QT_END_NAMESPACE
 
 class QTextCursor;
 
-enum class StdTags: std::uint8_t;
+enum class StdTags: std::uint32_t;
 
 class MainWindow : public QMainWindow
 {

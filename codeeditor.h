@@ -32,7 +32,7 @@ public:
 
     auto linesCount() const
     {
-        return std::max(static_cast<decltype(blockCount())>(1), blockCount());
+        return std::max<decltype(blockCount())>(1, blockCount());
     }
 
     void keyPressEvent(QKeyEvent *event) override;

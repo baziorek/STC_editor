@@ -14,40 +14,40 @@
    <string>Frame</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="9" column="0">
-    <widget class="QPushButton" name="button_run">
+   <item row="7" column="0">
+    <widget class="QPushButton" name="button_csv">
      <property name="text">
-      <string>[&amp;run]</string>
+      <string>[cs&amp;v extended header]</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QGroupBox" name="groupBox_2">
+   <item row="0" column="0">
+    <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Div</string>
+      <string>Code</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignCenter</set>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
-      <item>
-       <widget class="QPushButton" name="button_div_tip">
+     <layout class="QGridLayout" name="gridLayout_3">
+      <item row="0" column="0">
+       <widget class="QPushButton" name="button_cpp">
         <property name="text">
-         <string>[div &amp;tip]</string>
+         <string>[&amp;cpp]</string>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QPushButton" name="button_div_warning">
+      <item row="0" column="1">
+       <widget class="QPushButton" name="button_py">
         <property name="text">
-         <string>[div &amp;warning]</string>
+         <string>[p&amp;y]</string>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QPushButton" name="button_cytat">
+      <item row="2" column="0" colspan="2">
+       <widget class="QPushButton" name="button_code">
         <property name="text">
-         <string>[cytat]</string>
+         <string>[c&amp;ode]</string>
         </property>
        </widget>
       </item>
@@ -55,6 +55,13 @@
     </widget>
    </item>
    <item row="6" column="0">
+    <widget class="QPushButton" name="button_pkt">
+     <property name="text">
+      <string>[pkt &amp;ext]</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
     <widget class="QPushButton" name="button_href">
      <property name="toolTip">
       <string>This works accorging to one of three scenarios: 1. If nothing selected - just put tags, 2. If selected text contains link, 3. If selected text does not contains link</string>
@@ -64,20 +71,14 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="0">
-    <widget class="QPushButton" name="button_bold">
+   <item row="8" column="0">
+    <widget class="QPushButton" name="button_run">
      <property name="text">
-      <string>[&amp;b]</string>
-     </property>
-     <property name="icon">
-      <iconset theme="QIcon::ThemeIcon::FormatTextBold"/>
-     </property>
-     <property name="shortcut">
-      <string>Ctrl+B</string>
+      <string>[&amp;run]</string>
      </property>
     </widget>
    </item>
-   <item row="10" column="0">
+   <item row="9" column="0">
     <widget class="QGroupBox" name="groupBox_3">
      <property name="title">
       <string/>
@@ -120,51 +121,72 @@
      </layout>
     </widget>
    </item>
-   <item row="8" column="0">
-    <widget class="QPushButton" name="button_csv">
-     <property name="text">
-      <string>[cs&amp;v extended header]</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QGroupBox" name="groupBox">
+   <item row="1" column="0">
+    <widget class="QGroupBox" name="groupBox_2">
      <property name="title">
-      <string>Code</string>
+      <string>Div</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignmentFlag::AlignCenter</set>
      </property>
-     <layout class="QGridLayout" name="gridLayout_3">
-      <item row="0" column="0">
-       <widget class="QPushButton" name="button_cpp">
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QPushButton" name="button_div_tip">
         <property name="text">
-         <string>[&amp;cpp]</string>
+         <string>[div &amp;tip]</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QPushButton" name="button_py">
+      <item>
+       <widget class="QPushButton" name="button_div_warning">
         <property name="text">
-         <string>[p&amp;y]</string>
+         <string>[div &amp;warning]</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0" colspan="2">
-       <widget class="QPushButton" name="button_code">
+      <item>
+       <widget class="QPushButton" name="button_cytat">
         <property name="text">
-         <string>[c&amp;ode]</string>
+         <string>[cytat]</string>
         </property>
        </widget>
       </item>
      </layout>
     </widget>
    </item>
-   <item row="7" column="0">
-    <widget class="QPushButton" name="button_pkt">
-     <property name="text">
-      <string>[pkt &amp;ext]</string>
+   <item row="2" column="0">
+    <widget class="QGroupBox" name="groupBox_4">
+     <property name="title">
+      <string>GroupBox</string>
      </property>
+     <layout class="QGridLayout" name="gridLayout_4">
+      <item row="0" column="0">
+       <widget class="QPushButton" name="button_bold">
+        <property name="text">
+         <string>[&amp;b]</string>
+        </property>
+        <property name="icon">
+         <iconset theme="QIcon::ThemeIcon::FormatTextBold"/>
+        </property>
+        <property name="shortcut">
+         <string>Ctrl+B</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QPushButton" name="button_italic">
+        <property name="styleSheet">
+         <string notr="true">font: italic 9pt &quot;Sans Serif&quot;;</string>
+        </property>
+        <property name="text">
+         <string>[&amp;i]</string>
+        </property>
+        <property name="icon">
+         <iconset theme="QIcon::ThemeIcon::FormatTextItalic"/>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>

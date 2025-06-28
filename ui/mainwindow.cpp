@@ -132,6 +132,9 @@ void MainWindow::onStcTagsButtonPressed(StdTags stcTag)
     case StdTags::BOLD:
         surroundSelectedTextWithTag(tagsClasses[StdTags::BOLD], tagsClasses[StdTags::BOLD]);
         break;
+    case StdTags::ITALIC:
+        surroundSelectedTextWithTag(tagsClasses[StdTags::ITALIC], tagsClasses[StdTags::ITALIC]);
+        break;
     case StdTags::H1:
         surroundSelectedTextWithTag(tagsClasses[StdTags::H1], tagsClasses[StdTags::H1]);
         break;
@@ -145,7 +148,7 @@ void MainWindow::onStcTagsButtonPressed(StdTags stcTag)
         surroundSelectedTextWithTag(tagsClasses[StdTags::H4], tagsClasses[StdTags::H4]);
         break;
     default:
-        qDebug() << "Unsupported option: " << std::to_underlying(stcTag);
+        qDebug() << __FILE__ << ": " << __LINE__ << ": Unsupported option: " << std::to_underlying(stcTag);
         break;
     }
 }

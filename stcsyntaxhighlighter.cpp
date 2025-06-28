@@ -13,21 +13,22 @@ STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
     tagFormat.setFontPointSize(8);
     rules.append({ QRegularExpression(R"(\[/?\w+(=[^\]]+)?\])"), tagFormat });
 
-    addBlockStyle(tagsClasses[H1], QColor("#a33"), true, 20);
-    addBlockStyle(tagsClasses[H2], QColor("#a33"), true, 17);
-    addBlockStyle(tagsClasses[H3], QColor("#a33"), false, 14);
-    addBlockStyle(tagsClasses[H4], QColor("#a33"), false, 11);
+    addBlockStyle(tagsClasses[H1], QColor("#a33"), std::to_underlying(BOLD), 20);
+    addBlockStyle(tagsClasses[H2], QColor("#a33"), std::to_underlying(BOLD), 17);
+    addBlockStyle(tagsClasses[H3], QColor("#a33"), std::to_underlying(NONE), 14);
+    addBlockStyle(tagsClasses[H4], QColor("#a33"), std::to_underlying(NONE), 11);
 
-    addBlockStyle("tip", Qt::white, false, -1, QColor("darkgreen"));
-    addBlockStyle("warning", Qt::white, false, -1, QColor("red"));
-    addBlockStyle(tagsClasses[QUOTE], Qt::black, false, -1, QColor("orange"));
+    addBlockStyle("tip", Qt::white, std::to_underlying(NONE), -1, QColor("darkgreen"));
+    addBlockStyle("warning", Qt::white, std::to_underlying(NONE), -1, QColor("red"));
+    addBlockStyle(tagsClasses[QUOTE], Qt::black, std::to_underlying(NONE), -1, QColor("orange"));
 
-    addBlockStyle(tagsClasses[CODE], QColor("yellow"), false, -1, QColor("black"), "monospace");
-    addBlockStyle(tagsClasses[CPP], QColor("black"), false, -1, QColor("lightblue"), "monospace");
-    addBlockStyle(tagsClasses[PY], QColor("black"), false, -1, QColor("brown"), "monospace");
+    addBlockStyle(tagsClasses[CODE], QColor("yellow"), std::to_underlying(NONE), -1, QColor("black"), "monospace");
+    addBlockStyle(tagsClasses[CPP], QColor("black"), std::to_underlying(NONE), -1, QColor("lightblue"), "monospace");
+    addBlockStyle(tagsClasses[PY], QColor("black"), std::to_underlying(NONE), -1, QColor("brown"), "monospace");
 
-    addBlockStyle(tagsClasses[BOLD], QColor::Invalid, true);
-    addBlockStyle("href", QColor("lightblue"), false);
+    addBlockStyle(tagsClasses[BOLD], QColor::Invalid, std::to_underlying(BOLD));
+    addBlockStyle(tagsClasses[ITALIC], QColor::Invalid, std::to_underlying(ITALIC));
+    addBlockStyle("href", QColor("lightblue"), std::to_underlying(NONE));
 }
 
 #warning "Chat helped me with the code, but it requires refactoring and corrections"
@@ -218,18 +219,21 @@ void STCSyntaxHighlighter::highlightBlock(const QString &text)
 
 void STCSyntaxHighlighter::addBlockStyle(const QString &tag,
                                          QColor foreground,
-                                         bool bold,
+                                         std::uint64_t format,
                                          int pointSize,
                                          QColor background,
                                          const QString &fontFamily)
 {
+    using stdTagsUnderlying = std::underlying_type<StdTags>();
     QTextCharFormat fmt;
     if (foreground.isValid())
         fmt.setForeground(foreground);
     if (background.isValid())
         fmt.setBackground(background);
-    if (bold)
+    if (format & std::to_underlying(StdTags::BOLD))
         fmt.setFontWeight(QFont::Bold);
+    if (format & std::to_underlying(StdTags::ITALIC))
+        fmt.setFontItalic(true);
     if (pointSize > 0)
         fmt.setFontPointSize(pointSize);
     if (!fontFamily.isEmpty())
