@@ -1,9 +1,9 @@
 #include "types/stcTags.h"
 using std::make_pair;
 
-using enum StdTags;
+using enum StcTags;
 
-std::map<StdTags, QString> tagsClasses =
+std::map<StcTags, QString> tagsClasses =
 {
     make_pair(RUN, "run"),
     make_pair(CPP, "cpp"),
@@ -24,4 +24,6 @@ std::map<StdTags, QString> tagsClasses =
     make_pair(H2, "h2"),
     make_pair(H3, "h3"),
     make_pair(H4, "h4"),
+    make_pair(SUBSCRIPT, "sub"),
+    make_pair(SUPSCRIPT, "sup"),
 };

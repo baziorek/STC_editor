@@ -8,7 +8,7 @@ QT_END_NAMESPACE
 
 class QTextCursor;
 
-enum class StdTags: std::uint32_t;
+enum class StcTags: std::uint32_t;
 
 class MainWindow : public QMainWindow
 {
@@ -31,7 +31,7 @@ public slots:
 
     void onCheckTagsPressed();
 
-    void onStcTagsButtonPressed(StdTags stcTag);
+    void onStcTagsButtonPressed(StcTags stcTag);
 
 private: // methods
     void putTextBackToCursorPosition(QTextCursor &cursor, QString divClass, QString selectedText,

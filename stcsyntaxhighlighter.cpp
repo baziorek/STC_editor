@@ -6,7 +6,7 @@
 STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
     : QSyntaxHighlighter(parent)
 {
-    using enum StdTags;
+    using enum StcTags;
 
     QTextCharFormat tagFormat;
     tagFormat.setForeground(Qt::gray);
@@ -231,14 +231,18 @@ void STCSyntaxHighlighter::addBlockStyle(const QString &tag,
         fmt.setForeground(foreground);
     if (background.isValid())
         fmt.setBackground(background);
-    if (format & std::to_underlying(StdTags::BOLD))
+    if (format & std::to_underlying(StcTags::BOLD))
         fmt.setFontWeight(QFont::Bold);
-    if (format & std::to_underlying(StdTags::ITALIC))
+    if (format & std::to_underlying(StcTags::ITALIC))
         fmt.setFontItalic(true);
-    if (format & std::to_underlying(StdTags::UNDERLINED))
+    if (format & std::to_underlying(StcTags::UNDERLINED))
         fmt.setFontUnderline(true);
-    if (format & std::to_underlying(StdTags::STRUCK_OUT))
+    if (format & std::to_underlying(StcTags::STRUCK_OUT))
         fmt.setFontStrikeOut(true);
+    if (format & std::to_underlying(StcTags::SUBSCRIPT))
+        fmt.setVerticalAlignment(QTextCharFormat::AlignSubScript); // probably it will not work until I use QTextEdit as base
+    if (format & std::to_underlying(StcTags::SUPSCRIPT))
+        fmt.setVerticalAlignment(QTextCharFormat::AlignSuperScript); // probably it will not work until I use QTextEdit as base
     if (pointSize > 0)
         fmt.setFontPointSize(pointSize);
     if (!fontFamily.isEmpty())

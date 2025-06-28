@@ -4,7 +4,7 @@
 #include <map>
 #include <QString>
 
-enum class StdTags: std::uint32_t
+enum class StcTags: std::uint32_t
 {
     NONE        = 0x00,
     RUN         = 0x01,
@@ -26,12 +26,14 @@ enum class StdTags: std::uint32_t
     H3          = 0x10000,
     H4          = 0x20000,
     QUOTE       = 0x40000,
+    SUBSCRIPT   = 0x80000,
+    SUPSCRIPT   = 0x100000,
 };
-using StdTagsUnderlying = std::underlying_type_t<StdTags>;
+using StdTagsUnderlying = std::underlying_type_t<StcTags>;
 
-inline bool isFlagEnabled(StdTagsUnderlying tags, StdTags flag)
+inline bool isFlagEnabled(StdTagsUnderlying tags, StcTags flag)
 {
     return std::to_underlying(flag) & tags;
 }
 
-extern std::map<StdTags, QString> tagsClasses;
+extern std::map<StcTags, QString> tagsClasses;

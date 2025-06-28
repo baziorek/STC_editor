@@ -95,63 +95,69 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connectShortcuts();
 }
 
-void MainWindow::onStcTagsButtonPressed(StdTags stcTag)
+void MainWindow::onStcTagsButtonPressed(StcTags stcTag)
 {
     switch (stcTag)
     {
-    case StdTags::RUN:
-        surroundSelectedTextWithTag(tagsClasses[StdTags::RUN], tagsClasses[StdTags::RUN]);
+    case StcTags::RUN:
+        surroundSelectedTextWithTag(tagsClasses[StcTags::RUN], tagsClasses[StcTags::RUN]);
         break;
-    case StdTags::CPP:
-        surroundSelectedTextWithTag(tagsClasses[StdTags::CPP], tagsClasses[StdTags::CPP]);
+    case StcTags::CPP:
+        surroundSelectedTextWithTag(tagsClasses[StcTags::CPP], tagsClasses[StcTags::CPP]);
         break;
-    case StdTags::PY:
-        surroundSelectedTextWithTag(tagsClasses[StdTags::PY], tagsClasses[StdTags::PY]);
+    case StcTags::PY:
+        surroundSelectedTextWithTag(tagsClasses[StcTags::PY], tagsClasses[StcTags::PY]);
         break;
-    case StdTags::CODE:
-        surroundSelectedTextWithTag(tagsClasses[StdTags::CODE], tagsClasses[StdTags::CODE]);
+    case StcTags::CODE:
+        surroundSelectedTextWithTag(tagsClasses[StcTags::CODE], tagsClasses[StcTags::CODE]);
         break;
-    case StdTags::DIV_TIP:
-        surroundSelectedTextWithTag(tagsClasses[StdTags::DIV_TIP], tagsClasses[StdTags::DIV], R"( class="tip")");
+    case StcTags::DIV_TIP:
+        surroundSelectedTextWithTag(tagsClasses[StcTags::DIV_TIP], tagsClasses[StcTags::DIV], R"( class="tip")");
         break;
-    case StdTags::DIV_WARNING:
-        surroundSelectedTextWithTag(tagsClasses[StdTags::DIV_WARNING], tagsClasses[StdTags::DIV], R"( class="uwaga")");
+    case StcTags::DIV_WARNING:
+        surroundSelectedTextWithTag(tagsClasses[StcTags::DIV_WARNING], tagsClasses[StcTags::DIV], R"( class="uwaga")");
         break;
-    case StdTags::QUOTE:
-        surroundSelectedTextWithTag(tagsClasses[StdTags::QUOTE], tagsClasses[StdTags::QUOTE]);
+    case StcTags::QUOTE:
+        surroundSelectedTextWithTag(tagsClasses[StcTags::QUOTE], tagsClasses[StcTags::QUOTE]);
         break;
-    case StdTags::A_HREF:
+    case StcTags::A_HREF:
         this->surroundSelectedTextWithAHrefTag();
         break;
-    case StdTags::PKT:
-        surroundSelectedTextWithTag(tagsClasses[StdTags::PKT], tagsClasses[StdTags::PKT], " ext");
+    case StcTags::PKT:
+        surroundSelectedTextWithTag(tagsClasses[StcTags::PKT], tagsClasses[StcTags::PKT], " ext");
         break;
-    case StdTags::CSV:
-        this->surroundSelectedTextWithTag(tagsClasses[StdTags::CSV], tagsClasses[StdTags::CSV], " extended header");
+    case StcTags::CSV:
+        this->surroundSelectedTextWithTag(tagsClasses[StcTags::CSV], tagsClasses[StcTags::CSV], " extended header");
         break;
-    case StdTags::BOLD:
-        surroundSelectedTextWithTag(tagsClasses[StdTags::BOLD], tagsClasses[StdTags::BOLD]);
+    case StcTags::BOLD:
+        surroundSelectedTextWithTag(tagsClasses[StcTags::BOLD], tagsClasses[StcTags::BOLD]);
         break;
-    case StdTags::ITALIC:
-        surroundSelectedTextWithTag(tagsClasses[StdTags::ITALIC], tagsClasses[StdTags::ITALIC]);
+    case StcTags::ITALIC:
+        surroundSelectedTextWithTag(tagsClasses[StcTags::ITALIC], tagsClasses[StcTags::ITALIC]);
         break;
-    case StdTags::UNDERLINED:
-        surroundSelectedTextWithTag(tagsClasses[StdTags::UNDERLINED], tagsClasses[StdTags::UNDERLINED]);
+    case StcTags::UNDERLINED:
+        surroundSelectedTextWithTag(tagsClasses[StcTags::UNDERLINED], tagsClasses[StcTags::UNDERLINED]);
         break;
-    case StdTags::STRUCK_OUT:
-        surroundSelectedTextWithTag(tagsClasses[StdTags::STRUCK_OUT], tagsClasses[StdTags::STRUCK_OUT]);
+    case StcTags::STRUCK_OUT:
+        surroundSelectedTextWithTag(tagsClasses[StcTags::STRUCK_OUT], tagsClasses[StcTags::STRUCK_OUT]);
         break;
-    case StdTags::H1:
-        surroundSelectedTextWithTag(tagsClasses[StdTags::H1], tagsClasses[StdTags::H1]);
+    case StcTags::H1:
+        surroundSelectedTextWithTag(tagsClasses[StcTags::H1], tagsClasses[StcTags::H1]);
         break;
-    case StdTags::H2:
-        surroundSelectedTextWithTag(tagsClasses[StdTags::H2], tagsClasses[StdTags::H2]);
+    case StcTags::H2:
+        surroundSelectedTextWithTag(tagsClasses[StcTags::H2], tagsClasses[StcTags::H2]);
         break;
-    case StdTags::H3:
-        surroundSelectedTextWithTag(tagsClasses[StdTags::H3], tagsClasses[StdTags::H3]);
+    case StcTags::H3:
+        surroundSelectedTextWithTag(tagsClasses[StcTags::H3], tagsClasses[StcTags::H3]);
         break;
-    case StdTags::H4:
-        surroundSelectedTextWithTag(tagsClasses[StdTags::H4], tagsClasses[StdTags::H4]);
+    case StcTags::H4:
+        surroundSelectedTextWithTag(tagsClasses[StcTags::H4], tagsClasses[StcTags::H4]);
+        break;
+    case StcTags::SUBSCRIPT:
+        surroundSelectedTextWithTag(tagsClasses[StcTags::SUBSCRIPT], tagsClasses[StcTags::SUBSCRIPT]);
+        break;
+    case StcTags::SUPSCRIPT:
+        surroundSelectedTextWithTag(tagsClasses[StcTags::SUPSCRIPT], tagsClasses[StcTags::SUPSCRIPT]);
         break;
     default:
         qDebug() << __FILE__ << ": " << __LINE__ << ": Unsupported option: " << std::to_underlying(stcTag);
@@ -162,16 +168,16 @@ void MainWindow::onStcTagsButtonPressed(StdTags stcTag)
 [[deprecated("Instead of them mnemoniks from Qt are being used")]] void MainWindow::connectShortcutsFromCodeWidget()
 {
     connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_bold, [this]() {
-        this->surroundSelectedTextWithTag(tagsClasses[StdTags::BOLD], tagsClasses[StdTags::BOLD]);
+        this->surroundSelectedTextWithTag(tagsClasses[StcTags::BOLD], tagsClasses[StcTags::BOLD]);
     });
     connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_run, [this]() {
-        this->surroundSelectedTextWithTag(tagsClasses[StdTags::RUN], tagsClasses[StdTags::RUN]);
+        this->surroundSelectedTextWithTag(tagsClasses[StcTags::RUN], tagsClasses[StcTags::RUN]);
     });
     connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_warning, [this]() {
-        this->surroundSelectedTextWithTag(tagsClasses[StdTags::DIV_WARNING], tagsClasses[StdTags::DIV], R"( class="uwaga")");
+        this->surroundSelectedTextWithTag(tagsClasses[StcTags::DIV_WARNING], tagsClasses[StcTags::DIV], R"( class="uwaga")");
     });
     connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_tip, [this]() {
-        this->surroundSelectedTextWithTag(tagsClasses[StdTags::DIV_TIP], tagsClasses[StdTags::DIV], R"( class="tip")");
+        this->surroundSelectedTextWithTag(tagsClasses[StcTags::DIV_TIP], tagsClasses[StcTags::DIV], R"( class="tip")");
     });
     connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_href, [this]() {
         this->surroundSelectedTextWithAHrefTag();

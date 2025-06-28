@@ -15,7 +15,7 @@ public:
     ~StcTagsButtons();
 
 signals:
-    void buttonPressed(StdTags tag);
+    void buttonPressed(StcTags tag);
 
 private:
     Ui::StcTagsButtons *ui;

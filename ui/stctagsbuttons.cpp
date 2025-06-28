@@ -9,58 +9,64 @@ StcTagsButtons::StcTagsButtons(QWidget *parent)
     ui->setupUi(this);
 
     connect(ui->button_run, &QPushButton::pressed, [this] {
-        emit buttonPressed(StdTags::RUN);
+        emit buttonPressed(StcTags::RUN);
     });
     connect(ui->button_cpp, &QPushButton::pressed, [this] {
-        emit buttonPressed(StdTags::CPP);
+        emit buttonPressed(StcTags::CPP);
     });
     connect(ui->button_py, &QPushButton::pressed, [this] {
-        emit buttonPressed(StdTags::PY);
+        emit buttonPressed(StcTags::PY);
     });
     connect(ui->button_code, &QPushButton::pressed, [this] {
-        emit buttonPressed(StdTags::CODE);
+        emit buttonPressed(StcTags::CODE);
     });
     connect(ui->button_div_tip, &QPushButton::pressed, [this] {
-        emit buttonPressed(StdTags::DIV_TIP);
+        emit buttonPressed(StcTags::DIV_TIP);
     });
     connect(ui->button_div_warning, &QPushButton::pressed, [this] {
-        emit buttonPressed(StdTags::DIV_WARNING);
+        emit buttonPressed(StcTags::DIV_WARNING);
     });
     connect(ui->button_cytat, &QPushButton::pressed, [this] {
-        emit buttonPressed(StdTags::QUOTE);
+        emit buttonPressed(StcTags::QUOTE);
     });
     connect(ui->button_href, &QPushButton::pressed, [this] {
-        emit buttonPressed(StdTags::A_HREF);
+        emit buttonPressed(StcTags::A_HREF);
     });
     connect(ui->button_pkt, &QPushButton::pressed, [this] {
-        emit buttonPressed(StdTags::PKT);
+        emit buttonPressed(StcTags::PKT);
     });
     connect(ui->button_csv, &QPushButton::pressed, [this] {
-        emit buttonPressed(StdTags::CSV);
+        emit buttonPressed(StcTags::CSV);
     });
     connect(ui->button_bold, &QPushButton::pressed, [this] {
-        emit buttonPressed(StdTags::BOLD);
+        emit buttonPressed(StcTags::BOLD);
     });
     connect(ui->button_italic, &QPushButton::pressed, [this] {
-        emit buttonPressed(StdTags::ITALIC);
+        emit buttonPressed(StcTags::ITALIC);
     });
     connect(ui->button_stroke, &QPushButton::pressed, [this] {
-        emit buttonPressed(StdTags::STRUCK_OUT);
+        emit buttonPressed(StcTags::STRUCK_OUT);
     });
     connect(ui->button_underlined, &QPushButton::pressed, [this] {
-        emit buttonPressed(StdTags::UNDERLINED);
+        emit buttonPressed(StcTags::UNDERLINED);
     });
     connect(ui->button_h1, &QPushButton::pressed, [this] {
-        emit buttonPressed(StdTags::H1);
+        emit buttonPressed(StcTags::H1);
     });
     connect(ui->button_h2, &QPushButton::pressed, [this] {
-        emit buttonPressed(StdTags::H2);
+        emit buttonPressed(StcTags::H2);
     });
     connect(ui->button_h3, &QPushButton::pressed, [this] {
-        emit buttonPressed(StdTags::H3);
+        emit buttonPressed(StcTags::H3);
     });
     connect(ui->button_h4, &QPushButton::pressed, [this] {
-        emit buttonPressed(StdTags::H4);
+        emit buttonPressed(StcTags::H4);
+    });
+    connect(ui->button_subsctipt, &QPushButton::pressed, [this] {
+        emit buttonPressed(StcTags::SUBSCRIPT);
+    });
+    connect(ui->button_supsctipt, &QPushButton::pressed, [this] {
+        emit buttonPressed(StcTags::SUPSCRIPT);
     });
 }
 
