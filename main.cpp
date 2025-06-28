@@ -24,17 +24,35 @@ int main(int argc, char *argv[])
     setUpIcon(a);
 
     MainWindow w;
+
+    QStringList args = a.arguments();
+    for (int i = 1; i < args.size(); ++i)
+    {
+        QString fileName = args[i];
+        QFileInfo fileInfo(fileName);
+        if (fileInfo.exists() && fileInfo.isFile())
+        {
+            if (!w.loadFileContentToEditor(fileName))
+            {
+                qWarning() << "Opening file: '" << fileName << "' failed!";
+            }
+        }
+        else
+        {
+            qWarning() << "File '" << fileName << "' does not exist or is not a file!";
+        }
+    }
+
     w.show();
     return a.exec();
 }
 
 /**
  * TODOs: Cpp0x
- * ! Argumenty uruchomienia
- * 1. Consider using syntax analizer for C++: https://github.com/westes/flex
- * 2. Syntax highlinkk of Cpp & python: QCXXHighlighter https://github.com/Megaxela/QCodeEditor (MIT licence)
- * 3. ! Ctrl + F, Ctrl + R
- * 4. ! Correct formatting: when multi-line code sections
+ * 1. ! Ctrl + F, Ctrl + R
+ * 2. ! Correct formatting: when multi-line code sections
+ * 3. Syntax highlinkk of Cpp & python: QCXXHighlighter https://github.com/Megaxela/QCodeEditor (MIT licence)
+ * 4. Consider using syntax analizer for C++: https://github.com/westes/flex
  * 5. TODOs tracking
  * 6. Bookmarks to places in code
  * 7. Add checking if [run] tags are inside [pkt] if there are any tags
