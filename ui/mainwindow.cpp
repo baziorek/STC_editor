@@ -159,6 +159,9 @@ void MainWindow::onStcTagsButtonPressed(StcTags stcTag)
     case StcTags::SUPSCRIPT:
         surroundSelectedTextWithTag(tagsClasses[StcTags::SUPSCRIPT], tagsClasses[StcTags::SUPSCRIPT]);
         break;
+    case StcTags::TELE_TYPE:
+        surroundSelectedTextWithTag(tagsClasses[StcTags::TELE_TYPE], tagsClasses[StcTags::TELE_TYPE]);
+        break;
     default:
         qDebug() << __FILE__ << ": " << __LINE__ << ": Unsupported option: " << std::to_underlying(stcTag);
         break;

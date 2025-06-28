@@ -243,6 +243,12 @@ void STCSyntaxHighlighter::addBlockStyle(const QString &tag,
         fmt.setVerticalAlignment(QTextCharFormat::AlignSubScript); // probably it will not work until I use QTextEdit as base
     if (format & std::to_underlying(StcTags::SUPSCRIPT))
         fmt.setVerticalAlignment(QTextCharFormat::AlignSuperScript); // probably it will not work until I use QTextEdit as base
+    if (format & std::to_underlying(StcTags::TELE_TYPE))
+    {
+        fmt.setFontFixedPitch(true);
+        fmt.setFontStyleHint(QFont::Monospace);
+        fmt.setFontFamilies({"Monospace"});
+    }
     if (pointSize > 0)
         fmt.setFontPointSize(pointSize);
     if (!fontFamily.isEmpty())
