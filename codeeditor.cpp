@@ -20,6 +20,7 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::totalLinesCountChanged);
     // connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::highlightCurrentLine);
     connect(verticalScrollBar(), &QScrollBar::valueChanged, this, &CodeEditor::onScrollChanged);
+    connect(&fileWatcher, &QFileSystemWatcher::fileChanged, this, &CodeEditor::fileChanged);
 
     updateLineNumberAreaWidth(0);
     // highlightCurrentLine();
@@ -55,18 +56,25 @@ bool CodeEditor::noUnsavedChanges() const
     return file.readAll() == currentlyVisibleText;
 }
 
-void CodeEditor::enableWatchingOfFile(const QString &newFileName)
+void CodeEditor::setFileName(const QString &newFileName)
 {
-    auto watchedFilesCopy = fileWatcher.files();
-    fileWatcher.removePaths(watchedFilesCopy);
-    fileWatcher.addPath(newFileName);
+    openedFileName = newFileName;
+    if (! openedFileName.isEmpty() && QFile::exists(openedFileName))
+    {
+        enableWatchingOfFile(openedFileName);
+    }
+    else
+    {
+        fileWatcher.removePaths(fileWatcher.files());
+    }
 }
 
-void CodeEditor::fileChanged(const QString &path)
+void CodeEditor::enableWatchingOfFile(const QString &newFileName)
 {
-    // TODO:
-#warning tutaj
-    // https://doc.qt.io/qt-6/qfilesystemwatcher.html
+    if (fileWatcher.files().contains(newFileName))
+        fileWatcher.removePath(newFileName);
+
+    fileWatcher.addPath(newFileName);
 }
 
 void CodeEditor::go2LineRequested(int lineNumber)
@@ -285,4 +293,46 @@ void CodeEditor::keyPressEvent(QKeyEvent *event)
     }
 
     QPlainTextEdit::keyPressEvent(event);
+}
+
+void CodeEditor::fileChanged(const QString &path)
+{ // https://doc.qt.io/qt-6/qfilesystemwatcher.html
+    QFile file(path);
+
+    if (!file.exists()) // file removed
+    {
+        QMessageBox::warning(this, tr("Plik usunięty"),
+                             tr("Plik '%1' został usunięty z dysku.").arg(path));
+        return;
+    }
+
+    // Opening file
+    if (!file.open(QFile::ReadOnly))
+    {
+        QMessageBox::warning(this, tr("Błąd pliku"), tr("Nie można otworzyć pliku %1").arg(path));
+        return;
+    }
+
+    const QByteArray newContent = file.readAll();
+    file.close();
+
+    const QByteArray currentContent = toPlainText().toUtf8();
+    if (newContent == currentContent)
+    { // nothing changed - only timestamps
+        return;
+    }
+
+    // Changes of file content - asking user
+    QMessageBox::StandardButton response = QMessageBox::question(
+        this,
+        tr("Plik został zmieniony"),
+        tr("Plik '%1' został zmodyfikowany poza edytorem.\n\nCzy chcesz ponownie go wczytać?")
+            .arg(path),
+        QMessageBox::Yes | QMessageBox::No);
+
+    if (response == QMessageBox::Yes)
+        reloadFromFile(/*discardChanges=*/true);
+
+    // ensure watching is still available
+    enableWatchingOfFile(path);
 }

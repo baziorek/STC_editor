@@ -22,10 +22,7 @@ public:
     {
         return openedFileName;
     }
-    void setFileName(const QString& newFileName)
-    {
-        openedFileName = newFileName;
-    }
+    void setFileName(const QString& newFileName);
     void enableWatchingOfFile(const QString& newFileName);
 
     void restoreStateWhichDoesNotRequireSaving(bool discardChanges=false);
