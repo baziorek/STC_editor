@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QScrollBar>
 #include <QToolTip>
+#include <QTimer>
 #include "codeeditor.h"
 #include "linenumberarea.h"
 #include "stcsyntaxhighlighter.h"
@@ -297,45 +298,50 @@ void CodeEditor::keyPressEvent(QKeyEvent *event)
 
 void CodeEditor::fileChanged(const QString &path)
 {
-    static QMap<QString, QElapsedTimer> recentNotifications; // sometimes there are multiple signals at once::
-    if (recentNotifications.contains(path)) {
-        const int ignoringTimeInMilliseconds = 1000;
-        if (recentNotifications[path].elapsed() < ignoringTimeInMilliseconds)
+    // stop watching file to avoid multiple signals
+    fileWatcher.removePath(path);
+
+    // delayed reaction
+    QTimer::singleShot(300, this, [this, path]() {
+        QFile file(path);
+
+        if (!file.exists())
+        {
+            QMessageBox::warning(this, tr("File removed"),
+                                 tr("File '%1' has been removed from disk.").arg(path));
+            return; // we stop listening because file does not exist anymore
+        }
+
+        if (!file.open(QFile::ReadOnly))
+        {
+            QMessageBox::warning(this, tr("File error"),
+                                 tr("Cannot open file '%1'.").arg(path));
             return;
-    }
+        }
 
-    recentNotifications[path].restart();
+        const QByteArray newContent = file.readAll();
+        file.close();
 
-    QFile file(path);
+        const QByteArray currentContent = toPlainText().toUtf8();
+        if (newContent == currentContent)
+        {
+            enableWatchingOfFile(path);
+            return;
+        }
 
-    if (!file.exists()) {
-        QMessageBox::warning(this, tr("File removed"),
-                             tr("File '%1' has been removed from disk.").arg(path));
-        return;
-    }
+        QMessageBox::StandardButton response = QMessageBox::question(
+            this,
+            tr("File changed"),
+            tr("File '%1' has been modified outside of the editor.\n\n"
+               "Do you want to reload it?")
+                .arg(path),
+            QMessageBox::Yes | QMessageBox::No);
 
-    if (!file.open(QFile::ReadOnly)) {
-        QMessageBox::warning(this, tr("File error"), tr("Cannot open file '%1'").arg(path));
-        return;
-    }
+        if (response == QMessageBox::Yes)
+        {
+            reloadFromFile(true);
+        }
 
-    const QByteArray newContent = file.readAll();
-    file.close();
-
-    if (newContent == toPlainText().toUtf8())
-        return;
-
-    QMessageBox::StandardButton response = QMessageBox::question(
-        this,
-        tr("File changed"),
-        tr("File '%1' has been modified outside of the editor.\n\n"
-           "Do you want to reload it?").arg(path),
-        QMessageBox::Yes | QMessageBox::No);
-
-    if (response == QMessageBox::Yes) {
-        reloadFromFile(true);
-    }
-
-    // some platforms needs to add watching again:
-    enableWatchingOfFile(path);
+        enableWatchingOfFile(path);
+    });
 }
