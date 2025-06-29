@@ -25,6 +25,7 @@ public slots:
 
     void onUpdateContextRequested();
 
+    void onNewFilePressed();
     bool onSaveAsPressed();
     bool onSavePressed();
     void onOpenPressed();
@@ -51,7 +52,7 @@ private: // methods
     bool closeApplicationReturningIfClosed();
     bool operationWhichDiscardsChangesRequestedReturningIfDiscarded();
     bool saveEntireContent2File(QString fileName);
-    void updateWindowTitle(QString fileName);
+    void updateWindowTitle(QString fileName="");
 
 
     void loadSettings();

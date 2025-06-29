@@ -340,6 +340,16 @@ void MainWindow::updateContextTable(auto taggedTextLinePositions)
     }
 }
 
+void MainWindow::onNewFilePressed()
+{
+    if (operationWhichDiscardsChangesRequestedReturningIfDiscarded())
+    {
+        ui->plainTextEdit->clear();
+        updateWindowTitle();
+        ui->plainTextEdit->setFileName("");
+    }
+}
+
 bool MainWindow::onSaveAsPressed()
 {
     const auto fileName = chooseFileWithDialog(QFileDialog::AcceptSave);
@@ -387,8 +397,15 @@ bool MainWindow::saveEntireContent2File(QString fileName)
 
 void MainWindow::updateWindowTitle(QString fileName)
 {
-    auto newFileName = qApp->applicationName() + ": " + fileName;
-    setWindowTitle(newFileName);
+    if (fileName.isEmpty())
+    {
+        setWindowTitle(qApp->applicationName());
+    }
+    else
+    {
+        auto newFileName = qApp->applicationName() + ": " + fileName;
+        setWindowTitle(newFileName);
+    }
 }
 
 bool MainWindow::onSavePressed()
