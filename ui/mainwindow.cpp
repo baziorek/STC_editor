@@ -300,7 +300,6 @@ bool MainWindow::closeApplicationReturningIfClosed()
     if (operationWhichDiscardsChangesRequestedReturningIfDiscarded())
     {
         close();
-        qApp->quit();
         return true;
     }
     return false;
@@ -440,8 +439,7 @@ bool MainWindow::loadFileContentToEditor(QString fileName)
 
 void MainWindow::onExitFromApplicationMenuPressed()
 {
-#warning "Close event not implemented"
-    qDebug() << "Not implemented, TODO";
+    close();
 }
 
 void MainWindow::onCheckTagsPressed()
