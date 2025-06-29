@@ -116,7 +116,6 @@
      <property name="title">
       <string>Open recent</string>
      </property>
-     <addaction name="actionlast"/>
     </widget>
     <addaction name="actionNew"/>
     <addaction name="actionLoad_file"/>

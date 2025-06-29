@@ -296,43 +296,46 @@ void CodeEditor::keyPressEvent(QKeyEvent *event)
 }
 
 void CodeEditor::fileChanged(const QString &path)
-{ // https://doc.qt.io/qt-6/qfilesystemwatcher.html
+{
+    static QMap<QString, QElapsedTimer> recentNotifications; // sometimes there are multiple signals at once::
+    if (recentNotifications.contains(path)) {
+        const int ignoringTimeInMilliseconds = 1000;
+        if (recentNotifications[path].elapsed() < ignoringTimeInMilliseconds)
+            return;
+    }
+
+    recentNotifications[path].restart();
+
     QFile file(path);
 
-    if (!file.exists()) // file removed
-    {
-        QMessageBox::warning(this, tr("Plik usunięty"),
-                             tr("Plik '%1' został usunięty z dysku.").arg(path));
+    if (!file.exists()) {
+        QMessageBox::warning(this, tr("File removed"),
+                             tr("File '%1' has been removed from disk.").arg(path));
         return;
     }
 
-    // Opening file
-    if (!file.open(QFile::ReadOnly))
-    {
-        QMessageBox::warning(this, tr("Błąd pliku"), tr("Nie można otworzyć pliku %1").arg(path));
+    if (!file.open(QFile::ReadOnly)) {
+        QMessageBox::warning(this, tr("File error"), tr("Cannot open file '%1'").arg(path));
         return;
     }
 
     const QByteArray newContent = file.readAll();
     file.close();
 
-    const QByteArray currentContent = toPlainText().toUtf8();
-    if (newContent == currentContent)
-    { // nothing changed - only timestamps
+    if (newContent == toPlainText().toUtf8())
         return;
-    }
 
-    // Changes of file content - asking user
     QMessageBox::StandardButton response = QMessageBox::question(
         this,
-        tr("Plik został zmieniony"),
-        tr("Plik '%1' został zmodyfikowany poza edytorem.\n\nCzy chcesz ponownie go wczytać?")
-            .arg(path),
+        tr("File changed"),
+        tr("File '%1' has been modified outside of the editor.\n\n"
+           "Do you want to reload it?").arg(path),
         QMessageBox::Yes | QMessageBox::No);
 
-    if (response == QMessageBox::Yes)
-        reloadFromFile(/*discardChanges=*/true);
+    if (response == QMessageBox::Yes) {
+        reloadFromFile(true);
+    }
 
-    // ensure watching is still available
+    // some platforms needs to add watching again:
     enableWatchingOfFile(path);
 }
