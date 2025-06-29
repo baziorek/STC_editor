@@ -215,11 +215,11 @@
       <item row="2" column="0">
        <widget class="QPushButton" name="button_div">
         <property name="text">
-         <string>📦 [&amp;div]</string>
+         <string>[&amp;div]</string>
         </property>
         <property name="icon">
          <iconset resource="../resources.qrc">
-          <normaloff>:/icons/mdi/resources/icons/mdi/view-parallel.svg</normaloff>:/icons/mdi/resources/icons/mdi/view-parallel.svg</iconset>
+          <normaloff>:/icons/mdi/resources/icons/mdi/text-box.svg</normaloff>:/icons/mdi/resources/icons/mdi/text-box.svg</iconset>
         </property>
        </widget>
       </item>

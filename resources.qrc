@@ -22,5 +22,7 @@
         <file>resources/icons/mdi/play-circle-outline.svg</file>
         <file>resources/icons/mdi/view-parallel.svg</file>
         <file>resources/icons/mdi/link-variant-plus.svg</file>
+        <file>resources/icons/mdi/text-box.svg</file>
+        <file>resources/icons/mdi/file-tree.svg</file>
     </qresource>
 </RCC>
