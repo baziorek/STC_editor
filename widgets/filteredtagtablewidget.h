@@ -29,4 +29,5 @@ private slots:
 private:
     QMenu* tagFilterMenu;
     QSet<QString> visibleTags;
+    QSet<QString> allKnownTags;
 };

@@ -38,9 +38,14 @@ void FilteredTagTableWidget::insertRow(int rowNumber, int lineNumber, QString ta
     if (tagItem)
     {
         tagItem->setData(Qt::UserRole, tagName);
+
+        allKnownTags.insert(tagName);
+    }
+
+    if (!visibleTags.contains(tagName))
+    {
         visibleTags.insert(tagName);
         updateFilterMenu();
-        applyTagFilter();
     }
 }
 
@@ -67,11 +72,11 @@ void FilteredTagTableWidget::updateFilterMenu()
 {
     tagFilterMenu->clear();
 
-    for (const QString& tag : visibleTags)
+    for (const QString& tag : allKnownTags)
     {
         QAction* action = new QAction(tag, this);
         action->setCheckable(true);
-        action->setChecked(true);
+        action->setChecked(visibleTags.contains(tag)); // nie zawsze true!
 
         connect(action, &QAction::toggled, this, [this, tag](bool checked) {
             if (checked)
@@ -88,8 +93,9 @@ void FilteredTagTableWidget::updateFilterMenu()
         tagFilterMenu->addSeparator();
         QAction* clearAction = new QAction(tr("Wyczyść filtr"), this);
         connect(clearAction, &QAction::triggered, this, [this]() {
-            visibleTags.clear();
-            applyTagFilter();
+            visibleTags.clear();           // tylko aktualnie widoczne
+            applyTagFilter();              // ukryje wszystko
+            updateFilterMenu();           // zaktualizuj checkboxy
         });
         tagFilterMenu->addAction(clearAction);
     }
