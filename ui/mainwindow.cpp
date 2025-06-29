@@ -5,6 +5,7 @@
 #include <QRegularExpression>
 #include <QMessageBox>
 #include <QSettings>
+#include <QDesktopServices>
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "checkers/PairedTagsChecker.h"
@@ -54,14 +55,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     ui->setupUi(this);
     ui->findWidget->hide();
-    ui->findWidget->setCodeEditor(ui->plainTextEdit);
-    ui->plainTextEdit->setFocus();
+    ui->findWidget->setCodeEditor(ui->textEditor);
+    ui->textEditor->setFocus();
 
     connect(ui->buttonsEmittingStc, &StcTagsButtons::buttonPressed, this, &MainWindow::onStcTagsButtonPressed);
-    connect(ui->contextTableWidget, &FilteredTagTableWidget::goToLineClicked, ui->plainTextEdit, &CodeEditor::go2LineRequested);
-    connect(ui->plainTextEdit, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateContextRequested);
-    connect(ui->plainTextEdit, &CodeEditor::totalLinesCountChanged, ui->goToLineGroupBox, &GoToLineWidget::setMaxLine);
-    connect(ui->goToLineGroupBox, &GoToLineWidget::onGoToLineRequested, ui->plainTextEdit, &CodeEditor::go2LineRequested);
+    connect(ui->contextTableWidget, &FilteredTagTableWidget::goToLineClicked, ui->textEditor, &CodeEditor::go2LineRequested);
+    connect(ui->textEditor, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateContextRequested);
+    connect(ui->textEditor, &CodeEditor::totalLinesCountChanged, ui->goToLineGroupBox, &GoToLineWidget::setMaxLine);
+    connect(ui->goToLineGroupBox, &GoToLineWidget::onGoToLineRequested, ui->textEditor, &CodeEditor::go2LineRequested);
 
     connectShortcutsFromCodeWidget();
     connectShortcuts();
@@ -194,32 +195,32 @@ void MainWindow::onRecentRecentFilesMenuOpened()
 
 [[deprecated("Instead of them mnemoniks from Qt are being used")]] void MainWindow::connectShortcutsFromCodeWidget()
 {
-    connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_bold, [this]() {
+    connect(ui->textEditor, &CodeEditor::shortcutPressed_bold, [this]() {
         this->surroundSelectedTextWithTag(tagsClasses[StcTags::BOLD], tagsClasses[StcTags::BOLD]);
     });
-    connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_run, [this]() {
+    connect(ui->textEditor, &CodeEditor::shortcutPressed_run, [this]() {
         this->surroundSelectedTextWithTag(tagsClasses[StcTags::RUN], tagsClasses[StcTags::RUN]);
     });
-    connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_warning, [this]() {
+    connect(ui->textEditor, &CodeEditor::shortcutPressed_warning, [this]() {
         this->surroundSelectedTextWithTag(tagsClasses[StcTags::DIV_WARNING], tagsClasses[StcTags::DIV], R"( class="uwaga")");
     });
-    connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_tip, [this]() {
+    connect(ui->textEditor, &CodeEditor::shortcutPressed_tip, [this]() {
         this->surroundSelectedTextWithTag(tagsClasses[StcTags::DIV_TIP], tagsClasses[StcTags::DIV], R"( class="tip")");
     });
-    connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_href, [this]() {
+    connect(ui->textEditor, &CodeEditor::shortcutPressed_href, [this]() {
         this->surroundSelectedTextWithAHrefTag();
     });
 
-    connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_h1, [this] {
+    connect(ui->textEditor, &CodeEditor::shortcutPressed_h1, [this] {
         this->surroundSelectedTextWithTag("h1", "h1");
     });
-    connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_h2, [this] {
+    connect(ui->textEditor, &CodeEditor::shortcutPressed_h2, [this] {
         this->surroundSelectedTextWithTag("h2", "h2");
     });
-    connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_h3, [this] {
+    connect(ui->textEditor, &CodeEditor::shortcutPressed_h3, [this] {
         this->surroundSelectedTextWithTag("h3", "h3");
     });
-    connect(ui->plainTextEdit, &CodeEditor::shortcutPressed_h4, [this] {
+    connect(ui->textEditor, &CodeEditor::shortcutPressed_h4, [this] {
         this->surroundSelectedTextWithTag("h4", "h4");
     });
 }
@@ -266,7 +267,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 bool MainWindow::operationWhichDiscardsChangesRequestedReturningIfDiscarded()
 {
-    if (!ui->plainTextEdit->noUnsavedChanges())
+    if (!ui->textEditor->noUnsavedChanges())
     {
         QMessageBox::StandardButton reply =
             QMessageBox::question(this,
@@ -278,7 +279,7 @@ bool MainWindow::operationWhichDiscardsChangesRequestedReturningIfDiscarded()
             if (! onSavePressed())
             {
                 /// the state needs to be restored to prevend asking again
-                ui->plainTextEdit->restoreStateWhichDoesNotRequireSaving(/*discardChanges=*/true);
+                ui->textEditor->restoreStateWhichDoesNotRequireSaving(/*discardChanges=*/true);
                 return false;
             }
         }
@@ -289,7 +290,7 @@ bool MainWindow::operationWhichDiscardsChangesRequestedReturningIfDiscarded()
         else if (reply == QMessageBox::Discard)
         {
             /// the state needs to be restored to prevend asking again
-            ui->plainTextEdit->restoreStateWhichDoesNotRequireSaving(/*discardChanges=*/true);
+            ui->textEditor->restoreStateWhichDoesNotRequireSaving(/*discardChanges=*/true);
         }
     }
     return true;
@@ -315,7 +316,7 @@ void MainWindow::onUpdateContextRequested()
     static QRegularExpression hRegex("\\[(h[1-6])\\](.*?)\\[/\\1\\]");
     static QRegularExpression divRegex("\\[(div)(?:\\s+[^\\]]+)?\\](.*?)\\[/\\1\\]", QRegularExpression::DotMatchesEverythingOption);
 
-    const auto text = ui->plainTextEdit->toPlainText();
+    const auto text = ui->textEditor->toPlainText();
 
     auto taggedTextLinePositions = findTagMatches(hRegex, text);
     taggedTextLinePositions.merge(findTagMatches(divRegex, text));
@@ -344,9 +345,9 @@ void MainWindow::onNewFilePressed()
 {
     if (operationWhichDiscardsChangesRequestedReturningIfDiscarded())
     {
-        ui->plainTextEdit->clear();
+        ui->textEditor->clear();
         updateWindowTitle();
-        ui->plainTextEdit->setFileName("");
+        ui->textEditor->setFileName("");
     }
 }
 
@@ -389,8 +390,8 @@ bool MainWindow::saveEntireContent2File(QString fileName)
         updateWindowTitle(fileName);
         QFile outputFile(fileName);
         outputFile.open(QIODeviceBase::WriteOnly);
-        ui->plainTextEdit->setFileName(fileName);
-        return outputFile.write(ui->plainTextEdit->toPlainText().toUtf8()) > -1;
+        ui->textEditor->setFileName(fileName);
+        return outputFile.write(ui->textEditor->toPlainText().toUtf8()) > -1;
     }
     return false;
 }
@@ -410,12 +411,12 @@ void MainWindow::updateWindowTitle(QString fileName)
 
 bool MainWindow::onSavePressed()
 {
-    auto outputFileName = ui->plainTextEdit->getFileName();
+    auto outputFileName = ui->textEditor->getFileName();
     if (outputFileName.isEmpty())
     {
         return onSaveAsPressed();
     }
-    else if (ui->plainTextEdit->noUnsavedChanges())
+    else if (ui->textEditor->noUnsavedChanges())
     {
         return true;
     }
@@ -447,8 +448,8 @@ bool MainWindow::loadFileContentToEditor(QString fileName)
 
         file.open(QFile::ReadOnly);
         const auto textFromFile = file.readAll();
-        ui->plainTextEdit->setPlainText(textFromFile);
-        ui->plainTextEdit->setFileName(fileName);
+        ui->textEditor->setPlainText(textFromFile);
+        ui->textEditor->setFileName(fileName);
         return true;
     }
     return false;
@@ -459,9 +460,28 @@ void MainWindow::onExitFromApplicationMenuPressed()
     close();
 }
 
+void MainWindow::onStcCoursePressed()
+{
+    const QUrl url("https://cpp0x.pl/kursy/Kurs-STC/169");
+    if (url.isValid())
+        QDesktopServices::openUrl(url);
+}
+void MainWindow::onCpp0xPl_pressed()
+{
+    const QUrl url("https://cpp0x.pl");
+    if (url.isValid())
+        QDesktopServices::openUrl(url);
+}
+void MainWindow::onRepository_pressed()
+{
+    const QUrl url("https://github.com/baziorek/STC_editor/");
+    if (url.isValid())
+        QDesktopServices::openUrl(url);
+}
+
 void MainWindow::onCheckTagsPressed()
 {
-    const auto text = ui->plainTextEdit->toPlainText().toStdString();
+    const auto text = ui->textEditor->toPlainText().toStdString();
     const auto tagsErrors = PairedTagsChecker::checkTags(text);
 
     ui->errorsInText->clearErrors();
@@ -473,7 +493,7 @@ void MainWindow::onCheckTagsPressed()
 
 void MainWindow::surroundSelectedTextWithTag(QString divClass, QString textBase, QString extraAttributes, bool closable)
 {
-    auto cursor = ui->plainTextEdit->textCursor();
+    auto cursor = ui->textEditor->textCursor();
     QString selectedText = cursor.selectedText();
 
     const auto textOpening = "[" + textBase + extraAttributes + "]";
@@ -503,15 +523,15 @@ void MainWindow::putTextBackToCursorPosition(QTextCursor &cursor, QString divCla
         auto currentPosition = cursor.position();
         auto positionMovedBeforeTextEnding = currentPosition - textEnding.size();
         cursor.setPosition(positionMovedBeforeTextEnding);
-        ui->plainTextEdit->setTextCursor(cursor);
+        ui->textEditor->setTextCursor(cursor);
     }
 
-    ui->plainTextEdit->setFocus();
+    ui->textEditor->setFocus();
 }
 
 void MainWindow::surroundSelectedTextWithAHrefTag()
 {
-    auto cursor = ui->plainTextEdit->textCursor();
+    auto cursor = ui->textEditor->textCursor();
     QString selectedText = cursor.selectedText();
 
     constexpr const char* beginOfTag = R"([a href=")";

@@ -23,21 +23,27 @@ public slots:
     void keyPressEvent(QKeyEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
 
+    bool loadFileContentToEditor(QString fileName);
+
     void onUpdateContextRequested();
 
+    void onStcTagsButtonPressed(StcTags stcTag);
+
+    /// file menu:
     void onNewFilePressed();
     bool onSaveAsPressed();
     bool onSavePressed();
     void onOpenPressed();
     void onExitFromApplicationMenuPressed();
-
-    void onCheckTagsPressed();
-
-    void onStcTagsButtonPressed(StcTags stcTag);
-
     void onRecentRecentFilesMenuOpened();
 
-    bool loadFileContentToEditor(QString fileName);
+    /// help menu:
+    void onStcCoursePressed();
+    void onCpp0xPl_pressed();
+    void onRepository_pressed();
+
+    /// check menu:
+    void onCheckTagsPressed();
 
 private: // methods
     void putTextBackToCursorPosition(QTextCursor &cursor, QString divClass, QString selectedText,
