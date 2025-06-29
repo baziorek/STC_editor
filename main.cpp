@@ -56,8 +56,8 @@ int main(int argc, char *argv[])
  * 5. TODOs tracking
  * 6. Bookmarks to places in code
  * 7. Add checking if [run] tags are inside [pkt] if there are any tags
- * 8. Tables creator
- * 9. Add checking: if all tags are closed
+ * 8. Add checking: if all tags are closed
+ * 9. Tables creator
  * 10. ALT + <- lub ALT + -> umożliwiające skakanie po miejscach w kodzie - wstecz i dalej
  * 11. Listen external changes of file
  * 12. Obrazki na serwerze - podmiana prefixów w linkach
@@ -71,11 +71,10 @@ int main(int argc, char *argv[])
  * 20. Copy file name
  * 21. Umiejscowienie danej pozycji w rozdziałach i divach
  * 22. Statystyki sekcji
- * 23. Procentowo, ile linii na ile widać
+ * 23. podgląd web (kursu STC)
  * 24. Pluginy i może LUA
  * 25. Spellcheck polski np. https://github.com/nuspell/nuspell https://doc.qt.io/qt-6/qtwebengine-webenginewidgets-spellchecker-example.html
  * 26. Makra do nagrywania
  * 27. obsługa różnych kodowań plików z rozpoznawaniem
- * 28. podgląd web (kursu STC)
- * 29. Podgląd dokumentacji cppreference (jak cppman da radę i QtCreator)
+ * 28. Podgląd dokumentacji cppreference (jak cppman da radę i QtCreator)
  **/

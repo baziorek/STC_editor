@@ -4,6 +4,8 @@
 #include <QTextBlock>
 #include <QMenu>
 #include <QMessageBox>
+#include <QScrollBar>
+#include <QToolTip>
 #include "codeeditor.h"
 #include "linenumberarea.h"
 #include "stcsyntaxhighlighter.h"
@@ -17,6 +19,7 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
     connect(this, &CodeEditor::updateRequest, this, &CodeEditor::updateLineNumberArea);
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::totalLinesCountChanged);
     // connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::highlightCurrentLine);
+    connect(verticalScrollBar(), &QScrollBar::valueChanged, this, &CodeEditor::onScrollChanged);
 
     updateLineNumberAreaWidth(0);
     // highlightCurrentLine();
@@ -75,6 +78,24 @@ void CodeEditor::go2LineRequested(int lineNumber)
     ensureCursorVisible();
 
     setFocus();
+}
+
+void CodeEditor::onScrollChanged(int)
+{
+    const int total = blockCount();
+    const int firstVisible = cursorForPosition(QPoint(0, 0)).block().blockNumber() + 1;
+    const int lastVisible = cursorForPosition(QPoint(0, height() - 1)).block().blockNumber() + 1;
+
+    const int visibleLines = lastVisible - firstVisible + 1;
+    const int percentage = std::clamp((100 * lastVisible) / std::max(1, total), 0, 100);
+
+    QString info = QString("Lines %1–%2 of %3 (%4%)")
+                       .arg(firstVisible)
+                       .arg(lastVisible)
+                       .arg(total)
+                       .arg(percentage);
+
+    QToolTip::showText(mapToGlobal(QPoint(width() - 100, height() / 2)), info, this);
 }
 
 void CodeEditor::updateLineNumberAreaWidth(int /* newBlockCount */)

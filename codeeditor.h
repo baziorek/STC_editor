@@ -54,6 +54,8 @@ public slots:
 
     void go2LineRequested(int lineNumber);
 
+    void onScrollChanged(int);
+
 protected:
     void resizeEvent(QResizeEvent *event) override;
 
