@@ -136,15 +136,29 @@ void CodeEditor::reloadFromFile(bool discardChanges)
     QFile file(openedFileName);
     if (!file.exists())
     {
-        // return false;
-        QMessageBox::warning(this, "Reloading error", "File '" + openedFileName + "' does not exist!");
+        QMessageBox::warning(this, tr("Reloading error"), tr("File '%1' does not exist!").arg(openedFileName));
+        return;
     }
-    //  TODO: consider: !file.exists() && currentlyVisibleText.isEmpty()
-    else
+
+    const auto currentLineBeforeReloading = textCursor().block().blockNumber();
+    const auto currentColumnBeforeReloading = textCursor().positionInBlock();
+    if (!file.open(QFile::ReadOnly))
     {
-        file.open(QFile::ReadOnly);
-        setPlainText(file.readAll());
+        QMessageBox::warning(this, tr("Reloading error"), tr("Could not open '%1'.").arg(openedFileName));
+        return;
     }
+
+    const QByteArray content = file.readAll();
+    file.close();
+
+    // load content
+    setPlainText(QString::fromUtf8(content));
+
+    // restore cursor position
+    QTextCursor cursor = cursor4Line(currentLineBeforeReloading + 1); // +1 because lines are being counted from 1
+    cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, currentColumnBeforeReloading);
+    setTextCursor(cursor);
+    ensureCursorVisible();
 }
 
 void CodeEditor::contextMenuEvent(QContextMenuEvent *event)
