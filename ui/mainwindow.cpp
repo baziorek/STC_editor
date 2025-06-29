@@ -188,7 +188,13 @@ void MainWindow::onRecentRecentFilesMenuOpened()
             break;
     }
 
-    if (shown > 0) {
+
+    if (shown == 0) {
+        QAction* emptyAction = new QAction(tr("No recent files"), this);
+        emptyAction->setEnabled(false);
+        ui->menuOpen_recent->addAction(emptyAction);
+    }
+    else if (shown > 0) {
         ui->menuOpen_recent->addSeparator();
 
         QAction* clearAction = new QAction(tr("Clear Recent Files"), ui->menuOpen_recent);
@@ -199,7 +205,6 @@ void MainWindow::onRecentRecentFilesMenuOpened()
         ui->menuOpen_recent->addAction(clearAction);
     }
 }
-#warning "TODO: Open recent is not working after we clean up this - new entries does not show up"
 
 [[deprecated("Instead of them mnemoniks from Qt are being used")]] void MainWindow::connectShortcutsFromCodeWidget()
 {

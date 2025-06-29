@@ -37,6 +37,8 @@ public slots:
 
     void onRecentRecentFilesMenuOpened();
 
+    bool loadFileContentToEditor(QString fileName);
+
 private: // methods
     void putTextBackToCursorPosition(QTextCursor &cursor, QString divClass, QString selectedText,
                                      QString textEnding, QString modifiedText);
@@ -52,7 +54,6 @@ private: // methods
     bool saveEntireContent2File(QString fileName);
     void updateWindowTitle(QString fileName);
 
-    bool loadFileContentToEditor(QString fileName);
 
     void loadSettings();
     void saveSettings();
