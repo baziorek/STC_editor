@@ -26,6 +26,7 @@ set(PROJECT_SOURCES
     stcsyntaxhighlighter.h stcsyntaxhighlighter.cpp
     checkers/PairedTagsChecker.h checkers/PairedTagsChecker.cpp
     types/stcTags.h types/stcTags.cpp
+    widgets/filteredtagtablewidget.h widgets/filteredtagtablewidget.cpp
 )
 
 set(TEXT_FILES

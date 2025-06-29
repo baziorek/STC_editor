@@ -45,20 +45,6 @@ std::map<int, TextInsideTags> findTagMatches(const QRegularExpression& regex, co
     }
     return textPerLine;
 }
-
-void insertText2Cell(QTableWidget* table, int row, int column, const QString& text)
-{
-    if (auto* cell = table->item(row, column); cell == nullptr)
-    {
-        cell = new QTableWidgetItem(text);
-        cell->setFlags(cell->flags() & ~Qt::ItemIsEditable);
-        table->setItem(row, column, cell);
-    }
-    else
-    {
-        table->item(row, column)->setText(text);
-    }
-};
 } // namespace
 
 
@@ -71,12 +57,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->findWidget->setCodeEditor(ui->plainTextEdit);
     ui->plainTextEdit->setFocus();
 
-    ui->contextTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents); // Line
-    ui->contextTableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents); // Tag
-    ui->contextTableWidget->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);          // Text
-
     connect(ui->buttonsEmittingStc, &StcTagsButtons::buttonPressed, this, &MainWindow::onStcTagsButtonPressed);
-    connect(ui->contextTableWidget, &QTableWidget::cellClicked, this, &MainWindow::onContextTableClicked);
+    connect(ui->contextTableWidget, &FilteredTagTableWidget::goToLineClicked, ui->plainTextEdit, &CodeEditor::go2LineRequested);
     connect(ui->plainTextEdit, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateContextRequested);
     connect(ui->plainTextEdit, &CodeEditor::totalLinesCountChanged, ui->goToLineGroupBox, &GoToLineWidget::setMaxLine);
     connect(ui->goToLineGroupBox, &GoToLineWidget::onGoToLineRequested, ui->plainTextEdit, &CodeEditor::go2LineRequested);
@@ -350,31 +332,13 @@ void MainWindow::updateContextTable(auto taggedTextLinePositions)
     for (const auto& [lineNumber, tagAndText] : taggedTextLinePositions)
     {
         const auto& [tag, text] = tagAndText;
-        insertText2Cell(ui->contextTableWidget, rowNumber, 0, QString::number(lineNumber));
-        insertText2Cell(ui->contextTableWidget, rowNumber, 1, tag);
-        insertText2Cell(ui->contextTableWidget, rowNumber, 2, text);
+        ui->contextTableWidget->insertRow(rowNumber,
+                                          /*lineNumber=*/lineNumber,
+                                          /*tagName=*/tag,
+                                          /*tagText=*/text);
 
         ++rowNumber;
     }
-}
-
-void MainWindow::onContextTableClicked(int row, int)
-{
-    QTableWidgetItem *item = ui->contextTableWidget->item(row, 0);
-    if (item) {
-        bool ok;
-        int lineNumber = item->text().toInt(&ok);
-        if (ok) {
-            QTextCursor cursor = ui->plainTextEdit->textCursor();
-            cursor.movePosition(QTextCursor::Start);
-            for (int i = 1; i < lineNumber; ++i) {
-                cursor.movePosition(QTextCursor::NextBlock);
-            }
-            ui->plainTextEdit->setTextCursor(cursor);
-            ui->plainTextEdit->ensureCursorVisible();
-        }
-    }
-    ui->plainTextEdit->setFocus();
 }
 
 bool MainWindow::onSaveAsPressed()
@@ -576,6 +540,7 @@ void MainWindow::saveSettings()
 
     settings.setValue("lastDirectory", lastDirectory);
     settings.setValue("recentFiles", recentFiles);
+    // TODO: Consider remembering also positions of files
 }
 
 void MainWindow::updateRecentFiles(const QString& path)

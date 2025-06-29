@@ -59,6 +59,10 @@ protected:
 
     void reloadFromFile(bool discardChanges=false);
 
+    void contextMenuEvent(QContextMenuEvent* event) override;
+
+    QTextCursor cursor4Line(int lineNumber) const;
+
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();

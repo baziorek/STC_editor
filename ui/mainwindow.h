@@ -24,7 +24,6 @@ public slots:
     void closeEvent(QCloseEvent *event) override;
 
     void onUpdateContextRequested();
-    void onContextTableClicked(int row, int /*column*/);
 
     bool onSaveAsPressed();
     bool onSavePressed();

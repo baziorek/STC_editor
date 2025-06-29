@@ -2,7 +2,8 @@
 #include <QFile>
 #include <QPainter>
 #include <QTextBlock>
-#include <qmessagebox.h>
+#include <QMenu>
+#include <QMessageBox>
 #include "codeeditor.h"
 #include "linenumberarea.h"
 #include "stcsyntaxhighlighter.h"
@@ -69,16 +70,10 @@ void CodeEditor::go2LineRequested(int lineNumber)
 {
     lineNumber = std::clamp(lineNumber, 1, linesCount());
 
-    QTextBlock block = document()->findBlockByLineNumber(lineNumber - 1); // numeration from 0
-    if (! block.isValid())
-    {
-        qDebug() << "Invalid block for line" << lineNumber;
-        return;
-    }
-
-    QTextCursor cursor(block);
+    QTextCursor cursor = cursor4Line(lineNumber);
     setTextCursor(cursor);
-    centerCursor();
+    ensureCursorVisible();
+
     setFocus();
 }
 
@@ -122,6 +117,46 @@ void CodeEditor::reloadFromFile(bool discardChanges)
     }
 }
 
+void CodeEditor::contextMenuEvent(QContextMenuEvent *event)
+{
+    QPlainTextEdit::contextMenuEvent(event);
+    return;
+    // TODO: Add custom actions:
+    QMenu* menu = createStandardContextMenu();
+
+    // Checking if we pressed on selection?
+    QTextCursor cursor = cursorForPosition(event->pos());
+    QTextCursor selection = textCursor();
+
+    if (selection.hasSelection()) {
+        int selStart = selection.selectionStart();
+        int selEnd = selection.selectionEnd();
+        int pos = cursor.position();
+
+        if (pos >= selStart && pos <= selEnd) {
+            menu->addSeparator();
+
+            QAction* actionOnSelection = new QAction("Działaj na zaznaczeniu", this);
+            connect(actionOnSelection, &QAction::triggered, this, [this]() {
+                QString selectedText = textCursor().selectedText();
+                qDebug() << "Działanie na zaznaczonym tekście:" << selectedText;
+            });
+            menu->addAction(actionOnSelection);
+        }
+    }
+
+    // Add action:
+    menu->addSeparator();
+    QAction* customAction = new QAction("Moja opcja", this);
+    connect(customAction, &QAction::triggered, this, [this]() {
+        qDebug() << "Kliknięto moja opcja";
+    });
+    menu->addAction(customAction);
+
+    menu->exec(event->globalPos());
+    delete menu;
+}
+
 void CodeEditor::restoreStateWhichDoesNotRequireSaving(bool discardChanges)
 {
     if (openedFileName.isEmpty())
@@ -132,6 +167,17 @@ void CodeEditor::restoreStateWhichDoesNotRequireSaving(bool discardChanges)
     {
         reloadFromFile(discardChanges);
     }
+}
+
+QTextCursor CodeEditor::cursor4Line(int lineNumber) const
+{
+    QTextCursor cursor = textCursor();
+    cursor.movePosition(QTextCursor::Start);
+    for (int i = 1; i < lineNumber; ++i)
+    {
+        cursor.movePosition(QTextCursor::NextBlock);
+    }
+    return cursor;
 }
 
 void CodeEditor::highlightCurrentLine()
