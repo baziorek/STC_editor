@@ -71,6 +71,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->findWidget->setCodeEditor(ui->plainTextEdit);
     ui->plainTextEdit->setFocus();
 
+    ui->contextTableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents); // Line
+    ui->contextTableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents); // Tag
+    ui->contextTableWidget->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);          // Text
+
     connect(ui->buttonsEmittingStc, &StcTagsButtons::buttonPressed, this, &MainWindow::onStcTagsButtonPressed);
     connect(ui->contextTableWidget, &QTableWidget::cellClicked, this, &MainWindow::onContextTableClicked);
     connect(ui->plainTextEdit, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateContextRequested);
@@ -351,14 +355,6 @@ void MainWindow::updateContextTable(auto taggedTextLinePositions)
         insertText2Cell(ui->contextTableWidget, rowNumber, 2, text);
 
         ++rowNumber;
-    }
-    if (ui->contextTableWidget->columnCount())
-    {
-        auto initialWidgetWidth = ui->contextTableWidget->width();
-        ui->contextTableWidget->resizeColumnToContents(0);
-        ui->contextTableWidget->resizeColumnToContents(1);
-        auto width4LastColumn = initialWidgetWidth - ui->contextTableWidget->columnWidth(0) - ui->contextTableWidget->columnWidth(2);
-        ui->contextTableWidget->setColumnWidth(2, width4LastColumn);
     }
 }
 
