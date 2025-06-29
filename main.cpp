@@ -77,4 +77,7 @@ int main(int argc, char *argv[])
  * 26. Makra do nagrywania
  * 27. obsługa różnych kodowań plików z rozpoznawaniem
  * 28. Podgląd dokumentacji cppreference (jak cppman da radę i QtCreator)
+ * Coś geometria się nie zapisuje - jedynie położenie, ale nie rozmiar okna
+ * TAB - przesuwa zaznaczony tekst w prawo
+ * SHIFT TAB - odwrotnie do powyższego
  **/
