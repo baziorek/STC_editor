@@ -1,11 +1,11 @@
 #pragma once
 
 #include <QTableWidget>
-#include <QSet>
 #include <QMenu>
 #include <QString>
 #include <QHeaderView>
-#include <QToolButton>
+#include <QMap>
+
 
 class FilteredTagTableWidget : public QTableWidget
 {
@@ -14,7 +14,7 @@ class FilteredTagTableWidget : public QTableWidget
 public:
     explicit FilteredTagTableWidget(QWidget* parent = nullptr);
 
-    void insertRow(int row, int lineNumber, QString tagNumber, QString textInsideTag);
+    void insertRow(int row, int lineNumber, QString tagName, QString textInsideTag);
     void insertText2Cell(int row, int column, const QString& text);
 
 signals:
@@ -28,6 +28,5 @@ private slots:
 
 private:
     QMenu* tagFilterMenu;
-    QSet<QString> visibleTags;
-    QSet<QString> allKnownTags;
+    QMap<QString, bool> tagVisibility;
 };

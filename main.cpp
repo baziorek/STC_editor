@@ -49,7 +49,6 @@ int main(int argc, char *argv[])
 
 /**
  * TODOs: Cpp0x
- * ! Może dodać filtrowanie w tabelce kontekstu
  * 1. ! Ctrl + F, Ctrl + R
  * 2. ! Correct formatting: when multi-line code sections
  * 3. Syntax highlinkk of Cpp & python: QCXXHighlighter https://github.com/Megaxela/QCodeEditor (MIT licence)
