@@ -3,7 +3,6 @@
 #include <QModelIndexList>
 #include "filteredtagtablewidget.h"
 
-
 enum ColumnIndices
 {
     COLUMN_INDEX_LINE_NUMBER = 0,
@@ -13,12 +12,11 @@ enum ColumnIndices
     COLUMN_INDEX_COLUMN_COUNT = 3
 };
 
-
 FilteredTagTableWidget::FilteredTagTableWidget(QWidget* parent)
     : QTableWidget(parent), tagFilterMenu(new QMenu(this))
 {
     setColumnCount(COLUMN_INDEX_COLUMN_COUNT);
-    setHorizontalHeaderLabels({"Line", "Tag", "Text"});
+    setHorizontalHeaderLabels({"Line", "Tag ▾", "Text"});
     horizontalHeader()->setSectionResizeMode(COLUMN_INDEX_LINE_NUMBER, QHeaderView::ResizeToContents);
     horizontalHeader()->setSectionResizeMode(COLUMN_INDEX_TAG_NAME, QHeaderView::ResizeToContents);
     horizontalHeader()->setSectionResizeMode(COLUMN_INDEX_CONTENT, QHeaderView::Stretch);
@@ -27,23 +25,7 @@ FilteredTagTableWidget::FilteredTagTableWidget(QWidget* parent)
     verticalHeader()->setVisible(false);
 
     connect(this, &QTableWidget::cellClicked, this, &FilteredTagTableWidget::onCellSingleClicked);
-}
-
-void FilteredTagTableWidget::setData(const TaggedData& data)
-{
-    allData = data;
-    setRowCount(data.size());
-
-    QSet<QString> allTags;
-    int row = 0;
-    for (const auto& entry : data)
-    {
-        insertRow(row++, entry);
-        allTags.insert(std::get<1>(entry));
-    }
-    visibleTags = allTags;
-    updateFilterMenu();
-    applyTagFilter();
+    connect(horizontalHeader(), &QHeaderView::sectionClicked, this, &FilteredTagTableWidget::onHeaderSectionClicked);
 }
 
 void FilteredTagTableWidget::insertRow(int rowNumber, int lineNumber, QString tagName, QString textInsideTag)
@@ -51,6 +33,15 @@ void FilteredTagTableWidget::insertRow(int rowNumber, int lineNumber, QString ta
     insertText2Cell(rowNumber, COLUMN_INDEX_LINE_NUMBER, QString::number(lineNumber));
     insertText2Cell(rowNumber, COLUMN_INDEX_TAG_NAME, tagName);
     insertText2Cell(rowNumber, COLUMN_INDEX_CONTENT, textInsideTag);
+
+    QTableWidgetItem* tagItem = item(rowNumber, COLUMN_INDEX_TAG_NAME);
+    if (tagItem)
+    {
+        tagItem->setData(Qt::UserRole, tagName);
+        visibleTags.insert(tagName);
+        updateFilterMenu();
+        applyTagFilter();
+    }
 }
 
 void FilteredTagTableWidget::insertText2Cell(int row, int column, const QString &text)
@@ -65,41 +56,22 @@ void FilteredTagTableWidget::insertText2Cell(int row, int column, const QString 
     {
         item(row, column)->setText(text);
     }
-}
 
-void FilteredTagTableWidget::insertRow(int row, const TaggedLine& entry)
-{
-    int line = std::get<COLUMN_INDEX_LINE_NUMBER>(entry);
-    const QString& tag = std::get<COLUMN_INDEX_TAG_NAME>(entry);
-    const QString& text = std::get<COLUMN_INDEX_CONTENT>(entry);
-
-    auto* itemLine = new QTableWidgetItem(QString::number(line));
-    auto* itemTag = new QTableWidgetItem(tag);
-    auto* itemText = new QTableWidgetItem(text);
-    itemText->setToolTip(text);
-
-    itemTag->setData(Qt::UserRole, tag);
-
-    setItem(row, COLUMN_INDEX_LINE_NUMBER, itemLine);
-    setItem(row, COLUMN_INDEX_TAG_NAME, itemTag);
-    setItem(row, COLUMN_INDEX_CONTENT, itemText);
+    if (column == COLUMN_INDEX_CONTENT)
+    {
+        item(row, column)->setToolTip(text);
+    }
 }
 
 void FilteredTagTableWidget::updateFilterMenu()
 {
     tagFilterMenu->clear();
 
-    QSet<QString> allTags;
-    const QModelIndexList matches = model()->match(model()->index(0, COLUMN_INDEX_TAG_NAME), Qt::DisplayRole, QVariant(), -1);
-
-    for (const QModelIndex& idx : matches)
-        allTags.insert(idx.data().toString());
-
-    for (const QString& tag : allTags)
+    for (const QString& tag : visibleTags)
     {
         QAction* action = new QAction(tag, this);
         action->setCheckable(true);
-        action->setChecked(visibleTags.contains(tag));
+        action->setChecked(true);
 
         connect(action, &QAction::toggled, this, [this, tag](bool checked) {
             if (checked)
@@ -112,7 +84,7 @@ void FilteredTagTableWidget::updateFilterMenu()
         tagFilterMenu->addAction(action);
     }
 
-    if (!allTags.isEmpty()) {
+    if (!visibleTags.isEmpty()) {
         tagFilterMenu->addSeparator();
         QAction* clearAction = new QAction(tr("Wyczyść filtr"), this);
         connect(clearAction, &QAction::triggered, this, [this]() {
@@ -148,4 +120,16 @@ void FilteredTagTableWidget::onCellSingleClicked(int row, int)
             emit goToLineClicked(lineNumber);
         }
     }
+}
+
+void FilteredTagTableWidget::onHeaderSectionClicked(int logicalIndex)
+{
+    if (logicalIndex != COLUMN_INDEX_TAG_NAME)
+        return;
+
+    int x = horizontalHeader()->sectionPosition(logicalIndex);
+    int y = horizontalHeader()->height();
+
+    QPoint globalPos = horizontalHeader()->mapToGlobal(QPoint(x, y));
+    tagFilterMenu->exec(globalPos);
 }
