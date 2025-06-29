@@ -163,39 +163,83 @@ void CodeEditor::reloadFromFile(bool discardChanges)
 
 void CodeEditor::contextMenuEvent(QContextMenuEvent *event)
 {
-    QPlainTextEdit::contextMenuEvent(event);
-    return;
-    // TODO: Add custom actions:
     QMenu* menu = createStandardContextMenu();
 
-    // Checking if we pressed on selection?
-    QTextCursor cursor = cursorForPosition(event->pos());
     QTextCursor selection = textCursor();
 
-    if (selection.hasSelection()) {
-        int selStart = selection.selectionStart();
-        int selEnd = selection.selectionEnd();
-        int pos = cursor.position();
+    if (selection.hasSelection())
+    {
+        QString selectedText = selection.selectedText();
+        bool isSingleWord = !selectedText.contains(QRegularExpression("\\s"));
 
-        if (pos >= selStart && pos <= selEnd) {
-            menu->addSeparator();
+        menu->addSeparator();
 
-            QAction* actionOnSelection = new QAction("Działaj na zaznaczeniu", this);
-            connect(actionOnSelection, &QAction::triggered, this, [this]() {
-                QString selectedText = textCursor().selectedText();
-                qDebug() << "Działanie na zaznaczonym tekście:" << selectedText;
+        // Uppercase
+        if (!selectedText.isUpper())
+        {
+            QAction* actionUpper = new QAction("To UPPER CASE", this);
+            connect(actionUpper, &QAction::triggered, this, [this]() {
+                QTextCursor sel = textCursor();
+                sel.insertText(sel.selectedText().toUpper());
             });
-            menu->addAction(actionOnSelection);
+            menu->addAction(actionUpper);
+        }
+
+        // Lowercase
+        if (!selectedText.isLower())
+        {
+            QAction* actionLower = new QAction("To lower case", this);
+            connect(actionLower, &QAction::triggered, this, [this]() {
+                QTextCursor sel = textCursor();
+                sel.insertText(sel.selectedText().toLower());
+            });
+            menu->addAction(actionLower);
+        }
+
+        // CamelCase <-> snake_case
+        if (isSingleWord) {
+            QString text = selectedText;
+
+            QAction* casingAction = nullptr;
+            if (text.contains('_')) {
+                casingAction = new QAction("To camelCase", this);
+                connect(casingAction, &QAction::triggered, this, [this, text]() {
+                    QStringList parts = text.split('_', Qt::SkipEmptyParts);
+                    for (int i = 1; i < parts.size(); ++i)
+                        parts[i][0] = parts[i][0].toUpper();
+                    QString camel = parts.join("");
+                    QTextCursor sel = textCursor();
+                    sel.insertText(camel);
+                });
+            } else {
+                casingAction = new QAction("To snake_case", this);
+                connect(casingAction, &QAction::triggered, this, [this, text]() {
+                    QString snake;
+                    for (int i = 0; i < text.length(); ++i) {
+                        if (i > 0 && text[i].isUpper()) {
+                            snake += '_';
+                            snake += text[i].toLower();
+                        } else {
+                            snake += text[i].toLower();
+                        }
+                    }
+                    QTextCursor sel = textCursor();
+                    sel.insertText(snake);
+                });
+            }
+
+            if (casingAction)
+                menu->addAction(casingAction);
         }
     }
 
-    // Add action:
-    menu->addSeparator();
-    QAction* customAction = new QAction("Moja opcja", this);
-    connect(customAction, &QAction::triggered, this, [this]() {
-        qDebug() << "Kliknięto moja opcja";
-    });
-    menu->addAction(customAction);
+    // // Stała opcja
+    // menu->addSeparator();
+    // QAction* customAction = new QAction("Moja opcja", this);
+    // connect(customAction, &QAction::triggered, this, [this]() {
+    //     qDebug() << "Kliknięto moja opcja";
+    // });
+    // menu->addAction(customAction);
 
     menu->exec(event->globalPos());
     delete menu;
