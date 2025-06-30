@@ -15,9 +15,43 @@
 #include "stcsyntaxhighlighter.h"
 
 
+namespace
+{
+/// in Qt it is impossible to check if we really have text file (without external library).
+/// That is why we are checking first characters and checking if they are printable:
+bool isProbablyTextFile(const QString &filePath, int maxBytesToCheck = 2048)
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly))
+        return false;
+
+    QByteArray buffer = file.read(maxBytesToCheck);
+    file.close();
+
+    for (char byte : buffer)
+    {
+        uchar c = static_cast<uchar>(byte);
+
+        // Printable ASCII + common whitespace (tab, newline, carriage return)
+        if ((c >= 0x20 && c <= 0x7E) || c == '\n' || c == '\r' || c == '\t')
+            continue;
+
+        // UTF-8 continuation bytes or BOM may appear — allow some
+        if (c >= 0x80)
+            continue;
+
+        // Otherwise, probably binary
+        return false;
+    }
+
+    return true;
+}
+} // namespace
+
 CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 {
     setAcceptDrops(true);
+    setMouseTracking(true);
 
     lineNumberArea = new LineNumberArea(this);
 
@@ -499,7 +533,7 @@ void CodeEditor::dropEvent(QDropEvent *event)
         const QString suffix = fileInfo.suffix().toLower();
 
         // 1. Handle text files
-        if (suffix == "txt" || suffix == "md" || suffix == "csv" || suffix == "log")
+        if (isProbablyTextFile(localPath))
         {
             if (loadFileContent(localPath))
             {
@@ -515,4 +549,47 @@ void CodeEditor::dropEvent(QDropEvent *event)
     }
 
     event->acceptProposedAction();
+}
+
+void CodeEditor::mouseMoveEvent(QMouseEvent* event)
+{
+    QTextCursor cursor = cursorForPosition(event->pos());
+    cursor.select(QTextCursor::WordUnderCursor);
+    const QString word = cursor.selectedText();
+
+    static QRegularExpression imgRegex("\\[img\\s+src=\"([^\"]+)\"\\]");
+    QTextBlock block = cursor.block();
+    const QString blockText = block.text();
+    QRegularExpressionMatch match = imgRegex.match(blockText);
+    if (match.hasMatch())
+    {
+        QString imagePath = match.captured(1);
+        QFileInfo fi(imagePath);
+        if (fi.exists() && fi.isFile() && QImageReader::supportedImageFormats().contains(fi.suffix().toLower().toUtf8())) {
+            QImage image(imagePath);
+            if (!image.isNull()) {
+                const QSize previewSize = image.size().boundedTo(QSize(300, 200));
+                const QPixmap pixmap = QPixmap::fromImage(image.scaled(previewSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+                const QString tooltipHtml = QString(R"(
+                    <b>%1</b><br/>
+                    <img src="%2"/><br/>
+                    <i>%3 x %4 px</i><br/>
+                    Last modified: %5
+                )")
+                    .arg(fi.fileName())
+                    .arg(imagePath)
+                    .arg(image.width())
+                    .arg(image.height())
+                    .arg(fi.lastModified().toString(Qt::ISODate));
+
+                // Show tooltip with image
+                QToolTip::showText(event->globalPosition().toPoint(), tooltipHtml, this);
+                return;
+            }
+        }
+    }
+
+    // If regex does not match - hide
+    QToolTip::hideText();
+    QPlainTextEdit::mouseMoveEvent(event);
 }

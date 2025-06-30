@@ -62,11 +62,11 @@ int main(int argc, char *argv[])
  * 11. Listen external changes of file
  * 12. Obrazki na serwerze - podmiana prefixów w linkach
  * 13. Śledzenie zmian - wyświetlanie linii gdzie coś zmieniono
- * 14. *Images preview
- * 15. * Mark lines with changes
+ * 14. TODOs tracking
+ * 15. uruchamianie z argumentem trwa wolno - gdy plik jest duży.
  * 16. * Add formatting of C++ code
  * 17. * Add compile C++ code
- * 18. TODOs tracking
+ * 18. * Mark lines with changes
  * 19. Lista skrótów
  * 20. Copy file name
  * 21. Umiejscowienie danej pozycji w rozdziałach i divach
@@ -79,5 +79,4 @@ int main(int argc, char *argv[])
  * 28. Podgląd dokumentacji cppreference (jak cppman da radę i QtCreator)
  * TAB - przesuwa zaznaczony tekst w prawo
  * SHIFT TAB - odwrotnie do powyższego
- * uruchamianie z argumentem trwa wolno - gdy plik jest duży.
  **/
