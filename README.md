@@ -11,6 +11,7 @@ To nie jest bardzo zaawansowane narzędzie, jest to po prostu widget w QT z pole
 3. Możliwość zmiany zaznaczonego tekstu: na małe, na duże, camelCase -> snake_case i odwrotnie
 4. Podgląd kontekstu dokumentu (przykładowo dla `[h1]Nagłówek[/h1]` będzie wykryty tag "h1", linia, oraz zawartość "Nagłówek") wraz z możliwością skakania do danej linii, czy filtrowania tylko interesujących tagów
 5. Podgląd obrazków po najechaniu myszką (podgląd dla `[img src="istniejąca/ścieżka/obrazek.png"]`).
+6. Gdy wewnątrz tagów klikniemy myszką to pojawi się w menu kontekstowym opcja usunięcia tagu (przykładowo mamy: `[b]Pogrubiony tekst[/b]` to pojawi się opcja usunięcia `[b]` i wtedy będzie jedynie `Pogrubiony tekst`).
 
 ### Funkcjonalności edytora
 1. Wczytywanie i zapisywanie plików

@@ -93,7 +93,7 @@ bool CodeEditor::noUnsavedChanges() const
     //  TODO: consider: !file.exists() && currentlyVisibleText.isEmpty()
 
     file.open(QFile::ReadOnly);
-    return file.readAll() == currentlyVisibleText;
+    return QString::fromUtf8(file.readAll()) == currentlyVisibleText;
 }
 
 void CodeEditor::setFileName(const QString &newFileName)
@@ -332,14 +332,67 @@ void CodeEditor::contextMenuEvent(QContextMenuEvent *event)
             menu->addAction(joinLines);
         }
     }
+    else // if (! selection.hasSelection())
+    {
+        // No selection - we are cheching if cursor is inside one of tags
+        QTextCursor cursor = textCursor();
+        QString blockText = cursor.block().text();
+        int posInBlock = cursor.position() - cursor.block().position();
 
-    // // Constant option
-    // menu->addSeparator();
-    // QAction* customAction = new QAction("Moja opcja", this);
-    // connect(customAction, &QAction::triggered, this, [this]() {
-    //     qDebug() << "Kliknięto moja opcja";
-    // });
-    // menu->addAction(customAction);
+        static const QStringList tagList =
+        {
+            "code", "cpp", "py", "b", "u", "i", "h1", "h2", "h3", "h4", "run"
+        };
+
+        for (const QString& tag : tagList)
+        {
+            QRegularExpression regex(QString(R"(\[%1\](.*?)\[/%1\])").arg(tag));
+            QRegularExpressionMatchIterator it = regex.globalMatch(blockText);
+
+            while (it.hasNext())
+            {
+                QRegularExpressionMatch match = it.next();
+                int start = match.capturedStart(1);
+                int end = match.capturedEnd(1);
+
+                if (posInBlock >= start && posInBlock <= end)
+                {
+                    // cursor inside one of tags
+                    menu->addSeparator();
+                    QAction* removeTag = new QAction(QString("Remove [%1]").arg(tag), this);
+                    connect(removeTag, &QAction::triggered, this, [this, tag]() {
+                        QTextCursor cursor = textCursor();
+                        QString blockText = cursor.block().text();
+
+                        // Find position of cursor in line
+                        int posInBlock = cursor.position() - cursor.block().position();
+
+                        QRegularExpression regex(QString(R"(\[%1\](.*?)\[/%1\])").arg(tag));
+                        QRegularExpressionMatchIterator it = regex.globalMatch(blockText);
+
+                        while (it.hasNext())
+                        {
+                            QRegularExpressionMatch match = it.next();
+                            int start = match.capturedStart(1);
+                            int end = match.capturedEnd(1);
+
+                            if (posInBlock >= start && posInBlock <= end) {
+                                QTextCursor lineCursor(cursor.block());
+                                lineCursor.setPosition(cursor.block().position() + match.capturedStart());
+                                lineCursor.setPosition(cursor.block().position() + match.capturedEnd(), QTextCursor::KeepAnchor);
+
+                                QString inner = match.captured(1);
+                                lineCursor.insertText(inner);
+                                break;
+                            }
+                        }
+                    });
+                    menu->addAction(removeTag);
+                    break; // only first matching tag
+                }
+            }
+        }
+    }
 
     menu->exec(event->globalPos());
     delete menu;
