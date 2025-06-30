@@ -7,6 +7,9 @@
 #include <QScrollBar>
 #include <QToolTip>
 #include <QTimer>
+#include <QMimeData>
+#include <QFileInfo>
+#include <QImageReader>
 #include "codeeditor.h"
 #include "linenumberarea.h"
 #include "stcsyntaxhighlighter.h"
@@ -14,6 +17,8 @@
 
 CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 {
+    setAcceptDrops(true);
+
     lineNumberArea = new LineNumberArea(this);
 
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);
@@ -133,32 +138,41 @@ void CodeEditor::resizeEvent(QResizeEvent *e)
 
 void CodeEditor::reloadFromFile(bool discardChanges)
 {
-    QFile file(openedFileName);
+    const auto currentLineBeforeReloading = textCursor().block().blockNumber();
+    const auto currentColumnBeforeReloading = textCursor().positionInBlock();
+
+    if (loadFileContent(openedFileName))
+    {
+        // restore cursor position
+        QTextCursor cursor = cursor4Line(currentLineBeforeReloading + 1); // +1 because lines are being counted from 1
+        cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, currentColumnBeforeReloading);
+        setTextCursor(cursor);
+        ensureCursorVisible();
+    }
+}
+
+bool CodeEditor::loadFileContent(const QString& fileName)
+{
+    QFile file(fileName);
     if (!file.exists())
     {
         QMessageBox::warning(this, tr("Reloading error"), tr("File '%1' does not exist!").arg(openedFileName));
-        return;
+        return false;
     }
-
-    const auto currentLineBeforeReloading = textCursor().block().blockNumber();
-    const auto currentColumnBeforeReloading = textCursor().positionInBlock();
     if (!file.open(QFile::ReadOnly))
     {
         QMessageBox::warning(this, tr("Reloading error"), tr("Could not open '%1'.").arg(openedFileName));
-        return;
+        return false;
     }
 
     const QByteArray content = file.readAll();
     file.close();
 
-    // load content
     setPlainText(QString::fromUtf8(content));
 
-    // restore cursor position
-    QTextCursor cursor = cursor4Line(currentLineBeforeReloading + 1); // +1 because lines are being counted from 1
-    cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, currentColumnBeforeReloading);
-    setTextCursor(cursor);
-    ensureCursorVisible();
+    setFileName(fileName);
+
+    return true;
 }
 
 void CodeEditor::contextMenuEvent(QContextMenuEvent *event)
@@ -454,4 +468,51 @@ void CodeEditor::fileChanged(const QString &path)
 
         enableWatchingOfFile(path);
     });
+}
+
+void CodeEditor::dragEnterEvent(QDragEnterEvent *event)
+{
+    if (event->mimeData()->hasUrls())
+        event->acceptProposedAction();
+    else
+        QPlainTextEdit::dragEnterEvent(event);
+}
+
+void CodeEditor::dropEvent(QDropEvent *event)
+{
+    const QMimeData *mimeData = event->mimeData();
+    if (! mimeData->hasUrls())
+    {
+        return;
+    }
+
+    QList<QUrl> urls = mimeData->urls();
+    for (const QUrl &url : urls)
+    {
+        const QString localPath = url.toLocalFile();
+        if (localPath.isEmpty())
+        {
+            continue;
+        }
+
+        QFileInfo fileInfo(localPath);
+        const QString suffix = fileInfo.suffix().toLower();
+
+        // 1. Handle text files
+        if (suffix == "txt" || suffix == "md" || suffix == "csv" || suffix == "log")
+        {
+            if (loadFileContent(localPath))
+            {
+                break; // only one file at once
+            }
+        }
+        // 2. Add link to image file
+        else if (QImageReader::supportedImageFormats().contains(suffix.toUtf8()))
+        {
+            QTextCursor cursor = textCursor();
+            cursor.insertText(QString(R"([img src="%1"])").arg(localPath));
+        }
+    }
+
+    event->acceptProposedAction();
 }

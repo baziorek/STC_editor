@@ -51,9 +51,9 @@ int main(int argc, char *argv[])
  * TODOs: Cpp0x
  * 1. ! Ctrl + F, Ctrl + R (with possibility to uncheck)
  * 2. ! Correct formatting: when multi-line code sections
- * 3. Syntax highlinkk of Cpp & python: QCXXHighlighter https://github.com/Megaxela/QCodeEditor (MIT licence)
+ * 3. ! Coś geometria się nie zapisuje - jedynie położenie, ale nie rozmiar okna
  * 4. Consider using syntax analizer for C++: https://github.com/westes/flex
- * 5. TODOs tracking
+ * 5. Syntax highlinkk of Cpp & python: QCXXHighlighter https://github.com/Megaxela/QCodeEditor (MIT licence)
  * 6. Bookmarks to places in code
  * 7. Add checking if [run] tags are inside [pkt] if there are any tags
  * 8. Add checking: if all tags are closed
@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
  * 15. * Mark lines with changes
  * 16. * Add formatting of C++ code
  * 17. * Add compile C++ code
- * 18. Drag & drop file
+ * 18. TODOs tracking
  * 19. Lista skrótów
  * 20. Copy file name
  * 21. Umiejscowienie danej pozycji w rozdziałach i divach
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
  * 26. Makra do nagrywania
  * 27. obsługa różnych kodowań plików z rozpoznawaniem
  * 28. Podgląd dokumentacji cppreference (jak cppman da radę i QtCreator)
- * Coś geometria się nie zapisuje - jedynie położenie, ale nie rozmiar okna
  * TAB - przesuwa zaznaczony tekst w prawo
  * SHIFT TAB - odwrotnie do powyższego
+ * uruchamianie z argumentem trwa wolno - gdy plik jest duży.
  **/

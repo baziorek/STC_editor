@@ -57,10 +57,14 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
 
     void reloadFromFile(bool discardChanges=false);
+    bool loadFileContent(const QString& fileName);
 
     void contextMenuEvent(QContextMenuEvent* event) override;
 
     QTextCursor cursor4Line(int lineNumber) const;
+
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
