@@ -67,6 +67,12 @@ void FilteredTagTableWidget::insertText2Cell(int row, int column, const QString 
     }
 }
 
+void FilteredTagTableWidget::clearTags()
+{
+    tagVisibility.clear();
+    updateFilterMenu();
+}
+
 void FilteredTagTableWidget::updateFilterMenu()
 {
     tagFilterMenu->clear();

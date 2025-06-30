@@ -445,6 +445,7 @@ bool MainWindow::loadFileContentToEditor(QString fileName)
     if (file.exists())
     {
         updateWindowTitle(fileName);
+        ui->contextTableWidget->clearTags();
 
         file.open(QFile::ReadOnly);
         const auto textFromFile = file.readAll();

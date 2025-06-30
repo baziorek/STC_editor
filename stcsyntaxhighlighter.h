@@ -17,6 +17,13 @@ public:
 protected:
     void highlightBlock(const QString &text) override;
 
+    void addBlockStyle(const QString &tag,
+                       QColor foreground = Qt::black,
+                       std::uint64_t format = {},
+                       int pointSize = -1,
+                       QColor background = QColor(),
+                       const QString &fontFamily = QString());
+
 private:
     struct Rule
     {
@@ -39,13 +46,6 @@ private:
     QVector<StyledTag> styledTags;
 
     QMap<QString, StyledTag> styledTagsMap;
-
-    void addBlockStyle(const QString &tag,
-                       QColor foreground = Qt::black,
-                       std::uint64_t format = {},
-                       int pointSize = -1,
-                       QColor background = QColor(),
-                       const QString &fontFamily = QString());
 };
 
 /*

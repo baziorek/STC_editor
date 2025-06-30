@@ -17,6 +17,8 @@ public:
     void insertRow(int row, int lineNumber, QString tagName, QString textInsideTag);
     void insertText2Cell(int row, int column, const QString& text);
 
+    void clearTags();
+
 signals:
     void goToLineClicked(int lineNumber);
 
