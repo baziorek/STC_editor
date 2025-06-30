@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 
 /**
  * TODOs: Cpp0x
- * 1. ! Ctrl + F, Ctrl + R
+ * 1. ! Ctrl + F, Ctrl + R (with possibility to uncheck)
  * 2. ! Correct formatting: when multi-line code sections
  * 3. Syntax highlinkk of Cpp & python: QCXXHighlighter https://github.com/Megaxela/QCodeEditor (MIT licence)
  * 4. Consider using syntax analizer for C++: https://github.com/westes/flex

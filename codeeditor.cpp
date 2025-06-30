@@ -231,9 +231,61 @@ void CodeEditor::contextMenuEvent(QContextMenuEvent *event)
             if (casingAction)
                 menu->addAction(casingAction);
         }
+
+        // Adding numeration - if selected more than one lines:
+        int start = selection.selectionStart();
+        int end = selection.selectionEnd();
+        int startLine = document()->findBlock(start).blockNumber();
+        int endLine = document()->findBlock(end).blockNumber();
+
+        if (endLine > startLine)
+        {
+            menu->addSeparator();
+
+            // Numeration 1. 2. 3.
+            QAction* numberedList = new QAction("Add numeration: 1., 2., 3. ...", this);
+            connect(numberedList, &QAction::triggered, this, [this, startLine, endLine]() {
+                QTextCursor cursor(document()->findBlockByNumber(startLine));
+                for (int i = startLine, n = 1; i <= endLine; ++i, ++n)
+                {
+                    QTextBlock block = document()->findBlockByNumber(i);
+                    if (block.isValid()) {
+                        QTextCursor lineCursor(block);
+                        lineCursor.movePosition(QTextCursor::StartOfBlock);
+                        lineCursor.insertText(QString::number(n) + ". ");
+                    }
+                }
+            });
+            menu->addAction(numberedList);
+
+            // Numeration: -
+            QAction* dashedList = new QAction("Add numeration: bullet points", this);
+            connect(dashedList, &QAction::triggered, this, [this, startLine, endLine]() {
+                for (int i = startLine; i <= endLine; ++i)
+                {
+                    QTextBlock block = document()->findBlockByNumber(i);
+                    if (block.isValid()) {
+                        QTextCursor lineCursor(block);
+                        lineCursor.movePosition(QTextCursor::StartOfBlock);
+                        lineCursor.insertText("- ");
+                    }
+                }
+            });
+            menu->addAction(dashedList);
+
+            // Join lines with space
+            QAction* joinLines = new QAction("Join lines with space", this);
+            connect(joinLines, &QAction::triggered, this, [this]() {
+                QTextCursor sel = textCursor();
+                QString joined = sel.selectedText();
+                joined.replace(QChar::ParagraphSeparator, " ");
+                sel.insertText(joined);
+            });
+            menu->addAction(joinLines);
+        }
     }
 
-    // // Stała opcja
+    // // Constant option
     // menu->addSeparator();
     // QAction* customAction = new QAction("Moja opcja", this);
     // connect(customAction, &QAction::triggered, this, [this]() {
