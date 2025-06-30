@@ -76,4 +76,5 @@ private slots:
 private:
     QWidget *lineNumberArea;
     QFileSystemWatcher fileWatcher;
+    QString lastTooltipImagePath; /// this variable is for image tool tips - to keep them visible longer
 };

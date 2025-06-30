@@ -561,35 +561,46 @@ void CodeEditor::mouseMoveEvent(QMouseEvent* event)
     QTextBlock block = cursor.block();
     const QString blockText = block.text();
     QRegularExpressionMatch match = imgRegex.match(blockText);
-    if (match.hasMatch())
-    {
+    if (match.hasMatch()) {
         QString imagePath = match.captured(1);
         QFileInfo fi(imagePath);
-        if (fi.exists() && fi.isFile() && QImageReader::supportedImageFormats().contains(fi.suffix().toLower().toUtf8())) {
+        if (fi.exists() && fi.isFile() &&
+            QImageReader::supportedImageFormats().contains(fi.suffix().toLower().toUtf8()))
+        {
             QImage image(imagePath);
             if (!image.isNull()) {
-                const QSize previewSize = image.size().boundedTo(QSize(300, 200));
+                const QSize previewSize = image.size().boundedTo(QSize(200, 150));
                 const QPixmap pixmap = QPixmap::fromImage(image.scaled(previewSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-                const QString tooltipHtml = QString(R"(
-                    <b>%1</b><br/>
-                    <img src="%2"/><br/>
-                    <i>%3 x %4 px</i><br/>
-                    Last modified: %5
-                )")
-                    .arg(fi.fileName())
-                    .arg(imagePath)
-                    .arg(image.width())
-                    .arg(image.height())
-                    .arg(fi.lastModified().toString(Qt::ISODate));
 
-                // Show tooltip with image
-                QToolTip::showText(event->globalPosition().toPoint(), tooltipHtml, this);
+                // To make sure tooltip is not hiding instantly after moving mouse
+                if (imagePath != lastTooltipImagePath)
+                {
+                    lastTooltipImagePath = imagePath;
+
+                    const QString tooltipHtml = QString(R"(
+                        <b>%1</b><br/>
+                        <img src="%2" height="%3"/><br/>
+                        <i>%4 x %5 px</i><br/>
+                        Last modified: %6
+                    )")
+                                                    .arg(fi.fileName())
+                                                    .arg(imagePath)
+                                                    // .arg(previewSize.width())
+                                                    .arg(previewSize.height())
+                                                    .arg(image.width())
+                                                    .arg(image.height())
+                                                    .arg(fi.lastModified().toString(Qt::ISODate));
+
+                    QToolTip::showText(event->globalPosition().toPoint(), tooltipHtml, this);
+                }
+
                 return;
             }
         }
     }
 
-    // If regex does not match - hide
+    // If regex does not match: hide tool tip and reset path
+    lastTooltipImagePath.clear();
     QToolTip::hideText();
     QPlainTextEdit::mouseMoveEvent(event);
 }
