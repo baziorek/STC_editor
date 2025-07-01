@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QDesktopServices>
+#include <QClipboard>
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "checkers/PairedTagsChecker.h"
@@ -191,6 +192,44 @@ void MainWindow::onRecentRecentFilesMenuOpened()
         });
         ui->menuOpen_recent->addAction(clearAction);
     }
+}
+
+void MainWindow::onCopyFileAbsoluteNamePressed()
+{
+    const auto fileName = ui->textEditor->getFileName();
+    if (! fileName.isEmpty())
+    {
+        const auto fileNameAbsolutePath = QFileInfo(fileName).absoluteFilePath();
+        QApplication::clipboard()->setText(fileNameAbsolutePath);
+    }
+}
+
+void MainWindow::onCopyFileBaseNamePressed()
+{
+    const auto fileName = ui->textEditor->getFileName();
+    if (! fileName.isEmpty())
+    {
+        QString baseName = QFileInfo(fileName).fileName();
+        QApplication::clipboard()->setText(baseName);
+    }
+}
+
+void MainWindow::onOpenParentDirectoryPressed()
+{
+    QString fileName = ui->textEditor->getFileName();
+    QString pathToOpen;
+
+    if (fileName.isEmpty())
+    {
+        pathToOpen = QDir::currentPath();
+    }
+    else
+    {
+        pathToOpen = QFileInfo(fileName).absolutePath();
+    }
+
+    // Open in system file explorer
+    QDesktopServices::openUrl(QUrl::fromLocalFile(pathToOpen));
 }
 
 [[deprecated("Instead of them mnemoniks from Qt are being used")]] void MainWindow::connectShortcutsFromCodeWidget()

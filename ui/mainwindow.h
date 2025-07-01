@@ -37,6 +37,10 @@ public slots:
     void onExitFromApplicationMenuPressed();
     void onRecentRecentFilesMenuOpened();
 
+    void onCopyFileAbsoluteNamePressed();
+    void onCopyFileBaseNamePressed();
+    void onOpenParentDirectoryPressed();
+
     /// help menu:
     void onStcCoursePressed();
     void onCpp0xPl_pressed();

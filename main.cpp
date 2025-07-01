@@ -69,12 +69,12 @@ int main(int argc, char *argv[])
  * 17. * Add compile C++ code
  * 18. * Mark lines with changes
  * 19. Lista skrótów
- * 20. Copy file name
+ * 20. Spellcheck polski np. https://github.com/nuspell/nuspell https://doc.qt.io/qt-6/qtwebengine-webenginewidgets-spellchecker-example.html
  * 21. Umiejscowienie danej pozycji w rozdziałach i divach
  * 22. Statystyki sekcji
  * 23. podgląd web (kursu STC)
  * 24. Pluginy i może LUA
- * 25. Spellcheck polski np. https://github.com/nuspell/nuspell https://doc.qt.io/qt-6/qtwebengine-webenginewidgets-spellchecker-example.html
+ * 25. Dodawanie uwag do plików
  * 26. Makra do nagrywania
  * 27. obsługa różnych kodowań plików z rozpoznawaniem
  * 28. Podgląd dokumentacji cppreference (jak cppman da radę i QtCreator)

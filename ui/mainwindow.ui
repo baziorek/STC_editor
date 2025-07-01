@@ -123,6 +123,9 @@
     <addaction name="actionSave_as"/>
     <addaction name="menuOpen_recent"/>
     <addaction name="actionExit"/>
+    <addaction name="actionCopy_basename"/>
+    <addaction name="actionCopy_absolute_path"/>
+    <addaction name="actionOpen_parent_directory"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -250,6 +253,21 @@
   <action name="actionShortcut_list">
    <property name="text">
     <string>Shortcut list</string>
+   </property>
+  </action>
+  <action name="actionCopy_basename">
+   <property name="text">
+    <string>Copy basename</string>
+   </property>
+  </action>
+  <action name="actionCopy_absolute_path">
+   <property name="text">
+    <string>Copy absolute path</string>
+   </property>
+  </action>
+  <action name="actionOpen_parent_directory">
+   <property name="text">
+    <string>Open parent directory</string>
    </property>
   </action>
  </widget>
@@ -470,6 +488,54 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionCopy_absolute_path</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onCopyFileAbsoluteNamePressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>484</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionCopy_basename</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onCopyFileBaseNamePressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>484</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionOpen_parent_directory</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onOpenParentDirectoryPressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>484</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onSaveAsPressed()</slot>
@@ -483,5 +549,8 @@
   <slot>onStcCoursePressed()</slot>
   <slot>onCpp0xPl_pressed()</slot>
   <slot>onRepository_pressed()</slot>
+  <slot>onCopyFileAbsoluteNamePressed()</slot>
+  <slot>onCopyFileBaseNamePressed()</slot>
+  <slot>onOpenParentDirectoryPressed()</slot>
  </slots>
 </ui>
