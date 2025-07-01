@@ -49,12 +49,14 @@ std::map<int, TextInsideTags> findTagMatches(const QRegularExpression& regex, co
 }
 } // namespace
 
-
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
-{
+{    
+    ui->setupUi(this);
+
     loadSettings();
 
-    ui->setupUi(this);
+    setDisabledMenuActionsDependingOnOpenedFile();
+
     ui->findWidget->hide();
     ui->findWidget->setCodeEditor(ui->textEditor);
     ui->textEditor->setFocus();
@@ -167,7 +169,7 @@ void MainWindow::onRecentRecentFilesMenuOpened()
             }
             updateRecentFiles(filePath);
             onRecentRecentFilesMenuOpened();
-            loadFileContentToEditor(filePath);
+            loadFileContentToEditorDistargingCurrentContent(filePath);
         });
 
         ui->menuOpen_recent->addAction(recentAction);
@@ -473,23 +475,19 @@ void MainWindow::onOpenPressed()
     }
 
     const auto fileName = chooseFileWithDialog(QFileDialog::AcceptOpen).trimmed();
-    if (loadFileContentToEditor(fileName))
+    if (loadFileContentToEditorDistargingCurrentContent(fileName))
     {
         updateRecentFiles(fileName);
     }
 }
-bool MainWindow::loadFileContentToEditor(QString fileName)
+bool MainWindow::loadFileContentToEditorDistargingCurrentContent(QString fileName)
 {
-    QFile file(fileName);
-    if (file.exists())
+    if (ui->textEditor->loadFileContentDistargingCurrentContent(fileName))
     {
-        updateWindowTitle(fileName);
         ui->contextTableWidget->clearTags();
 
-        file.open(QFile::ReadOnly);
-        const auto textFromFile = file.readAll();
-        ui->textEditor->setPlainText(textFromFile);
-        ui->textEditor->setFileName(fileName);
+        setDisabledMenuActionsDependingOnOpenedFile(/*disabled=*/false);
+
         return true;
     }
     return false;
@@ -604,6 +602,12 @@ void MainWindow::loadSettings()
 
     lastDirectory = settings.value("lastDirectory", QDir::homePath()).toString();
     recentFiles = settings.value("recentFiles").toStringList();
+}
+
+void MainWindow::setDisabledMenuActionsDependingOnOpenedFile(bool disabled)
+{
+    ui->actionCopy_absolute_path->setDisabled(disabled);
+    ui->actionCopy_basename->setDisabled(disabled);
 }
 
 void MainWindow::saveSettings()

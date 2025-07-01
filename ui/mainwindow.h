@@ -23,7 +23,7 @@ public slots:
     void keyPressEvent(QKeyEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
 
-    bool loadFileContentToEditor(QString fileName);
+    bool loadFileContentToEditorDistargingCurrentContent(QString fileName);
 
     void onUpdateContextRequested();
 
@@ -48,6 +48,9 @@ public slots:
 
     /// check menu:
     void onCheckTagsPressed();
+
+protected:
+    void setDisabledMenuActionsDependingOnOpenedFile(bool disabled=true);
 
 private: // methods
     void putTextBackToCursorPosition(QTextCursor &cursor, QString divClass, QString selectedText,

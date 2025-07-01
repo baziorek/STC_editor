@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
         QFileInfo fileInfo(fileName);
         if (fileInfo.exists() && fileInfo.isFile())
         {
-            if (!w.loadFileContentToEditor(fileName))
+            if (!w.loadFileContentToEditorDistargingCurrentContent(fileName))
             {
                 qWarning() << "Opening file: '" << fileName << "' failed!";
             }
@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
  * 11. TAB - przesuwa zaznaczony tekst w prawo
  *      SHIFT TAB - odwrotnie do powyższego
  * 12. Obrazki na serwerze - podmiana prefixów w linkach
- * 13. Śledzenie zmian - wyświetlanie linii gdzie coś zmieniono
+ * 13. Śledzenie zmian - wyświetlanie linii gdzie coś zmieniono
  * 14. TODOs tracking
  * 15. uruchamianie z argumentem trwa wolno - gdy plik jest duży.
  * 16. * Add formatting of C++ code

@@ -20,6 +20,7 @@ To nie jest bardzo zaawansowane narzędzie, jest to po prostu widget w QT z pole
 4. Operowanie na UTF-8
 5. Dodanie numeracji zaznaczonych linii (menu kontekstowe edytora)
 6. Możliwość połączenia wielu linii w jedną oddzieloną spacją
+7. Kopiowanie do schowka nazwy pliku zarówno jako basenam, jak i absolutnej.
 
 ## Współpraca
 Chętnie zaakceptuje propozycje zmian do tego kodu aby był to wygodniejszy w użyciu edytor.

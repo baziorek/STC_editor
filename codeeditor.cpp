@@ -175,7 +175,7 @@ void CodeEditor::reloadFromFile(bool discardChanges)
     const auto currentLineBeforeReloading = textCursor().block().blockNumber();
     const auto currentColumnBeforeReloading = textCursor().positionInBlock();
 
-    if (loadFileContent(openedFileName))
+    if (loadFileContentDistargingCurrentContent(openedFileName))
     {
         // restore cursor position
         QTextCursor cursor = cursor4Line(currentLineBeforeReloading + 1); // +1 because lines are being counted from 1
@@ -185,7 +185,7 @@ void CodeEditor::reloadFromFile(bool discardChanges)
     }
 }
 
-bool CodeEditor::loadFileContent(const QString& fileName)
+bool CodeEditor::loadFileContentDistargingCurrentContent(const QString& fileName)
 {
     QFile file(fileName);
     if (!file.exists())
@@ -588,7 +588,7 @@ void CodeEditor::dropEvent(QDropEvent *event)
         // 1. Handle text files
         if (isProbablyTextFile(localPath))
         {
-            if (loadFileContent(localPath))
+            if (loadFileContentDistargingCurrentContent(localPath))
             {
                 break; // only one file at once
             }

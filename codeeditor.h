@@ -34,6 +34,8 @@ public:
 
     void keyPressEvent(QKeyEvent *event) override;
 
+    bool loadFileContentDistargingCurrentContent(const QString& fileName);
+
 signals:
     void totalLinesCountChanged(int currentLinesCount);
     void shortcutPressed_bold();
@@ -57,7 +59,6 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
 
     void reloadFromFile(bool discardChanges=false);
-    bool loadFileContent(const QString& fileName);
 
     void contextMenuEvent(QContextMenuEvent* event) override;
 
