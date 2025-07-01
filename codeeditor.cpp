@@ -17,6 +17,8 @@
 
 namespace
 {
+constexpr int spacesPerTab = 4;
+
 /// in Qt it is impossible to check if we really have text file (without external library).
 /// That is why we are checking first characters and checking if they are printable:
 bool isProbablyTextFile(const QString &filePath, int maxBytesToCheck = 2048)
@@ -504,8 +506,97 @@ void CodeEditor::keyPressEvent(QKeyEvent *event)
         }
     }
 
+    if (event->key() == Qt::Key_Tab && !(event->modifiers() & Qt::ShiftModifier))
+    {
+        QTextCursor cursor = textCursor();
+
+        if (cursor.hasSelection())
+        {
+            int start = cursor.selectionStart();
+            int end = cursor.selectionEnd();
+
+            cursor.setPosition(start);
+            int firstBlock = cursor.blockNumber();
+
+            cursor.setPosition(end);
+            if (cursor.position() > 0 && cursor.atBlockStart())
+                cursor.movePosition(QTextCursor::PreviousBlock);
+            int lastBlock = cursor.blockNumber();
+
+            cursor.beginEditBlock();
+            for (int i = firstBlock; i <= lastBlock; ++i)
+            {
+                QTextBlock block = document()->findBlockByNumber(i);
+                QTextCursor blockCursor(block);
+                blockCursor.movePosition(QTextCursor::StartOfBlock);
+                blockCursor.insertText(QString(spacesPerTab, ' '));
+            }
+            cursor.endEditBlock();
+        }
+        else
+        {
+            insertPlainText(QString(spacesPerTab, ' '));
+        }
+        return;
+    }
+
+    if (event->key() == Qt::Key_Backtab || (event->key() == Qt::Key_Tab && (event->modifiers() & Qt::ShiftModifier))) {
+        QTextCursor cursor = textCursor();
+
+        if (cursor.hasSelection())
+        {
+            int start = cursor.selectionStart();
+            int end = cursor.selectionEnd();
+
+            cursor.setPosition(start);
+            int firstBlock = cursor.blockNumber();
+
+            cursor.setPosition(end);
+            if (cursor.position() > 0 && cursor.atBlockStart())
+                cursor.movePosition(QTextCursor::PreviousBlock);
+            int lastBlock = cursor.blockNumber();
+
+            cursor.beginEditBlock();
+            for (int i = firstBlock; i <= lastBlock; ++i)
+            {
+                QTextBlock block = document()->findBlockByNumber(i);
+                QTextCursor blockCursor(block);
+                blockCursor.movePosition(QTextCursor::StartOfBlock);
+
+                blockCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor, 1);
+                QString firstChar = blockCursor.selectedText();
+
+                if (firstChar == "\t")
+                {
+                    blockCursor.removeSelectedText();
+                }
+                else
+                {
+                    // try to remove 4 spaces in the beginning
+                    blockCursor = QTextCursor(block);
+                    for (int j = 0; j < spacesPerTab; ++j)
+                    {
+                        blockCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
+                        if (blockCursor.selectedText().endsWith(" "))
+                        {
+                            blockCursor.removeSelectedText();
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+            cursor.endEditBlock();
+        }
+        return;
+    }
+
+    // default behaviour:
     QPlainTextEdit::keyPressEvent(event);
 }
+
 
 void CodeEditor::fileChanged(const QString &path)
 {

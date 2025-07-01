@@ -49,6 +49,7 @@ std::map<int, TextInsideTags> findTagMatches(const QRegularExpression& regex, co
 }
 } // namespace
 
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {    
     ui->setupUi(this);

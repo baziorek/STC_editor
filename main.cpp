@@ -59,8 +59,7 @@ int main(int argc, char *argv[])
  * 8. Add checking: if all tags are closed
  * 9. Tables creator
  * 10. ALT + <- lub ALT + -> umożliwiające skakanie po miejscach w kodzie - wstecz i dalej
- * 11. TAB - przesuwa zaznaczony tekst w prawo
- *      SHIFT TAB - odwrotnie do powyższego
+ * 11. Dodawanie uwag do plików
  * 12. Obrazki na serwerze - podmiana prefixów w linkach
  * 13. Śledzenie zmian - wyświetlanie linii gdzie coś zmieniono
  * 14. TODOs tracking
@@ -74,8 +73,7 @@ int main(int argc, char *argv[])
  * 22. Statystyki sekcji
  * 23. podgląd web (kursu STC)
  * 24. Pluginy i może LUA
- * 25. Dodawanie uwag do plików
+ * 25. Podgląd dokumentacji cppreference (jak cppman da radę i QtCreator)
  * 26. Makra do nagrywania
  * 27. obsługa różnych kodowań plików z rozpoznawaniem
- * 28. Podgląd dokumentacji cppreference (jak cppman da radę i QtCreator)
  **/
