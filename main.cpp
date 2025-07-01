@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
 
 /**
  * TODOs: Cpp0x
+ * ctrl + - powiększanie
  * 1. ! Ctrl + F, Ctrl + R (with possibility to uncheck)
  * 2. ! Correct formatting: when multi-line code sections
  * 3. ! Coś geometria się nie zapisuje - jedynie położenie, ale nie rozmiar okna

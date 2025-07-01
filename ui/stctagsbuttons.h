@@ -14,6 +14,8 @@ public:
     explicit StcTagsButtons(QWidget *parent = nullptr);
     ~StcTagsButtons();
 
+    QMap<QString,QString> listOfShortcuts() const;
+
 signals:
     void buttonPressed(StcTags tag);
 

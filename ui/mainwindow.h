@@ -36,10 +36,10 @@ public slots:
     void onOpenPressed();
     void onExitFromApplicationMenuPressed();
     void onRecentRecentFilesMenuOpened();
-
     void onCopyFileAbsoluteNamePressed();
     void onCopyFileBaseNamePressed();
     void onOpenParentDirectoryPressed();
+    void onShowAvailableShortcutsPressed();
 
     /// help menu:
     void onStcCoursePressed();

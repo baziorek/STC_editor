@@ -476,7 +476,7 @@
    <sender>actionShortcut_list</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onRepository_pressed()</slot>
+   <slot>onShowAvailableShortcutsPressed()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -552,5 +552,6 @@
   <slot>onCopyFileAbsoluteNamePressed()</slot>
   <slot>onCopyFileBaseNamePressed()</slot>
   <slot>onOpenParentDirectoryPressed()</slot>
+  <slot>onShowAvailableShortcutsPressed()</slot>
  </slots>
 </ui>

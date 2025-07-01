@@ -36,6 +36,8 @@ public:
 
     bool loadFileContentDistargingCurrentContent(const QString& fileName);
 
+    QMap<QString,QString> listOfShortcuts() const;
+
 signals:
     void totalLinesCountChanged(int currentLinesCount);
     void shortcutPressed_bold();
@@ -68,6 +70,8 @@ protected:
     void dropEvent(QDropEvent *event) override;
 
     void mouseMoveEvent(QMouseEvent* event) override;
+
+    void registerShortcuts();
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);

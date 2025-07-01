@@ -80,3 +80,26 @@ StcTagsButtons::~StcTagsButtons()
 {
     delete ui;
 }
+
+QMap<QString, QString> StcTagsButtons::listOfShortcuts() const
+{
+    QMap<QString, QString> result;
+
+    for (QAbstractButton* btn : findChildren<QAbstractButton*>()) {
+        QString text = btn->text();              // e.g. "&H1" or "Insert &Image"
+        int amp = text.indexOf('&');
+
+        if (amp >= 0 && amp + 1 < text.length()) {
+            QChar mnemonicChar = text[amp + 1].toUpper(); // e.g. 'H'
+            QString shortcut = QString("Alt+") + mnemonicChar;
+
+            // Removing '&' from text, e.g. "&H1" -> "H1"
+            QString visibleText = text;
+            visibleText.remove('&');
+
+            result[shortcut] = QString("Presses button %1").arg(visibleText);
+        }
+    }
+
+    return result;
+}

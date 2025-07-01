@@ -235,6 +235,30 @@ void MainWindow::onOpenParentDirectoryPressed()
     QDesktopServices::openUrl(QUrl::fromLocalFile(pathToOpen));
 }
 
+void MainWindow::onShowAvailableShortcutsPressed()
+{ // TODO: Add windo with those shortcuts
+    qDebug() << "Shortcuts from buttons:";
+    auto s = ui->buttonsEmittingStc->listOfShortcuts();
+    for (auto key : s.keys())
+    {
+        auto text = s[key];
+        qDebug() << key << text;
+    }
+    qDebug() << "Shortcuts from editor:";
+    s = ui->textEditor->listOfShortcuts();
+    for (auto key : s.keys())
+    {
+        auto text = s[key];
+        qDebug() << key << text;
+    }
+
+    qDebug() << "Shortcuts from application menu:";
+    for (QAction* a : findChildren<QAction*>()) {
+        if (!a->shortcut().isEmpty())
+            qDebug() << a->text() << a->shortcut();
+    }
+}
+
 [[deprecated("Instead of them mnemoniks from Qt are being used")]] void MainWindow::connectShortcutsFromCodeWidget()
 {
     connect(ui->textEditor, &CodeEditor::shortcutPressed_bold, [this]() {

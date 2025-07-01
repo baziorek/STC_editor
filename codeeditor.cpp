@@ -10,6 +10,7 @@
 #include <QMimeData>
 #include <QFileInfo>
 #include <QImageReader>
+#include <QShortcut>
 #include "codeeditor.h"
 #include "linenumberarea.h"
 #include "stcsyntaxhighlighter.h"
@@ -55,6 +56,8 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
     setAcceptDrops(true);
     setMouseTracking(true);
 
+    registerShortcuts();
+
     lineNumberArea = new LineNumberArea(this);
 
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);
@@ -69,6 +72,26 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 
     STCSyntaxHighlighter *highlighter = new STCSyntaxHighlighter(document());
 }
+
+void CodeEditor::registerShortcuts()
+{
+    auto makeShortcut = [this](const QKeySequence& seq, const auto& signal, const QString& description) {
+        QShortcut* sc = new QShortcut(seq, this);
+        sc->setObjectName(description);
+        connect(sc, &QShortcut::activated, this, signal);
+    };
+
+    // makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_B), &CodeEditor::shortcutPressed_bold,    "Bold selected text"); // nie dziala
+    makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_U), &CodeEditor::shortcutPressed_run,     "Insert [run] tags");
+    makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_W), &CodeEditor::shortcutPressed_warning, "Insert [div class=\"uwaga\"] block");
+    makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_T), &CodeEditor::shortcutPressed_tip,     "Insert [div class=\"tip\"] block");
+    makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_H), &CodeEditor::shortcutPressed_href,    "Insert hyperlink");
+    makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_1), &CodeEditor::shortcutPressed_h1,      "Header level 1");
+    makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_2), &CodeEditor::shortcutPressed_h2,      "Header level 2");
+    makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_3), &CodeEditor::shortcutPressed_h3,      "Header level 3");
+    makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_4), &CodeEditor::shortcutPressed_h4,      "Header level 4");
+}
+
 
 int CodeEditor::lineNumberAreaWidth()
 {
@@ -209,6 +232,21 @@ bool CodeEditor::loadFileContentDistargingCurrentContent(const QString& fileName
     setFileName(fileName);
 
     return true;
+}
+
+QMap<QString, QString> CodeEditor::listOfShortcuts() const
+{
+    QMap<QString, QString> result;
+
+    for (QShortcut* s : findChildren<QShortcut*>()) {
+        QString key = s->key().toString(QKeySequence::NativeText);
+        QString desc = s->objectName();
+        if (desc.isEmpty())
+            desc = "Editor shortcut";
+        result[key] = desc;
+    }
+
+    return result;
 }
 
 void CodeEditor::contextMenuEvent(QContextMenuEvent *event)
@@ -473,35 +511,10 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 void CodeEditor::keyPressEvent(QKeyEvent *event)
 {
     if ((event->modifiers() & Qt::ControlModifier) && !(event->modifiers() & ~Qt::ControlModifier))
-    {
-        switch(event->key())
+    { // TODO: This shortcut should be set up in constructor, but it is not working
+        if (Qt::Key_B == event->key())
         {
-        case Qt::Key_B:
             emit shortcutPressed_bold();
-            return;
-        case Qt::Key_U:
-            emit shortcutPressed_run();
-            return;
-        case Qt::Key_W:
-            emit shortcutPressed_warning();
-            return;
-        case Qt::Key_T:
-            emit shortcutPressed_tip();
-            return;
-        case Qt::Key_H:
-            emit shortcutPressed_href();
-            return;
-        case Qt::Key_1:
-            emit shortcutPressed_h1();
-            return;
-        case Qt::Key_2:
-            emit shortcutPressed_h2();
-            return;
-        case Qt::Key_3:
-            emit shortcutPressed_h3();
-            return;
-        case Qt::Key_4:
-            emit shortcutPressed_h4();
             return;
         }
     }
