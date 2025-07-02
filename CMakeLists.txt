@@ -27,6 +27,7 @@ set(PROJECT_SOURCES
     checkers/PairedTagsChecker.h checkers/PairedTagsChecker.cpp
     types/stcTags.h types/stcTags.cpp
     widgets/filteredtagtablewidget.h widgets/filteredtagtablewidget.cpp
+    ui/shortcutsdialog.h ui/shortcutsdialog.cpp
 )
 
 set(TEXT_FILES

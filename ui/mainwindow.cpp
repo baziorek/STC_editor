@@ -11,6 +11,7 @@
 #include "./ui_mainwindow.h"
 #include "checkers/PairedTagsChecker.h"
 #include "errorlist.h"
+#include "ui/shortcutsdialog.h"
 #include "ui/stctagsbuttons.h"
 using namespace std;
 
@@ -236,19 +237,20 @@ void MainWindow::onOpenParentDirectoryPressed()
 }
 
 void MainWindow::onShowAvailableShortcutsPressed()
-{ // TODO: Add windo with those shortcuts
+{ // TODO: Add window with those shortcuts
     qDebug() << "Shortcuts from buttons:";
     auto s = ui->buttonsEmittingStc->listOfShortcuts();
-    for (auto key : s.keys())
+    for (auto it = s.constBegin(); it != s.constEnd(); ++it)
     {
-        auto text = s[key];
-        qDebug() << key << text;
+        const QString& text = it.key();
+        const QKeySequence& seq = it.value();
+        qDebug() << text << seq;
     }
     qDebug() << "Shortcuts from editor:";
-    s = ui->textEditor->listOfShortcuts();
+    auto s2 = ui->textEditor->listOfShortcuts();
     for (auto key : s.keys())
     {
-        auto text = s[key];
+        auto text = s2[key];
         qDebug() << key << text;
     }
 
@@ -257,6 +259,18 @@ void MainWindow::onShowAvailableShortcutsPressed()
         if (!a->shortcut().isEmpty())
             qDebug() << a->text() << a->shortcut();
     }
+
+    auto *dialog = new ShortcutsDialog(this);
+
+    dialog->addShortcuts(ui->buttonsEmittingStc->listOfShortcuts(), "Buttons");
+
+    // Pomiń s2 (bo puste), ale zostaw miejsce na później:
+    // dialog->addShortcuts(ui->textEditor->listOfShortcuts(), "Editor");
+
+    QList<QAction*> menuActions = findChildren<QAction*>();
+    dialog->addQActions(menuActions, "Application Menu");
+
+    dialog->exec();
 }
 
 [[deprecated("Instead of them mnemoniks from Qt are being used")]] void MainWindow::connectShortcutsFromCodeWidget()
