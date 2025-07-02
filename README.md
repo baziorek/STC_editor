@@ -22,6 +22,7 @@ To nie jest bardzo zaawansowane narzędzie, jest to po prostu widget w QT z pole
 6. Możliwość połączenia wielu linii w jedną oddzieloną spacją
 7. Kopiowanie do schowka nazwy pliku zarówno jako basenam, jak i absolutnej.
 8. TAB przesuwa cały zaznaczony tekst w prawo dodając spacje, SHIFT + TAB przesuwa w lewo (usuwając spacje)
+9. Lista skrótów (wyświetlalna z menu aplikacji).
 
 ## Współpraca
 Chętnie zaakceptuje propozycje zmian do tego kodu aby był to wygodniejszy w użyciu edytor.

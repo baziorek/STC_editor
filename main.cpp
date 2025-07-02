@@ -1,7 +1,49 @@
+#include <QApplication>
+#include <QTimer>
 #include "ui/mainwindow.h"
 
-#include <QApplication>
 
+void setUpIcon(QApplication& a);
+
+int main(int argc, char *argv[])
+{
+    QApplication a(argc, argv);
+    a.setOrganizationName("Personal");
+    a.setApplicationName("Cpp0x tags editor");
+    setUpIcon(a);
+
+    MainWindow w;
+
+    QStringList filesToOpen;
+    QStringList args = a.arguments();
+    for (int i = 1; i < args.size(); ++i)
+    {
+        QString fileName = args[i];
+        QFileInfo fileInfo(fileName);
+        if (fileInfo.exists() && fileInfo.isFile())
+            filesToOpen << fileName;
+        else
+            qWarning() << "File '" << fileName << "' does not exist or is not a file!";
+    }
+
+    if (!filesToOpen.isEmpty())
+    {
+        constexpr int delayBeforeOpeningFilesInMiliseconds = 300;
+        QTimer::singleShot(delayBeforeOpeningFilesInMiliseconds,
+                           [&w, filesToOpen]() {
+            for (const QString& fileName : filesToOpen)
+            {
+                if (!w.loadFileContentToEditorDistargingCurrentContent(fileName))
+                {
+                    qWarning() << "Opening file: '" << fileName << "' failed!";
+                }
+            }
+        });
+    }
+
+    w.show();
+    return a.exec();
+}
 
 void setUpIcon(QApplication& a)
 {
@@ -14,37 +56,6 @@ void setUpIcon(QApplication& a)
     {
         a.setWindowIcon(appIcon);
     }
-}
-
-int main(int argc, char *argv[])
-{
-    QApplication a(argc, argv);
-    a.setOrganizationName("Personal");
-    a.setApplicationName("Cpp0x tags editor");
-    setUpIcon(a);
-
-    MainWindow w;
-
-    QStringList args = a.arguments();
-    for (int i = 1; i < args.size(); ++i)
-    {
-        QString fileName = args[i];
-        QFileInfo fileInfo(fileName);
-        if (fileInfo.exists() && fileInfo.isFile())
-        {
-            if (!w.loadFileContentToEditorDistargingCurrentContent(fileName))
-            {
-                qWarning() << "Opening file: '" << fileName << "' failed!";
-            }
-        }
-        else
-        {
-            qWarning() << "File '" << fileName << "' does not exist or is not a file!";
-        }
-    }
-
-    w.show();
-    return a.exec();
 }
 
 /**
@@ -68,13 +79,12 @@ int main(int argc, char *argv[])
  * 16. * Add formatting of C++ code
  * 17. * Add compile C++ code
  * 18. * Mark lines with changes
- * 19. Lista skrótów
+ * 19. Statystyki sekcji
  * 20. Spellcheck polski np. https://github.com/nuspell/nuspell https://doc.qt.io/qt-6/qtwebengine-webenginewidgets-spellchecker-example.html
  * 21. Umiejscowienie danej pozycji w rozdziałach i divach
- * 22. Statystyki sekcji
+ * 22. obsługa różnych kodowań plików z rozpoznawaniem
  * 23. podgląd web (kursu STC)
  * 24. Pluginy i może LUA
  * 25. Podgląd dokumentacji cppreference (jak cppman da radę i QtCreator)
  * 26. Makra do nagrywania
- * 27. obsługa różnych kodowań plików z rozpoznawaniem
  **/
