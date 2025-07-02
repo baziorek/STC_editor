@@ -28,6 +28,7 @@ set(PROJECT_SOURCES
     types/stcTags.h types/stcTags.cpp
     widgets/filteredtagtablewidget.h widgets/filteredtagtablewidget.cpp
     ui/shortcutsdialog.h ui/shortcutsdialog.cpp
+    ui/highlightdelegate.h ui/highlightdelegate.cpp
 )
 
 set(TEXT_FILES
