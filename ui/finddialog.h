@@ -6,6 +6,8 @@ namespace Ui {
 class FindDialog;
 }
 
+class QTreeWidgetItem;
+
 class CodeEditor;
 
 class FindDialog : public QWidget
@@ -23,11 +25,15 @@ public:
         this->codeEditor = codeEditor;
     }
 
+signals:
+    void jumpToLocationRequested(int line, int offset);
+
 protected:
-    void showOccurences(const QString& text);
+    std::pair<int,int> showOccurences(const QString& text);
 
 public slots:
     void currentTextChanged(QString newText);
+    void onResultItemClicked(QTreeWidgetItem* item, int column);
 
 private:
     Ui::FindDialog *ui;

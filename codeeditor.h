@@ -54,6 +54,7 @@ public slots:
     void fileChanged(const QString &path);
 
     void go2LineRequested(int lineNumber);
+    void goToLineAndOffset(int lineNumber, int linePosition);
 
     void onScrollChanged(int);
 

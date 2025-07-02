@@ -14,6 +14,17 @@ FindDialog::FindDialog(QWidget *parent)
 
     auto delegate = new HighlightDelegate(this);
     ui->foundTextsTreeWidget->setItemDelegateForColumn(2, delegate);
+
+    connect(ui->foundTextsTreeWidget, &QTreeWidget::itemClicked,
+            this, &FindDialog::onResultItemClicked);
+}
+
+void FindDialog::onResultItemClicked(QTreeWidgetItem* item, int column)
+{
+    int line = item->data(0, Qt::UserRole).toInt();
+    int offset = item->data(1, Qt::UserRole).toInt();
+
+    emit jumpToLocationRequested(line, offset);
 }
 
 FindDialog::~FindDialog()
@@ -35,23 +46,24 @@ void FindDialog::currentTextChanged(QString newText)
     }
     else
     {
+        // TODO: Use results of the function instead of searching twice more:
+        /*const auto [occurencesCaseSensitive, occurencesCaseInsensitive] = */
+        showOccurences(newText);
         const auto text = codeEditor->toPlainText();
         const auto occurencesCaseSensitive = text.count(newText, Qt::CaseSensitive);
         const auto occurencesCaseInsensitive = text.count(newText, Qt::CaseInsensitive);
 
         auto occurencesCountAsText = QString("Occurences: %1/%2").arg(occurencesCaseSensitive).arg(occurencesCaseInsensitive);
         ui->occurencesLabel->setText(occurencesCountAsText);
-
-        showOccurences(newText);
     }
 }
 
-void FindDialog::showOccurences(const QString &searchText)
+std::pair<int, int> FindDialog::showOccurences(const QString &searchText)
 {
     ui->foundTextsTreeWidget->clear();
     if (searchText.isEmpty() || !codeEditor)
     {
-        return;
+        return {};
     }
 
     if (auto* delegate = qobject_cast<HighlightDelegate*>(ui->foundTextsTreeWidget->itemDelegateForColumn(2)))
@@ -61,16 +73,21 @@ void FindDialog::showOccurences(const QString &searchText)
 
     QTextDocument* doc = codeEditor->document();
     QTextCursor cursor(doc);
-    int matchCount = 0;
+    int matchCaseInsensitiveCount{};
+    int matchCaseSensitiveCount{};
 
-    constexpr int maxContextLength = 80;
+    const int columnWidth = ui->foundTextsTreeWidget->columnWidth(2);
+    QFontMetrics fm(ui->foundTextsTreeWidget->font());
+    const int charWidth = fm.horizontalAdvance('x');
+
+    const int maxContextLength = std::max(10, columnWidth / charWidth);
 
     while (!cursor.isNull() && !cursor.atEnd())
     {
         cursor = doc->find(searchText, cursor, QTextDocument::FindCaseSensitively);
         if (!cursor.isNull())
         {
-            matchCount++;
+            matchCaseInsensitiveCount++;
 
             int lineNumber = cursor.blockNumber() + 1;
             int offset = cursor.positionInBlock();
@@ -89,6 +106,8 @@ void FindDialog::showOccurences(const QString &searchText)
             auto *item = new QTreeWidgetItem();
             item->setText(0, QString("Line %1").arg(lineNumber));
             item->setText(1, QString::number(offset));
+            item->setData(0, Qt::UserRole, lineNumber);
+            item->setData(1, Qt::UserRole, offset);
             item->setData(2, Qt::DisplayRole, visibleText);
 
             ui->foundTextsTreeWidget->addTopLevelItem(item);
@@ -98,5 +117,5 @@ void FindDialog::showOccurences(const QString &searchText)
     ui->foundTextsTreeWidget->setColumnCount(3);
     ui->foundTextsTreeWidget->setHeaderLabels({ "Line", "Offset", "Context" });
 
-    qDebug() << searchText << ", Matches:" << matchCount;
+    return {matchCaseSensitiveCount, matchCaseInsensitiveCount};
 }

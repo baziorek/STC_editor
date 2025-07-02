@@ -153,6 +153,18 @@ void CodeEditor::go2LineRequested(int lineNumber)
     setFocus();
 }
 
+void CodeEditor::goToLineAndOffset(int lineNumber, int linePosition)
+{
+    lineNumber = std::clamp(lineNumber, 1, linesCount());
+
+    QTextCursor cursor = cursor4Line(lineNumber);
+    cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, linePosition);
+    setTextCursor(cursor);
+    ensureCursorVisible();
+
+    setFocus();
+}
+
 void CodeEditor::onScrollChanged(int)
 {
     const int total = blockCount();
