@@ -18,6 +18,8 @@ public:
     void addShortcuts(const QMultiMap<QString, QKeySequence> &shortcuts, const QString &category);
     void addQActions(const QList<QAction *> &actions, const QString &category);
 
+    void adjustSizeToContents();
+
 private:
     QTableWidget *table;
 };

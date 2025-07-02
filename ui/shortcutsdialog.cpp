@@ -7,6 +7,7 @@
 #include <QKeySequence>
 #include <QAction>
 
+
 ShortcutsDialog::ShortcutsDialog(QWidget *parent)
     : QDialog(parent)
 {
@@ -16,7 +17,10 @@ ShortcutsDialog::ShortcutsDialog(QWidget *parent)
     table = new QTableWidget(this);
     table->setColumnCount(3);
     table->setHorizontalHeaderLabels({ "Category", "Action", "Shortcut" });
-    table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    table->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+    table->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
     table->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     layout->addWidget(table);
@@ -38,6 +42,9 @@ void ShortcutsDialog::addShortcuts(const QMultiMap<QString, QKeySequence> &short
         table->setItem(row, 1, new QTableWidgetItem(description));
         table->setItem(row, 2, new QTableWidgetItem(shortcutStr));
     }
+
+    table->resizeColumnsToContents();
+    table->resizeRowsToContents();
 }
 
 void ShortcutsDialog::addQActions(const QList<QAction *> &actions, const QString &category)
@@ -51,4 +58,28 @@ void ShortcutsDialog::addQActions(const QList<QAction *> &actions, const QString
             table->setItem(row, 2, new QTableWidgetItem(action->shortcut().toString()));
         }
     }
+
+    table->resizeColumnsToContents();
+    table->resizeRowsToContents();
+}
+
+void ShortcutsDialog::adjustSizeToContents()
+{
+    table->resizeColumnsToContents();
+    table->resizeRowsToContents();
+
+    int totalWidth = table->verticalHeader()->width(); // rows number
+    for (int col = 0; col < table->columnCount(); ++col)
+        totalWidth += table->columnWidth(col);
+
+    int totalHeight = table->horizontalHeader()->height(); // column header
+    int visibleRows = std::min(table->rowCount(), 20); // limit heigh
+    for (int row = 0; row < visibleRows; ++row)
+        totalHeight += table->rowHeight(row);
+
+    // add margin
+    totalWidth += 40;
+    totalHeight += 80;
+
+    resize(totalWidth, totalHeight);
 }

@@ -36,7 +36,7 @@ public:
 
     bool loadFileContentDistargingCurrentContent(const QString& fileName);
 
-    QMap<QString,QString> listOfShortcuts() const;
+    QMultiMap<QString, QKeySequence> listOfShortcuts() const;
 
 signals:
     void totalLinesCountChanged(int currentLinesCount);

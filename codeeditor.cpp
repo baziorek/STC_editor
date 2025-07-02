@@ -234,16 +234,15 @@ bool CodeEditor::loadFileContentDistargingCurrentContent(const QString& fileName
     return true;
 }
 
-QMap<QString, QString> CodeEditor::listOfShortcuts() const
+QMultiMap<QString, QKeySequence> CodeEditor::listOfShortcuts() const
 {
-    QMap<QString, QString> result;
+    QMultiMap<QString, QKeySequence> result;
 
     for (QShortcut* s : findChildren<QShortcut*>()) {
-        QString key = s->key().toString(QKeySequence::NativeText);
         QString desc = s->objectName();
         if (desc.isEmpty())
             desc = "Editor shortcut";
-        result[key] = desc;
+        result.insert(desc, s->key());
     }
 
     return result;

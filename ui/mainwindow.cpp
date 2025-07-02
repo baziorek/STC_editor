@@ -237,38 +237,17 @@ void MainWindow::onOpenParentDirectoryPressed()
 }
 
 void MainWindow::onShowAvailableShortcutsPressed()
-{ // TODO: Add window with those shortcuts
-    qDebug() << "Shortcuts from buttons:";
-    auto s = ui->buttonsEmittingStc->listOfShortcuts();
-    for (auto it = s.constBegin(); it != s.constEnd(); ++it)
-    {
-        const QString& text = it.key();
-        const QKeySequence& seq = it.value();
-        qDebug() << text << seq;
-    }
-    qDebug() << "Shortcuts from editor:";
-    auto s2 = ui->textEditor->listOfShortcuts();
-    for (auto key : s.keys())
-    {
-        auto text = s2[key];
-        qDebug() << key << text;
-    }
-
-    qDebug() << "Shortcuts from application menu:";
-    for (QAction* a : findChildren<QAction*>()) {
-        if (!a->shortcut().isEmpty())
-            qDebug() << a->text() << a->shortcut();
-    }
-
+{
     auto *dialog = new ShortcutsDialog(this);
 
     dialog->addShortcuts(ui->buttonsEmittingStc->listOfShortcuts(), "Buttons");
 
-    // Pomiń s2 (bo puste), ale zostaw miejsce na później:
-    // dialog->addShortcuts(ui->textEditor->listOfShortcuts(), "Editor");
+    dialog->addShortcuts(ui->textEditor->listOfShortcuts(), "Editor");
 
     QList<QAction*> menuActions = findChildren<QAction*>();
     dialog->addQActions(menuActions, "Application Menu");
+
+    dialog->adjustSizeToContents();
 
     dialog->exec();
 }
