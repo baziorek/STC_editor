@@ -23,6 +23,9 @@ public:
         this->codeEditor = codeEditor;
     }
 
+protected:
+    void showOccurences(const QString& text);
+
 public slots:
     void currentTextChanged(QString newText);
 

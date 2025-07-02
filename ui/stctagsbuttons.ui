@@ -6,119 +6,148 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>208</width>
-    <height>653</height>
+    <width>280</width>
+    <height>538</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Frame</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="7" column="0">
-    <widget class="QPushButton" name="button_csv">
-     <property name="text">
-      <string>[cs&amp;v extended header]</string>
-     </property>
-     <property name="icon">
-      <iconset resource="../resources.qrc">
-       <normaloff>:/icons/mdi/resources/icons/mdi/table-plus.svg</normaloff>:/icons/mdi/resources/icons/mdi/table-plus.svg</iconset>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QGroupBox" name="groupBox">
+   <item row="3" column="0">
+    <widget class="QGroupBox" name="hrefPktCsv">
      <property name="title">
-      <string>Code</string>
+      <string/>
      </property>
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignCenter</set>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_3">
-      <item row="0" column="0">
-       <widget class="QPushButton" name="button_cpp">
-        <property name="toolTip">
-         <string>cpp code</string>
-        </property>
+     <layout class="QGridLayout" name="gridLayout_6">
+      <property name="topMargin">
+       <number>1</number>
+      </property>
+      <property name="bottomMargin">
+       <number>1</number>
+      </property>
+      <item row="1" column="0" colspan="2">
+       <widget class="QPushButton" name="button_csv">
         <property name="text">
-         <string>[&amp;cpp]</string>
+         <string>[cs&amp;v extended header]</string>
         </property>
         <property name="icon">
          <iconset resource="../resources.qrc">
-          <normaloff>:/icons/mdi/resources/icons/mdi/language-cpp.svg</normaloff>:/icons/mdi/resources/icons/mdi/language-cpp.svg</iconset>
+          <normaloff>:/icons/mdi/resources/icons/mdi/table-plus.svg</normaloff>:/icons/mdi/resources/icons/mdi/table-plus.svg</iconset>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QPushButton" name="button_py">
+       <widget class="QPushButton" name="button_pkt">
         <property name="toolTip">
-         <string>python code</string>
+         <string>Bullet list (you need to surround entire line with [run] to enable formatting</string>
         </property>
         <property name="text">
-         <string>[p&amp;y]</string>
+         <string>[pkt &amp;ext]</string>
         </property>
         <property name="icon">
          <iconset resource="../resources.qrc">
-          <normaloff>:/icons/mdi/resources/icons/mdi/language-python.svg</normaloff>:/icons/mdi/resources/icons/mdi/language-python.svg</iconset>
+          <normaloff>:/icons/mdi/resources/icons/mdi/format-list-bulleted.svg</normaloff>:/icons/mdi/resources/icons/mdi/format-list-bulleted.svg</iconset>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QPushButton" name="button_href">
+        <property name="toolTip">
+         <string>Hyperlink: This works accorging to one of three scenarios: 1. If nothing selected - just put tags, 2. If selected text contains link, 3. If selected text does not contains link</string>
+        </property>
+        <property name="text">
+         <string>[&amp;a href=]</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../resources.qrc">
+          <normaloff>:/icons/mdi/resources/icons/mdi/link-variant-plus.svg</normaloff>:/icons/mdi/resources/icons/mdi/link-variant-plus.svg</iconset>
         </property>
        </widget>
       </item>
       <item row="2" column="0" colspan="2">
-       <widget class="QPushButton" name="button_code">
-        <property name="toolTip">
-         <string>code (monospace text on black background)</string>
-        </property>
+       <widget class="QPushButton" name="button_run">
         <property name="text">
-         <string>[c&amp;ode]</string>
+         <string>[&amp;run]</string>
         </property>
         <property name="icon">
          <iconset resource="../resources.qrc">
-          <normaloff>:/icons/mdi/resources/icons/mdi/file-code.svg</normaloff>:/icons/mdi/resources/icons/mdi/file-code.svg</iconset>
+          <normaloff>:/icons/mdi/resources/icons/mdi/play-circle-outline.svg</normaloff>:/icons/mdi/resources/icons/mdi/play-circle-outline.svg</iconset>
         </property>
        </widget>
       </item>
      </layout>
     </widget>
    </item>
-   <item row="6" column="0">
-    <widget class="QPushButton" name="button_pkt">
-     <property name="toolTip">
-      <string>Bullet list (you need to surround entire line with [run] to enable formatting</string>
+   <item row="1" column="0">
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>Div</string>
      </property>
-     <property name="text">
-      <string>[pkt &amp;ext]</string>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignCenter</set>
      </property>
-     <property name="icon">
-      <iconset resource="../resources.qrc">
-       <normaloff>:/icons/mdi/resources/icons/mdi/format-list-bulleted.svg</normaloff>:/icons/mdi/resources/icons/mdi/format-list-bulleted.svg</iconset>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0">
-    <widget class="QPushButton" name="button_href">
-     <property name="toolTip">
-      <string>Hyperlink: This works accorging to one of three scenarios: 1. If nothing selected - just put tags, 2. If selected text contains link, 3. If selected text does not contains link</string>
-     </property>
-     <property name="text">
-      <string>[&amp;a href=]</string>
-     </property>
-     <property name="icon">
-      <iconset resource="../resources.qrc">
-       <normaloff>:/icons/mdi/resources/icons/mdi/link-variant-plus.svg</normaloff>:/icons/mdi/resources/icons/mdi/link-variant-plus.svg</iconset>
-     </property>
+     <layout class="QGridLayout" name="gridLayout_5">
+      <property name="leftMargin">
+       <number>2</number>
+      </property>
+      <property name="topMargin">
+       <number>1</number>
+      </property>
+      <property name="rightMargin">
+       <number>2</number>
+      </property>
+      <property name="bottomMargin">
+       <number>1</number>
+      </property>
+      <item row="2" column="1">
+       <widget class="QPushButton" name="button_cytat">
+        <property name="text">
+         <string>[cytat]</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../resources.qrc">
+          <normaloff>:/icons/mdi/resources/icons/mdi/comment-quote.svg</normaloff>:/icons/mdi/resources/icons/mdi/comment-quote.svg</iconset>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QPushButton" name="button_div">
+        <property name="text">
+         <string>[&amp;div]</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../resources.qrc">
+          <normaloff>:/icons/mdi/resources/icons/mdi/text-box.svg</normaloff>:/icons/mdi/resources/icons/mdi/text-box.svg</iconset>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <widget class="QPushButton" name="button_div_warning">
+        <property name="text">
+         <string>[div &amp;warning]</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../resources.qrc">
+          <normaloff>:/icons/mdi/resources/icons/mdi/alert-box.svg</normaloff>:/icons/mdi/resources/icons/mdi/alert-box.svg</iconset>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="2">
+       <widget class="QPushButton" name="button_div_tip">
+        <property name="text">
+         <string>[div &amp;tip]</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../resources.qrc">
+          <normaloff>:/icons/mdi/resources/icons/mdi/multiplication-box.svg</normaloff>:/icons/mdi/resources/icons/mdi/multiplication-box.svg</iconset>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
    <item row="8" column="0">
-    <widget class="QPushButton" name="button_run">
-     <property name="text">
-      <string>[&amp;run]</string>
-     </property>
-     <property name="icon">
-      <iconset resource="../resources.qrc">
-       <normaloff>:/icons/mdi/resources/icons/mdi/play-circle-outline.svg</normaloff>:/icons/mdi/resources/icons/mdi/play-circle-outline.svg</iconset>
-     </property>
-    </widget>
-   </item>
-   <item row="9" column="0">
     <widget class="QGroupBox" name="groupBox_3">
      <property name="title">
       <string>Headers</string>
@@ -127,6 +156,18 @@
       <set>Qt::AlignmentFlag::AlignCenter</set>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
+      <property name="leftMargin">
+       <number>2</number>
+      </property>
+      <property name="topMargin">
+       <number>1</number>
+      </property>
+      <property name="rightMargin">
+       <number>2</number>
+      </property>
+      <property name="bottomMargin">
+       <number>1</number>
+      </property>
       <item row="0" column="0">
        <widget class="QPushButton" name="button_h1">
         <property name="sizePolicy">
@@ -192,62 +233,6 @@
      </layout>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QGroupBox" name="groupBox_2">
-     <property name="title">
-      <string>Div</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignCenter</set>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_5">
-      <item row="2" column="1">
-       <widget class="QPushButton" name="button_cytat">
-        <property name="text">
-         <string>[cytat]</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../resources.qrc">
-          <normaloff>:/icons/mdi/resources/icons/mdi/comment-quote.svg</normaloff>:/icons/mdi/resources/icons/mdi/comment-quote.svg</iconset>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QPushButton" name="button_div">
-        <property name="text">
-         <string>[&amp;div]</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../resources.qrc">
-          <normaloff>:/icons/mdi/resources/icons/mdi/text-box.svg</normaloff>:/icons/mdi/resources/icons/mdi/text-box.svg</iconset>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0" colspan="2">
-       <widget class="QPushButton" name="button_div_warning">
-        <property name="text">
-         <string>[div &amp;warning]</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../resources.qrc">
-          <normaloff>:/icons/mdi/resources/icons/mdi/alert-box.svg</normaloff>:/icons/mdi/resources/icons/mdi/alert-box.svg</iconset>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0" colspan="2">
-       <widget class="QPushButton" name="button_div_tip">
-        <property name="text">
-         <string>[div &amp;tip]</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../resources.qrc">
-          <normaloff>:/icons/mdi/resources/icons/mdi/multiplication-box.svg</normaloff>:/icons/mdi/resources/icons/mdi/multiplication-box.svg</iconset>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
    <item row="2" column="0">
     <widget class="QGroupBox" name="font_buttonBox">
      <property name="title">
@@ -257,53 +242,18 @@
       <set>Qt::AlignmentFlag::AlignCenter</set>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
-      <item row="1" column="1">
-       <widget class="QPushButton" name="button_stroke">
-        <property name="toolTip">
-         <string>strike out text</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">font: 9pt &quot;Sans Serif&quot;;
-text-decoration: line-through;</string>
-        </property>
-        <property name="text">
-         <string>[&amp;s]</string>
-        </property>
-        <property name="icon">
-         <iconset theme="QIcon::ThemeIcon::FormatTextStrikethrough"/>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QPushButton" name="button_subsctipt">
-        <property name="toolTip">
-         <string>subscript text</string>
-        </property>
-        <property name="text">
-         <string>[sub]</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../resources.qrc">
-          <normaloff>:/icons/mdi/resources/icons/mdi/format-subscript.svg</normaloff>:/icons/mdi/resources/icons/mdi/format-subscript.svg</iconset>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QPushButton" name="button_bold">
-        <property name="toolTip">
-         <string>bold text</string>
-        </property>
-        <property name="text">
-         <string>[&amp;b]</string>
-        </property>
-        <property name="icon">
-         <iconset theme="QIcon::ThemeIcon::FormatTextBold"/>
-        </property>
-        <property name="shortcut">
-         <string>Ctrl+B</string>
-        </property>
-       </widget>
-      </item>
+      <property name="leftMargin">
+       <number>2</number>
+      </property>
+      <property name="topMargin">
+       <number>1</number>
+      </property>
+      <property name="rightMargin">
+       <number>2</number>
+      </property>
+      <property name="bottomMargin">
+       <number>1</number>
+      </property>
       <item row="0" column="1">
        <widget class="QPushButton" name="button_italic">
         <property name="toolTip">
@@ -320,7 +270,26 @@ text-decoration: line-through;</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
+      <item row="0" column="0">
+       <widget class="QPushButton" name="button_bold">
+        <property name="toolTip">
+         <string>bold text</string>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font: 700 9pt &quot;Times New Roman&quot;;</string>
+        </property>
+        <property name="text">
+         <string>[&amp;b]</string>
+        </property>
+        <property name="icon">
+         <iconset theme="QIcon::ThemeIcon::FormatTextBold"/>
+        </property>
+        <property name="shortcut">
+         <string>Ctrl+B</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
        <widget class="QPushButton" name="button_underlined">
         <property name="toolTip">
          <string>underline text</string>
@@ -337,7 +306,24 @@ text-decoration: underline;</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item row="1" column="0">
+       <widget class="QPushButton" name="button_stroke">
+        <property name="toolTip">
+         <string>strike out text</string>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">font: 9pt &quot;Sans Serif&quot;;
+text-decoration: line-through;</string>
+        </property>
+        <property name="text">
+         <string>[&amp;s]</string>
+        </property>
+        <property name="icon">
+         <iconset theme="QIcon::ThemeIcon::FormatTextStrikethrough"/>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
        <widget class="QPushButton" name="button_supsctipt">
         <property name="toolTip">
          <string>Super script text</string>
@@ -351,7 +337,21 @@ text-decoration: underline;</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
+      <item row="1" column="1">
+       <widget class="QPushButton" name="button_subsctipt">
+        <property name="toolTip">
+         <string>subscript text</string>
+        </property>
+        <property name="text">
+         <string>[sub]</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../resources.qrc">
+          <normaloff>:/icons/mdi/resources/icons/mdi/format-subscript.svg</normaloff>:/icons/mdi/resources/icons/mdi/format-subscript.svg</iconset>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
        <widget class="QPushButton" name="button_teleType">
         <property name="toolTip">
          <string>Tele type text (with monospace font)</string>
@@ -362,6 +362,72 @@ text-decoration: underline;</string>
         <property name="icon">
          <iconset resource="../resources.qrc">
           <normaloff>:/icons/mdi/resources/icons/mdi/format-text-variant.svg</normaloff>:/icons/mdi/resources/icons/mdi/format-text-variant.svg</iconset>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Code</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignCenter</set>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <property name="leftMargin">
+       <number>2</number>
+      </property>
+      <property name="topMargin">
+       <number>1</number>
+      </property>
+      <property name="rightMargin">
+       <number>2</number>
+      </property>
+      <property name="bottomMargin">
+       <number>1</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QPushButton" name="button_cpp">
+        <property name="toolTip">
+         <string>cpp code</string>
+        </property>
+        <property name="text">
+         <string>[&amp;cpp]</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../resources.qrc">
+          <normaloff>:/icons/mdi/resources/icons/mdi/language-cpp.svg</normaloff>:/icons/mdi/resources/icons/mdi/language-cpp.svg</iconset>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QPushButton" name="button_py">
+        <property name="toolTip">
+         <string>python code</string>
+        </property>
+        <property name="text">
+         <string>[p&amp;y]</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../resources.qrc">
+          <normaloff>:/icons/mdi/resources/icons/mdi/language-python.svg</normaloff>:/icons/mdi/resources/icons/mdi/language-python.svg</iconset>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QPushButton" name="button_code">
+        <property name="toolTip">
+         <string>code (monospace text on black background)</string>
+        </property>
+        <property name="text">
+         <string>[c&amp;ode]</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../resources.qrc">
+          <normaloff>:/icons/mdi/resources/icons/mdi/file-code.svg</normaloff>:/icons/mdi/resources/icons/mdi/file-code.svg</iconset>
         </property>
        </widget>
       </item>
