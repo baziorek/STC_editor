@@ -56,31 +56,40 @@ void FindDialog::currentTextChanged(QString newText)
     }
     else
     {
-        const auto [occurencesCaseSensitive, occurencesCaseInsensitive] =
-        showOccurences(newText);
+        const MatchStats stats = showOccurences(newText);
+        QString occurencesCountAsText;
+        if (stats.isZero())
+        {
+            occurencesCountAsText = QString("Occurences: 0");
+        }
+        else
+        {
+            occurencesCountAsText = QString("Occurences: %1 (%2)/%3 (%4)")
+            .arg(stats.sensitive).arg(stats.sensitiveWhole)
+                .arg(stats.insensitive).arg(stats.insensitiveWhole);
+        }
 
-        auto occurencesCountAsText = QString("Occurences: %1/%2").arg(occurencesCaseSensitive).arg(occurencesCaseInsensitive);
         ui->occurencesLabel->setText(occurencesCountAsText);
     }
 }
 
-std::pair<int, int> FindDialog::showOccurences(const QString &searchText)
+FindDialog::MatchStats FindDialog::showOccurences(const QString &searchText)
 {
-    const bool caseSensitive = ui->matchCasesCheckBox->isChecked();
+    const bool caseSensitiveRequired = ui->matchCasesCheckBox->isChecked();
+    const bool wholeWordRequired = ui->wholeWordsCheckBox->isChecked();
 
     ui->foundTextsTreeWidget->clear();
     if (searchText.isEmpty() || !codeEditor)
+    {
         return {};
+    }
 
     if (auto* delegate = qobject_cast<HighlightDelegate*>(ui->foundTextsTreeWidget->itemDelegateForColumn(2)))
-    {
         delegate->setSearchTerm(searchText);
-    }
 
     QTextDocument* doc = codeEditor->document();
     QTextCursor cursor(doc);
-    int matchCaseSensitiveCount = 0;
-    int matchCaseInsensitiveCount = 0;
+    MatchStats stats;
 
     const int columnWidth = ui->foundTextsTreeWidget->columnWidth(2);
     QFontMetrics fm(ui->foundTextsTreeWidget->font());
@@ -89,53 +98,67 @@ std::pair<int, int> FindDialog::showOccurences(const QString &searchText)
 
     while (!cursor.isNull() && !cursor.atEnd())
     {
-        cursor = doc->find(searchText, cursor/*, findFlags*/);
-        if (!cursor.isNull())
+        cursor = doc->find(searchText, cursor); // default: case insensitive
+        if (cursor.isNull())
         {
-            QString foundText = cursor.selectedText();
-
-            const bool isExactCaseSensitive = (foundText == searchText);
-
-            matchCaseInsensitiveCount++;
-            if (isExactCaseSensitive)
-            {
-                matchCaseSensitiveCount++;
-            }
-
-            // don't show matches when we want caseSensitive, but it is math not caseSensitive:
-            if (caseSensitive && !isExactCaseSensitive)
-                continue;
-
-            int lineNumber = cursor.blockNumber() + 1;
-            int offset = cursor.positionInBlock();
-            QString lineText = cursor.block().text();
-
-            int contextHalf = (maxContextLength - searchText.length()) / 2;
-            int startContext = std::max(0, offset - contextHalf);
-            int endContext = std::min(lineText.length(), offset + searchText.length() + contextHalf);
-
-            QString visibleText = lineText.mid(startContext, endContext - startContext);
-            if (startContext > 0)
-                visibleText.prepend("…");
-            if (endContext < lineText.length())
-                visibleText.append("…");
-
-            auto *item = new QTreeWidgetItem();
-            item->setText(0, QString("Line %1").arg(lineNumber));
-            item->setText(1, QString::number(offset));
-            item->setData(0, Qt::UserRole, lineNumber);
-            item->setData(1, Qt::UserRole, offset);
-            item->setData(2, Qt::DisplayRole, visibleText);
-
-            ui->foundTextsTreeWidget->addTopLevelItem(item);
+            break;
         }
+
+        QString blockText = cursor.block().text();
+        int startInDoc = cursor.selectionStart();
+        int endInDoc = cursor.selectionEnd();
+        int blockPosition = cursor.block().position();
+        int startInBlock = startInDoc - blockPosition;
+        int endInBlock = endInDoc - blockPosition;
+
+        QString foundText = blockText.mid(startInBlock, endInBlock - startInBlock);
+        bool isCaseSensitive = (foundText == searchText);
+
+        bool leftBoundary = startInBlock == 0 || !blockText[startInBlock - 1].isLetterOrNumber();
+        bool rightBoundary = endInBlock >= blockText.length() || !blockText[endInBlock].isLetterOrNumber();
+        bool isWholeWord = leftBoundary && rightBoundary;
+
+        stats.insensitive++;
+        if (isWholeWord)
+            stats.insensitiveWhole++;
+        if (isCaseSensitive)
+        {
+            stats.sensitive++;
+            if (isWholeWord)
+                stats.sensitiveWhole++;
+        }
+
+        // Pokaż tylko jeśli pasuje do opcji użytkownika
+        if ((caseSensitiveRequired && !isCaseSensitive) ||
+            (wholeWordRequired && !isWholeWord))
+            continue;
+
+        int lineNumber = cursor.blockNumber() + 1;
+        int contextHalf = (maxContextLength - searchText.length()) / 2;
+        auto startContext = std::max<qsizetype>(0, startInBlock - contextHalf);
+        auto endContext = std::min<qsizetype>(blockText.length(), endInBlock + contextHalf);
+
+        QString visibleText = blockText.mid(startContext, endContext - startContext);
+        if (startContext > 0)
+            visibleText.prepend("…");
+        if (endContext < blockText.length())
+            visibleText.append("…");
+
+        auto *item = new QTreeWidgetItem();
+        item->setText(0, QString("Line %1").arg(lineNumber));
+        item->setText(1, QString::number(startInBlock));
+        item->setData(0, Qt::UserRole, lineNumber);
+        item->setData(1, Qt::UserRole, startInBlock);
+        item->setData(2, Qt::DisplayRole, visibleText);
+        ui->foundTextsTreeWidget->addTopLevelItem(item);
     }
 
     ui->foundTextsTreeWidget->setColumnCount(3);
     ui->foundTextsTreeWidget->setHeaderLabels({ "Line", "Offset", "Context" });
 
-    return {matchCaseSensitiveCount, matchCaseInsensitiveCount};
+    return stats;
 }
+
 
 void FindDialog::focusInput()
 {

@@ -23,7 +23,11 @@ To nie jest bardzo zaawansowane narzędzie, jest to po prostu widget w QT z pole
 7. Kopiowanie do schowka nazwy pliku zarówno jako basenam, jak i absolutnej.
 8. TAB przesuwa cały zaznaczony tekst w prawo dodając spacje, SHIFT + TAB przesuwa w lewo (usuwając spacje)
 9. Lista skrótów (wyświetlalna z menu aplikacji).
-10. Wyszukiwanie wystąpień tekstu od razu informując o liczbie występień z oraz bez uwzględnienia wielkości tekstu
+10. Wyszukiwanie wystąpień tekstu z możliwością wyboru czy z uwzględnieniem wilkości liter, oraz czy tylko całe słowa. Dodatkowo wyświetlane są informacje liczbowe:
+    - liczba wystąpień szukanego tekstu **z** uwzględnieniem wielkości znaku
+    - liczba wystąpień szukanego tekstu **bez** uwzględnienia wielkości znaków
+    - liczba wystąpień szukanego tekstu **z** uwzględnieniem wielkości znaku **jako całe słowa**
+    - liczba wystąpień szukanego tekstu **bez** uwzględnienia wielkości znaków **jako całe słowa**
 
 ## Współpraca
 Chętnie zaakceptuje propozycje zmian do tego kodu aby był to wygodniejszy w użyciu edytor.

@@ -17,6 +17,18 @@ class FindDialog : public QWidget
     CodeEditor* codeEditor{};
 
 public:
+    struct MatchStats
+    {
+        int insensitive = {};
+        int insensitiveWhole = {};
+        int sensitive = {};
+        int sensitiveWhole = {};
+        bool isZero() const
+        {
+            return 0 == insensitive && 0 == insensitiveWhole && 0 == sensitive && 0 == sensitiveWhole;
+        }
+    };
+
     explicit FindDialog(QWidget *parent = nullptr);
     ~FindDialog();
 
@@ -31,7 +43,7 @@ signals:
     void jumpToLocationRequested(int line, int offset);
 
 protected:
-    std::pair<int,int> showOccurences(const QString& text);
+    MatchStats showOccurences(const QString& text);
 
 public slots:
     void currentTextChanged(QString newText);

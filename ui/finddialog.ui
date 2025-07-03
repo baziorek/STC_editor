@@ -73,9 +73,16 @@
       </widget>
      </item>
      <item>
+      <widget class="QCheckBox" name="wholeWordsCheckBox">
+       <property name="text">
+        <string>Whole words</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QLabel" name="occurencesLabel">
        <property name="toolTip">
-        <string>occurences count of provided text. First value is case sensitive, second one case insensitive</string>
+        <string>occurences count of provided text in format: case sensitive (case sensitive whole word) / case insensitive (case insensitive whole word)</string>
        </property>
        <property name="text">
         <string>Occurences:</string>
@@ -117,6 +124,22 @@
     <hint type="destinationlabel">
      <x>704</x>
      <y>5</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>wholeWordsCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>FindDialog</receiver>
+   <slot>odCheckboxMatchCasesChanged(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>519</x>
+     <y>26</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>764</x>
+     <y>32</y>
     </hint>
    </hints>
   </connection>
