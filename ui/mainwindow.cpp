@@ -155,9 +155,9 @@ void MainWindow::onRecentRecentFilesMenuOpened()
     ui->menuOpen_recent->clear();
 
     int shown = 0;
-    for (const QString& filePath : recentFiles)
+    for (const QString& filePath : recentFilesWithPositions.keys())
     {
-        if (!QFile::exists(filePath))
+        if (! QFile::exists(filePath))
             continue;
 
         const QString fileName = QFileInfo(filePath).fileName();
@@ -173,6 +173,12 @@ void MainWindow::onRecentRecentFilesMenuOpened()
             updateRecentFiles(filePath);
             onRecentRecentFilesMenuOpened();
             loadFileContentToEditorDistargingCurrentContent(filePath);
+
+            int pos = recentFilesWithPositions.value(filePath, 0);
+            QTextCursor cursor = ui->textEditor->textCursor();
+            cursor.setPosition(pos);
+            ui->textEditor->setTextCursor(cursor);
+            ui->textEditor->ensureCursorVisible();
         });
 
         ui->menuOpen_recent->addAction(recentAction);
@@ -180,7 +186,6 @@ void MainWindow::onRecentRecentFilesMenuOpened()
         if (++shown >= 5)
             break;
     }
-
 
     if (shown == 0) {
         QAction* emptyAction = new QAction(tr("No recent files"), this);
@@ -192,7 +197,7 @@ void MainWindow::onRecentRecentFilesMenuOpened()
 
         QAction* clearAction = new QAction(tr("Clear Recent Files"), ui->menuOpen_recent);
         connect(clearAction, &QAction::triggered, this, [this]() {
-            recentFiles.clear();
+            recentFilesWithPositions.clear();
             onRecentRecentFilesMenuOpened();
         });
         ui->menuOpen_recent->addAction(clearAction);
@@ -632,11 +637,20 @@ void MainWindow::loadSettings()
 {
     QSettings settings;
 
-    restoreGeometry(settings.value("geometry").toByteArray());
-    restoreState(settings.value("windowState").toByteArray());
+    const QByteArray geometry = settings.value("geometry").toByteArray();
+    const QByteArray windowState = settings.value("windowState").toByteArray();
+    if (!geometry.isEmpty())
+        restoreGeometry(geometry);
+    if (!windowState.isEmpty())
+        restoreState(windowState);
 
     lastDirectory = settings.value("lastDirectory", QDir::homePath()).toString();
-    recentFiles = settings.value("recentFiles").toStringList();
+
+    QVariantMap filesMap = settings.value("recentFiles").toMap();
+    for (auto it = filesMap.begin(); it != filesMap.end(); ++it)
+    {
+        recentFilesWithPositions.insert(it.key(), it.value().toInt());
+    }
 }
 
 void MainWindow::setDisabledMenuActionsDependingOnOpenedFile(bool disabled)
@@ -653,18 +667,26 @@ void MainWindow::saveSettings()
     settings.setValue("windowState", saveState());
 
     settings.setValue("lastDirectory", lastDirectory);
-    settings.setValue("recentFiles", recentFiles);
-    // TODO: Consider remembering also positions of files
+
+    QVariantMap recentFilesMap;
+    for (auto it = recentFilesWithPositions.begin(); it != recentFilesWithPositions.end(); ++it)
+    {
+        recentFilesMap.insert(it.key(), it.value());
+    }
+    settings.setValue("recentFiles", recentFilesMap);
 }
 
 void MainWindow::updateRecentFiles(const QString& path)
 {
     constexpr int maxElementsInListOfLastElements = 5;
-    recentFiles.removeAll(path);   // remove duplicates duplikaty
-    recentFiles.prepend(path);     // add in the beginning
-    while (recentFiles.size() > maxElementsInListOfLastElements)
+
+    int cursorPos = ui->textEditor->textCursor().position();
+
+    recentFilesWithPositions.remove(path);
+    recentFilesWithPositions.insert(path, cursorPos);
+
+    while (recentFilesWithPositions.size() > maxElementsInListOfLastElements)
     {
-        recentFiles.removeLast();  // remove too much elements
+        recentFilesWithPositions.erase(--recentFilesWithPositions.end());
     }
 }
-

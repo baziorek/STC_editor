@@ -81,5 +81,5 @@ private: // members
     Ui::MainWindow *ui;
 
     QString lastDirectory;
-    QStringList recentFiles;
+    QMap<QString, int> recentFilesWithPositions;
 };
