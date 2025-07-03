@@ -78,6 +78,9 @@ protected:
     void decreaseFontSize();
 
     std::optional<QTextCursor> selectEnclosingCppBlock();
+    std::optional<QTextCursor> selectEnclosingCodeBlock();
+
+    bool containsInnerTags(const QString &text);
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);

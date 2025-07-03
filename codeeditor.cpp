@@ -451,6 +451,15 @@ void CodeEditor::contextMenuEvent(QContextMenuEvent *event)
         if (auto maybeCursor = selectEnclosingCppBlock(); maybeCursor.has_value())
         {
             menu->addSeparator();
+            QAction* selectAllCodeAction = new QAction("Select this C++ source code", this);
+            connect(selectAllCodeAction, &QAction::triggered, this, [this, maybeCursor]() {
+                setTextCursor(*maybeCursor);
+            });
+            menu->addAction(selectAllCodeAction);
+        }
+        if (auto maybeCursor = selectEnclosingCodeBlock(); maybeCursor.has_value())
+        {
+            menu->addSeparator();
             QAction* selectAllCodeAction = new QAction("Select this source code", this);
             connect(selectAllCodeAction, &QAction::triggered, this, [this, maybeCursor]() {
                 setTextCursor(*maybeCursor);
@@ -801,7 +810,7 @@ void CodeEditor::decreaseFontSize()
     setFont(f);
 }
 
-std::optional<QTextCursor> CodeEditor::selectEnclosingCppBlock()
+std::optional<QTextCursor> CodeEditor::selectEnclosingCppBlock() // TODO: TOREMOVE?
 {
     const QString fullText = toPlainText();
     const int cursorPos = textCursor().position();
@@ -825,4 +834,51 @@ std::optional<QTextCursor> CodeEditor::selectEnclosingCppBlock()
     }
 
     return std::nullopt;
+}
+std::optional<QTextCursor> CodeEditor::selectEnclosingCodeBlock()
+{
+    const QString fullText = toPlainText();
+    const int cursorPos = textCursor().position();
+
+    // Obsługiwane: [cpp]...[/cpp], [code]...[/code], [code src="C++"]...[/code], [log]...[/log]
+    QRegularExpression codeBlockRegex(
+        R"(\[(cpp|code|log)(\s+[^\]]*)?\](.*?)\[/\1\])",
+        QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption);
+
+    QRegularExpressionMatchIterator it = codeBlockRegex.globalMatch(fullText);
+
+    while (it.hasNext())
+    {
+        const QRegularExpressionMatch match = it.next();
+        int start = match.capturedStart(3);
+        int end   = match.capturedEnd(3);
+
+        if (cursorPos >= start && cursorPos <= end)
+        {
+            const QString innerText = match.captured(3);
+            if (!containsInnerTags(innerText))
+            {
+                QTextCursor blockCursor = textCursor();
+                blockCursor.setPosition(start);
+                blockCursor.setPosition(end, QTextCursor::KeepAnchor);
+                return blockCursor;
+            }
+        }
+    }
+
+    return std::nullopt;
+}
+bool CodeEditor::containsInnerTags(const QString& text)
+{
+    static QRegularExpression tagRegex(R"(\[/?(code|cpp|py|log|b|u|i|h[1-6]|run|div)(\s+[^\]]+)?\])", QRegularExpression::CaseInsensitiveOption);
+    QRegularExpressionMatchIterator it = tagRegex.globalMatch(text);
+    int count = 0;
+    while (it.hasNext())
+    {
+        auto match = it.next();
+        QString tag = match.captured(1).toLower();
+        if (tag != "cpp" && tag != "code" && tag != "log")
+            return true; // other tags are not allowed inside
+    }
+    return false;
 }
