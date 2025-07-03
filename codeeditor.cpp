@@ -90,6 +90,10 @@ void CodeEditor::registerShortcuts()
     makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_2), &CodeEditor::shortcutPressed_h2,      "Header level 2");
     makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_3), &CodeEditor::shortcutPressed_h3,      "Header level 3");
     makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_4), &CodeEditor::shortcutPressed_h4,      "Header level 4");
+
+    makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_Equal), &CodeEditor::increaseFontSize, "Increase font size"); // Ctrl +
+    makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_Plus),  &CodeEditor::increaseFontSize, "Increase font size (PLUS key)");
+    makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_Minus), &CodeEditor::decreaseFontSize, "Decrease font size");
 }
 
 
@@ -771,4 +775,18 @@ void CodeEditor::mouseMoveEvent(QMouseEvent* event)
     lastTooltipImagePath.clear();
     QToolTip::hideText();
     QPlainTextEdit::mouseMoveEvent(event);
+}
+
+void CodeEditor::increaseFontSize()
+{
+    QFont f = font();
+    f.setPointSize(std::min(f.pointSize() + 1, 72));
+    setFont(f);
+}
+
+void CodeEditor::decreaseFontSize()
+{
+    QFont f = font();
+    f.setPointSize(std::max(f.pointSize() - 1, 4));
+    setFont(f);
 }

@@ -28,6 +28,7 @@ To nie jest bardzo zaawansowane narzędzie, jest to po prostu widget w QT z pole
     - liczba wystąpień szukanego tekstu **bez** uwzględnienia wielkości znaków
     - liczba wystąpień szukanego tekstu **z** uwzględnieniem wielkości znaku **jako całe słowa**
     - liczba wystąpień szukanego tekstu **bez** uwzględnienia wielkości znaków **jako całe słowa**
+11. Powiększanie i pomniejszanie czcionki przez `CTRL +` I `CTRL -`.
 
 ## Współpraca
 Chętnie zaakceptuje propozycje zmian do tego kodu aby był to wygodniejszy w użyciu edytor.

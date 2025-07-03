@@ -74,6 +74,9 @@ protected:
 
     void registerShortcuts();
 
+    void increaseFontSize();
+    void decreaseFontSize();
+
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();
