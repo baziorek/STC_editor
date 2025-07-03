@@ -447,6 +447,16 @@ void CodeEditor::contextMenuEvent(QContextMenuEvent *event)
                 }
             }
         }
+
+        if (auto maybeCursor = selectEnclosingCppBlock(); maybeCursor.has_value())
+        {
+            menu->addSeparator();
+            QAction* selectAllCodeAction = new QAction("Select this source code", this);
+            connect(selectAllCodeAction, &QAction::triggered, this, [this, maybeCursor]() {
+                setTextCursor(*maybeCursor);
+            });
+            menu->addAction(selectAllCodeAction);
+        }
     }
 
     menu->exec(event->globalPos());
@@ -789,4 +799,30 @@ void CodeEditor::decreaseFontSize()
     QFont f = font();
     f.setPointSize(std::max(f.pointSize() - 1, 4));
     setFont(f);
+}
+
+std::optional<QTextCursor> CodeEditor::selectEnclosingCppBlock()
+{
+    const QString fullText = toPlainText();
+    const int cursorPos = textCursor().position();
+
+    QRegularExpression cppBlockRegex(R"(\[cpp\](.*?)\[/cpp\])", QRegularExpression::DotMatchesEverythingOption);
+    QRegularExpressionMatchIterator it = cppBlockRegex.globalMatch(fullText);
+
+    while (it.hasNext())
+    {
+        const QRegularExpressionMatch match = it.next();
+        int start = match.capturedStart(1);
+        int end   = match.capturedEnd(1);
+
+        if (cursorPos >= start && cursorPos <= end)
+        {
+            QTextCursor blockCursor = textCursor();
+            blockCursor.setPosition(start);
+            blockCursor.setPosition(end, QTextCursor::KeepAnchor);
+            return blockCursor;
+        }
+    }
+
+    return std::nullopt;
 }

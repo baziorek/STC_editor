@@ -77,6 +77,8 @@ protected:
     void increaseFontSize();
     void decreaseFontSize();
 
+    std::optional<QTextCursor> selectEnclosingCppBlock();
+
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();
