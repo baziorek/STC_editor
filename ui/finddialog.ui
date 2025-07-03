@@ -95,8 +95,8 @@
    <slot>currentTextChanged(QString)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>71</x>
-     <y>46</y>
+     <x>81</x>
+     <y>34</y>
     </hint>
     <hint type="destinationlabel">
      <x>101</x>
@@ -104,8 +104,25 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>matchCasesCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>FindDialog</receiver>
+   <slot>odCheckboxMatchCasesChanged(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>443</x>
+     <y>24</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>704</x>
+     <y>5</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>currentTextChanged(QString)</slot>
+  <slot>odCheckboxMatchCasesChanged(bool)</slot>
  </slots>
 </ui>

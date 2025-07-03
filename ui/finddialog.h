@@ -25,6 +25,8 @@ public:
         this->codeEditor = codeEditor;
     }
 
+    void focusInput();
+
 signals:
     void jumpToLocationRequested(int line, int offset);
 
@@ -34,6 +36,8 @@ protected:
 public slots:
     void currentTextChanged(QString newText);
     void onResultItemClicked(QTreeWidgetItem* item, int column);
+
+    void odCheckboxMatchCasesChanged(bool checked);
 
 private:
     Ui::FindDialog *ui;

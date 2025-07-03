@@ -61,7 +61,7 @@ void setUpIcon(QApplication& a)
 /**
  * TODOs: Cpp0x
  * ctrl + - powiększanie
- * 1. ! Ctrl + F, Ctrl + R (with possibility to uncheck)
+ * 1. ! Ctrl + R (with possibility to uncheck)
  * 2. ! Correct formatting: when multi-line code sections
  * 3. ! Coś geometria się nie zapisuje - jedynie położenie, ale nie rozmiar okna
  * 4. Consider using syntax analizer for C++: https://github.com/westes/flex
@@ -87,4 +87,7 @@ void setUpIcon(QApplication& a)
  * 24. Pluginy i może LUA
  * 25. Podgląd dokumentacji cppreference (jak cppman da radę i QtCreator)
  * 26. Makra do nagrywania
+ * ! Po załadowaniu z commandline nie zmienia tytułu okna
+ * ! Powinna być informacje o tym, że są zmiany w otwartym pliku
+ *  najlepiej aby od razu wskazywać ile linii zmieniono, ile dodano, ile usunięto
  **/

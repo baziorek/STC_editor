@@ -253,6 +253,20 @@ void MainWindow::onShowAvailableShortcutsPressed()
     dialog->exec();
 }
 
+void MainWindow::onFindTriggered(bool checked)
+{
+    ui->findWidget->setVisible(checked);
+
+    if (checked)
+    {
+        ui->findWidget->focusInput();
+    }
+    else
+    {
+        ui->textEditor->setFocus();
+    }
+}
+
 [[deprecated("Instead of them mnemoniks from Qt are being used")]] void MainWindow::connectShortcutsFromCodeWidget()
 {
     connect(ui->textEditor, &CodeEditor::shortcutPressed_bold, [this]() {

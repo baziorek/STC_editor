@@ -41,6 +41,9 @@ public slots:
     void onOpenParentDirectoryPressed();
     void onShowAvailableShortcutsPressed();
 
+    /// edit menu:
+    void onFindTriggered(bool checked);
+
     /// help menu:
     void onStcCoursePressed();
     void onCpp0xPl_pressed();
