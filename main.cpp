@@ -60,6 +60,7 @@ void setUpIcon(QApplication& a)
 
 /**
  * TODOs: Cpp0x
+ * ! Powinna być informacje o tym, że są zmiany w otwartym pliku
  * 1. ! Ctrl + R (with possibility to uncheck)
  * 2. ! Correct formatting: when multi-line code sections
  * 3. ! Coś geometria się nie zapisuje - jedynie położenie, ale nie rozmiar okna
@@ -70,11 +71,11 @@ void setUpIcon(QApplication& a)
  * 8. Add checking: if all tags are closed
  * 9. Tables creator
  * 10. ALT + <- lub ALT + -> umożliwiające skakanie po miejscach w kodzie - wstecz i dalej
- * 11. Dodawanie uwag do plików
+ * 11. najlepiej aby od razu wskazywać ile linii zmieniono, ile dodano, ile usunięto
  * 12. Obrazki na serwerze - podmiana prefixów w linkach
  * 13. Śledzenie zmian - wyświetlanie linii gdzie coś zmieniono
  * 14. TODOs tracking
- * 15. uruchamianie z argumentem trwa wolno - gdy plik jest duży.
+ * 15. Multi-search - multiple words in the same lines
  * 16. * Add formatting of C++ code
  * 17. * Add compile C++ code
  * 18. * Mark lines with changes
@@ -86,8 +87,4 @@ void setUpIcon(QApplication& a)
  * 24. Pluginy i może LUA
  * 25. Podgląd dokumentacji cppreference (jak cppman da radę i QtCreator)
  * 26. Makra do nagrywania
- * 27. Multi-search - multiple words in the same lines
- * ! Po załadowaniu z commandline nie zmienia tytułu okna
- * ! Powinna być informacje o tym, że są zmiany w otwartym pliku
- *  najlepiej aby od razu wskazywać ile linii zmieniono, ile dodano, ile usunięto
  **/

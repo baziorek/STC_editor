@@ -521,6 +521,8 @@ bool MainWindow::loadFileContentToEditorDistargingCurrentContent(QString fileNam
 
         setDisabledMenuActionsDependingOnOpenedFile(/*disabled=*/false);
 
+        updateWindowTitle(fileName);
+
         return true;
     }
     return false;
