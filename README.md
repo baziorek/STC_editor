@@ -13,6 +13,7 @@ To nie jest bardzo zaawansowane narzędzie, jest to po prostu widget w QT z pole
 5. Podgląd obrazków po najechaniu myszką (podgląd dla `[img src="istniejąca/ścieżka/obrazek.png"]`).
 6. Gdy wewnątrz tagów klikniemy myszką to pojawi się w menu kontekstowym opcja usunięcia tagu (przykładowo mamy: `[b]Pogrubiony tekst[/b]` to pojawi się opcja usunięcia `[b]` i wtedy będzie jedynie `Pogrubiony tekst`).
 7. Gdy klikniemy wewnątrz tagów z kodem C++ (`[cpp]...[/cpp]`) to mamy opcje formatowania kodu przez `clang-format` (uwaga: musi on być zainstalowany w systemie)
+8. Statystyki pliku, jak ma wiele edytorów, ale są statystyki charakterystyczne do artykułu korzystające z formatowania STC.
 
 ### Funkcjonalności edytora
 1. Wczytywanie i zapisywanie plików

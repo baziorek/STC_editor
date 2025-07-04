@@ -261,40 +261,8 @@ void MainWindow::onShowAvailableShortcutsPressed()
 
 void MainWindow::onFileStatsRequested()
 {
-    const QString filePath = ui->textEditor->getFileName();
-    const QString content = ui->textEditor->toPlainText();
-
-    DocumentStatisticsResult stats = DocumentStatistics::analyze(filePath, content);
-
-    QString report = QString(
-                         "File: %1\n"
-                         "Created: %2\n"
-                         "Modified: %3\n\n"
-                         "Lines: %4\n"
-                         "Characters: %5\n"
-                         "Words: %6\n\n"
-                         "[h1] sections: %7\n"
-                         "[h2] sections: %8\n"
-                         "[h3] sections: %9\n"
-                         "C++ code sections: %10\n"
-                         "Links: %11\n"
-                         "DIV blocks: %12\n"
-                         "Images: %13")
-                         .arg(stats.fileName)
-                         .arg(stats.created.toString(Qt::ISODate))
-                         .arg(stats.modified.toString(Qt::ISODate))
-                         .arg(stats.lineCount)
-                         .arg(stats.charCount)
-                         .arg(stats.wordCount)
-                         .arg(stats.h1Count)
-                         .arg(stats.h2Count)
-                         .arg(stats.h3Count)
-                         .arg(stats.cppCodeCount)
-                         .arg(stats.linkCount)
-                         .arg(stats.divCount)
-                         .arg(stats.imageCount);
-
-    QMessageBox::information(this, "File statistics", report);
+    auto result = DocumentStatistics::analyze(ui->textEditor);
+    QMessageBox::information(this, "File statistics", result.toQString());
 }
 
 void MainWindow::onFindTriggered(bool checked)
