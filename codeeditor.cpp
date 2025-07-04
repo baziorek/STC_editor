@@ -847,3 +847,25 @@ bool CodeEditor::containsInnerTags(const QString& text)
     }
     return false;
 }
+
+void CodeEditor::wheelEvent(QWheelEvent* event)
+{
+    if (event->modifiers() & Qt::ControlModifier)
+    {
+        const int numDegrees = event->angleDelta().y();
+        if (numDegrees > 0)
+        {
+            increaseFontSize();
+        }
+        else if (numDegrees < 0)
+        {
+            decreaseFontSize();
+        }
+
+        event->accept(); // stop propagation
+        return;
+    }
+
+    // default handling
+    QPlainTextEdit::wheelEvent(event);
+}
