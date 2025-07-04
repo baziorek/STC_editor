@@ -74,7 +74,6 @@ void setUpIcon(QApplication& a)
  * 9. Opening multiple files at once
  * 10. Widok sąsiadujący
  * 11. ALT + <- lub ALT + -> umożliwiające skakanie po miejscach w kodzie - wstecz i dalej
- * 12. Możliwość zmienia rozmiarów poszczególnych okien/widgetów
  *
  * 1. Compile code
  * 2. Export codes
