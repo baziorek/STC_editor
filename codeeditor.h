@@ -77,8 +77,7 @@ protected:
     void increaseFontSize();
     void decreaseFontSize();
 
-    std::optional<QTextCursor> selectEnclosingCppBlock();
-    std::optional<QTextCursor> selectEnclosingCodeBlock();
+    std::optional<QTextCursor> selectEnclosingCodeBlock(int cursorPos);
 
     bool containsInnerTags(const QString &text);
 

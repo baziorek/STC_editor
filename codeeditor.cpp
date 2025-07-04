@@ -448,16 +448,8 @@ void CodeEditor::contextMenuEvent(QContextMenuEvent *event)
             }
         }
 
-        if (auto maybeCursor = selectEnclosingCppBlock(); maybeCursor.has_value())
-        {
-            menu->addSeparator();
-            QAction* selectAllCodeAction = new QAction("Select this C++ source code", this);
-            connect(selectAllCodeAction, &QAction::triggered, this, [this, maybeCursor]() {
-                setTextCursor(*maybeCursor);
-            });
-            menu->addAction(selectAllCodeAction);
-        }
-        if (auto maybeCursor = selectEnclosingCodeBlock(); maybeCursor.has_value())
+        const int clickedPos = cursorForPosition(event->pos()).position();
+        if (auto maybeCursor = selectEnclosingCodeBlock(clickedPos); maybeCursor.has_value())
         {
             menu->addSeparator();
             QAction* selectAllCodeAction = new QAction("Select this source code", this);
@@ -810,37 +802,10 @@ void CodeEditor::decreaseFontSize()
     setFont(f);
 }
 
-std::optional<QTextCursor> CodeEditor::selectEnclosingCppBlock() // TODO: TOREMOVE?
+std::optional<QTextCursor> CodeEditor::selectEnclosingCodeBlock(int cursorPos)
 {
     const QString fullText = toPlainText();
-    const int cursorPos = textCursor().position();
 
-    QRegularExpression cppBlockRegex(R"(\[cpp\](.*?)\[/cpp\])", QRegularExpression::DotMatchesEverythingOption);
-    QRegularExpressionMatchIterator it = cppBlockRegex.globalMatch(fullText);
-
-    while (it.hasNext())
-    {
-        const QRegularExpressionMatch match = it.next();
-        int start = match.capturedStart(1);
-        int end   = match.capturedEnd(1);
-
-        if (cursorPos >= start && cursorPos <= end)
-        {
-            QTextCursor blockCursor = textCursor();
-            blockCursor.setPosition(start);
-            blockCursor.setPosition(end, QTextCursor::KeepAnchor);
-            return blockCursor;
-        }
-    }
-
-    return std::nullopt;
-}
-std::optional<QTextCursor> CodeEditor::selectEnclosingCodeBlock()
-{
-    const QString fullText = toPlainText();
-    const int cursorPos = textCursor().position();
-
-    // Obsługiwane: [cpp]...[/cpp], [code]...[/code], [code src="C++"]...[/code], [log]...[/log]
     QRegularExpression codeBlockRegex(
         R"(\[(cpp|code|log)(\s+[^\]]*)?\](.*?)\[/\1\])",
         QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption);
