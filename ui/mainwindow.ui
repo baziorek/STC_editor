@@ -126,6 +126,7 @@
     <addaction name="actionCopy_basename"/>
     <addaction name="actionCopy_absolute_path"/>
     <addaction name="actionOpen_parent_directory"/>
+    <addaction name="actionFile_statistics"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -268,6 +269,11 @@
   <action name="actionOpen_parent_directory">
    <property name="text">
     <string>Open parent directory</string>
+   </property>
+  </action>
+  <action name="actionFile_statistics">
+   <property name="text">
+    <string>File statistics</string>
    </property>
   </action>
  </widget>
@@ -537,14 +543,14 @@
    </hints>
   </connection>
   <connection>
-   <sender>menuFile</sender>
-   <signal>aboutToShow()</signal>
+   <sender>actionFile_statistics</sender>
+   <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onRecentRecentFilesMenuOpened()</slot>
+   <slot>onFileStatsRequested()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>92</x>
-     <y>137</y>
+     <x>-1</x>
+     <y>-1</y>
     </hint>
     <hint type="destinationlabel">
      <x>399</x>
@@ -570,5 +576,6 @@
   <slot>onOpenParentDirectoryPressed()</slot>
   <slot>onShowAvailableShortcutsPressed()</slot>
   <slot>onFindTriggered(bool)</slot>
+  <slot>onFileStatsRequested()</slot>
  </slots>
 </ui>
