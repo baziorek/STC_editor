@@ -29,6 +29,8 @@ public slots:
 
     void onStcTagsButtonPressed(StcTags stcTag);
 
+    void onUpdateBreadcrumb();
+
     /// file menu:
     void onNewFilePressed();
     bool onSaveAsPressed();
@@ -51,10 +53,12 @@ public slots:
     void onRepository_pressed();
 
     /// check menu:
-    void onCheckTagsPressed();
+    void onCheckTagsPressed();  
 
 protected:
     void setDisabledMenuActionsDependingOnOpenedFile(bool disabled=true);
+
+    QString getCurrentStcContextPath(const QString &text, int cursorPos);
 
 private: // methods
     void putTextBackToCursorPosition(QTextCursor &cursor, QString divClass, QString selectedText,

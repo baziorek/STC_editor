@@ -7,6 +7,7 @@
 #include <QSettings>
 #include <QDesktopServices>
 #include <QClipboard>
+#include <QStack>
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "checkers/PairedTagsChecker.h"
@@ -71,6 +72,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->textEditor, &CodeEditor::totalLinesCountChanged, ui->goToLineGroupBox, &GoToLineWidget::setMaxLine);
     connect(ui->goToLineGroupBox, &GoToLineWidget::onGoToLineRequested, ui->textEditor, &CodeEditor::go2LineRequested);
     connect(ui->findWidget, &FindDialog::jumpToLocationRequested, ui->textEditor, &CodeEditor::goToLineAndOffset);
+    connect(ui->textEditor, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateBreadcrumb);
 
     connectShortcutsFromCodeWidget();
     connectShortcuts();
@@ -698,4 +700,75 @@ void MainWindow::updateRecentFiles(const QString& path)
     {
         recentFilesWithPositions.erase(--recentFilesWithPositions.end());
     }
+}
+
+void MainWindow::onUpdateBreadcrumb()
+{
+    QTextCursor cursor = ui->textEditor->textCursor();
+    int cursorPos = cursor.position();
+
+    QString fullText = ui->textEditor->toPlainText();
+    QString breadcrumbPath = getCurrentStcContextPath(fullText, cursorPos);
+
+    ui->breadcrumbLabel->setText(breadcrumbPath);
+}
+
+QString MainWindow::getCurrentStcContextPath(const QString& text, int cursorPos)
+{
+    static const QSet<QString> ignorableTags = { "img", "a" };
+    QStack<QString> contextStack;
+
+    static QRegularExpression tagOpenRegex(R"(\[([a-z0-9]+)(?:\s+[^\]]+)?\])", QRegularExpression::CaseInsensitiveOption);
+    static QRegularExpression tagCloseRegex(R"(\[/([a-z0-9]+)\])", QRegularExpression::CaseInsensitiveOption);
+
+    int index = 0;
+    while (index < cursorPos) {
+        QRegularExpressionMatch openMatch = tagOpenRegex.match(text, index);
+        QRegularExpressionMatch closeMatch = tagCloseRegex.match(text, index);
+
+        int openPos = openMatch.hasMatch() ? openMatch.capturedStart() : -1;
+        int closePos = closeMatch.hasMatch() ? closeMatch.capturedStart() : -1;
+
+        if (openPos != -1 && (closePos == -1 || openPos < closePos) && openPos < cursorPos)
+        {
+            QString tagName = openMatch.captured(1);
+            if (!ignorableTags.contains(tagName))
+            {
+                contextStack.push(tagName);
+            }
+            index = openMatch.capturedEnd();
+        }
+        else if (closePos != -1 && closePos < cursorPos)
+        {
+            QString tagName = closeMatch.captured(1);
+            int i = contextStack.size() - 1;
+            while (i >= 0 && contextStack[i] != tagName) --i;
+            if (i >= 0)
+                contextStack.remove(i);
+            index = closeMatch.capturedEnd();
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    // Find last header before cursor
+    static QRegularExpression headerRegex(R"(\[(h[1-6])\](.*?)\[/\1\])", QRegularExpression::DotMatchesEverythingOption);
+    QRegularExpressionMatchIterator it = headerRegex.globalMatch(text);
+    QString lastHeader;
+    while (it.hasNext()) {
+        QRegularExpressionMatch m = it.next();
+        if (m.capturedStart() >= cursorPos)
+            break;
+        lastHeader = m.captured(1) + ": " + m.captured(2).trimmed();
+    }
+
+    QStringList breadcrumb = QStringList::fromVector(QVector<QString>::fromList(contextStack.toList()));
+    if (!lastHeader.isEmpty())
+    {
+        breadcrumb.prepend(lastHeader);
+    }
+
+    return breadcrumb.join(" > ");
 }
