@@ -30,6 +30,7 @@ set(PROJECT_SOURCES
     ui/shortcutsdialog.h ui/shortcutsdialog.cpp
     ui/highlightdelegate.h ui/highlightdelegate.cpp
     types/documentstatistics.h types/documentstatistics.cpp
+    ui/cppcompilerdialog.h ui/cppcompilerdialog.cpp
 )
 
 set(TEXT_FILES

@@ -38,8 +38,6 @@ public:
         return std::max<decltype(blockCount())>(1, blockCount());
     }
 
-    void keyPressEvent(QKeyEvent *event) override;
-
     bool loadFileContentDistargingCurrentContent(const QString& fileName);
 
     QMultiMap<QString, QKeySequence> listOfShortcuts() const;
@@ -65,6 +63,8 @@ public slots:
     void onScrollChanged(int);
 
 protected:
+    void keyPressEvent(QKeyEvent *event) override;
+
     void resizeEvent(QResizeEvent *event) override;
 
     void reloadFromFile(bool discardChanges=false);

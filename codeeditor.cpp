@@ -12,9 +12,11 @@
 #include <QImageReader>
 #include <QShortcut>
 #include <QProcess>
+#include <QTextDocumentFragment>
 #include "codeeditor.h"
 #include "linenumberarea.h"
 #include "stcsyntaxhighlighter.h"
+#include "ui/cppcompilerdialog.h"
 
 
 namespace
@@ -485,7 +487,7 @@ void CodeEditor::contextMenuEvent(QContextMenuEvent *event)
             {
                 QAction* formatCppAction = new QAction("Format C++ with clang-format", this);
                 connect(formatCppAction, &QAction::triggered, this, [this, cursor]() mutable {
-                    QString rawCode = cursor.selectedText();
+                    QString rawCode = cursor.selectedText().replace(QChar::ParagraphSeparator, '\n');
                     QString formatted = formatCppWithClang(rawCode);
 
                     if (!formatted.isEmpty())
@@ -498,6 +500,14 @@ void CodeEditor::contextMenuEvent(QContextMenuEvent *event)
                     }
                 });
                 menu->addAction(formatCppAction);
+
+                QAction* compileCppAction = new QAction("Compile C++ with g++", this);
+                connect(compileCppAction, &QAction::triggered, this, [this, cursor]() {
+                    QString rawCode = cursor.selectedText().replace(QChar::ParagraphSeparator, '\n');
+                    auto* dialog = new CppCompilerDialog(rawCode, this);
+                    dialog->exec();
+                });
+                menu->addAction(compileCppAction);
             }
         }
     }

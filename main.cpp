@@ -91,7 +91,7 @@ void setUpIcon(QApplication& a)
  * 14. Pluginy i może LUA
  * 15. Podgląd dokumentacji cppreference (jak cppman da radę i QtCreator)
  * 16. Makra do nagrywania
- * 17. * Add compile C++ code
+ * 17. ThreeWidget instead of list to show Context
  * 18. * Mark lines with changes
  *
  * Inspiration: https://github.com/AleksandrHovhannisyan/Scribe-Text-Editor
