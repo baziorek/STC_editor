@@ -11,7 +11,7 @@ DocumentStatisticsResult DocumentStatistics::analyze(CodeEditor* editor)
         return result;
 
     const QString content = editor->toPlainText();
-    const QString filePath = editor->getFileName(); // zakładam, że masz taką metodę
+    const QString filePath = editor->getFileName();
 
     QFileInfo fi(filePath);
     result.fileName = fi.fileName();
