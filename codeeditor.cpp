@@ -11,6 +11,7 @@
 #include <QFileInfo>
 #include <QImageReader>
 #include <QShortcut>
+#include <QProcess>
 #include "codeeditor.h"
 #include "linenumberarea.h"
 #include "stcsyntaxhighlighter.h"
@@ -449,19 +450,59 @@ void CodeEditor::contextMenuEvent(QContextMenuEvent *event)
         }
 
         const int clickedPos = cursorForPosition(event->pos()).position();
-        if (auto maybeCursor = selectEnclosingCodeBlock(clickedPos); maybeCursor.has_value())
+        if (auto maybeBlock = selectEnclosingCodeBlock(clickedPos); maybeBlock.has_value())
         {
+            QTextCursor cursor = maybeBlock->cursor;
+            QString tag = maybeBlock->tag;
+
             menu->addSeparator();
+
             QAction* selectAllCodeAction = new QAction("Select this source code", this);
-            connect(selectAllCodeAction, &QAction::triggered, this, [this, maybeCursor]() {
-                setTextCursor(*maybeCursor);
+            connect(selectAllCodeAction, &QAction::triggered, this, [this, cursor]() {
+                setTextCursor(cursor);
             });
             menu->addAction(selectAllCodeAction);
+
+            if ("cpp" == tag)
+            {
+                QAction* formatCppAction = new QAction("Format C++ with clang-format", this);
+                connect(formatCppAction, &QAction::triggered, this, [this, cursor]() mutable {
+                    QString rawCode = cursor.selectedText();
+                    QString formatted = formatCppWithClang(rawCode);
+
+                    if (!formatted.isEmpty())
+                    {
+                        cursor.insertText(formatted.replace(QChar::LineSeparator, "\n"));
+                    }
+                    else
+                    {
+                        QMessageBox::warning(this, "clang-format", "Formatting failed or clang-format not available.");
+                    }
+                });
+                menu->addAction(formatCppAction);
+            }
         }
     }
 
     menu->exec(event->globalPos());
     delete menu;
+}
+// TODO: right click not on selected code should unselect
+QString CodeEditor::formatCppWithClang(const QString& code)
+{
+    QProcess clang;
+    clang.start("clang-format", QStringList() << "-style=LLVM");
+
+    if (!clang.waitForStarted(1000))
+        return {};
+
+    clang.write(code.toUtf8());
+    clang.closeWriteChannel();
+
+    if (!clang.waitForFinished(1000))
+        return {};
+
+    return QString::fromUtf8(clang.readAllStandardOutput()).trimmed();
 }
 
 void CodeEditor::restoreStateWhichDoesNotRequireSaving(bool discardChanges)
@@ -802,7 +843,7 @@ void CodeEditor::decreaseFontSize()
     setFont(f);
 }
 
-std::optional<QTextCursor> CodeEditor::selectEnclosingCodeBlock(int cursorPos)
+std::optional<CodeEditor::CodeBlock> CodeEditor::selectEnclosingCodeBlock(int cursorPos)
 {
     const QString fullText = toPlainText();
 
@@ -826,12 +867,12 @@ std::optional<QTextCursor> CodeEditor::selectEnclosingCodeBlock(int cursorPos)
                 QTextCursor blockCursor = textCursor();
                 blockCursor.setPosition(start);
                 blockCursor.setPosition(end, QTextCursor::KeepAnchor);
-                return blockCursor;
+                return CodeBlock{blockCursor, match.captured(1).toLower()};
             }
         }
     }
 
-    return std::nullopt;
+    return {};
 }
 bool CodeEditor::containsInnerTags(const QString& text)
 {

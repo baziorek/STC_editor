@@ -74,9 +74,8 @@ void setUpIcon(QApplication& a)
  * 9. Opening multiple files at once
  * 10. Statystyki sekcji
  * 11. ALT + <- lub ALT + -> umożliwiające skakanie po miejscach w kodzie - wstecz i dalej
- * 12. Możliwość zmienia rozmiarów poszczególnych okien
+ * 12. Możliwość zmienia rozmiarów poszczególnych okien/widgetów
  * 13. Widok sąsiadujący
- * 14. Ctrl + scroll - manipulate font size
  *
  * 1. Compile code
  * 2. Export codes
@@ -94,7 +93,8 @@ void setUpIcon(QApplication& a)
  * 14. Pluginy i może LUA
  * 15. Podgląd dokumentacji cppreference (jak cppman da radę i QtCreator)
  * 16. Makra do nagrywania
- * 17. * Add formatting of C++ code
- * 18. * Mark lines with changes
  * 17. * Add compile C++ code
+ * 18. * Mark lines with changes
+ *
+ * Inspiration: https://github.com/AleksandrHovhannisyan/Scribe-Text-Editor
  **/

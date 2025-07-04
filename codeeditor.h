@@ -11,6 +11,12 @@ class CodeEditor : public QPlainTextEdit
     QString openedFileName;
 
 public:
+    struct CodeBlock
+    {
+        QTextCursor cursor;
+        QString tag; // "cpp", "code", "py"
+    };
+
     CodeEditor(QWidget *parent = nullptr);
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
@@ -79,9 +85,11 @@ protected:
     void increaseFontSize();
     void decreaseFontSize();
 
-    std::optional<QTextCursor> selectEnclosingCodeBlock(int cursorPos);
+    std::optional<CodeBlock> selectEnclosingCodeBlock(int cursorPos);
 
     bool containsInnerTags(const QString &text);
+
+    QString formatCppWithClang(const QString& code);
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
