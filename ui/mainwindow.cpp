@@ -61,6 +61,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     setDisabledMenuActionsDependingOnOpenedFile();
 
     ui->findWidget->hide();
+    ui->findDockWidget->hide();
     ui->findWidget->setCodeEditor(ui->textEditor);
     ui->textEditor->setFocus();
 
@@ -268,6 +269,7 @@ void MainWindow::onFileStatsRequested()
 void MainWindow::onFindTriggered(bool checked)
 {
     ui->findWidget->setVisible(checked);
+    ui->findDockWidget->setVisible(checked);
 
     if (checked)
     {
