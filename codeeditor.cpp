@@ -267,9 +267,27 @@ QMultiMap<QString, QKeySequence> CodeEditor::listOfShortcuts() const
 
 void CodeEditor::contextMenuEvent(QContextMenuEvent *event)
 {
-    QMenu* menu = createStandardContextMenu();
+    // Move cursor to click position
+    QTextCursor clickCursor = cursorForPosition(event->pos());
+
+    // remove selection if clicked out of the selection
+    QTextCursor current = textCursor();
+    if (current.hasSelection())
+    {
+        int clickPos = clickCursor.position();
+        if (clickPos < current.selectionStart() || clickPos > current.selectionEnd())
+        {
+            setTextCursor(clickCursor);  // move current text cursor
+        }
+    }
+    else
+    {
+        setTextCursor(clickCursor); // move current text cursor
+    }
 
     QTextCursor selection = textCursor();
+
+    QMenu* menu = createStandardContextMenu();
 
     if (selection.hasSelection())
     {
@@ -487,7 +505,7 @@ void CodeEditor::contextMenuEvent(QContextMenuEvent *event)
     menu->exec(event->globalPos());
     delete menu;
 }
-// TODO: right click not on selected code should unselect
+
 QString CodeEditor::formatCppWithClang(const QString& code)
 {
     QProcess clang;
