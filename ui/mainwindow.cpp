@@ -74,6 +74,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->goToLineGroupBox, &GoToLineWidget::onGoToLineRequested, ui->textEditor, &CodeEditor::go2LineRequested);
     connect(ui->findWidget, &FindDialog::jumpToLocationRequested, ui->textEditor, &CodeEditor::goToLineAndOffset);
     connect(ui->textEditor, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateBreadcrumb);
+    connect(ui->textEditor, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::highlightCurrentTagInContextTable);
     connect(ui->textEditor, &CodeEditor::numberOfModifiedLinesChanged, [this](int linesNumber) {
         this->onFileContentChanged(ui->textEditor->getFileName(), linesNumber);
     });
@@ -445,6 +446,60 @@ void MainWindow::updateContextTable(auto taggedTextLinePositions)
                                           /*tagText=*/text);
 
         ++rowNumber;
+    }
+}
+
+void MainWindow::highlightCurrentTagInContextTable()
+{
+    const int cursorPos = ui->textEditor->textCursor().position();
+    const QString text = ui->textEditor->toPlainText();
+
+    static QRegularExpression tagRegex(R"(\[(h[1-6]|div)(?:\s+[^\]]+)?\](.*?)\[/\1\])",
+                                       QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption);
+
+    int bestMatchRow = -1;
+    int bestMatchStart = -1;
+
+    for (int row = 0; row < ui->contextTableWidget->rowCount(); ++row)
+    {
+        auto* lineItem = ui->contextTableWidget->item(row, 0);
+        if (!lineItem)
+            continue;
+
+        bool ok = false;
+        int lineNumber = lineItem->text().toInt(&ok);
+        if (!ok)
+            continue;
+
+        int startOffset = 0;
+        for (int i = 1; i < lineNumber; ++i)
+            startOffset = text.indexOf('\n', startOffset) + 1;
+
+        QRegularExpressionMatch match = tagRegex.match(text, startOffset);
+        if (match.hasMatch())
+        {
+            int start = match.capturedStart();
+            int end = match.capturedEnd();
+
+            if (cursorPos >= start && cursorPos <= end)
+            {
+                // Mark only first matching (the most early)
+                if (bestMatchStart == -1 || start > bestMatchStart)
+                {
+                    bestMatchStart = start;
+                    bestMatchRow = row;
+                }
+            }
+        }
+    }
+
+    // Deselect all
+    ui->contextTableWidget->clearSelection();
+
+    if (bestMatchRow >= 0)
+    {
+        ui->contextTableWidget->selectRow(bestMatchRow);
+        ui->contextTableWidget->scrollToItem(ui->contextTableWidget->item(bestMatchRow, 0), QAbstractItemView::PositionAtCenter);
     }
 }
 

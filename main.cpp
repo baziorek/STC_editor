@@ -61,8 +61,6 @@ void setUpIcon(QApplication& a)
 /**
  * TODOs: Cpp0x
  * TODO Before release:
- * ! w widoku konceptu również śledzenie gdzie jestem
- *
  * !! Czasami pyta czy zastąpić zmiany, mimo iż nie ma zmian (jak otwieram sekwencyjnie wiele plików)
  * 1. ! Ctrl + R (with possibility to uncheck)
  * 2. ! Correct formatting: when multi-line code sections

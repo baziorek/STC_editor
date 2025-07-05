@@ -69,6 +69,7 @@ private: // methods
     void surroundSelectedTextWithTag(QString divClass, QString text, QString extraAttributes = "", bool closable = true);
 
     void updateContextTable(auto taggedTextLinePositions);
+    void highlightCurrentTagInContextTable();
     void connectShortcuts();
     void connectShortcutsFromCodeWidget();
     bool closeApplicationReturningIfClosed();
