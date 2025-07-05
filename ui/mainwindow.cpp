@@ -454,16 +454,25 @@ void MainWindow::highlightCurrentTagInContextTable()
     const int cursorPos = ui->textEditor->textCursor().position();
     const QString text = ui->textEditor->toPlainText();
 
+    // Collect tags from list with their positions
+    struct TagEntry
+    {
+        int row;
+        int start;
+        QString tag;
+        int level; // 0 = div, 1 = h1, 2 = h2, ...
+    };
+
+    QList<TagEntry> tags;
+
     static QRegularExpression tagRegex(R"(\[(h[1-6]|div)(?:\s+[^\]]+)?\](.*?)\[/\1\])",
                                        QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption);
-
-    int bestMatchRow = -1;
-    int bestMatchStart = -1;
 
     for (int row = 0; row < ui->contextTableWidget->rowCount(); ++row)
     {
         auto* lineItem = ui->contextTableWidget->item(row, 0);
-        if (!lineItem)
+        auto* tagItem = ui->contextTableWidget->item(row, 1);
+        if (!lineItem || !tagItem)
             continue;
 
         bool ok = false;
@@ -478,28 +487,72 @@ void MainWindow::highlightCurrentTagInContextTable()
         QRegularExpressionMatch match = tagRegex.match(text, startOffset);
         if (match.hasMatch())
         {
+            QString tag = match.captured(1).toLower();
             int start = match.capturedStart();
-            int end = match.capturedEnd();
 
-            if (cursorPos >= start && cursorPos <= end)
+            int level = 0;
+            if (tag.startsWith("h"))
+                level = tag.mid(1).toInt(); // h1 -> 1, h2 -> 2
+            else if (tag == "div")
+                level = 0;
+
+            tags.append({ row, start, tag, level });
+        }
+    }
+
+    // Find best match
+    // - header or dif, which starts before coursor
+    // - but no other tag with higher prioryty appears earlier
+    int bestRow = -1;
+    int bestStart = -1;
+    int bestLevel = -1;
+
+    for (const auto& tag : tags)
+    {
+        if (tag.start > cursorPos)
+            continue;
+
+        if (tag.tag == "div")
+        {
+            if (tag.start <= cursorPos)
             {
-                // Mark only first matching (the most early)
-                if (bestMatchStart == -1 || start > bestMatchStart)
-                {
-                    bestMatchStart = start;
-                    bestMatchRow = row;
-                }
+                bestRow = tag.row;
+                bestStart = tag.start;
+                bestLevel = 0;
+            }
+        }
+        else if (tag.tag.startsWith("h"))
+        {
+            // Headers works as context until different tag
+            if (bestStart == -1 || tag.start > bestStart)
+            {
+                bestRow = tag.row;
+                bestStart = tag.start;
+                bestLevel = tag.level;
             }
         }
     }
 
-    // Deselect all
+    // If we are inside new tag (div or hN with less prioryty), we don't select anything
+    for (const auto& tag : tags)
+    {
+        if (tag.start <= cursorPos && tag.start > bestStart)
+        {
+            // If tag is div or header the same or higher evel - break
+            if (tag.tag == "div" || (tag.tag.startsWith("h") && tag.level <= bestLevel))
+            {
+                bestRow = -1;
+                break;
+            }
+        }
+    }
+
     ui->contextTableWidget->clearSelection();
 
-    if (bestMatchRow >= 0)
+    if (bestRow >= 0)
     {
-        ui->contextTableWidget->selectRow(bestMatchRow);
-        ui->contextTableWidget->scrollToItem(ui->contextTableWidget->item(bestMatchRow, 0), QAbstractItemView::PositionAtCenter);
+        ui->contextTableWidget->selectRow(bestRow);
+        ui->contextTableWidget->scrollToItem(ui->contextTableWidget->item(bestRow, 0), QAbstractItemView::PositionAtCenter);
     }
 }
 
