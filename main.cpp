@@ -61,7 +61,8 @@ void setUpIcon(QApplication& a)
 /**
  * TODOs: Cpp0x
  * TODO Before release:
- * ! Powinna być informacje o tym, że są zmiany w otwartym pliku
+ * ! w widoku konceptu również śledzenie gdzie jestem
+ *
  * !! Czasami pyta czy zastąpić zmiany, mimo iż nie ma zmian (jak otwieram sekwencyjnie wiele plików)
  * 1. ! Ctrl + R (with possibility to uncheck)
  * 2. ! Correct formatting: when multi-line code sections
@@ -70,10 +71,9 @@ void setUpIcon(QApplication& a)
  * 5. Add checking: if all tags are closed
  * 6. Bookmarks to places in code
  * 7. TODOs tracking
- * 8. * Umiejscowienie danej pozycji w rozdziałach i divach
+ * 8. ALT + <- lub ALT + -> umożliwiające skakanie po miejscach w kodzie - wstecz i dalej
  * 9. Opening multiple files at once
  * 10. Widok sąsiadujący
- * 11. ALT + <- lub ALT + -> umożliwiające skakanie po miejscach w kodzie - wstecz i dalej
  *
  * 1. Compile code
  * 2. Export codes
@@ -83,7 +83,7 @@ void setUpIcon(QApplication& a)
  * 6. Tables creator
  * 7. najlepiej aby od razu wskazywać ile linii zmieniono, ile dodano, ile usunięto
  * 8. Obrazki na serwerze - podmiana prefixów w linkach
- * 9. Śledzenie zmian - wyświetlanie linii gdzie coś zmieniono
+ * 9. Input history (ctrl + z history)
  * 10. Multi-search - multiple words in the same lines
  * 11. Spellcheck polski np. https://github.com/nuspell/nuspell https://doc.qt.io/qt-6/qtwebengine-webenginewidgets-spellchecker-example.html
  * 12. obsługa różnych kodowań plików z rozpoznawaniem

@@ -65,6 +65,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->findDockWidget->hide();
     ui->findWidget->setCodeEditor(ui->textEditor);
     ui->textEditor->setFocus();
+    ui->breadcrumbTextBrowser->setFrameStyle(QFrame::NoFrame);
 
     connect(ui->buttonsEmittingStc, &StcTagsButtons::buttonPressed, this, &MainWindow::onStcTagsButtonPressed);
     connect(ui->contextTableWidget, &FilteredTagTableWidget::goToLineClicked, ui->textEditor, &CodeEditor::go2LineRequested);
@@ -76,17 +77,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->textEditor, &CodeEditor::numberOfModifiedLinesChanged, [this](int linesNumber) {
         this->onFileContentChanged(ui->textEditor->getFileName(), linesNumber);
     });
+    connect(ui->breadcrumbTextBrowser, &QTextBrowser::anchorClicked, this, [this](const QUrl& url) {
+        bool ok = true;
+        int pos = url.toString().toInt(&ok);
+        if (!ok)
+            return;
+
+        QTextCursor cursor = ui->textEditor->textCursor();
+        cursor.setPosition(pos);
+        ui->textEditor->setTextCursor(cursor);
+        ui->textEditor->ensureCursorVisible();
+        ui->textEditor->setFocus();
+    });
+
 
     connectShortcutsFromCodeWidget();
     connectShortcuts();
-
-    // breadcrumbTextBrowser
-    ui->breadcrumbTextBrowser->setFrameStyle(QFrame::NoFrame);
-    ui->breadcrumbTextBrowser->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    ui->breadcrumbTextBrowser->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    ui->breadcrumbTextBrowser->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    ui->breadcrumbTextBrowser->setMaximumHeight(24);
-    ui->breadcrumbTextBrowser->setOpenLinks(false); // potrzebne do klików przez sygnał
 }
 
 void MainWindow::onStcTagsButtonPressed(StcTags stcTag)
@@ -727,9 +733,9 @@ void MainWindow::onUpdateBreadcrumb()
     int cursorPos = cursor.position();
 
     QString fullText = ui->textEditor->toPlainText();
-    QString breadcrumbPath = getCurrentStcContextPath(fullText, cursorPos);
+    QString breadcrumbHtml = getClickableBreadcrumbPath(fullText, cursorPos);
 
-    ui->breadcrumbLabel->setText(breadcrumbPath);
+    ui->breadcrumbTextBrowser->setHtml(breadcrumbHtml);
 }
 
 void MainWindow::onFileContentChanged(const QString &fileName, int changedLines)
@@ -745,36 +751,39 @@ void MainWindow::onFileContentChanged(const QString &fileName, int changedLines)
     }
 }
 
-QString MainWindow::getCurrentStcContextPath(const QString& text, int cursorPos)
+QString MainWindow::getClickableBreadcrumbPath(const QString& text, int cursorPos)
 {
     static const QSet<QString> ignorableTags = { "img", "a" };
-    QStack<QString> contextStack;
 
-    // 1. Main structure of headers
+    // 1. Processing headers h1–h6
+    QMap<int, QPair<QString, int>> headerLevels; // level hN -> (title, position)
     static QRegularExpression headerRegex(R"(\[(h[1-6])\](.*?)\[/\1\])",
                                           QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption);
-    QMap<int, QString> headerLevels;  // key: level hN, value: text
-    QRegularExpressionMatchIterator it = headerRegex.globalMatch(text);
-
-    while (it.hasNext()) {
-        QRegularExpressionMatch m = it.next();
+    QRegularExpressionMatchIterator headerIt = headerRegex.globalMatch(text);
+    while (headerIt.hasNext())
+    {
+        QRegularExpressionMatch m = headerIt.next();
         if (m.capturedStart() >= cursorPos)
             break;
 
-        QString levelStr = m.captured(1);     // e.g. h1
+        QString levelStr = m.captured(1); // h1, h2, ...
         QString content = m.captured(2).trimmed();
-        int level = levelStr.mid(1).toInt();  // only letter from h1–h6
+        int level = levelStr.mid(1).toInt();
 
-        // Remove deeper levels
-        for (auto l : headerLevels.keys())
+        // Removing deepers or equal headers
+        auto it = headerLevels.begin();
+        while (it != headerLevels.end())
         {
-            if (l >= level)
-                headerLevels.remove(l);
+            if (it.key() >= level)
+                it = headerLevels.erase(it);
+            else
+                ++it;
         }
-        headerLevels[level] = levelStr + ": " + content;
+        headerLevels[level] = qMakePair(QString("%1: %2").arg(levelStr.toUpper(), content), m.capturedStart());
     }
 
-    // 2. Dynamic opened tags
+    // 2. Processing dynamic tags
+    QStack<QPair<QString, int>> contextStack;
     static QRegularExpression tagOpenRegex(R"(\[([a-z0-9]+)(?:\s+[^\]]+)?\])", QRegularExpression::CaseInsensitiveOption);
     static QRegularExpression tagCloseRegex(R"(\[/([a-z0-9]+)\])", QRegularExpression::CaseInsensitiveOption);
 
@@ -787,21 +796,19 @@ QString MainWindow::getCurrentStcContextPath(const QString& text, int cursorPos)
         int openPos = openMatch.hasMatch() ? openMatch.capturedStart() : -1;
         int closePos = closeMatch.hasMatch() ? closeMatch.capturedStart() : -1;
 
-        if (openPos != -1 && (closePos == -1 || openPos < closePos) && openPos < cursorPos) {
-            QString tagName = openMatch.captured(1);
-            if (!ignorableTags.contains(tagName) && !tagName.startsWith("h"))
-            {
-                contextStack.push(tagName);
-            }
+        if (openPos != -1 && (closePos == -1 || openPos < closePos) && openPos < cursorPos)
+        {
+            QString tag = openMatch.captured(1).toLower();
+            if (!ignorableTags.contains(tag) && !tag.startsWith("h"))
+                contextStack.push({tag, openPos});
             index = openMatch.capturedEnd();
         }
-        else if (closePos != -1 && closePos < cursorPos)
-        {
-            QString tagName = closeMatch.captured(1);
-            if (!tagName.startsWith("h"))
+        else if (closePos != -1 && closePos < cursorPos) {
+            QString tag = closeMatch.captured(1).toLower();
+            if (!tag.startsWith("h"))
             {
                 int i = contextStack.size() - 1;
-                while (i >= 0 && contextStack[i] != tagName)
+                while (i >= 0 && contextStack[i].first != tag)
                     --i;
                 if (i >= 0)
                     contextStack.remove(i);
@@ -814,14 +821,20 @@ QString MainWindow::getCurrentStcContextPath(const QString& text, int cursorPos)
         }
     }
 
-    // 3. Build full path:
+    // 3. Building breadcrumb HTML
     QStringList breadcrumb;
 
-    const QList<int> sortedKeys = headerLevels.keys();
-    for (int k : sortedKeys)
-        breadcrumb << headerLevels[k];
+    const QList<int> sortedHeaderLevels = headerLevels.keys();
+    for (int level : sortedHeaderLevels)
+    {
+        const auto& [text, pos] = headerLevels[level];
+        breadcrumb << QString(R"(<a href="%1">%2</a>)").arg(pos).arg(text.toHtmlEscaped());
+    }
 
-    breadcrumb.append(contextStack.toList());
+    for (const auto& [tag, pos] : contextStack)
+    {
+        breadcrumb << QString(R"(<a href="%1">%2</a>)").arg(pos).arg(tag.toUpper());
+    }
 
-    return breadcrumb.join(" > ");
+    return breadcrumb.join(" &gt; ");
 }

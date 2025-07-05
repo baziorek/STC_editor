@@ -59,7 +59,7 @@ public slots:
 protected:
     void setDisabledMenuActionsDependingOnOpenedFile(bool disabled=true);
 
-    QString getCurrentStcContextPath(const QString &text, int cursorPos);
+    QString getClickableBreadcrumbPath(const QString &text, int cursorPos);
 
 private: // methods
     void putTextBackToCursorPosition(QTextCursor &cursor, QString divClass, QString selectedText,
