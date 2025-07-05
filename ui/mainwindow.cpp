@@ -73,9 +73,20 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->goToLineGroupBox, &GoToLineWidget::onGoToLineRequested, ui->textEditor, &CodeEditor::go2LineRequested);
     connect(ui->findWidget, &FindDialog::jumpToLocationRequested, ui->textEditor, &CodeEditor::goToLineAndOffset);
     connect(ui->textEditor, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateBreadcrumb);
+    connect(ui->textEditor, &CodeEditor::numberOfModifiedLinesChanged, [this](int linesNumber) {
+        this->onFileContentChanged(ui->textEditor->getFileName(), linesNumber);
+    });
 
     connectShortcutsFromCodeWidget();
     connectShortcuts();
+
+    // breadcrumbTextBrowser
+    ui->breadcrumbTextBrowser->setFrameStyle(QFrame::NoFrame);
+    ui->breadcrumbTextBrowser->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->breadcrumbTextBrowser->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->breadcrumbTextBrowser->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    ui->breadcrumbTextBrowser->setMaximumHeight(24);
+    ui->breadcrumbTextBrowser->setOpenLinks(false); // potrzebne do klików przez sygnał
 }
 
 void MainWindow::onStcTagsButtonPressed(StcTags stcTag)
@@ -481,12 +492,16 @@ bool MainWindow::saveEntireContent2File(QString fileName)
         QFile outputFile(fileName);
         outputFile.open(QIODeviceBase::WriteOnly);
         ui->textEditor->setFileName(fileName);
-        return outputFile.write(ui->textEditor->toPlainText().toUtf8()) > -1;
+        auto savedNumberOfBytes = outputFile.write(ui->textEditor->toPlainText().toUtf8());
+        if (savedNumberOfBytes > -1)
+        {
+            ui->textEditor->markAsSaved();
+        }
     }
     return false;
 }
 
-void MainWindow::updateWindowTitle(QString fileName)
+void MainWindow::updateWindowTitle(QString fileName, QString suffix)
 {
     if (fileName.isEmpty())
     {
@@ -495,6 +510,10 @@ void MainWindow::updateWindowTitle(QString fileName)
     else
     {
         auto newFileName = qApp->applicationName() + ": " + fileName;
+        if (! suffix.isEmpty())
+        {
+            newFileName += " \t[" + suffix + ']';
+        }
         setWindowTitle(newFileName);
     }
 }
@@ -711,6 +730,19 @@ void MainWindow::onUpdateBreadcrumb()
     QString breadcrumbPath = getCurrentStcContextPath(fullText, cursorPos);
 
     ui->breadcrumbLabel->setText(breadcrumbPath);
+}
+
+void MainWindow::onFileContentChanged(const QString &fileName, int changedLines)
+{
+    if (changedLines)
+    {
+        const auto modificationInfo = ui->textEditor->modificationInfo();
+        updateWindowTitle(fileName, modificationInfo);
+    }
+    else
+    {
+        updateWindowTitle(fileName);
+    }
 }
 
 QString MainWindow::getCurrentStcContextPath(const QString& text, int cursorPos)

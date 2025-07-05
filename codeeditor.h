@@ -43,6 +43,10 @@ public:
 
     QMultiMap<QString, QKeySequence> listOfShortcuts() const;
 
+    void markAsSaved();
+
+    QString modificationInfo() const;
+
 signals:
     void totalLinesCountChanged(int currentLinesCount);
     void shortcutPressed_bold();
@@ -54,6 +58,8 @@ signals:
     void shortcutPressed_h2();
     void shortcutPressed_h3();
     void shortcutPressed_h4();
+
+    void numberOfModifiedLinesChanged(int changedLinesCount);
 
 public slots:
     void fileChanged(const QString &path);

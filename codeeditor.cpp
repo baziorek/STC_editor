@@ -961,11 +961,58 @@ void CodeEditor::wheelEvent(QWheelEvent* event)
 void CodeEditor::updateDiffWithOriginal()
 {
     const QStringList currentLines = toPlainText().split('\n');
-    modifiedLines = calculateModifiedLines(originalLines, currentLines);
+    const QSet<int> newDiff = calculateModifiedLines(originalLines, currentLines);
+
+    if (newDiff != modifiedLines)
+    {
+        modifiedLines = newDiff;
+        emit numberOfModifiedLinesChanged(modifiedLines.size());
+    }
 
     // Optional: emit signal to refresh UI with updated status bar
     emit totalLinesCountChanged(linesCount());
 
     // repaint margin
     lineNumberArea->update();
+}
+
+void CodeEditor::markAsSaved()
+{
+    originalLines = toPlainText().split('\n');
+    modifiedLines.clear();
+    lastChangeTime = {};
+    fileModificationTime = QFileInfo(openedFileName).lastModified();
+    lineNumberArea->update();
+
+    emit numberOfModifiedLinesChanged(0);
+}
+
+QString CodeEditor::modificationInfo() const
+{
+    QString fileDate = fileModificationTime.toString("yyyy-MM-dd hh:mm:ss");
+    QString editTime;
+
+    if (lastChangeTime.isValid())
+    {
+        if (fileModificationTime.date() == lastChangeTime.date())
+        {
+            editTime = lastChangeTime.toString("hh:mm:ss");
+        }
+        else
+        {
+            editTime = lastChangeTime.toString("yyyy-MM-dd hh:mm:ss");
+        }
+    }
+
+    if (!editTime.isEmpty())
+    {
+        return QString("Changed lines: %1 (time of unsaved changes: %2, time of file modification: %3)")
+            .arg(modifiedLines.size())
+            .arg(editTime)
+            .arg(fileDate);
+    }
+    else
+    {
+        return QString("File: %1 (no changes)").arg(fileDate);
+    }
 }

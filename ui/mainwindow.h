@@ -30,6 +30,7 @@ public slots:
     void onStcTagsButtonPressed(StcTags stcTag);
 
     void onUpdateBreadcrumb();
+    void onFileContentChanged(const QString& fileName, int changedLines);
 
     /// file menu:
     void onNewFilePressed();
@@ -73,7 +74,7 @@ private: // methods
     bool closeApplicationReturningIfClosed();
     bool operationWhichDiscardsChangesRequestedReturningIfDiscarded();
     bool saveEntireContent2File(QString fileName);
-    void updateWindowTitle(QString fileName="");
+    void updateWindowTitle(QString fileName="", QString suffix="");
 
 
     void loadSettings();
