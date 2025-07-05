@@ -1,7 +1,7 @@
 <RCC>
     <qresource prefix="/"/>
     <qresource prefix="/resources">
-        <file>icon.png</file>
+        <file>resources/icon.png</file>
     </qresource>
     <qresource prefix="/icons/mdi">
         <file>resources/icons/mdi/format-header-1.svg</file>

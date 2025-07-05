@@ -15,7 +15,7 @@ To nie jest bardzo zaawansowane narzędzie, jest to po prostu widget w QT z pole
 7. Gdy klikniemy wewnątrz tagów z kodem C++ (`[cpp]...[/cpp]`) to mamy opcje formatowania kodu przez `clang-format` (uwaga: musi on być zainstalowany w systemie)
 8. Gdy klikniemy wewnątrz tagów z kodem C++ (`[cpp]...[/cpp]`) to mamy opcje kompilacji kodu przez `g++` (uwaga: musi on być zainstalowany w systemie)
 9. Statystyki pliku, jak ma wiele edytorów, ale są statystyki charakterystyczne do artykułu korzystające z formatowania STC.
-10. Na bieżąco aktualizowany pasek adresu (ang. breadcrumb) wskazujący miejsce w strukturze dokumentu w formatowaniu STC.
+10. Na bieżąco aktualizowany pasek adresu (ang. breadcrumb) wskazujący miejsce w strukturze dokumentu w formatowaniu STC, na którym można kliknąć.
 11. Śledzenie linijek ze zmianami (przez użycie zewnętrznej biblioteki [pydifflib-cpp](https://github.com/dominicprice/pydifflib-cpp)).
 
 ### Funkcjonalności edytora

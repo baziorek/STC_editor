@@ -779,7 +779,10 @@ QString MainWindow::getClickableBreadcrumbPath(const QString& text, int cursorPo
             else
                 ++it;
         }
-        headerLevels[level] = qMakePair(QString("%1: %2").arg(levelStr.toUpper(), content), m.capturedStart());
+        int tagStart = m.capturedStart();
+        int tagOpenLength = QString("[%1]").arg(levelStr).length();
+        int tagInnerPos = tagStart + tagOpenLength;
+        headerLevels[level] = qMakePair(QString("%1: %2").arg(levelStr.toUpper(), content), tagInnerPos);
     }
 
     // 2. Processing dynamic tags
@@ -800,7 +803,7 @@ QString MainWindow::getClickableBreadcrumbPath(const QString& text, int cursorPo
         {
             QString tag = openMatch.captured(1).toLower();
             if (!ignorableTags.contains(tag) && !tag.startsWith("h"))
-                contextStack.push({tag, openPos});
+                contextStack.push({tag, openMatch.capturedEnd()});
             index = openMatch.capturedEnd();
         }
         else if (closePos != -1 && closePos < cursorPos) {
