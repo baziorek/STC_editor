@@ -3,6 +3,7 @@
 
 #include <QPlainTextEdit>
 #include <QFileSystemWatcher>
+#include <QDateTime>
 
 class CodeEditor : public QPlainTextEdit
 {
@@ -91,6 +92,20 @@ protected:
 
     QString formatCppWithClang(const QString& code);
 
+    bool isContentModified() const
+    {
+        return !modifiedLines.isEmpty();
+    }
+
+    int modifiedLineCount() const
+    {
+        return modifiedLines.size();
+    }
+
+    void updateDiffWithOriginal();
+
+    void trackOriginalVersionOfFile(const QString& fileName);
+
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();
@@ -100,4 +115,9 @@ private:
     QWidget *lineNumberArea;
     QFileSystemWatcher fileWatcher;
     QString lastTooltipImagePath; /// this variable is for image tool tips - to keep them visible longer
+
+    QStringList originalLines;
+    QSet<int> modifiedLines;
+    QDateTime fileModificationTime;
+    QDateTime lastChangeTime;
 };

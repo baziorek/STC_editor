@@ -733,15 +733,16 @@ QString MainWindow::getCurrentStcContextPath(const QString& text, int cursorPos)
         QString content = m.captured(2).trimmed();
         int level = levelStr.mid(1).toInt();  // only letter from h1–h6
 
-        // Usuń wszystkie głębsze poziomy
-        for (auto l : headerLevels.keys()) {
+        // Remove deeper levels
+        for (auto l : headerLevels.keys())
+        {
             if (l >= level)
                 headerLevels.remove(l);
         }
         headerLevels[level] = levelStr + ": " + content;
     }
 
-    // 2. Dynamic opened tagsDynamiczne otwarte tagi
+    // 2. Dynamic opened tags
     static QRegularExpression tagOpenRegex(R"(\[([a-z0-9]+)(?:\s+[^\]]+)?\])", QRegularExpression::CaseInsensitiveOption);
     static QRegularExpression tagCloseRegex(R"(\[/([a-z0-9]+)\])", QRegularExpression::CaseInsensitiveOption);
 

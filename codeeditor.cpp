@@ -17,6 +17,7 @@
 #include "linenumberarea.h"
 #include "stcsyntaxhighlighter.h"
 #include "ui/cppcompilerdialog.h"
+#include "utils/diffcalculation.h"
 
 
 namespace
@@ -69,6 +70,11 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
     // connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::highlightCurrentLine);
     connect(verticalScrollBar(), &QScrollBar::valueChanged, this, &CodeEditor::onScrollChanged);
     connect(&fileWatcher, &QFileSystemWatcher::fileChanged, this, &CodeEditor::fileChanged);
+
+    connect(this, &CodeEditor::textChanged, this, [this]() {
+        this->lastChangeTime = QDateTime::currentDateTime();
+        updateDiffWithOriginal();
+    });
 
     updateLineNumberAreaWidth(0);
     // highlightCurrentLine();
@@ -248,9 +254,18 @@ bool CodeEditor::loadFileContentDistargingCurrentContent(const QString& fileName
 
     setPlainText(QString::fromUtf8(content));
 
+    trackOriginalVersionOfFile(fileName);
+
     setFileName(fileName);
 
     return true;
+}
+void CodeEditor::trackOriginalVersionOfFile(const QString& fileName)
+{
+    originalLines = toPlainText().split('\n');
+    modifiedLines.clear();
+    fileModificationTime = QFileInfo(fileName).lastModified();
+    lastChangeTime = QDateTime(); // reset
 }
 
 QMultiMap<QString, QKeySequence> CodeEditor::listOfShortcuts() const
@@ -590,10 +605,14 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
     {
         if (block.isVisible() && bottom >= event->rect().top())
         {
+            if (modifiedLines.contains(blockNumber + 1))
+            {
+                painter.fillRect(0, top, lineNumberArea->width(), fontMetrics().height(), QColor("#FFDD88"));
+            }
+
             QString number = QString::number(blockNumber + 1);
             painter.setPen(Qt::black);
-            painter.drawText(0, top, lineNumberArea->width(), fontMetrics().height(),
-                             Qt::AlignRight, number);
+            painter.drawText(0, top, lineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
         }
 
         block = block.next();
@@ -937,4 +956,16 @@ void CodeEditor::wheelEvent(QWheelEvent* event)
 
     // default handling
     QPlainTextEdit::wheelEvent(event);
+}
+
+void CodeEditor::updateDiffWithOriginal()
+{
+    const QStringList currentLines = toPlainText().split('\n');
+    modifiedLines = calculateModifiedLines(originalLines, currentLines);
+
+    // Optional: emit signal to refresh UI with updated status bar
+    emit totalLinesCountChanged(linesCount());
+
+    // repaint margin
+    lineNumberArea->update();
 }

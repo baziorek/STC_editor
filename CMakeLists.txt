@@ -12,7 +12,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
-include_directories(${PROJECT_SOURCE_DIR}) # to make sure that promoted types are visible from generated designer's files
+include_directories(${PROJECT_SOURCE_DIR}
+    "${PROJECT_SOURCE_DIR}/libs/" # is this OK?
+) # to make sure that promoted types are visible from generated designer's files
 
 set(PROJECT_SOURCES
     main.cpp
@@ -31,6 +33,7 @@ set(PROJECT_SOURCES
     ui/highlightdelegate.h ui/highlightdelegate.cpp
     types/documentstatistics.h types/documentstatistics.cpp
     ui/cppcompilerdialog.h ui/cppcompilerdialog.cpp
+    utils/diffcalculation.h utils/diffcalculation.cpp
 )
 
 set(TEXT_FILES
