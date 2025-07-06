@@ -1,55 +1,107 @@
-# STC_editor
-Prosty edytor tekstu w QT ułatwiający wstawianie znaczników [STC](https://cpp0x.pl/kursy/Kurs-STC/169) używanych przez serwis [cpp0x.pl](https://cpp0x.pl/)
+# Edytor STC
 
-## Prostota
-To nie jest bardzo zaawansowane narzędzie, jest to po prostu widget w QT z polem tekstowym, oraz przyciskami umożliwiającymi wstawianie wybranych tagów języka.
-![image](https://github.com/user-attachments/assets/17571fce-a89c-4c99-a38a-fd72ee65c7d5)
+Prosty edytor tekstu stworzony w Qt, ułatwiający wstawianie znaczników [STC](https://cpp0x.pl/kursy/Kurs-STC/169) używanych na platformie [cpp0x.pl](https://cpp0x.pl/).
 
-### Funkcjonalności dedykowane
-1. Kolorowanie składni
-2. Sprawdzanie czy zamknięto wszystkie tagi
-3. Możliwość zmiany zaznaczonego tekstu: na małe, na duże, camelCase -> snake_case i odwrotnie
-4. Podgląd kontekstu dokumentu (przykładowo dla `[h1]Nagłówek[/h1]` będzie wykryty tag "h1", linia, oraz zawartość "Nagłówek"), a także:
-    - możliwość skakania do danej pozycji w dokumencie po kontekście
-    - możliwość filtrowania tylko wybranych tagów (np. tylko nagłówki `[h1]`)
-    - na bieżąco śledzenie w której pozycji w kontekście znajduje się kursor tekstu
-5. Podgląd obrazków po najechaniu myszką (podgląd dla `[img src="istniejąca/ścieżka/obrazek.png"]`).
-6. Gdy wewnątrz tagów klikniemy myszką to pojawi się w menu kontekstowym opcja usunięcia tagu (przykładowo mamy: `[b]Pogrubiony tekst[/b]` to pojawi się opcja usunięcia `[b]` i wtedy będzie jedynie `Pogrubiony tekst`).
-7. Gdy klikniemy wewnątrz tagów z kodem C++ (`[cpp]...[/cpp]`) to mamy opcje formatowania kodu przez `clang-format` (uwaga: musi on być zainstalowany w systemie)
-8. Gdy klikniemy wewnątrz tagów z kodem C++ (`[cpp]...[/cpp]`) to mamy opcje kompilacji kodu przez `g++` (uwaga: musi on być zainstalowany w systemie)
-9. Statystyki pliku, jak ma wiele edytorów, ale są statystyki charakterystyczne do artykułu korzystające z formatowania STC.
-10. Na bieżąco aktualizowany pasek adresu (ang. breadcrumb) wskazujący miejsce w strukturze dokumentu w formatowaniu STC, na którym można kliknąć.
-11. Śledzenie linijek ze zmianami (przez użycie zewnętrznej biblioteki [pydifflib-cpp](https://github.com/dominicprice/pydifflib-cpp)).
+## Opis
+Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników STC na potrzeby tworzenia treści dla cpp0x.pl. Oferuje prosty interfejs oparty na Qt z polem tekstowym i przyciskami do wstawiania znaczników STC oraz dedykowane funkcje zwiększające produktywność.
 
-### Funkcjonalności edytora
-1. Wczytywanie i zapisywanie plików
-2. Zapamiętywanie ostatnio otwieranych plików
-3. Wykrywanie zmian pliku z zewnątrz
-4. Operowanie na UTF-8
-5. Dodanie numeracji zaznaczonych linii (menu kontekstowe edytora)
-6. Możliwość połączenia wielu linii w jedną oddzieloną spacją
-7. Kopiowanie do schowka nazwy pliku zarówno jako basenam, jak i absolutnej.
-8. TAB przesuwa cały zaznaczony tekst w prawo dodając spacje, SHIFT + TAB przesuwa w lewo (usuwając spacje)
-9. Lista skrótów (wyświetlalna z menu aplikacji).
-10. Wyszukiwanie wystąpień tekstu z możliwością wyboru czy z uwzględnieniem wilkości liter, oraz czy tylko całe słowa. Dodatkowo wyświetlane są informacje liczbowe:
-    - liczba wystąpień szukanego tekstu **z** uwzględnieniem wielkości znaku
-    - liczba wystąpień szukanego tekstu **bez** uwzględnienia wielkości znaków
-    - liczba wystąpień szukanego tekstu **z** uwzględnieniem wielkości znaku **jako całe słowa**
-    - liczba wystąpień szukanego tekstu **bez** uwzględnienia wielkości znaków **jako całe słowa**
-11. Powiększanie i pomniejszanie czcionki przez `CTRL +` I `CTRL -`.
-12. W pasku programu informacja o liczbie zmienionych, aczkolwiek niezapisanych linii, oraz o czasie wprowadzenia zmian w pliku, a także zapisu pliku (informacje dostępne tylko jeśli niezapisane zmiany).
+![Zrzut ekranu](https://github.com/user-attachments/assets/17571fce-a89c-4c99-a38a-fd72ee65c7d5)
+
+## Dedykowane funkcje
+ 1. **Kolorowanie składni**: Podświetlanie znaczników STC dla lepszej czytelności.
+ 2. **Weryfikacja zamknięcia znaczników**: Sprawdza, czy wszystkie znaczniki STC są poprawnie zamknięte.
+ 3. **Transformacja tekstu**: Zmiana zaznaczonego tekstu na małe litery, wielkie litery, camelCase na snake_case lub odwrotnie.
+ 4. **Podgląd kontekstu dokumentu**:
+    - Wykrywa znaczniki (np. `[h1]Nagłówek[/h1]`), ich numery linii oraz zawartość (np. „Nagłówek”).
+    - Umożliwia przejście do określonych pozycji w dokumencie na podstawie kontekstu.
+    - Filtrowanie wybranych znaczników (np. tylko `[h1]`).
+    - Śledzenie pozycji kursora w kontekście dokumentu w czasie rzeczywistym.
+ 5. **Podgląd obrazów**: Najedź myszą na `[img src="ścieżka/do/obrazu.png"]`, aby zobaczyć podgląd obrazu (wymaga prawidłowej ścieżki).
+ 6. **Usuwanie znaczników**: Kliknij prawym przyciskiem wewnątrz znaczników (np. `[b]Pogrubiony tekst[/b]`), aby usunąć znaczniki, pozostawiając tylko treść (np. `Pogrubiony tekst`).
+ 7. **Formatowanie kodu C++**: Kliknij prawym przyciskiem wewnątrz `[cpp]...[/cpp]`, aby sformatować kod za pomocą `clang-format` (wymaga zainstalowanego `clang-format`).
+ 8. **Kompilacja kodu C++**: Kliknij prawym przyciskiem wewnątrz `[cpp]...[/cpp]`, aby skompilować kod za pomocą `g++` (wymaga zainstalowanego `g++`).
+ 9. **Statystyki pliku**: Wyświetla statystyki specyficzne dla STC, np. użycie znaczników, obok standardowych metryk edytora.
+10. **Nawigacja okruszkowa**: Dynamicznie aktualizowany pasek adresu pokazujący bieżącą pozycję w strukturze dokumentu STC, z możliwością kliknięcia.
+11. **Śledzenie zmian**: Śledzi zmienione linie za pomocą biblioteki pydifflib-cpp.
+
+## Ogólne funkcje edytora
+Jeśli ktoś chce tego używać do innych celów:
+ 1. **Operacje na plikach**: Wczytywanie i zapisywanie plików z obsługą kodowania UTF-8.
+ 2. **Ostatnio otwarte pliki**: Zapamiętuje ostatnio używane pliki wraz z ostatnią pozycją w pliku dla szybkiego dostępu.
+ 3. **Wykrywanie zmian zewnętrznych**: Powiadamia o modyfikacjach pliku z zewnątrz.
+ 4. **Numerowanie linii**: Dodawanie numeracji do zaznaczonych linii przez menu kontekstowe (funkcja z menu kontekstowego).
+ 5. **Łączenie linii**: Łączenie wielu zaznaczonych linii w jedną, oddzieloną spacjami (funkcja z menu kontekstowego).
+ 6. **Kopiowanie ścieżki pliku**: Kopiowanie nazwy pliku lub pełnej ścieżki do schowka.
+ 7. **Kontrola wcięć**: `Tab` przesuwa zaznaczony tekst w prawo, `Shift+Tab` w lewo.
+ 8. **Lista skrótów**: Dostępna z menu aplikacji.
+ 9. **Wyszukiwanie tekstu**:
+    - Wyszukiwanie z opcjami uwzględniania wielkości liter i dopasowania całych słów.
+    - Wyświetlanie liczby wystąpień:
+      - Z uwzględnieniem wielkości liter.
+      - Bez uwzględniania wielkości liter.
+      - Z uwzględnieniem wielkości liter, tylko całe słowa.
+      - Bez uwzględniania wielkości liter, tylko całe słowa.
+10. **Skalowanie czcionki**: Powiększanie/pomniejszanie czcionki za pomocą `Ctrl++` i `Ctrl+-` lub `Ctrl+MOUSE_SCROLL`.
+11. **Pasek stanu**: Pokazuje liczbę niezapisanych zmienionych linii, czas ostatniej edycji i zapisu (tylko przy niezapisanych zmianach).
+
+## Planowane funkcjonalności
+
+### Przed pierwszym wydaniem
+
+- **Naprawy**:
+  - Naprawa problemu z pytaniem o nadpisywanie zmian, mimo ich braku, przy sekwencyjnym otwieraniu wielu plików plików.
+  - Poprawa formatowania sekcji kodu wielolinijkowego.
+  - Naprawa zapisywania geometrii okna (obecnie zapisywana jest tylko pozycja, a nie rozmiar).
+- **Funkcje**:
+  - Dodanie `Ctrl+R` do zamiany tekstu z możliwością wyłączenia poszczególnych wykrytych pozycji.
+  - Sprawdzanie, czy znaciki `[run]` znajdują się wewnątrz `[pkt]`.
+  - Weryfikacja, czy wszystkie znaczniki są zamknięte.
+  - Obsługa zakładek do szybkiego przechodzenia do miejsc w kodzie.
+  - Śledzenie TODO w dokumencie.
+  - Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
+  - Otwieranie wielu plików jednocześnie.
+  - Widok sąsiadujący do porównywania plików.
+
+### Pomysły na przyszłość
+
+- Eksport bloków kodu do osobnych plików.
+- Konsolidacja obrazów do jednego katalogu z aktualizacją ścieżek w znacznikach STC.
+- Integracja analizatora składni C++ (np. [flex](https://github.com/westes/flex)).
+- Podświetlanie składni C++ i Pythona za pomocą [QCXXHighlighter](https://github.com/Megaxela/QCodeEditor) (licencja MIT).
+- Kreator tabel dla znaczników STC.
+- Wyświetlanie statystyk zmian w czasie rzeczywistym (dodane, zmodyfikowane, usunięte linie).
+- Zamiana prefiksów adresów URL dla obrazów na serwerze.
+- Historia wprowadzanych zmian (`Ctrl+Z`).
+- Wyszukiwanie wielu słów w tej samej linii niezależnie od kolejności.
+- Sprawdzanie pisowni po polsku (np. [nuspell](https://github.com/nuspell/nuspell) lub [spellchecker Qt](https://doc.qt.io/qt-6/qtwebengine-webenginewidgets-spellchecker-example.html)).
+- Obsługa różnych kodowań plików z automatycznym rozpoznawaniem.
+- Podgląd treści STC w formacie web.
+- Obsługa wtyczek, być może z użyciem Lua.
+- Integracja dokumentacji cppreference (jak w `cppman` lub QtCreator).
+- Nagrywanie i odtwarzanie makr.
+- Zastąpienie listy kontekstu widżetem drzewiastym.
+- Dodanie ikon do akcji w menu i menu kontekstowym.
+- Dedykowana lista dla bloków kodu `[cpp]`.
+- Pokazywanie różnic w liniach znak po znaku.
+- Optymalizacja wydajności edytora przy szybkim pisaniu.
+- Dopasowanie rozmiaru numeracji linii do wielkości czcionki.
+- Skanowanie dokumentu w osobnym wątku dla lepszej wydajności.
+- Podświetlanie bieżącej linii dla lepszej widoczności kursora.
+- Sensowne funkcjonalności z innych podobnych edytorów np. [Scribe-Text-Editor](https://github.com/AleksandrHovhannisyan/Scribe-Text-Editor)
 
 ## Współpraca
-Chętnie zaakceptuje propozycje zmian do tego kodu aby był to wygodniejszy w użyciu edytor.
 
-## Czy takie coś faktycznie się przydaje?
-Mi się to bardzo przydało w ostatnich dwóch artykułach, m.in. [porównującym python i C++](https://cpp0x.pl/artykuly/Inne-artykuly/Porownanie-C++-i-Python-roznice-w-skladni-i-podejsciu-programistycznym/99) - tam co chwilę musiałem wrzucać znaczniki otaczające kod, czy tabelkę. Ja osobiście nie lubię wpisywać znaczników, potem szukać, którego z nich nie zamknąłem.
+Zapraszam do współpracy! Propozycje zmian i pull requesty są mile widziane, aby uczynić ten edytor jeszcze bardziej użytecznym.
 
-## Przydatne linki:
-[Interpreter STC on-line](https://cpp0x.pl/stc/)
-[Źródło użytych ikonek: MDI](https://pictogrammers.com/library/mdi/)
+## Przydatność
 
+Narzędzie to okazało się bardzo pomocne przy tworzeniu artykułów na cpp0x.pl, np. [porównującym python i C++](https://cpp0x.pl/artykuly/Inne-artykuly/Porownanie-C++-i-Python-roznice-w-skladni-i-podejsciu-programistycznym/99). Ułatwia wstawianie znaczników STC i debugowanie niezamkniętych znaczników.
 
-# Gwarancja
-Program jest zrobiony tak po prostu, sam mu nie do końca ufam (że nie zgubi mi ważnych treści), dlatego nie udzielam gwarancji na jego użytkowanie.
-Użycie na własne ryzyko ... co prawda mnie nie zawiódł jeszcze, no ale.
+## Przydatne linki
+
+- [Interpreter STC on-line](https://cpp0x.pl/stc/)
+- [Źródło użytych ikonek: MDI](https://pictogrammers.com/library/mdi/)
+
+## Ostrzeżenie
+
+Edytor jest prostym narzędziem i nie został gruntownie przetestowany pod kątem niezawodności. Używaj go na własne ryzyko, ponieważ może nie zachować ważnych treści. Jak dotąd jednak nie zawiódł autora.

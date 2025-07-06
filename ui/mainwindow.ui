@@ -15,16 +15,6 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="1" rowspan="2">
-     <widget class="StcTagsButtons" name="buttonsEmittingStc">
-      <property name="frameShape">
-       <enum>QFrame::Shape::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Shadow::Raised</enum>
-      </property>
-     </widget>
-    </item>
     <item row="3" column="1">
      <widget class="ErrorList" name="errorsInText" native="true">
       <property name="sizePolicy">
@@ -32,6 +22,19 @@
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="GoToLineWidget" name="goToLineGroupBox">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>70</height>
+       </size>
+      </property>
+      <property name="title">
+       <string>Go to line</string>
       </property>
      </widget>
     </item>
@@ -60,23 +63,10 @@
          </property>
         </widget>
        </item>
-       <item>
-        <widget class="GoToLineWidget" name="goToLineGroupBox">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>70</height>
-          </size>
-         </property>
-         <property name="title">
-          <string>Go to line</string>
-         </property>
-        </widget>
-       </item>
       </layout>
      </widget>
     </item>
-    <item row="0" column="0" rowspan="5">
+    <item row="0" column="0" rowspan="7">
      <widget class="QWidget" name="containerForCodeEditorAndBreadcromb" native="true">
       <property name="minimumSize">
        <size>
@@ -129,6 +119,16 @@
         </widget>
        </item>
       </layout>
+     </widget>
+    </item>
+    <item row="0" column="1" rowspan="2">
+     <widget class="StcTagsButtons" name="buttonsEmittingStc">
+      <property name="frameShape">
+       <enum>QFrame::Shape::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Shadow::Raised</enum>
+      </property>
      </widget>
     </item>
    </layout>
@@ -184,9 +184,17 @@
     <addaction name="actionGo_to_cpp0x_pl"/>
     <addaction name="actionShortcut_list"/>
    </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="actionShort_conspect"/>
+    <addaction name="actionGo_to_line"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuCheck"/>
+   <addaction name="menuView"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -323,6 +331,28 @@
   <action name="actionFile_statistics">
    <property name="text">
     <string>File statistics</string>
+   </property>
+  </action>
+  <action name="actionShort_conspect">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Short conspect</string>
+   </property>
+  </action>
+  <action name="actionGo_to_line">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Go to line</string>
    </property>
   </action>
  </widget>
@@ -604,6 +634,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionShort_conspect</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onContextShowChanged(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>242</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionGo_to_line</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onGoToLineShowChanged(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>242</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onSaveAsPressed()</slot>
@@ -623,5 +685,7 @@
   <slot>onShowAvailableShortcutsPressed()</slot>
   <slot>onFindTriggered(bool)</slot>
   <slot>onFileStatsRequested()</slot>
+  <slot>onContextShowChanged(bool)</slot>
+  <slot>onGoToLineShowChanged(bool)</slot>
  </slots>
 </ui>
