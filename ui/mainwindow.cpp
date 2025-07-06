@@ -96,10 +96,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     connect(ui->buttonsEmittingStc, &StcTagsButtons::buttonPressed, this, &MainWindow::onStcTagsButtonPressed);
     connect(ui->contextTableWidget, &FilteredTagTableWidget::goToLineClicked, ui->textEditor, &CodeEditor::go2LineRequested);
-    connect(ui->textEditor, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateContextRequested);
-    connect(ui->textEditor, &CodeEditor::totalLinesCountChanged, ui->goToLineGroupBox, &GoToLineWidget::setMaxLine);
     connect(ui->goToLineGroupBox, &GoToLineWidget::onGoToLineRequested, ui->textEditor, &CodeEditor::go2LineRequested);
     connect(ui->findWidget, &FindDialog::jumpToLocationRequested, ui->textEditor, &CodeEditor::goToLineAndOffset);
+    connect(ui->textEditor, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateContextRequested);
+    connect(ui->textEditor, &CodeEditor::totalLinesCountChanged, ui->goToLineGroupBox, &GoToLineWidget::setMaxLine);
     connect(ui->textEditor, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateBreadcrumb);
     connect(ui->textEditor, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::highlightCurrentTagInContextTable);
     connect(ui->textEditor, &CodeEditor::numberOfModifiedLinesChanged, [this](int linesNumber) {
@@ -363,10 +363,12 @@ void MainWindow::onFindTriggered(bool checked)
 void MainWindow::connectShortcuts()
 {
     QAction *focusGo2LineWidgetAction = new QAction("Focus go2line", this);
-    focusGo2LineWidgetAction->setShortcut(QKeySequence("Ctrl+L"));
+    focusGo2LineWidgetAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_L));
     addAction(focusGo2LineWidgetAction);
     connect(focusGo2LineWidgetAction, &QAction::triggered, [this]() {
         ui->goToLineGroupBox->setFocus();
+        ui->goToLineGroupBox->setVisible(true);
+        ui->actionGo_to_line->setChecked(true);
     });
 }
 
@@ -472,6 +474,9 @@ void MainWindow::updateContextTable(auto taggedTextLinePositions)
 
 void MainWindow::highlightCurrentTagInContextTable()
 {
+    if (ui->contextTableWidget->isHidden())
+        return;
+
     const int cursorPos = ui->textEditor->textCursor().position();
     const QString text = ui->textEditor->toPlainText();
 
@@ -708,6 +713,17 @@ void MainWindow::onCheckTagsPressed()
     {
         ui->errorsInText->addError(lineNumber, QString::fromStdString(errorText));
     }
+}
+
+void MainWindow::onContextShowChanged(bool visible)
+{
+    ui->contextGroup->setVisible(visible);
+    ui->contextTableWidget->setVisible(visible);
+}
+
+void MainWindow::onGoToLineShowChanged(bool visible)
+{
+    ui->goToLineGroupBox->setVisible(visible);
 }
 
 void MainWindow::surroundSelectedTextWithTag(QString divClass, QString textBase, QString extraAttributes, bool closable)

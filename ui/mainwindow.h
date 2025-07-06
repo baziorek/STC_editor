@@ -48,13 +48,17 @@ public slots:
     /// edit menu:
     void onFindTriggered(bool checked);
 
+    /// check menu:
+    void onCheckTagsPressed();
+
+    /// view menu:
+    void onContextShowChanged(bool visible);
+    void onGoToLineShowChanged(bool visible);
+
     /// help menu:
     void onStcCoursePressed();
     void onCpp0xPl_pressed();
     void onRepository_pressed();
-
-    /// check menu:
-    void onCheckTagsPressed();  
 
 protected:
     void setDisabledMenuActionsDependingOnOpenedFile(bool disabled=true);

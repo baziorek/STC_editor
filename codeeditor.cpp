@@ -100,9 +100,9 @@ void CodeEditor::registerShortcuts()
     makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_3), &CodeEditor::shortcutPressed_h3,      "Header level 3");
     makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_4), &CodeEditor::shortcutPressed_h4,      "Header level 4");
 
-    makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_Equal), &CodeEditor::increaseFontSize, "Increase font size"); // Ctrl +
-    makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_Plus),  &CodeEditor::increaseFontSize, "Increase font size (PLUS key)");
-    makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_Minus), &CodeEditor::decreaseFontSize, "Decrease font size");
+    makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_Equal), &CodeEditor::increaseFontSize,    "Increase font size"); // Ctrl +
+    makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_Plus),  &CodeEditor::increaseFontSize,    "Increase font size (PLUS key)");
+    makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_Minus), &CodeEditor::decreaseFontSize,    "Decrease font size");
 }
 
 
