@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <ranges>
 #include <vector>
 #include <regex>
 #include <format>
@@ -102,9 +101,9 @@ std::vector<Tag> extractTags(const std::vector<std::string_view>& lines)
     return tags;
 }
 
-std::vector<std::pair<unsigned int, std::string>> checkIfAllTagsAreClosed(const std::vector<Tag>& tags)
+std::vector<PairedTagsChecker::TagError> checkIfAllTagsAreClosed(const std::vector<Tag>& tags)
 {
-    std::vector<std::pair<unsigned int, std::string>> errorPerLine;
+    std::vector<PairedTagsChecker::TagError> errorPerLine;
     errorPerLine.reserve(tags.size());
 
     std::stack<Tag> openTags;
@@ -140,7 +139,7 @@ std::vector<std::pair<unsigned int, std::string>> checkIfAllTagsAreClosed(const 
             if (openTags.empty())
             {
                 auto errorText = std::format("{} is not opened! No tags are opened! You are trying to close the tag in line {} in position {}!", tag.tagShortname, tag.line, tag.startingPositionInLine);
-                errorPerLine.emplace_back(tag.line, errorText);
+                errorPerLine.emplace_back(tag.line, tag.startingPositionInLine, errorText);
                 continue;
             }
             if (openTags.top().tagShortname == tag.tagShortname)
@@ -151,7 +150,7 @@ std::vector<std::pair<unsigned int, std::string>> checkIfAllTagsAreClosed(const 
             {
                 auto errorText = std::format("{} is not closing in line {} in position {} is not closing! Maybe you want to close {}",
                                              tag.tagShortname, tag.line, tag.startingPositionInLine, openTags.top().tagShortname);
-                errorPerLine.emplace_back(tag.line, errorText);
+                errorPerLine.emplace_back(tag.line, tag.startingPositionInLine, errorText);
             }
         }
 
@@ -173,17 +172,17 @@ std::vector<std::pair<unsigned int, std::string>> checkIfAllTagsAreClosed(const 
     {
         const auto& tag = openTags.top();
         auto errorText = std::format("{} starting in line {} in position {} is not closing!", tag.tagShortname, tag.line, tag.startingPositionInLine);
-        errorPerLine.emplace_back(tag.line, errorText);
+        errorPerLine.emplace_back(tag.line, tag.startingPositionInLine, errorText);
         openTags.pop();
     }
-    std::ranges::sort(errorPerLine, ranges::less{}, &decltype(errorPerLine)::value_type::second);
+    std::sort(begin(errorPerLine), end(errorPerLine));
     return errorPerLine;
 }
 
-std::vector<std::pair<unsigned int, std::string>> PairedTagsChecker::checkTags(const std::string& text)
+std::vector<PairedTagsChecker::TagError> PairedTagsChecker::checkTags(const std::string& text)
 {
-    auto lines = splitLines(text);
-    auto tags = extractTags(lines);
+    const auto lines = splitLines(text);
+    const auto tags = extractTags(lines);
 
     return checkIfAllTagsAreClosed(tags);
 }

@@ -14,7 +14,7 @@ public:
     explicit ErrorList(QWidget *parent = nullptr);
     ~ErrorList();
 
-    void addError(int errorNumber, QString errorText);
+    void addError(int lineNumber, int positionInLine, const QString& errorText);
     void clearErrors();
 
 private:

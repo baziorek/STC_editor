@@ -18,8 +18,8 @@ TEST(PairedTagsCheckerTest, ErrorsForUnclosedTags)
                        "And another [i]tag.\n";
     auto errors = PairedTagsChecker::checkTags(text);
     ASSERT_EQ(errors.size(), 2);
-    EXPECT_EQ(errors[0].first, 1) << errors[0].first << ": " << errors[0].second;
-    EXPECT_EQ(errors[1].first, 2) << errors[1].first << ": " << errors[1].second;
+    EXPECT_EQ(errors[0].line, 1) << errors[0].line << ": " << errors[0].errorText;
+    EXPECT_EQ(errors[1].line, 2) << errors[1].line << ": " << errors[1].errorText;
 }
 
 // Test that single 'img' tags are correctly ignored
@@ -37,8 +37,8 @@ TEST(PairedTagsCheckerTest, ErrorsForMismatchedTags)
     std::string text = "Start [b]bold[/i] and [i]italic[/b].";
     auto errors = PairedTagsChecker::checkTags(text);
     ASSERT_GT(errors.size(), 2);
-    EXPECT_EQ(errors[0].first, 1) << errors[0].first << ": " << errors[0].second;
-    EXPECT_EQ(errors[1].first, 1) << errors[1].first << ": " << errors[1].second;
+    EXPECT_EQ(errors[0].line, 1) << errors[0].line << ": " << errors[0].errorText;
+    EXPECT_EQ(errors[1].line, 1) << errors[1].line << ": " << errors[1].errorText;
 }
 
 // Test that tags inside [run] are ignored
@@ -73,7 +73,7 @@ TEST(PairedTagsCheckerTest, ReportUnmatchedClosingTags)
     std::string text = "Unmatched closing tag [/b] here.";
     auto errors = PairedTagsChecker::checkTags(text);
     ASSERT_EQ(errors.size(), 1);
-    EXPECT_EQ(errors[0].first, 1);
+    EXPECT_EQ(errors[0].line, 1);
 }
 
 // Test that tags with attributes are correctly parsed

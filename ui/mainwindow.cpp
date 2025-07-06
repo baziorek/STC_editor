@@ -710,9 +710,9 @@ void MainWindow::onCheckTagsPressed()
     const auto tagsErrors = PairedTagsChecker::checkTags(text);
 
     ui->errorsInText->clearErrors();
-    for (const auto [lineNumber, errorText] : tagsErrors)
+    for (const auto [lineNumber, positionInLine, errorText] : tagsErrors)
     {
-        ui->errorsInText->addError(lineNumber, QString::fromStdString(errorText));
+        ui->errorsInText->addError(lineNumber, positionInLine, QString::fromStdString(errorText));
     }
 }
 
