@@ -725,6 +725,14 @@ void MainWindow::onGoToLineShowChanged(bool visible)
 {
     ui->goToLineGroupBox->setVisible(visible);
 }
+void MainWindow::onBreadcrumbVisibilityChanged(bool visible)
+{
+    ui->breadcrumbTextBrowser->setVisible(visible);
+    if (ui->breadcrumbTextBrowser->isVisible())
+    {
+        emit onUpdateBreadcrumb();
+    }
+}
 
 void MainWindow::surroundSelectedTextWithTag(QString divClass, QString textBase, QString extraAttributes, bool closable)
 {
@@ -850,6 +858,9 @@ void MainWindow::updateRecentFiles(const QString& path)
 
 void MainWindow::onUpdateBreadcrumb()
 {
+    if (ui->breadcrumbTextBrowser->isHidden())
+        return;
+
     QTextCursor cursor = ui->textEditor->textCursor();
     int cursorPos = cursor.position();
 

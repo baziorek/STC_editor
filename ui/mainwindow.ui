@@ -190,6 +190,7 @@
     </property>
     <addaction name="actionShort_conspect"/>
     <addaction name="actionGo_to_line"/>
+    <addaction name="actionBreadcrumb"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -353,6 +354,17 @@
    </property>
    <property name="text">
     <string>Go to line</string>
+   </property>
+  </action>
+  <action name="actionBreadcrumb">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Breadcrumb</string>
    </property>
   </action>
  </widget>
@@ -666,6 +678,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionBreadcrumb</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onBreadcrumbVisibilityChanged(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>242</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onSaveAsPressed()</slot>
@@ -687,5 +715,6 @@
   <slot>onFileStatsRequested()</slot>
   <slot>onContextShowChanged(bool)</slot>
   <slot>onGoToLineShowChanged(bool)</slot>
+  <slot>onBreadcrumbVisibilityChanged(bool)</slot>
  </slots>
 </ui>
