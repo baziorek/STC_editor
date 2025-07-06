@@ -50,6 +50,30 @@ std::map<int, TextInsideTags> findTagMatches(const QRegularExpression& regex, co
     }
     return textPerLine;
 }
+
+QRegularExpression& allContextTagsRegex()
+{
+    static QRegularExpression re(
+        R"(\[(h[1-6]|div|pkt|csv|cpp|py|code)(?:\s+[^\]]+)?\](.*?)\[/\1\])",
+        QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption);
+    return re;
+}
+
+static int tagLevel(const QString& tag)
+{
+    QString lower = tag.toLower();
+    if (lower.startsWith("h"))
+        return lower.mid(1).toInt(); // h1 -> 1, h2 -> 2
+    if (lower == "div")
+        return 0;
+    if (lower == "pkt")
+        return -1;
+    if (lower == "csv")
+        return -2;
+    if (lower == "cpp" || lower == "py" || lower == "code")
+        return -3;
+    return -10; // fallback
+}
 } // namespace
 
 
@@ -417,17 +441,11 @@ bool MainWindow::closeApplicationReturningIfClosed()
 void MainWindow::onUpdateContextRequested()
 {
     if (ui->contextTableWidget->isHidden())
-    {
         return;
-    }
-
-    static QRegularExpression hRegex("\\[(h[1-6])\\](.*?)\\[/\\1\\]");
-    static QRegularExpression divRegex("\\[(div)(?:\\s+[^\\]]+)?\\](.*?)\\[/\\1\\]", QRegularExpression::DotMatchesEverythingOption);
 
     const auto text = ui->textEditor->toPlainText();
 
-    auto taggedTextLinePositions = findTagMatches(hRegex, text);
-    taggedTextLinePositions.merge(findTagMatches(divRegex, text));
+    auto taggedTextLinePositions = findTagMatches(allContextTagsRegex(), text);
 
     updateContextTable(taggedTextLinePositions);
 }
@@ -465,9 +483,6 @@ void MainWindow::highlightCurrentTagInContextTable()
 
     QList<TagEntry> tags;
 
-    static QRegularExpression tagRegex(R"(\[(h[1-6]|div)(?:\s+[^\]]+)?\](.*?)\[/\1\])",
-                                       QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption);
-
     for (int row = 0; row < ui->contextTableWidget->rowCount(); ++row)
     {
         auto* lineItem = ui->contextTableWidget->item(row, 0);
@@ -484,17 +499,12 @@ void MainWindow::highlightCurrentTagInContextTable()
         for (int i = 1; i < lineNumber; ++i)
             startOffset = text.indexOf('\n', startOffset) + 1;
 
-        QRegularExpressionMatch match = tagRegex.match(text, startOffset);
+        QRegularExpressionMatch match = allContextTagsRegex().match(text, startOffset);
         if (match.hasMatch())
         {
-            QString tag = match.captured(1).toLower();
-            int start = match.capturedStart();
-
-            int level = 0;
-            if (tag.startsWith("h"))
-                level = tag.mid(1).toInt(); // h1 -> 1, h2 -> 2
-            else if (tag == "div")
-                level = 0;
+            const QString tag = match.captured(1).toLower();
+            const int start = match.capturedStart();
+            const int level = tagLevel(tag);
 
             tags.append({ row, start, tag, level });
         }
