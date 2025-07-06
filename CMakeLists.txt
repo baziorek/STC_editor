@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.20)
 
-project(Cpp0x VERSION 0.1 LANGUAGES CXX)
+project(Cpp0x VERSION 0.2 LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -13,32 +13,33 @@ find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 include_directories(${PROJECT_SOURCE_DIR}
-    "${PROJECT_SOURCE_DIR}/libs/" # is this OK?
+    "${PROJECT_SOURCE_DIR}/libs/" # TODO: is this OK?
 ) # to make sure that promoted types are visible from generated designer's files
 
 set(PROJECT_SOURCES
     main.cpp
+    codeeditor.h codeeditor.cpp
+    stcsyntaxhighlighter.h stcsyntaxhighlighter.cpp
+    linenumberarea.h linenumberarea.cpp
     ui/mainwindow.h ui/mainwindow.cpp ui/mainwindow.ui
     ui/finddialog.h ui/finddialog.ui ui/finddialog.cpp
     ui/errorlist.h ui/errorlist.cpp ui/errorlist.ui
     ui/gotolinewidget.h ui/gotolinewidget.cpp ui/gotolinewidget.ui
     ui/stctagsbuttons.h ui/stctagsbuttons.cpp ui/stctagsbuttons.ui
-    linenumberarea.h linenumberarea.cpp
-    codeeditor.h codeeditor.cpp
-    stcsyntaxhighlighter.h stcsyntaxhighlighter.cpp
+    ui/shortcutsdialog.h ui/shortcutsdialog.cpp
+    ui/highlightdelegate.h ui/highlightdelegate.cpp
+    ui/cppcompilerdialog.h ui/cppcompilerdialog.cpp
     checkers/PairedTagsChecker.h checkers/PairedTagsChecker.cpp
     types/stcTags.h types/stcTags.cpp
     widgets/filteredtagtablewidget.h widgets/filteredtagtablewidget.cpp
-    ui/shortcutsdialog.h ui/shortcutsdialog.cpp
-    ui/highlightdelegate.h ui/highlightdelegate.cpp
     types/documentstatistics.h types/documentstatistics.cpp
-    ui/cppcompilerdialog.h ui/cppcompilerdialog.cpp
     utils/diffcalculation.h utils/diffcalculation.cpp
 )
 
 set(TEXT_FILES
     LICENSE
     README.md
+    README_ang.md
 )
 
 set(PROJECT_FILES ${PROJECT_SOURCES} ${TEXT_FILES})
