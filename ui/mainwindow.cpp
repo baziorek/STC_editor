@@ -53,8 +53,11 @@ std::map<int, TextInsideTags> findTagMatches(const QRegularExpression& regex, co
 
 QRegularExpression& allContextTagsRegex()
 {
+    // static QRegularExpression re(
+    //     R"(\[(h[1-6]|div|pkt|csv|cpp|py|code)(?:\s+[^\]]+)?\](.*?)\[/\1\])",
+    //     QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption);
     static QRegularExpression re(
-        R"(\[(h[1-6]|div|pkt|csv|cpp|py|code)(?:\s+[^\]]+)?\](.*?)\[/\1\])",
+        R"(\[(h[1-6]|div|pkt|csv)(?:\s+[^\]]+)?\](.*?)\[/\1\])", // no code here
         QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption);
     return re;
 }
@@ -472,13 +475,13 @@ void MainWindow::highlightCurrentTagInContextTable()
     const int cursorPos = ui->textEditor->textCursor().position();
     const QString text = ui->textEditor->toPlainText();
 
-    // Collect tags from list with their positions
     struct TagEntry
     {
         int row;
         int start;
+        int end;
         QString tag;
-        int level; // 0 = div, 1 = h1, 2 = h2, ...
+        int level;  // 0 = div, 1 = h1, 2 = h2, ...
     };
 
     QList<TagEntry> tags;
@@ -486,8 +489,7 @@ void MainWindow::highlightCurrentTagInContextTable()
     for (int row = 0; row < ui->contextTableWidget->rowCount(); ++row)
     {
         auto* lineItem = ui->contextTableWidget->item(row, 0);
-        auto* tagItem = ui->contextTableWidget->item(row, 1);
-        if (!lineItem || !tagItem)
+        if (!lineItem)
             continue;
 
         bool ok = false;
@@ -504,57 +506,53 @@ void MainWindow::highlightCurrentTagInContextTable()
         {
             const QString tag = match.captured(1).toLower();
             const int start = match.capturedStart();
+            const int end = match.capturedEnd();
             const int level = tagLevel(tag);
 
-            tags.append({ row, start, tag, level });
+            tags.append({ row, start, end, tag, level });
         }
     }
 
-    // Find best match
-    // - header or dif, which starts before coursor
-    // - but no other tag with higher prioryty appears earlier
+    // Sort by start position
+    std::sort(tags.begin(), tags.end(), [](const TagEntry& a, const TagEntry& b) {
+        return a.start < b.start;
+    });
+
     int bestRow = -1;
-    int bestStart = -1;
-    int bestLevel = -1;
 
-    for (const auto& tag : tags)
+    for (int i = 0; i < tags.size(); ++i)
     {
-        if (tag.start > cursorPos)
-            continue;
+        const auto& tag = tags[i];
 
-        if (tag.tag == "div")
-        {
-            if (tag.start <= cursorPos)
-            {
-                bestRow = tag.row;
-                bestStart = tag.start;
-                bestLevel = 0;
-            }
-        }
-        else if (tag.tag.startsWith("h"))
-        {
-            // Headers works as context until different tag
-            if (bestStart == -1 || tag.start > bestStart)
-            {
-                bestRow = tag.row;
-                bestStart = tag.start;
-                bestLevel = tag.level;
-            }
-        }
-    }
+        bool isActive = false;
 
-    // If we are inside new tag (div or hN with less prioryty), we don't select anything
-    for (const auto& tag : tags)
-    {
-        if (tag.start <= cursorPos && tag.start > bestStart)
+        if (tag.tag.startsWith("h"))
         {
-            // If tag is div or header the same or higher evel - break
-            if (tag.tag == "div" || (tag.tag.startsWith("h") && tag.level <= bestLevel))
+            // Headers are in apply until next header
+            int nextMajorStart = text.length(); // default = end of text
+
+            for (int j = i + 1; j < tags.size(); ++j)
             {
-                bestRow = -1;
-                break;
+                const auto& nextTag = tags[j];
+                if (nextTag.tag == "div" || nextTag.tag == "pkt" || nextTag.tag == "csv" || nextTag.tag.startsWith("h"))
+                {
+                    nextMajorStart = nextTag.start;
+                    break;
+                }
             }
+
+            if (cursorPos >= tag.start && cursorPos < nextMajorStart)
+                isActive = true;
         }
+        else
+        {
+            // Tags (not headers) are in apply only in their range
+            if (cursorPos >= tag.start && cursorPos <= tag.end)
+                isActive = true;
+        }
+
+        if (isActive)
+            bestRow = tag.row;
     }
 
     ui->contextTableWidget->clearSelection();
