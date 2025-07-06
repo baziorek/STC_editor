@@ -481,7 +481,7 @@ void MainWindow::highlightCurrentTagInContextTable()
         int start;
         int end;
         QString tag;
-        int level;  // 0 = div, 1 = h1, 2 = h2, ...
+        int level;
     };
 
     QList<TagEntry> tags;
@@ -508,7 +508,6 @@ void MainWindow::highlightCurrentTagInContextTable()
             const int start = match.capturedStart();
             const int end = match.capturedEnd();
             const int level = tagLevel(tag);
-
             tags.append({ row, start, end, tag, level });
         }
     }
@@ -519,40 +518,30 @@ void MainWindow::highlightCurrentTagInContextTable()
     });
 
     int bestRow = -1;
+    int bestLevel = std::numeric_limits<int>::min();
 
     for (int i = 0; i < tags.size(); ++i)
     {
         const auto& tag = tags[i];
 
-        bool isActive = false;
+        if (tag.start > cursorPos)
+            break;
 
-        if (tag.tag.startsWith("h"))
+        // Range tags - active only if the cursor is within their range
+        if (tag.tag == "div" || tag.tag == "pkt" || tag.tag == "csv")
         {
-            // Headers are in apply until next header
-            int nextMajorStart = text.length(); // default = end of text
-
-            for (int j = i + 1; j < tags.size(); ++j)
+            if (cursorPos <= tag.end)
             {
-                const auto& nextTag = tags[j];
-                if (nextTag.tag == "div" || nextTag.tag == "pkt" || nextTag.tag == "csv" || nextTag.tag.startsWith("h"))
-                {
-                    nextMajorStart = nextTag.start;
-                    break;
-                }
+                bestRow = tag.row;
+                bestLevel = tag.level;
             }
-
-            if (cursorPos >= tag.start && cursorPos < nextMajorStart)
-                isActive = true;
         }
-        else
+        else if (tag.tag.startsWith("h"))
         {
-            // Tags (not headers) are in apply only in their range
-            if (cursorPos >= tag.start && cursorPos <= tag.end)
-                isActive = true;
-        }
-
-        if (isActive)
+            // Header remains active until overridden
             bestRow = tag.row;
+            bestLevel = tag.level;
+        }
     }
 
     ui->contextTableWidget->clearSelection();
