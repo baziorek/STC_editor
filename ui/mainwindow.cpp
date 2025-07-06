@@ -612,6 +612,7 @@ bool MainWindow::saveEntireContent2File(QString fileName)
         if (savedNumberOfBytes > -1)
         {
             ui->textEditor->markAsSaved();
+            setDisabledMenuActionsDependingOnOpenedFile(/*disabled=*/false);
         }
     }
     return false;
