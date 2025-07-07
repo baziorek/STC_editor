@@ -609,7 +609,7 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
             }
 
             setFormat(tagStart, tagEnd - tagStart, tagFmt);           // [b]
-            setFormat(contentStart, contentLen, fmt);                 // treść
+            setFormatKeepingBackground(contentStart, contentLen, fmt);                 // treść
             setFormat(closeStart, closeEnd - closeStart, tagFmt);     // [/b]
 
             offset = closeEnd;
@@ -618,7 +618,7 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
             // Początek wieloliniowego stylu — tylko jeśli nie zaczyna się w kodzie
             if (!overlapsWithCode(tagStart, text.length() - tagStart)) {
                 setFormat(tagStart, tagEnd - tagStart, tagFmt);
-                setFormat(tagEnd, text.length() - tagEnd, fmt);
+                setFormatKeepingBackground(tagEnd, text.length() - tagEnd, fmt);
                 currentBlockStateWithFlag(flag);
                 return true;
             } else {
@@ -629,7 +629,19 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
     }
 
     return foundAny;
-} // TODO: Bold bez zmiany tła
+}
+void STCSyntaxHighlighter::setFormatKeepingBackground(int contentStart, int contentLen, const QTextCharFormat &format)
+{
+    for (int i = contentStart; i < contentStart + contentLen; ++i)
+    {
+        QTextCharFormat baseFmt = this->format(i); // odzyskaj bieżący format
+        baseFmt.setFontWeight(format.fontWeight());
+        baseFmt.setFontItalic(format.fontItalic());
+        baseFmt.setFontUnderline(format.fontUnderline());
+        baseFmt.setFontStrikeOut(format.fontStrikeOut());
+        setFormat(i, 1, baseFmt);
+    }
+}
 
 bool STCSyntaxHighlighter::overlapsWithCode(int start, int length) const
 {

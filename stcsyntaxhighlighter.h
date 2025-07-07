@@ -37,6 +37,8 @@ protected:
 
     bool overlapsWithCode(int start, int length) const;
 
+    void setFormatKeepingBackground(int contentStart, int contentLen, const QTextCharFormat &format);
+
 private:
     struct Rule
     {
