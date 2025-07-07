@@ -52,8 +52,9 @@ Jeśli ktoś chce tego używać do innych celów:
 
 - **Naprawy**:
   - Naprawa problemu z pytaniem o nadpisywanie zmian, mimo ich braku, przy sekwencyjnym otwieraniu wielu plików plików.
-  - Poprawa formatowania sekcji kodu wielolinijkowego.
+  - Poprawa formatowania
   - Naprawa zapisywania geometrii okna (obecnie zapisywana jest tylko pozycja, a nie rozmiar).
+  - Breadcrumb łapie wnętrze kodu w C++ np. rozmiary tablic czy atrybuty
 - **Funkcje**:
   - Dodanie `Ctrl+R` do zamiany tekstu z możliwością wyłączenia poszczególnych wykrytych pozycji.
   - Sprawdzanie, czy znaciki `[run]` znajdują się wewnątrz `[pkt]`.
@@ -90,6 +91,16 @@ Jeśli ktoś chce tego używać do innych celów:
 - Skanowanie dokumentu w osobnym wątku dla lepszej wydajności.
 - Podświetlanie bieżącej linii dla lepszej widoczności kursora.
 - Sensowne funkcjonalności z innych podobnych edytorów np. [Scribe-Text-Editor](https://github.com/AleksandrHovhannisyan/Scribe-Text-Editor)
+- Ctrl + F gdy mamy focus w dokumencie powinno zyskać focus, a nie zniknąć
+- Sprawdzenie czy link istnieje
+- Następna zmiana - przycisk pozwalający skakać po zmianach w dokumencie
+- chowanie breadcrumb
+- enter na wyszukiwaniu skacze do miejsca wykrycia
+    - SHIFT N - kolejne wykrycie i też trzeba by wymyślić poprzednie
+- Dodać check: czy nie zamykam nieotwartego tagu?
+- Sprawdzenie czy Run nie jest poza csv lub pkt
+- Refaktoring: Jeśli wczytywanie pliku jest przez CodeEditor, to zapis pliku też konsekwentnie powinien stamtąd iść
+- Tłumaczenia aplikacji na wiele języków: QLinguist
 
 ## Współpraca
 
