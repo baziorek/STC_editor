@@ -16,18 +16,19 @@ enum BlockState // TODO: Why not to use `enum class StcTags: std::uint32_t` inst
     DIV_CLASS_TIP         = 0x10,
     DIV_CLASS_UWAGA       = 0x20,
     DIV_CLASS_PLAIN       = 0x40,
+    DIV_CLASS_CYTAT       = 0x80,
 
-    STATE_CSV             = 0x80,
-    STATE_PKT             = 0x100,
+    STATE_CSV             = 0x100,
+    STATE_PKT             = 0x200,
 
-    STATE_CPP             = 0x200,
-    STATE_CODE            = 0x400,
-    STATE_CODE_CPP        = 0x800,
+    STATE_CPP             = 0x400,
+    STATE_CODE            = 0x800,
+    STATE_CODE_CPP        = 0x1000,
 
-    STATE_STYLE_BOLD      = 0x1000,
-    STATE_STYLE_ITALIC    = 0x2000,
-    STATE_STYLE_UNDERLINE = 0x4000,
-    STATE_STYLE_STRIKE    = 0x8000,
+    STATE_STYLE_BOLD      = 0x2000,
+    STATE_STYLE_ITALIC    = 0x4000,
+    STATE_STYLE_UNDERLINE = 0x8000,
+    STATE_STYLE_STRIKE    = 0x10000,
 };
 } // namespace
 
@@ -54,7 +55,7 @@ STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
     addBlockStyle("tip", Qt::white, std::to_underlying(NONE), -1, QColor("darkgreen"));
     addBlockStyle(tagsClasses[DIV], QColor::Invalid, std::to_underlying(NONE), -1, QColor("brown"));
     addBlockStyle("warning", Qt::white, std::to_underlying(NONE), -1, QColor("red"));
-    addBlockStyle(tagsClasses[QUOTE], Qt::black, std::to_underlying(NONE), -1, QColor("orange"));
+    addBlockStyle(tagsClasses[QUOTE], Qt::black, std::to_underlying(StcTags::NONE), -1, QColor("orange"));
 
     // Bloki kodu
     addBlockStyle(tagsClasses[CODE], QColor("yellow"), std::to_underlying(NONE), -1, QColor("black"), "monospace");
@@ -117,7 +118,7 @@ void STCSyntaxHighlighter::highlightBlock(const QString &text)
 
     // --- 1. DIV (najbardziej zewnętrzny) ---
     bool divChanges = highlightDivBlock(text);
-    if (divChanges) qDebug() << "\tdiv changes" << __LINE__ << currentBlockState(); // TODO: detect "cytat"
+    if (divChanges) qDebug() << "\tdiv changes" << __LINE__ << currentBlockState();
 
     // --- 2. Nagłówki ---
     bool headersChanges = highlightHeading(text);
@@ -177,10 +178,10 @@ bool STCSyntaxHighlighter::highlightHeading(const QString &text)
 
 bool STCSyntaxHighlighter::highlightDivBlock(const QString &text)
 {
-    static const QRegularExpression divOpenRe(R"___(\[div(?:\s+class="(tip|uwaga)")?\])___");
-    static const QRegularExpression divCloseRe(R"___(\[/div\])___");
+    static const QRegularExpression divOpenRe(R"___(\[(div)(?:\s+class="(tip|uwaga)")?\]|\[(cytat)\])___");
+    static const QRegularExpression divCloseRe(R"___(\[/div\]|\[/cytat\])___");
 
-    static QTextCharFormat tagFmt = [] { // TODO: po cóż taki potworek?
+    static QTextCharFormat tagFmt = [] {
         QTextCharFormat fmt;
         fmt.setForeground(Qt::gray);
         fmt.setFontPointSize(8);
@@ -189,15 +190,18 @@ bool STCSyntaxHighlighter::highlightDivBlock(const QString &text)
 
     const int prevState = previousBlockState();
 
-    if (STATE_NONE != prevState)
+    // --- 1. Kontynuacja wieloliniowego DIV-a lub cytatu ---
+    if (prevState != STATE_NONE)
     {
-        // --- 1. Jesteśmy wewnątrz wieloliniowego DIV-a ---
-        if (prevState & DIV_CLASS_TIP || prevState & DIV_CLASS_UWAGA || prevState & DIV_CLASS_PLAIN) {
+        if (prevState & (DIV_CLASS_TIP | DIV_CLASS_UWAGA | DIV_CLASS_PLAIN | DIV_CLASS_CYTAT))
+        {
             QTextCharFormat fmt;
             if (prevState == DIV_CLASS_TIP)
                 fmt = styledTagsMap.value("tip").format;
             else if (prevState == DIV_CLASS_UWAGA)
                 fmt = styledTagsMap.value("warning").format;
+            else if (prevState == DIV_CLASS_CYTAT)
+                fmt = styledTagsMap.value("cytat").format;
             else
                 fmt = styledTagsMap.value("div").format;
 
@@ -215,25 +219,35 @@ bool STCSyntaxHighlighter::highlightDivBlock(const QString &text)
         }
     }
 
-    // --- 2. Wyszukiwanie nowych DIVów w linii (może być wiele) ---
+    // --- 2. Wyszukiwanie nowych DIV-ów lub cytatów w linii ---
     bool foundAny = false;
-    QRegularExpressionMatchIterator it = divOpenRe.globalMatch(text); // TODO: Czy na pewno potrzebny globalMatch, czemu by nie match?
+    QRegularExpressionMatchIterator it = divOpenRe.globalMatch(text);
     while (it.hasNext()) {
         QRegularExpressionMatch openMatch = it.next();
         int tagStart = openMatch.capturedStart(0);
         int tagEnd = openMatch.capturedEnd(0);
-        QString divClass = openMatch.captured(1);
+
+        const QString tagName = openMatch.captured(1); // "div"
+        const QString divClass = openMatch.captured(2); // "tip" / "uwaga"
+        const QString quoteTag = openMatch.captured(3); // "cytat"
 
         QTextCharFormat fmt;
         int blockState = DIV_CLASS_PLAIN;
-        if (divClass == "tip") {
-            fmt = styledTagsMap.value("tip").format;
-            blockState = DIV_CLASS_TIP;
-        } else if (divClass == "uwaga") {
-            fmt = styledTagsMap.value("warning").format;
-            blockState = DIV_CLASS_UWAGA;
-        } else {
-            fmt = styledTagsMap.value("div").format;
+
+        if (tagName == "div") {
+            if (divClass == "tip") {
+                fmt = styledTagsMap.value("tip").format;
+                blockState = DIV_CLASS_TIP;
+            } else if (divClass == "uwaga") {
+                fmt = styledTagsMap.value("warning").format;
+                blockState = DIV_CLASS_UWAGA;
+            } else {
+                fmt = styledTagsMap.value("div").format;
+                blockState = DIV_CLASS_PLAIN;
+            }
+        } else if (!quoteTag.isEmpty()) {
+            fmt = styledTagsMap.value("cytat").format;
+            blockState = DIV_CLASS_CYTAT;
         }
 
         QRegularExpressionMatch closeMatch = divCloseRe.match(text, tagEnd);
@@ -243,12 +257,12 @@ bool STCSyntaxHighlighter::highlightDivBlock(const QString &text)
             int contentEnd = closeMatch.capturedStart(0);
             int contentLen = contentEnd - contentStart;
 
-            setFormat(tagStart, tagEnd - tagStart, tagFmt);             // [div...]
-            setFormat(contentStart, contentLen, fmt);                   // zawartość
-            setFormat(closeMatch.capturedStart(0), closeMatch.capturedLength(0), tagFmt);  // [/div]
+            setFormat(tagStart, tagEnd - tagStart, tagFmt);                 // [div] lub [cytat]
+            setFormat(contentStart, contentLen, fmt);                       // zawartość
+            setFormat(closeMatch.capturedStart(0), closeMatch.capturedLength(0), tagFmt);  // [/div] lub [/cytat]
             currentBlockStateWithFlag(prevState);
         } else {
-            // Brak zamknięcia – początek wieloliniowego bloku
+            // Początek wieloliniowego bloku
             setFormat(tagStart, tagEnd - tagStart, tagFmt);
             setFormat(tagEnd, text.length() - tagEnd, fmt);
             currentBlockStateWithFlag(blockState);
