@@ -269,94 +269,95 @@ bool STCSyntaxHighlighter::highlightPktOrCsv(const QString& text)
     static const QRegularExpression csvOpenRe(R"(\[csv(\s+[^\]]*)?\])");
     static const QRegularExpression csvCloseRe(R"(\[/csv\])");
 
-    static QTextCharFormat tagFmt = [] {
+    static const QTextCharFormat tagFmt = [] {
         QTextCharFormat fmt;
         fmt.setForeground(Qt::gray);
         fmt.setFontPointSize(8);
         return fmt;
     }();
 
-    int prevState = previousBlockState();
+    const int prevState = previousBlockState();
+    bool foundAny = false;
 
-    if (STATE_NONE != prevState)
+    // --- 1. Kontynuacja wieloliniowego bloku pkt/csv ---
+    if (prevState != STATE_NONE)
     {
-        // --- 1. Obsługa kontynuacji wieloliniowego pkt ---
         if (prevState & STATE_PKT) {
-            if (pktCloseRe.match(text).hasMatch()) {
-                int closeStart = pktCloseRe.match(text).capturedStart(0);
-                setFormat(0, closeStart, styledTagsMap.value("pkt").format);
-                setFormat(closeStart, pktCloseRe.match(text).capturedLength(0), tagFmt);
-                currentBlockStateWithoutFlag(prevState);
+            QRegularExpressionMatch close = pktCloseRe.match(text);
+            QTextCharFormat fmt = styledTagsMap.value("pkt").format;
+
+            if (close.hasMatch()) {
+                int closeStart = close.capturedStart();
+                setFormat(0, closeStart, fmt);
+                setFormat(closeStart, close.capturedLength(), tagFmt);
+                currentBlockStateWithoutFlag(STATE_PKT);
             } else {
-                setFormat(0, text.length(), styledTagsMap.value("pkt").format);
+                setFormat(0, text.length(), fmt);
                 currentBlockStateWithFlag(STATE_PKT);
             }
-            return true;
+
+            foundAny = true;
         }
 
-        // --- 2. Obsługa kontynuacji wieloliniowego csv ---
         if (prevState & STATE_CSV) {
-            if (csvCloseRe.match(text).hasMatch()) {
-                int closeStart = csvCloseRe.match(text).capturedStart(0);
-                setFormat(0, closeStart, styledTagsMap.value("csv").format);
-                setFormat(closeStart, csvCloseRe.match(text).capturedLength(0), tagFmt);
-                currentBlockStateWithoutFlag(prevState);
+            QRegularExpressionMatch close = csvCloseRe.match(text);
+            QTextCharFormat fmt = styledTagsMap.value("csv").format;
+
+            if (close.hasMatch()) {
+                int closeStart = close.capturedStart();
+                setFormat(0, closeStart, fmt);
+                setFormat(closeStart, close.capturedLength(), tagFmt);
+                currentBlockStateWithoutFlag(STATE_CSV);
             } else {
-                setFormat(0, text.length(), styledTagsMap.value("csv").format);
+                setFormat(0, text.length(), fmt);
                 currentBlockStateWithFlag(STATE_CSV);
             }
-            return true;
-        }
-    }
 
-    // --- 3. Nowy otwierający tag pkt ---
-    QRegularExpressionMatch pktOpen = pktOpenRe.match(text);
-    if (pktOpen.hasMatch()) {
-        int tagStart = pktOpen.capturedStart(0);
-        int tagEnd = pktOpen.capturedEnd(0);
-        QTextCharFormat fmt = styledTagsMap.value("pkt").format;
-
-        setFormat(tagStart, tagEnd - tagStart, tagFmt);
-
-        QRegularExpressionMatch close = pktCloseRe.match(text, tagEnd);
-        if (close.hasMatch()) {
-            int contentStart = tagEnd;
-            int contentEnd = close.capturedStart(0);
-            setFormat(contentStart, contentEnd - contentStart, fmt);
-            setFormat(contentEnd, close.capturedLength(0), tagFmt);
-        } else {
-            setFormat(tagEnd, text.length() - tagEnd, fmt);
-            currentBlockStateWithFlag(STATE_PKT);
+            foundAny = true;
         }
 
-        return true;
+        // Jeśli jesteśmy w stanie bloku, to już nic nowego nie szukamy
+        if (foundAny) return true;
     }
 
-    // --- 4. Nowy otwierający tag csv ---
-    QRegularExpressionMatch csvOpen = csvOpenRe.match(text);
-    if (csvOpen.hasMatch()) {
-        int tagStart = csvOpen.capturedStart(0);
-        int tagEnd = csvOpen.capturedEnd(0);
-        QTextCharFormat fmt = styledTagsMap.value("csv").format;
+    // --- 2. Nowe otwarcia w tej samej linii ---
+    auto processTag = [&](const QRegularExpression& openRe,
+                          const QRegularExpression& closeRe,
+                          const QString& tagName,
+                          int stateFlag)
+    {
+        QTextCharFormat fmt = styledTagsMap.value(tagName).format;
 
-        setFormat(tagStart, tagEnd - tagStart, tagFmt);
+        QRegularExpressionMatchIterator it = openRe.globalMatch(text);
+        while (it.hasNext()) {
+            QRegularExpressionMatch open = it.next();
+            int tagStart = open.capturedStart();
+            int tagEnd = open.capturedEnd();
 
-        QRegularExpressionMatch close = csvCloseRe.match(text, tagEnd);
-        if (close.hasMatch()) {
-            int contentStart = tagEnd;
-            int contentEnd = close.capturedStart(0);
-            setFormat(contentStart, contentEnd - contentStart, fmt);
-            setFormat(contentEnd, close.capturedLength(0), tagFmt);
-        } else {
-            // brak zamknięcia w tej linii → wieloliniowy blok CSV
-            setFormat(tagEnd, text.length() - tagEnd, fmt);
-            currentBlockStateWithFlag(STATE_CSV);
+            setFormat(tagStart, tagEnd - tagStart, tagFmt);
+
+            QRegularExpressionMatch close = closeRe.match(text, tagEnd);
+            if (close.hasMatch()) {
+                int contentStart = tagEnd;
+                int contentEnd = close.capturedStart();
+                int contentLen = contentEnd - contentStart;
+
+                setFormat(contentStart, contentLen, fmt);
+                setFormat(contentEnd, close.capturedLength(), tagFmt);
+            } else {
+                // brak zamknięcia w tej linii → początek wieloliniowego bloku
+                setFormat(tagEnd, text.length() - tagEnd, fmt);
+                currentBlockStateWithFlag(stateFlag);
+            }
+
+            foundAny = true;
         }
+    };
 
-        return true;
-    }
+    processTag(pktOpenRe, pktCloseRe, "pkt", STATE_PKT);
+    processTag(csvOpenRe, csvCloseRe, "csv", STATE_CSV);
 
-    return false;
+    return foundAny;
 } // TODO: Dodać ignorowanie, gdy tagi nie wewnątrz `[run]`
 
 void STCSyntaxHighlighter::currentBlockStateWithoutFlag(int flag, std::source_location location)
@@ -390,13 +391,14 @@ void STCSyntaxHighlighter::currentBlockStateWithFlag(int flag, std::source_locat
     }
 }
 
-
 bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
 {
-    static const QRegularExpression codeOpenRe(R"__(\[(cpp|py|code(?:\s+src="([^"]+)")?)\])__");
-    static const QRegularExpression codeCloseRe(R"(\[/code\])");
-    static const QRegularExpression cppCloseRe(R"(\[/cpp\])");
-    static const QRegularExpression pyCloseRe(R"(\[/py\])");
+    static const QRegularExpression openRe(R"__(\[(cpp|py|code)(?:\s+src="([^"]+)")?\])__");
+    static const QMap<QString, QRegularExpression> closeReMap = {
+        { "cpp",  QRegularExpression(R"(\[/cpp\])") },
+        { "py",   QRegularExpression(R"(\[/py\])") },
+        { "code", QRegularExpression(R"(\[/code\])") }
+    };
 
     static QTextCharFormat tagFmt = [] {
         QTextCharFormat fmt;
@@ -405,105 +407,100 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
         return fmt;
     }();
 
+    int offset = 0;
+    bool found = false;
+
     const int prev = previousBlockState();
+    if (prev != STATE_NONE) {
+        struct CodeBlock {
+            int stateFlag;
+            QString styleKey;
+            QRegularExpression closeRe;
+        };
 
-    if (STATE_NONE != prev)
-    {
-        // --- 1. Kontynuacja wieloliniowego kodu ---
-        if (prev & STATE_CODE_CPP) {
-            QRegularExpressionMatch close = cppCloseRe.match(text);
-            QTextCharFormat fmt = styledTagsMap.value("cpp").format;
+        const QVector<CodeBlock> blocks = {
+            { STATE_CODE_CPP, "cpp", QRegularExpression(R"(\[/cpp\])") },
+            { STATE_CODE,     "code", QRegularExpression(R"(\[/code\])") },
+            { STATE_CPP,      "py", QRegularExpression(R"(\[/py\])") }
+        };
 
-            if (close.hasMatch()) {
-                int closeStart = close.capturedStart(0);
-                setFormat(0, closeStart, fmt);
-                setFormat(closeStart, close.capturedLength(0), tagFmt);
-                currentBlockStateWithoutFlag(STATE_CODE_CPP);
-            } else {
-                setFormat(0, text.length(), fmt);
-                currentBlockStateWithFlag(STATE_CODE_CPP);
+        for (const auto& blk : blocks) {
+            if (prev & blk.stateFlag) {
+                QTextCharFormat fmt = styledTagsMap.value(blk.styleKey).format;
+                QRegularExpressionMatch close = blk.closeRe.match(text);
+                if (close.hasMatch()) {
+                    int closeStart = close.capturedStart();
+                    setFormat(0, closeStart, fmt);
+                    setFormat(closeStart, close.capturedLength(), tagFmt);
+                    currentBlockStateWithoutFlag(blk.stateFlag);
+                    offset = close.capturedEnd();
+                    found = true;
+                    break; // zakończ wieloliniowy blok, ale idź dalej!
+                } else {
+                    setFormat(0, text.length(), fmt);
+                    currentBlockStateWithFlag(blk.stateFlag);
+                    return true; // nadal jesteśmy w wieloliniowym bloku
+                }
             }
-            return true;
-        }
-
-        if (prev & STATE_CODE) {
-            QRegularExpressionMatch close = codeCloseRe.match(text);
-            QTextCharFormat fmt = styledTagsMap.value("code").format;
-
-            if (close.hasMatch()) {
-                int closeStart = close.capturedStart(0);
-                setFormat(0, closeStart, fmt);
-                setFormat(closeStart, close.capturedLength(0), tagFmt);
-                currentBlockStateWithoutFlag(STATE_CODE);
-            } else {
-                setFormat(0, text.length(), fmt);
-                currentBlockStateWithFlag(STATE_CODE);
-            }
-            return true;
-        }
-
-        if (prev & BlockState::STATE_CPP) {
-            QRegularExpressionMatch close = pyCloseRe.match(text);
-            QTextCharFormat fmt = styledTagsMap.value("py").format;
-
-            if (close.hasMatch()) {
-                int closeStart = close.capturedStart(0);
-                setFormat(0, closeStart, fmt);
-                setFormat(closeStart, close.capturedLength(0), tagFmt);
-                currentBlockStateWithoutFlag(BlockState::STATE_CPP);
-            } else {
-                setFormat(0, text.length(), fmt);
-                currentBlockStateWithFlag(BlockState::STATE_CPP);
-            }
-            return true;
         }
     }
 
-    // --- 2. Rozpoczęcie nowego kodu ---
-    QRegularExpressionMatch openMatch = codeOpenRe.match(text);
-    if (openMatch.hasMatch()) {
+    while (offset < text.length()) {
+        QRegularExpressionMatch openMatch = openRe.match(text, offset);
+        if (!openMatch.hasMatch())
+            break;
+
         const QString tag = openMatch.captured(1);
         const QString src = openMatch.captured(2).toLower();
-        const int tagStart = openMatch.capturedStart(0);
-        const int tagEnd = openMatch.capturedEnd(0);
+        const int tagStart = openMatch.capturedStart();
+        const int tagEnd = openMatch.capturedEnd();
 
         QTextCharFormat fmt;
-        int blockFlag = STATE_CODE;
-        QRegularExpression closeRe = codeCloseRe;
+        QString styleKey;
+        int stateFlag;
+        QRegularExpression closeRe;
 
-        if (tag == "cpp" || src.contains("c++") || src.contains("cpp")) {
-            fmt = styledTagsMap.value("cpp").format;
-            blockFlag = STATE_CODE_CPP;
-            closeRe = cppCloseRe;
+        if (tag == "cpp" || src.contains("cpp") || src.contains("c++")) {
+            styleKey = "cpp";
+            fmt = styledTagsMap.value(styleKey).format;
+            stateFlag = STATE_CODE_CPP;
+            closeRe = closeReMap["cpp"];
         } else if (tag == "py") {
-            fmt = styledTagsMap.value("py").format;
-            blockFlag = BlockState::STATE_CPP;
-            closeRe = pyCloseRe;
+            styleKey = "py";
+            fmt = styledTagsMap.value(styleKey).format;
+            stateFlag = STATE_CPP;
+            closeRe = closeReMap["py"];
         } else {
-            fmt = styledTagsMap.value("code").format;
+            styleKey = "code";
+            fmt = styledTagsMap.value(styleKey).format;
+            stateFlag = STATE_CODE;
+            closeRe = closeReMap["code"];
         }
 
         QRegularExpressionMatch closeMatch = closeRe.match(text, tagEnd);
         if (closeMatch.hasMatch()) {
-            // Kod inline (jednolinijkowy)
-            int closeStart = closeMatch.capturedStart();
-            int contentStart = tagEnd;
-            int contentLen = closeStart - contentStart;
+            // Kod inline
+            const int closeStart = closeMatch.capturedStart();
+            const int contentStart = tagEnd;
+            const int contentLen = closeStart - contentStart;
+            const int closeLen = closeMatch.capturedLength();
 
-            setFormat(tagStart, tagEnd - tagStart, tagFmt);                // [code] / [cpp]
-            setFormat(contentStart, contentLen, fmt);                      // kod
-            setFormat(closeStart, closeMatch.capturedLength(), tagFmt);   // [/code] / [/cpp]
+            setFormat(tagStart, tagEnd - tagStart, tagFmt);
+            setFormat(contentStart, contentLen, fmt);
+            setFormat(closeStart, closeLen, tagFmt);
+
+            offset = closeMatch.capturedEnd();
+            found = true;
         } else {
-            // Początek wieloliniowego kodu
+            // Rozpoczęcie wieloliniowego bloku
             setFormat(tagStart, tagEnd - tagStart, tagFmt);
             setFormat(tagEnd, text.length() - tagEnd, fmt);
-            currentBlockStateWithFlag(blockFlag);
+            currentBlockStateWithFlag(stateFlag);
+            return true;
         }
-
-        return true;
     }
 
-    return false;
+    return found;
 }
 
 bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
