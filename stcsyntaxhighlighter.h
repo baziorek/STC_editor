@@ -34,6 +34,9 @@ protected:
 
     void currentBlockStateWithoutFlag(int flag, std::source_location location=std::source_location::current());
     void currentBlockStateWithFlag(int flag, std::source_location location=std::source_location::current());
+
+    bool overlapsWithCode(int start, int length) const;
+
 private:
     struct Rule
     {
@@ -56,4 +59,6 @@ private:
     QVector<StyledTag> styledTags;
 
     QMap<QString, StyledTag> styledTagsMap;
+
+    QVector<QPair<int, int>> _codeRangesThisLine; // position start and length
 };

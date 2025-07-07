@@ -106,6 +106,8 @@ STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
 #warning "Chat helped me with the code, but it requires refactoring and corrections"
 void STCSyntaxHighlighter::highlightBlock(const QString &text)
 {
+    _codeRangesThisLine.clear(); // czyszczenie przed każdą linią
+
     const int prev = previousBlockState();  // zapisz zanim nadpiszesz
     qDebug() << prev << text;
 
@@ -432,13 +434,15 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
                     int closeStart = close.capturedStart();
                     setFormat(0, closeStart, fmt);
                     setFormat(closeStart, close.capturedLength(), tagFmt);
+                    _codeRangesThisLine.append({ closeStart, close.capturedLength() });
                     currentBlockStateWithoutFlag(blk.stateFlag);
                     offset = close.capturedEnd();
                     found = true;
-                    break; // zakończ wieloliniowy blok, ale idź dalej!
+                    continue; // nie break – idź dalej z analizą!
                 } else {
                     setFormat(0, text.length(), fmt);
                     currentBlockStateWithFlag(blk.stateFlag);
+                    _codeRangesThisLine.append({ 0, text.length() });
                     return true; // nadal jesteśmy w wieloliniowym bloku
                 }
             }
@@ -487,6 +491,7 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
 
             setFormat(tagStart, tagEnd - tagStart, tagFmt);
             setFormat(contentStart, contentLen, fmt);
+            _codeRangesThisLine.append({ contentStart, contentLen });
             setFormat(closeStart, closeLen, tagFmt);
 
             offset = closeMatch.capturedEnd();
@@ -495,6 +500,7 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
             // Rozpoczęcie wieloliniowego bloku
             setFormat(tagStart, tagEnd - tagStart, tagFmt);
             setFormat(tagEnd, text.length() - tagEnd, fmt);
+            _codeRangesThisLine.append({ tagEnd, text.length() - tagEnd });
             currentBlockStateWithFlag(stateFlag);
             return true;
         }
@@ -506,8 +512,6 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
 bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
 {
     const int prev = previousBlockState();
-    if (prev != STATE_NONE && (prev & (STATE_CODE_CPP | STATE_CODE | STATE_CPP)))
-        return false;
 
     static const QMap<QString, QTextCharFormat> tagFormats = [] {
         QMap<QString, QTextCharFormat> map;
@@ -557,21 +561,31 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
                 QRegularExpressionMatch closeMatch = closeRe.match(text);
                 if (closeMatch.hasMatch()) {
                     int closeStart = closeMatch.capturedStart();
+
+                    // Jeśli zamknięcie stylu znajduje się wewnątrz kodu — pomiń cały styl
+                    if (overlapsWithCode(0, closeStart + closeMatch.capturedLength()))
+                        return false;
+
                     setFormat(0, closeStart, fmt);
                     setFormat(closeStart, closeMatch.capturedLength(), tagFmt);
                     currentBlockStateWithoutFlag(flag);
                 } else {
-                    setFormat(0, text.length(), fmt);
-                    currentBlockStateWithFlag(flag);
+                    // Cała linia stylizowana — tylko jeśli nie pokrywa się z kodem
+                    if (!overlapsWithCode(0, text.length())) {
+                        setFormat(0, text.length(), fmt);
+                        currentBlockStateWithFlag(flag);
+                    }
                 }
                 return true;
             }
         }
     }
 
-    // --- 2. Wyszukiwanie otwarć [b], [i], [u], [s] i stylowanie ---
+    // --- 2. Styl jednolinijkowy (może być wiele w jednej linii) ---
     int offset = 0;
-    while (true) {
+    bool foundAny = false;
+
+    while (offset < text.length()) {
         QRegularExpressionMatch match = openRe.match(text, offset);
         if (!match.hasMatch())
             break;
@@ -586,29 +600,53 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
 
         QRegularExpressionMatch closeMatch = closeRe.match(text, tagEnd);
         if (closeMatch.hasMatch()) {
-            // --- Styl jednolinijkowy ---
             const int closeStart = closeMatch.capturedStart();
             const int closeEnd = closeMatch.capturedEnd();
-
             const int contentStart = tagEnd;
             const int contentLen = closeStart - contentStart;
 
-            setFormat(tagStart, tagEnd - tagStart, tagFmt); // [b]
-            setFormat(contentStart, contentLen, fmt);       // treść
-            setFormat(closeStart, closeEnd - closeStart, tagFmt); // [/b]
+            // IGNORUJ tagi stylizujące wewnątrz kodu
+            if (overlapsWithCode(tagStart, closeEnd - tagStart)) {
+                offset = closeEnd;
+                continue;
+            }
+
+            setFormat(tagStart, tagEnd - tagStart, tagFmt);           // [b]
+            setFormat(contentStart, contentLen, fmt);                 // treść
+            setFormat(closeStart, closeEnd - closeStart, tagFmt);     // [/b]
 
             offset = closeEnd;
+            foundAny = true;
         } else {
-            // --- Styl wieloliniowy ---
-            setFormat(tagStart, tagEnd - tagStart, tagFmt);           // otwierający tag
-            setFormat(tagEnd, text.length() - tagEnd, fmt);           // styl do końca
-            currentBlockStateWithFlag(flag);
-            return true;
+            // Początek wieloliniowego stylu — tylko jeśli nie zaczyna się w kodzie
+            if (!overlapsWithCode(tagStart, text.length() - tagStart)) {
+                setFormat(tagStart, tagEnd - tagStart, tagFmt);
+                setFormat(tagEnd, text.length() - tagEnd, fmt);
+                currentBlockStateWithFlag(flag);
+                return true;
+            } else {
+                // Jeśli był w kodzie — pomiń
+                offset = tagEnd;
+            }
         }
     }
 
-    return false;
+    return foundAny;
 } // TODO: Bold bez zmiany tła
+
+bool STCSyntaxHighlighter::overlapsWithCode(int start, int length) const
+{
+    for (const auto& range : _codeRangesThisLine) {
+        const int a1 = start;
+        const int a2 = start + length;
+        const int b1 = range.first;
+        const int b2 = range.first + range.second;
+        if (a1 < b2 && b1 < a2)
+            return true;
+    }
+    return false;
+}
+
 
 bool STCSyntaxHighlighter::highlightTagsWithAttributes(const QString& text)
 {
