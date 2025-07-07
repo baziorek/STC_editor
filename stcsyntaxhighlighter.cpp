@@ -4,26 +4,30 @@
 
 namespace
 {
-enum BlockState
+enum BlockState // TODO: Why not to use `enum class StcTags: std::uint32_t` instead this:
 {
     STATE_NONE            = -1,
+
     STATE_H1              = 0x01,
     STATE_H2              = 0x02,
     STATE_H3              = 0x04,
+
     STATE_DIV             = 0x08,
-    // STATE_BOLD =      0x10,
-    STATE_CODE_CPP        = 0x20,
-    DIV_CLASS_TIP         = 0x40,
-    DIV_CLASS_UWAGA       = 0x80,
-    DIV_CLASS_PLAIN       = 0x100,
-    STATE_CSV             = 0x200, // 512
-    STATE_PKT             = 0x400,
-    STATE_CPP             = 0x800,
-    STATE_CODE            = 0x1000,
-    STATE_STYLE_BOLD      = 0x2000,
-    STATE_STYLE_ITALIC    = 0x4000,
-    STATE_STYLE_UNDERLINE = 0x8000,
-    STATE_STYLE_STRIKE    = 0x10000,
+    DIV_CLASS_TIP         = 0x10,
+    DIV_CLASS_UWAGA       = 0x20,
+    DIV_CLASS_PLAIN       = 0x40,
+
+    STATE_CSV             = 0x80,
+    STATE_PKT             = 0x100,
+
+    STATE_CPP             = 0x200,
+    STATE_CODE            = 0x400,
+    STATE_CODE_CPP        = 0x800,
+
+    STATE_STYLE_BOLD      = 0x1000,
+    STATE_STYLE_ITALIC    = 0x2000,
+    STATE_STYLE_UNDERLINE = 0x4000,
+    STATE_STYLE_STRIKE    = 0x8000,
 };
 } // namespace
 
@@ -40,10 +44,11 @@ STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
     rules.append({ QRegularExpression(R"(\[/?\w+(=[^\]]+)?\])"), tagFormat });
 
     // Nagłówki
-    addBlockStyle(tagsClasses[H1], QColor("#a33"), std::to_underlying(BOLD), 20);
-    addBlockStyle(tagsClasses[H2], QColor("#a33"), std::to_underlying(BOLD), 17);
-    addBlockStyle(tagsClasses[H3], QColor("#a33"), std::to_underlying(NONE), 14);
-    addBlockStyle(tagsClasses[H4], QColor("#a33"), std::to_underlying(NONE), 11);
+    QColor headerColor{"#a33"};
+    addBlockStyle(tagsClasses[H1], headerColor, std::to_underlying(BOLD), 20);
+    addBlockStyle(tagsClasses[H2], headerColor, std::to_underlying(BOLD), 17);
+    addBlockStyle(tagsClasses[H3], headerColor, std::to_underlying(NONE), 14);
+    addBlockStyle(tagsClasses[H4], headerColor, std::to_underlying(NONE), 11);
 
     // DIV-y
     addBlockStyle("tip", Qt::white, std::to_underlying(NONE), -1, QColor("darkgreen"));
@@ -70,17 +75,17 @@ STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
     QTextCharFormat hrefNameFormat;
     hrefNameFormat.setForeground(QColor("blue"));
     hrefNameFormat.setFontUnderline(true);
-    // hrefNameFormat.setFontPointSize(10);
     styledTagsMap.insert("a.name", { "a.name", hrefNameFormat });
 
     QTextCharFormat hrefAttrFormat;
-    hrefAttrFormat.setForeground(Qt::darkGray);
-    hrefAttrFormat.setFontPointSize(8);
+    hrefAttrFormat.setForeground(Qt::blue);
+    hrefAttrFormat.setFontPointSize(9);
     styledTagsMap.insert("a.href", { "a.href", hrefAttrFormat });
 
     // Obrazki (img src=...)
+    const QColor mint{"#2c7"};
     QTextCharFormat imgSrcFormat;
-    imgSrcFormat.setForeground(QColor("#2c7")); // miętowy
+    imgSrcFormat.setForeground(mint);
     imgSrcFormat.setFontPointSize(9);
     styledTagsMap.insert("img.src", { "img.src", imgSrcFormat });
 
@@ -91,9 +96,8 @@ STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
     styledTagsMap.insert("img.alt", { "img.alt", imgAltFormat });
 
     QTextCharFormat imgOpisFormat;
-    imgOpisFormat.setForeground(QColor("darkgray"));
+    imgOpisFormat.setForeground(mint);
     imgOpisFormat.setFontItalic(true);
-    // imgOpisFormat.setFontPointSize(9);
     styledTagsMap.insert("img.opis", { "img.opis", imgOpisFormat });
 
     // Styl ogólny tagu [img ...] lub [a ...]
@@ -111,10 +115,9 @@ void STCSyntaxHighlighter::highlightBlock(const QString &text)
     const int prev = previousBlockState();  // zapisz zanim nadpiszesz
     qDebug() << prev << text;
 
-
     // --- 1. DIV (najbardziej zewnętrzny) ---
     bool divChanges = highlightDivBlock(text);
-    if (divChanges) qDebug() << "\tdiv changes" << __LINE__ << currentBlockState();
+    if (divChanges) qDebug() << "\tdiv changes" << __LINE__ << currentBlockState(); // TODO: detect "cytat"
 
     // --- 2. Nagłówki ---
     bool headersChanges = highlightHeading(text);
@@ -133,20 +136,14 @@ void STCSyntaxHighlighter::highlightBlock(const QString &text)
     bool codeChanges = highlightCodeBlock(text);
     if (codeChanges) qDebug() << "\tcode changes" << __LINE__ << currentBlockState();
 
-    // // --- 5. Cytaty (działają jak DIV) ---
-    // if (highlightQuote(text)) return;
-
-    // --- 6. Stylizacja tekstu (b/i/u/s) ---
+    // --- 5. Stylizacja tekstu (b/i/u/s) ---
     bool styleChanges = highlightTextStyleTags(text);
     if (styleChanges) qDebug() << "\tstyle changes" << __LINE__ << currentBlockState();
 
-    // --- 7. Tagi z atrybutami [a href=...] ---
+    // --- 6. Tagi z atrybutami [a href=...] ---
     bool hrefImgChanges = highlightTagsWithAttributes(text);
     if (hrefImgChanges) qDebug() << "\thref/img changes" << __LINE__ << currentBlockState();
     // TODO: Łapać run
-
-    // // --- 8. Luźne tagi (fallback) ---
-    // highlightLooseTags(text);
 
     bool anyChange = divChanges | headersChanges | pktOrCsvChanges | codeChanges | styleChanges | hrefImgChanges;
     if (!anyChange)
