@@ -75,6 +75,8 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
         this->lastChangeTime = QDateTime::currentDateTime();
         updateDiffWithOriginal();
     });
+    connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::onCursorPositionChanged);
+
 
     updateLineNumberAreaWidth(0);
     // highlightCurrentLine();
@@ -194,6 +196,16 @@ void CodeEditor::onScrollChanged(int)
                        .arg(percentage);
 
     QToolTip::showText(mapToGlobal(QPoint(width() - 100, height() / 2)), info, this);
+}
+
+void CodeEditor::onCursorPositionChanged()
+{
+    const int newLine = textCursor().blockNumber();
+    if (newLine != currentLine)
+    {
+        currentLine = newLine;
+        lineNumberArea->update(); // wymusza przerysowanie obszaru z numerami linii
+    }
 }
 
 void CodeEditor::updateLineNumberAreaWidth(int /* newBlockCount */)
@@ -612,7 +624,30 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 
             QString number = QString::number(blockNumber + 1);
             painter.setPen(Qt::black);
-            painter.drawText(0, top, lineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
+
+            // Draw arrow in current text position
+            if (blockNumber == currentLine)
+            {
+                const int arrowSize = 8;
+                const int margin = 3;
+                QPolygon arrow;
+                arrow << QPoint(margin, top + fontMetrics().height()/2)
+                      << QPoint(margin + arrowSize, top + fontMetrics().height()/2 - arrowSize/2)
+                      << QPoint(margin + arrowSize, top + fontMetrics().height()/2 + arrowSize/2);
+
+                painter.setBrush(Qt::black);
+                painter.drawPolygon(arrow);
+
+                // Draw line number after the arrow
+                painter.drawText(margin + arrowSize + 3, top, lineNumberArea->width() - (margin + arrowSize + 3),
+                               fontMetrics().height(), Qt::AlignRight, number);
+            }
+            else
+            {
+                // When no current line - just draw line number
+                painter.drawText(0, top, lineNumberArea->width(), fontMetrics().height(),
+                               Qt::AlignRight, number);
+            }
         }
 
         block = block.next();

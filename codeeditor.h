@@ -68,6 +68,7 @@ public slots:
     void goToLineAndOffset(int lineNumber, int linePosition);
 
     void onScrollChanged(int);
+    void onCursorPositionChanged();
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
@@ -126,4 +127,6 @@ private:
     QSet<int> modifiedLines;
     QDateTime fileModificationTime;
     QDateTime lastChangeTime;
+
+    int currentLine = -1;
 };
