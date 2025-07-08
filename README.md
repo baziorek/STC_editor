@@ -7,7 +7,6 @@ Prosty edytor tekstu stworzony w Qt, ułatwiający wstawianie znaczników [STC](
 ## Opis
 Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników STC na potrzeby tworzenia treści dla cpp0x.pl. Oferuje prosty interfejs oparty na Qt z polem tekstowym i przyciskami do wstawiania znaczników STC oraz dedykowane funkcje zwiększające produktywność.
 
-![Zrzut ekranu](https://github.com/user-attachments/assets/17571fce-a89c-4c99-a38a-fd72ee65c7d5)
 ![Zrzut ekranu](screens/applicationSample.png)
 
 ## Dedykowane funkcje
