@@ -30,6 +30,10 @@ enum BlockState // TODO: Why not to use `enum class StcTags: std::uint32_t` inst
     STATE_STYLE_UNDERLINE = 0x8000,
     STATE_STYLE_STRIKE    = 0x10000,
 };
+
+constexpr bool PRINT_DEBUG = false; // TODO: Remove when formatting fully works
+#define DEBUG(condition, text) if (PRINT_DEBUG && condition) qDebug() << "\t " << #text << " changes" << __LINE__ << currentBlockState()
+#warning "Chat helped me with the code, but it requires refactoring and corrections"
 } // namespace
 
 
@@ -108,43 +112,42 @@ STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
     styledTagsMap.insert("tag.attr", { "tag.attr", tagFmt });
 }
 
-#warning "Chat helped me with the code, but it requires refactoring and corrections"
 void STCSyntaxHighlighter::highlightBlock(const QString &text)
 {
-    _codeRangesThisLine.clear(); // czyszczenie przed każdą linią
+    _codeRangesThisLine.clear();     // czyszczenie przed każdą linią
+    _noFormatRangesThisLine.clear(); // czyszczenie przed każdą linią
 
     const int prev = previousBlockState();  // zapisz zanim nadpiszesz
-    qDebug() << prev << text;
+    DEBUG(true, "----------") << prev << text;
 
     // --- 1. DIV (najbardziej zewnętrzny) ---
     bool divChanges = highlightDivBlock(text);
-    if (divChanges) qDebug() << "\tdiv changes" << __LINE__ << currentBlockState();
+    DEBUG(divChanges, "div");
 
     // --- 2. Nagłówki ---
     bool headersChanges = highlightHeading(text);
-    if (headersChanges) qDebug() << "\thN changes" << __LINE__ << currentBlockState();
+    DEBUG(divChanges, "hN");
 
     // // --- 3. pkt / csv (mogą zawierać inne tagi) ---
     bool pktOrCsvChanges = highlightPktOrCsv(text);
     if (pktOrCsvChanges)
     {
-        qDebug() << "\tpkt/csv changes" << __LINE__ << currentBlockState();
+        DEBUG(pktOrCsvChanges, "pkt/csv");
         bool divChanges = highlightDivBlock(text);
-        if (divChanges) qDebug() << "\tdiv changes" << __LINE__ << currentBlockState();
+        DEBUG(divChanges, "div");
     }
 
     // // --- 4. Bloki kodu ---
     bool codeChanges = highlightCodeBlock(text);
-    if (codeChanges) qDebug() << "\tcode changes" << __LINE__ << currentBlockState();
+    DEBUG(codeChanges, "code");
 
     // --- 5. Stylizacja tekstu (b/i/u/s) ---
     bool styleChanges = highlightTextStyleTags(text);
-    if (styleChanges) qDebug() << "\tstyle changes" << __LINE__ << currentBlockState();
+    DEBUG(styleChanges, "style");
 
     // --- 6. Tagi z atrybutami [a href=...] ---
     bool hrefImgChanges = highlightTagsWithAttributes(text);
-    if (hrefImgChanges) qDebug() << "\thref/img changes" << __LINE__ << currentBlockState();
-    // TODO: Łapać run
+    DEBUG(hrefImgChanges, "href/img");
 
     bool anyChange = divChanges | headersChanges | pktOrCsvChanges | codeChanges | styleChanges | hrefImgChanges;
     if (!anyChange)
@@ -160,8 +163,11 @@ bool STCSyntaxHighlighter::highlightHeading(const QString &text)
             auto it = re.globalMatch(text);
             while (it.hasNext()) {
                 auto match = it.next();
-                int start = match.capturedStart(2);
-                int len = match.capturedLength(2);
+                const int start = match.capturedStart(2);
+                const int len = match.capturedLength(2);
+
+                // if (overlapsWithNoFormat(start, len)) // TODO:
+                //     continue;
 
                 setFormat(start, len, styled.format);
 
@@ -196,18 +202,26 @@ bool STCSyntaxHighlighter::highlightDivBlock(const QString &text)
         if (prevState & (DIV_CLASS_TIP | DIV_CLASS_UWAGA | DIV_CLASS_PLAIN | DIV_CLASS_CYTAT))
         {
             QTextCharFormat fmt;
+            QString closingTag = "[/div]";
             if (prevState == DIV_CLASS_TIP)
                 fmt = styledTagsMap.value("tip").format;
             else if (prevState == DIV_CLASS_UWAGA)
                 fmt = styledTagsMap.value("warning").format;
             else if (prevState == DIV_CLASS_CYTAT)
+            {
                 fmt = styledTagsMap.value("cytat").format;
+                closingTag = "[/cytat]";
+            }
             else
                 fmt = styledTagsMap.value("div").format;
 
             QRegularExpressionMatch closeMatch = divCloseRe.match(text);
             if (closeMatch.hasMatch()) {
                 int closeStart = closeMatch.capturedStart(0);
+
+                // if (overlapsWithNoFormat(closeStart, closingTag.size())) // TODO:
+                //     return false;
+
                 setFormat(0, closeStart, fmt);
                 setFormat(closeStart, closeMatch.capturedLength(0), tagFmt);
                 currentBlockStateWithoutFlag(prevState);
@@ -282,7 +296,8 @@ bool STCSyntaxHighlighter::highlightPktOrCsv(const QString& text)
     static const QRegularExpression csvOpenRe(R"(\[csv(\s+[^\]]*)?\])");
     static const QRegularExpression csvCloseRe(R"(\[/csv\])");
 
-    static const QTextCharFormat tagFmt = [] {
+    static const QRegularExpression runTagRe(R"(\[run\](.*?)\[/run\])");
+    static const QTextCharFormat runTagFmt = [] {
         QTextCharFormat fmt;
         fmt.setForeground(Qt::gray);
         fmt.setFontPointSize(8);
@@ -295,42 +310,45 @@ bool STCSyntaxHighlighter::highlightPktOrCsv(const QString& text)
     // --- 1. Kontynuacja wieloliniowego bloku pkt/csv ---
     if (prevState != STATE_NONE)
     {
-        if (prevState & STATE_PKT) {
-            QRegularExpressionMatch close = pktCloseRe.match(text);
-            QTextCharFormat fmt = styledTagsMap.value("pkt").format;
+        auto handleBlock = [&](int stateFlag, const QString& tagName, const QRegularExpression& closeRe) {
+            if (!(prevState & stateFlag))
+                return;
+
+            QRegularExpressionMatch close = closeRe.match(text);
+            QTextCharFormat fmt = styledTagsMap.value(tagName).format;
 
             if (close.hasMatch()) {
                 int closeStart = close.capturedStart();
                 setFormat(0, closeStart, fmt);
-                setFormat(closeStart, close.capturedLength(), tagFmt);
-                currentBlockStateWithoutFlag(STATE_PKT);
+                setFormat(closeStart, close.capturedLength(), runTagFmt);
+                currentBlockStateWithoutFlag(stateFlag);
             } else {
                 setFormat(0, text.length(), fmt);
-                currentBlockStateWithFlag(STATE_PKT);
+                currentBlockStateWithFlag(stateFlag);
             }
 
             foundAny = true;
-        }
+        };
 
-        if (prevState & STATE_CSV) {
-            QRegularExpressionMatch close = csvCloseRe.match(text);
-            QTextCharFormat fmt = styledTagsMap.value("csv").format;
+        handleBlock(STATE_PKT, "pkt", pktCloseRe);
+        handleBlock(STATE_CSV, "csv", csvCloseRe);
 
-            if (close.hasMatch()) {
-                int closeStart = close.capturedStart();
-                setFormat(0, closeStart, fmt);
-                setFormat(closeStart, close.capturedLength(), tagFmt);
-                currentBlockStateWithoutFlag(STATE_CSV);
-            } else {
-                setFormat(0, text.length(), fmt);
-                currentBlockStateWithFlag(STATE_CSV);
+        // Formatowanie [run] tylko jeśli tryb rozszerzony
+        bool extendedMode = text.contains("ext") || text.contains("extended") || text.contains("extended header");
+
+        auto runMatches = runTagRe.globalMatch(text);
+        while (runMatches.hasNext()) {
+            auto m = runMatches.next();
+            setFormat(m.capturedStart(), 5, runTagFmt); // [run]
+            setFormat(m.capturedEnd() - 6, 6, runTagFmt); // [/run]
+
+            if (extendedMode) {
+                _noFormatRangesThisLine.append({ m.capturedStart(1), m.capturedLength(1) });
             }
-
-            foundAny = true;
         }
 
-        // Jeśli jesteśmy w stanie bloku, to już nic nowego nie szukamy
-        if (foundAny) return true;
+        if (foundAny)
+            return true;
     }
 
     // --- 2. Nowe otwarcia w tej samej linii ---
@@ -347,18 +365,25 @@ bool STCSyntaxHighlighter::highlightPktOrCsv(const QString& text)
             int tagStart = open.capturedStart();
             int tagEnd = open.capturedEnd();
 
-            setFormat(tagStart, tagEnd - tagStart, tagFmt);
-
+            // Jeśli cały tag (lub jego zawartość) nachodzi na zakres wykluczony — pomijamy
+            int totalEnd = text.length(); // w razie braku zamknięcia
             QRegularExpressionMatch close = closeRe.match(text, tagEnd);
+            if (close.hasMatch())
+                totalEnd = close.capturedEnd();
+
+            // if (overlapsWithNoFormat(tagStart, totalEnd - tagStart)) // TODO:
+            //     continue;
+
+            setFormat(tagStart, tagEnd - tagStart, runTagFmt);
+
             if (close.hasMatch()) {
                 int contentStart = tagEnd;
                 int contentEnd = close.capturedStart();
                 int contentLen = contentEnd - contentStart;
 
                 setFormat(contentStart, contentLen, fmt);
-                setFormat(contentEnd, close.capturedLength(), tagFmt);
+                setFormat(close.capturedStart(), close.capturedLength(), runTagFmt);
             } else {
-                // brak zamknięcia w tej linii → początek wieloliniowego bloku
                 setFormat(tagEnd, text.length() - tagEnd, fmt);
                 currentBlockStateWithFlag(stateFlag);
             }
@@ -378,13 +403,13 @@ void STCSyntaxHighlighter::currentBlockStateWithoutFlag(int flag, std::source_lo
     const auto previous = previousBlockState();
     if (previous == flag)
     {
-        qDebug() << "\t usuwamy poprzednia flage: " << flag << ". linia:" << location.line();
+        DEBUG(true, "\t-") << "\t usuwamy poprzednia flage: " << flag << ". linia:" << location.line();
         setCurrentBlockState(STATE_NONE);
     }
     else
     {
         const auto newState = previous & ~flag;
-        qDebug() << "\t usuwamy ze stanu " << previous << " flage: " << flag << ", nowy stan: " << newState << ". linia:" << location.line();
+        DEBUG(true, "\t-") << "\t usuwamy ze stanu " << previous << " flage: " << flag << ", nowy stan: " << newState << ". linia:" << location.line();
         setCurrentBlockState(newState);
     }
 }
@@ -393,13 +418,13 @@ void STCSyntaxHighlighter::currentBlockStateWithFlag(int flag, std::source_locat
     const auto previous = previousBlockState();
     if (STATE_NONE == previous)
     {
-        qDebug() << "\t dodaje stan flage: " << flag << ". linia:" << location.line();
+        DEBUG(true, "\t+")  << "\t dodaje stan flage: " << flag << ". linia:" << location.line();
         setCurrentBlockState(flag);
     }
     else
     {
         const auto newState = previous | flag;
-        qDebug() << "\t dodaje do stanu " << previous << " flage: " << flag << ", nowy stan: " << newState << ". linia:" << location.line();
+        DEBUG(true, "\t+") << "\t dodaje do stanu " << previous << " flage: " << flag << ", nowy stan: " << newState << ". linia:" << location.line();
         setCurrentBlockState(newState);
     }
 }
@@ -443,6 +468,10 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
                 QRegularExpressionMatch close = blk.closeRe.match(text);
                 if (close.hasMatch()) {
                     int closeStart = close.capturedStart();
+
+                    // if (overlapsWithNoFormat(closeStart, text.size())) // TODO:
+                    //     continue;
+
                     setFormat(0, closeStart, fmt);
                     setFormat(closeStart, close.capturedLength(), tagFmt);
                     _codeRangesThisLine.append({ closeStart, close.capturedLength() });
@@ -500,12 +529,15 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
             const int contentLen = closeStart - contentStart;
             const int closeLen = closeMatch.capturedLength();
 
+            offset = closeMatch.capturedEnd();
+            // if (overlapsWithNoFormat(closeStart, closeLen)) // TODO:
+            //     continue;
+
             setFormat(tagStart, tagEnd - tagStart, tagFmt);
             setFormat(contentStart, contentLen, fmt);
             _codeRangesThisLine.append({ contentStart, contentLen });
             setFormat(closeStart, closeLen, tagFmt);
 
-            offset = closeMatch.capturedEnd();
             found = true;
         } else {
             // Rozpoczęcie wieloliniowego bloku
@@ -576,13 +608,16 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
                     // Jeśli zamknięcie stylu znajduje się wewnątrz kodu — pomiń cały styl
                     if (overlapsWithCode(0, closeStart + closeMatch.capturedLength()))
                         return false;
+                    if (overlapsWithNoFormat(0, closeStart + closeMatch.capturedLength()))
+                        return false;
 
                     setFormat(0, closeStart, fmt);
                     setFormat(closeStart, closeMatch.capturedLength(), tagFmt);
                     currentBlockStateWithoutFlag(flag);
                 } else {
                     // Cała linia stylizowana — tylko jeśli nie pokrywa się z kodem
-                    if (!overlapsWithCode(0, text.length())) {
+                    if (!overlapsWithCode(0, text.length()) && !overlapsWithNoFormat(0, text.length()))
+                    {
                         setFormat(0, text.length(), fmt);
                         currentBlockStateWithFlag(flag);
                     }
@@ -617,7 +652,7 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
             const int contentLen = closeStart - contentStart;
 
             // IGNORUJ tagi stylizujące wewnątrz kodu
-            if (overlapsWithCode(tagStart, closeEnd - tagStart)) {
+            if (overlapsWithCode(tagStart, closeEnd - tagStart) || overlapsWithNoFormat(tagStart, closeEnd - tagStart)) {
                 offset = closeEnd;
                 continue;
             }
@@ -630,7 +665,7 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
             foundAny = true;
         } else {
             // Początek wieloliniowego stylu — tylko jeśli nie zaczyna się w kodzie
-            if (!overlapsWithCode(tagStart, text.length() - tagStart)) {
+            if (!overlapsWithCode(tagStart, text.length() - tagStart) && !overlapsWithNoFormat(tagStart, text.length() - tagStart)) {
                 setFormat(tagStart, tagEnd - tagStart, tagFmt);
                 setFormatKeepingBackground(tagEnd, text.length() - tagEnd, fmt);
                 currentBlockStateWithFlag(flag);
@@ -657,9 +692,9 @@ void STCSyntaxHighlighter::setFormatKeepingBackground(int contentStart, int cont
     }
 }
 
-bool STCSyntaxHighlighter::overlapsWithCode(int start, int length) const
+bool STCSyntaxHighlighter::overlapsWithRange(int start, int length, const QVector<QPair<int, int>>& range)
 {
-    for (const auto& range : _codeRangesThisLine) {
+    for (const auto& range : range) {
         const int a1 = start;
         const int a2 = start + length;
         const int b1 = range.first;
@@ -669,7 +704,6 @@ bool STCSyntaxHighlighter::overlapsWithCode(int start, int length) const
     }
     return false;
 }
-
 
 bool STCSyntaxHighlighter::highlightTagsWithAttributes(const QString& text)
 {
@@ -687,6 +721,9 @@ bool STCSyntaxHighlighter::highlightTagsWithAttributes(const QString& text)
         auto match = anchorIt.next();
         int start = match.capturedStart();
         int end = match.capturedEnd();
+
+        if (overlapsWithNoFormat(start, end - start))
+            continue;
 
         // tag
         setFormat(start, end - start, styledTagsMap.value("tag.attr").format);
@@ -710,6 +747,9 @@ bool STCSyntaxHighlighter::highlightTagsWithAttributes(const QString& text)
         auto match = imgIt.next();
         int start = match.capturedStart();
         int end = match.capturedEnd();
+
+        if (overlapsWithNoFormat(start, end - start))
+            continue;
 
         setFormat(start, end - start, styledTagsMap.value("tag.attr").format);
 

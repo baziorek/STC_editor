@@ -17,6 +17,12 @@ public:
 
 protected:
     void highlightBlock(const QString &text) override;
+    bool highlightHeading(const QString &text);
+    bool highlightDivBlock(const QString &text);
+    bool highlightPktOrCsv(const QString &text);
+    bool highlightCodeBlock(const QString &text);
+    bool highlightTextStyleTags(const QString& text);
+    bool highlightTagsWithAttributes(const QString& text);
 
     void addBlockStyle(const QString &tag,
                        QColor foreground = Qt::black,
@@ -25,17 +31,20 @@ protected:
                        QColor background = QColor(),
                        const QString &fontFamily = QString());
 
-    bool highlightHeading(const QString &text);
-    bool highlightDivBlock(const QString &text);
-    bool highlightPktOrCsv(const QString &text);
-    bool highlightCodeBlock(const QString &text);
-    bool highlightTextStyleTags(const QString& text);
-    bool highlightTagsWithAttributes(const QString& text);
-
     void currentBlockStateWithoutFlag(int flag, std::source_location location=std::source_location::current());
     void currentBlockStateWithFlag(int flag, std::source_location location=std::source_location::current());
 
-    bool overlapsWithCode(int start, int length) const;
+    bool overlapsWithCode(int start, int length) const
+    {
+        return overlapsWithRange(start, length, _codeRangesThisLine);
+    }
+
+    bool overlapsWithNoFormat(int start, int length) const
+    {
+        return overlapsWithRange(start, length, _noFormatRangesThisLine);
+    }
+
+    static bool overlapsWithRange(int start, int length, const QVector<QPair<int, int>>& range);
 
     void setFormatKeepingBackground(int contentStart, int contentLen, const QTextCharFormat &format);
 
@@ -62,5 +71,6 @@ private:
 
     QMap<QString, StyledTag> styledTagsMap;
 
-    QVector<QPair<int, int>> _codeRangesThisLine; // position start and length
+    QVector<QPair<int, int>> _codeRangesThisLine;     // position start and length
+    QVector<QPair<int, int>> _noFormatRangesThisLine; // position start and length
 };

@@ -8,6 +8,7 @@ Prosty edytor tekstu stworzony w Qt, ułatwiający wstawianie znaczników [STC](
 Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników STC na potrzeby tworzenia treści dla cpp0x.pl. Oferuje prosty interfejs oparty na Qt z polem tekstowym i przyciskami do wstawiania znaczników STC oraz dedykowane funkcje zwiększające produktywność.
 
 ![Zrzut ekranu](https://github.com/user-attachments/assets/17571fce-a89c-4c99-a38a-fd72ee65c7d5)
+![Zrzut ekranu](screens/applicationSample.png)
 
 ## Dedykowane funkcje
  1. **Kolorowanie składni**: Podświetlanie znaczników STC dla lepszej czytelności.
@@ -52,7 +53,6 @@ Jeśli ktoś chce tego używać do innych celów:
 
 - **Naprawy**:
   - Naprawa problemu z pytaniem o nadpisywanie zmian, mimo ich braku, przy sekwencyjnym otwieraniu wielu plików plików.
-  - Poprawa formatowania
   - Naprawa zapisywania geometrii okna (obecnie zapisywana jest tylko pozycja, a nie rozmiar).
   - Breadcrumb łapie wnętrze kodu w C++ np. rozmiary tablic czy atrybuty
 - **Funkcje**:
@@ -101,6 +101,7 @@ Jeśli ktoś chce tego używać do innych celów:
 - Sprawdzenie czy Run nie jest poza csv lub pkt
 - Refaktoring: Jeśli wczytywanie pliku jest przez CodeEditor, to zapis pliku też konsekwentnie powinien stamtąd iść
 - Tłumaczenia aplikacji na wiele języków: QLinguist
+- Rozważyć użycie innej biblioteki do porównywania np. https://github.com/google/diff-match-patch
 
 ## Współpraca
 
