@@ -8,15 +8,17 @@
 #include <QStack>
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
-#include "checkers/PairedTagsChecker.h"
-#include "errorlist.h"
 #include "ui/shortcutsdialog.h"
 #include "ui/stctagsbuttons.h"
+#include "checkers/PairedTagsChecker.h"
+#include "errorlist.h"
 #include "types/documentstatistics.h"
 using namespace std;
 
 namespace
 {
+constexpr int maxElementsInListOfLastElements = 5;
+
 namespace GeometryNames
 {
     constexpr const char GEOMETRY[] = "geometry";
@@ -211,20 +213,19 @@ void MainWindow::onRecentRecentFilesMenuOpened()
     ui->menuOpen_recent->clear();
 
     // Create a list of pairs (filepath, info) for sorting
-    int longestPath{};
     QList<QPair<QString, RecentFileInfo>> sortedFiles;
-    for (auto it = recentFilesWithPositions.begin(); it != recentFilesWithPositions.end(); ++it) {
-        if (QFile::exists(it.key())) {
+    for (auto it = recentFilesWithPositions.begin(); it != recentFilesWithPositions.end(); ++it)
+    {
+        if (QFile::exists(it.key()))
+        {
             sortedFiles.append({it.key(), it.value()});
-            longestPath = std::max<int>(longestPath, it.key().size());
         }
     }
 
     // Sort by last opened datetime (newest first)
-    std::sort(sortedFiles.begin(), sortedFiles.end(),
-              [](const auto& a, const auto& b) {
+    std::sort(sortedFiles.begin(), sortedFiles.end(), [](const auto& a, const auto& b) {
                   return a.second.lastOpened > b.second.lastOpened;
-              });
+    });
 
     int shown = 0;
     for (const auto& [filePath, fileInfo] : sortedFiles)
@@ -245,7 +246,8 @@ void MainWindow::onRecentRecentFilesMenuOpened()
         recentAction->setToolTip(filePath);
 
         connect(recentAction, &QAction::triggered, this, [this, filePath]() {
-            if (!QFile::exists(filePath)) {
+            if (!QFile::exists(filePath))
+            {
                 QMessageBox::warning(this, "File not found", "File does not exist:\n" + filePath);
                 return;
             }
@@ -262,7 +264,7 @@ void MainWindow::onRecentRecentFilesMenuOpened()
 
         ui->menuOpen_recent->addAction(recentAction);
 
-        if (++shown >= 5)
+        if (++shown >= maxElementsInListOfLastElements)
             break;
     }
 
@@ -895,8 +897,6 @@ void MainWindow::saveSettings()
 
 void MainWindow::updateRecentFiles(const QString& path)
 {
-    constexpr int maxElementsInListOfLastElements = 5;
-
     int cursorPos = ui->textEditor->textCursor().position();
 
     recentFilesWithPositions.remove(path);
