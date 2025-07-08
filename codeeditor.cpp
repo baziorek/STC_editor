@@ -622,7 +622,7 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
                 painter.fillRect(0, top, lineNumberArea->width(), fontMetrics().height(), QColor("#FFDD88"));
             }
 
-            // Drawing arrow in current position
+            // Drawing arrow in the current position
             if (blockNumber == currentLine)
             {
                 const int yCenter = top + fontMetrics().height()/2;
@@ -632,14 +632,14 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
                 painter.setBrush(Qt::yellow);
 
                 QPolygon arrow;
-                arrow << QPoint(lineNumberArea->width() - 1, yCenter) // czubek strzałki przy prawej krawędzi
-                     << QPoint(0, yCenter - arrowHeight/2)  // lewy górny róg
-                     << QPoint(0, yCenter + arrowHeight/2); // lewy dolny róg
+                arrow << QPoint(lineNumberArea->width() - 1, yCenter) // top of arrow on the right edge
+                     << QPoint(0, yCenter - arrowHeight/2)  // upper left corner
+                     << QPoint(0, yCenter + arrowHeight/2); // lower button corner
 
                 painter.drawPolygon(arrow);
             }
 
-            // Rysujemy numer linii na wierzchu strzałki
+            // Text on arrow
             QString number = QString::number(blockNumber + 1);
             painter.setPen(Qt::black);
             painter.drawText(0, top, lineNumberArea->width(), fontMetrics().height(),
