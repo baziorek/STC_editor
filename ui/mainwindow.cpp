@@ -211,27 +211,39 @@ void MainWindow::onRecentRecentFilesMenuOpened()
     ui->menuOpen_recent->clear();
 
     int shown = 0;
-    for (const QString& filePath : recentFilesWithPositions.keys())
-    {
-        qDebug() << ">" << filePath;
+    for (const QString& filePath : recentFilesWithPositions.keys()) {
         if (! QFile::exists(filePath))
-            continue;
+        {
+            recentFilesWithPositions.remove(filePath);
+            onRecentRecentFilesMenuOpened();
+            return;
+        }
 
         const QString fileName = QFileInfo(filePath).fileName();
         QAction* recentAction = new QAction(fileName, ui->menuOpen_recent);
         recentAction->setData(filePath);
-        recentAction->setToolTip(filePath);
+
+        // Add information about datetime in tooltip
+        const auto& fileInfo = recentFilesWithPositions[filePath];
+        QString tooltip = filePath + "\n\nRecently opened on: " + fileInfo.lastOpened.toString("dd.MM.yyyy hh:mm:ss");
+        recentAction->setToolTip(tooltip);
+
+        // Add datetime to action text
+        QString actionText = fileName + "  ";
+        actionText += QString("   [last opened: %1]")
+                        .arg(fileInfo.lastOpened.toString("dd.MM.yy hh:mm"));
+        recentAction->setText(actionText);
 
         connect(recentAction, &QAction::triggered, this, [this, filePath]() {
             if (!QFile::exists(filePath)) {
-                QMessageBox::warning(this, "File not found", "Plik nie istnieje:\n" + filePath);
+                QMessageBox::warning(this, "File not found", "File does not exist:\n" + filePath);
                 return;
             }
             updateRecentFiles(filePath);
             onRecentRecentFilesMenuOpened();
             loadFileContentToEditorDistargingCurrentContent(filePath);
 
-            int pos = recentFilesWithPositions.value(filePath, 0);
+            int pos = recentFilesWithPositions.value(filePath).cursorPosition;
             QTextCursor cursor = ui->textEditor->textCursor();
             cursor.setPosition(pos);
             ui->textEditor->setTextCursor(cursor);
@@ -833,7 +845,15 @@ void MainWindow::loadSettings()
     QVariantMap filesMap = settings.value(GeometryNames::RECENT_FILES_LIST).toMap();
     for (auto it = filesMap.begin(); it != filesMap.end(); ++it)
     {
-        recentFilesWithPositions.insert(it.key(), it.value().toInt());
+        RecentFileInfo info;
+        QVariantMap fileInfo = it.value().toMap();
+        info.cursorPosition = fileInfo["position"].toInt();
+        info.lastOpened = fileInfo["lastOpened"].toDateTime();
+        if (!info.lastOpened.isValid())  // if no datetime
+        {
+            info.lastOpened = QDateTime::currentDateTime();
+        }
+        recentFilesWithPositions.insert(it.key(), info);
     }
 }
 
@@ -852,7 +872,10 @@ void MainWindow::saveSettings()
     QVariantMap recentFilesMap;
     for (auto it = recentFilesWithPositions.begin(); it != recentFilesWithPositions.end(); ++it)
     {
-        recentFilesMap.insert(it.key(), it.value());
+        QVariantMap fileInfo;
+        fileInfo["position"] = it.value().cursorPosition;
+        fileInfo["lastOpened"] = it.value().lastOpened;
+        recentFilesMap.insert(it.key(), fileInfo);
     }
     if (! recentFilesMap.isEmpty())
     {
@@ -867,7 +890,10 @@ void MainWindow::updateRecentFiles(const QString& path)
     int cursorPos = ui->textEditor->textCursor().position();
 
     recentFilesWithPositions.remove(path);
-    recentFilesWithPositions.insert(path, cursorPos);
+    RecentFileInfo info;
+    info.cursorPosition = cursorPos;
+    info.lastOpened = QDateTime::currentDateTime();
+    recentFilesWithPositions.insert(path, info);
 
     while (recentFilesWithPositions.size() > maxElementsInListOfLastElements)
     {

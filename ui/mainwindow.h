@@ -93,5 +93,11 @@ private: // members
     Ui::MainWindow *ui;
 
     QString lastDirectory;
-    QMap<QString, int> recentFilesWithPositions;
+
+    struct RecentFileInfo
+    {
+        int cursorPosition;
+        QDateTime lastOpened;
+    };
+    QMap<QString, RecentFileInfo> recentFilesWithPositions;
 };

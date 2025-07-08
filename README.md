@@ -30,6 +30,7 @@ Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników
 Jeśli ktoś chce tego używać do innych celów:
  1. **Operacje na plikach**: Wczytywanie i zapisywanie plików z obsługą kodowania UTF-8.
  2. **Ostatnio otwarte pliki**: Zapamiętuje ostatnio używane pliki wraz z ostatnią pozycją w pliku dla szybkiego dostępu.
+   - Zapamiętana jest również data ostatniego otwarcia pliku w edytorze. 
  3. **Wykrywanie zmian zewnętrznych**: Powiadamia o modyfikacjach pliku z zewnątrz.
  4. **Numerowanie linii**: Dodawanie numeracji do zaznaczonych linii przez menu kontekstowe (funkcja z menu kontekstowego).
  5. **Łączenie linii**: Łączenie wielu zaznaczonych linii w jedną, oddzieloną spacjami (funkcja z menu kontekstowego).
@@ -52,7 +53,6 @@ Jeśli ktoś chce tego używać do innych celów:
 ### Przed pierwszym wydaniem
 
 - **Naprawy**:
-  - Open Recent niech wyświetla datetime otwarcia pliku.
   - Breadcrumb łapie wnętrze kodu w C++ np. rozmiary tablic czy atrybuty
   - Naprawa problemu z pytaniem o nadpisywanie zmian, mimo ich braku, przy sekwencyjnym otwieraniu wielu plików plików.
   - Naprawa zapisywania geometrii okna (obecnie zapisywana jest tylko pozycja, a nie rozmiar).
