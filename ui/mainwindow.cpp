@@ -210,29 +210,39 @@ void MainWindow::onRecentRecentFilesMenuOpened()
 {
     ui->menuOpen_recent->clear();
 
-    int shown = 0;
-    for (const QString& filePath : recentFilesWithPositions.keys()) {
-        if (! QFile::exists(filePath))
-        {
-            recentFilesWithPositions.remove(filePath);
-            onRecentRecentFilesMenuOpened();
-            return;
+    // Create a list of pairs (filepath, info) for sorting
+    int longestPath{};
+    QList<QPair<QString, RecentFileInfo>> sortedFiles;
+    for (auto it = recentFilesWithPositions.begin(); it != recentFilesWithPositions.end(); ++it) {
+        if (QFile::exists(it.key())) {
+            sortedFiles.append({it.key(), it.value()});
+            longestPath = std::max<int>(longestPath, it.key().size());
         }
+    }
 
+    // Sort by last opened datetime (newest first)
+    std::sort(sortedFiles.begin(), sortedFiles.end(),
+              [](const auto& a, const auto& b) {
+                  return a.second.lastOpened > b.second.lastOpened;
+              });
+
+    int shown = 0;
+    for (const auto& [filePath, fileInfo] : sortedFiles)
+    {
         const QString fileName = QFileInfo(filePath).fileName();
         QAction* recentAction = new QAction(fileName, ui->menuOpen_recent);
-        recentAction->setData(filePath);
 
         // Add information about datetime in tooltip
-        const auto& fileInfo = recentFilesWithPositions[filePath];
         QString tooltip = filePath + "\n\nRecently opened on: " + fileInfo.lastOpened.toString("dd.MM.yyyy hh:mm:ss");
         recentAction->setToolTip(tooltip);
 
         // Add datetime to action text
         QString actionText = fileName + "  ";
-        actionText += QString("   [last opened: %1]")
-                        .arg(fileInfo.lastOpened.toString("dd.MM.yy hh:mm"));
+        actionText += QString("   [last opened: %1]").arg(fileInfo.lastOpened.toString("dd.MM.yy hh:mm"));
         recentAction->setText(actionText);
+
+        recentAction->setData(filePath);
+        recentAction->setToolTip(filePath);
 
         connect(recentAction, &QAction::triggered, this, [this, filePath]() {
             if (!QFile::exists(filePath)) {
