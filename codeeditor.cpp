@@ -622,32 +622,28 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
                 painter.fillRect(0, top, lineNumberArea->width(), fontMetrics().height(), QColor("#FFDD88"));
             }
 
-            QString number = QString::number(blockNumber + 1);
-            painter.setPen(Qt::black);
-
-            // Draw arrow in current text position
+            // Drawing arrow in current position
             if (blockNumber == currentLine)
             {
-                const int arrowSize = 8;
-                const int margin = 3;
+                const int yCenter = top + fontMetrics().height()/2;
+                const int arrowHeight = 6;
+
+                painter.setPen(Qt::NoPen);
+                painter.setBrush(Qt::yellow);
+
                 QPolygon arrow;
-                arrow << QPoint(margin, top + fontMetrics().height()/2)
-                      << QPoint(margin + arrowSize, top + fontMetrics().height()/2 - arrowSize/2)
-                      << QPoint(margin + arrowSize, top + fontMetrics().height()/2 + arrowSize/2);
+                arrow << QPoint(lineNumberArea->width() - 1, yCenter) // czubek strzałki przy prawej krawędzi
+                     << QPoint(0, yCenter - arrowHeight/2)  // lewy górny róg
+                     << QPoint(0, yCenter + arrowHeight/2); // lewy dolny róg
 
-                painter.setBrush(Qt::black);
                 painter.drawPolygon(arrow);
+            }
 
-                // Draw line number after the arrow
-                painter.drawText(margin + arrowSize + 3, top, lineNumberArea->width() - (margin + arrowSize + 3),
-                               fontMetrics().height(), Qt::AlignRight, number);
-            }
-            else
-            {
-                // When no current line - just draw line number
-                painter.drawText(0, top, lineNumberArea->width(), fontMetrics().height(),
-                               Qt::AlignRight, number);
-            }
+            // Rysujemy numer linii na wierzchu strzałki
+            QString number = QString::number(blockNumber + 1);
+            painter.setPen(Qt::black);
+            painter.drawText(0, top, lineNumberArea->width(), fontMetrics().height(),
+                           Qt::AlignRight, number);
         }
 
         block = block.next();

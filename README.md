@@ -45,19 +45,23 @@ Jeśli ktoś chce tego używać do innych celów:
       - Bez uwzględniania wielkości liter, tylko całe słowa.
 10. **Skalowanie czcionki**: Powiększanie/pomniejszanie czcionki za pomocą `Ctrl++` i `Ctrl+-` lub `Ctrl+MOUSE_SCROLL`.
 11. **Pasek stanu**: Pokazuje liczbę niezapisanych zmienionych linii, czas ostatniej edycji i zapisu (tylko przy niezapisanych zmianach).
+12. **Oznaczenie aktualnej linii**: Śledzenie aktualnej pozycji kursora klawiatury w ramach linijki
 
 ## Planowane funkcjonalności
 
 ### Przed pierwszym wydaniem
 
 - **Naprawy**:
+  - Open Recent nie działa znowu, przy okazji od razu datetime otwarcia pliku.
+     - zapamiętywanie pozycji w pliku też nie działa, ale może zadziała od strzała po naprawie powyższego
+  - Breadcrumb łapie wnętrze kodu w C++ np. rozmiary tablic czy atrybuty
   - Naprawa problemu z pytaniem o nadpisywanie zmian, mimo ich braku, przy sekwencyjnym otwieraniu wielu plików plików.
   - Naprawa zapisywania geometrii okna (obecnie zapisywana jest tylko pozycja, a nie rozmiar).
-  - Breadcrumb łapie wnętrze kodu w C++ np. rozmiary tablic czy atrybuty
 - **Funkcje**:
-  - Dodanie `Ctrl+R` do zamiany tekstu z możliwością wyłączenia poszczególnych wykrytych pozycji.
-  - Sprawdzanie, czy znaciki `[run]` znajdują się wewnątrz `[pkt]`.
-  - Weryfikacja, czy wszystkie znaczniki są zamknięte.
+  - Wyszukaj i zamień: `Ctrl+R` z możliwością wyłączenia poszczególnych wykrytych pozycji.
+  - Sprawdzania:
+     - Sprawdzanie, czy znaciki `[run]` znajdują się wewnątrz `[pkt]`.
+     - Weryfikacja, czy wszystkie znaczniki są zamknięte.
   - Obsługa zakładek do szybkiego przechodzenia do miejsc w kodzie.
   - Śledzenie TODO w dokumencie.
   - Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
@@ -101,6 +105,15 @@ Jeśli ktoś chce tego używać do innych celów:
 - Refaktoring: Jeśli wczytywanie pliku jest przez CodeEditor, to zapis pliku też konsekwentnie powinien stamtąd iść
 - Tłumaczenia aplikacji na wiele języków: QLinguist
 - Rozważyć użycie innej biblioteki do porównywania np. https://github.com/google/diff-match-patch
+- Szukanie tylko w kodzie
+- Przeciągnij i upuść pliku z kodem
+- Formatowanie kodu C++ dedykowane
+- W linijce gradient ostatnio używanych linii z numerami ile temu
+- Przy CTRL + SCROLL wyświetlanie informacji o rozmiarze czcionki (jak QtCreator)
+- Ukrycie tagów, nie licząc otaczających (rich text editor)
+- Przycisk na sformatowanym tekście powinien usunąć dane formatowanie - np. jak klikniemy CTRL+B na pogrubionym to aby nie był pogrubiony
+- Wyszukiwanie tekstu może też oznaczyć szukany tekst w dokumencie np. ramką
+- Kontekst trzeba by uprościć, aby zawierał tylko nagłówki (domyślnie)
 
 ## Współpraca
 

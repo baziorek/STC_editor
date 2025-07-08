@@ -1,5 +1,6 @@
 #include <QApplication>
 #include <QTimer>
+#include <QDebug>
 #include "ui/mainwindow.h"
 
 
