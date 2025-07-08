@@ -52,8 +52,7 @@ Jeśli ktoś chce tego używać do innych celów:
 ### Przed pierwszym wydaniem
 
 - **Naprawy**:
-  - Open Recent nie działa znowu, przy okazji od razu datetime otwarcia pliku.
-     - zapamiętywanie pozycji w pliku też nie działa, ale może zadziała od strzała po naprawie powyższego
+  - Open Recent niech wyświetla datetime otwarcia pliku.
   - Breadcrumb łapie wnętrze kodu w C++ np. rozmiary tablic czy atrybuty
   - Naprawa problemu z pytaniem o nadpisywanie zmian, mimo ich braku, przy sekwencyjnym otwieraniu wielu plików plików.
   - Naprawa zapisywania geometrii okna (obecnie zapisywana jest tylko pozycja, a nie rozmiar).
@@ -114,6 +113,7 @@ Jeśli ktoś chce tego używać do innych celów:
 - Przycisk na sformatowanym tekście powinien usunąć dane formatowanie - np. jak klikniemy CTRL+B na pogrubionym to aby nie był pogrubiony
 - Wyszukiwanie tekstu może też oznaczyć szukany tekst w dokumencie np. ramką
 - Kontekst trzeba by uprościć, aby zawierał tylko nagłówki (domyślnie)
+- Historia zmian w linii
 
 ## Współpraca
 

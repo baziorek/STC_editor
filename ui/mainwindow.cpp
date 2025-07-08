@@ -1,8 +1,6 @@
 #include <QKeyEvent>
 #include <QDebug>
-#include <QFile>
 #include <QFileDialog>
-#include <QRegularExpression>
 #include <QMessageBox>
 #include <QSettings>
 #include <QDesktopServices>
@@ -19,6 +17,15 @@ using namespace std;
 
 namespace
 {
+namespace GeometryNames
+{
+    constexpr const char GEOMETRY[] = "geometry";
+    constexpr const char SETTINGS_WINDOW_STATE[] = "windowState";
+    constexpr const char LAST_DIRECTORY[] = "lastDirectory";
+    constexpr const char RECENT_FILES_LIST[] = "recentFiles";
+};
+
+
 struct TextInsideTags
 {
     QString tag, text;
@@ -206,6 +213,7 @@ void MainWindow::onRecentRecentFilesMenuOpened()
     int shown = 0;
     for (const QString& filePath : recentFilesWithPositions.keys())
     {
+        qDebug() << ">" << filePath;
         if (! QFile::exists(filePath))
             continue;
 
@@ -799,47 +807,57 @@ void MainWindow::surroundSelectedTextWithAHrefTag()
     putTextBackToCursorPosition(cursor, "a", selectedText, "", modifiedText);
 }
 
-void MainWindow::loadSettings()
-{
-    QSettings settings;
-
-    const QByteArray geometry = settings.value("geometry").toByteArray();
-    const QByteArray windowState = settings.value("windowState").toByteArray();
-    if (!geometry.isEmpty())
-        restoreGeometry(geometry);
-    if (!windowState.isEmpty())
-        restoreState(windowState);
-
-    lastDirectory = settings.value("lastDirectory", QDir::homePath()).toString();
-
-    QVariantMap filesMap = settings.value("recentFiles").toMap();
-    for (auto it = filesMap.begin(); it != filesMap.end(); ++it)
-    {
-        recentFilesWithPositions.insert(it.key(), it.value().toInt());
-    }
-}
-
 void MainWindow::setDisabledMenuActionsDependingOnOpenedFile(bool disabled)
 {
     ui->actionCopy_absolute_path->setDisabled(disabled);
     ui->actionCopy_basename->setDisabled(disabled);
 }
 
+void MainWindow::loadSettings()
+{
+    QSettings settings;
+
+    const QByteArray geometry = settings.value(GeometryNames::GEOMETRY).toByteArray();
+    const QByteArray windowState = settings.value(GeometryNames::SETTINGS_WINDOW_STATE).toByteArray();
+    if (!geometry.isEmpty())
+    {
+        restoreGeometry(geometry);
+    }
+    if (!windowState.isEmpty())
+    {
+        restoreState(windowState);
+    }
+
+    lastDirectory = settings.value(GeometryNames::LAST_DIRECTORY, QDir::homePath()).toString();
+
+    QVariantMap filesMap = settings.value(GeometryNames::RECENT_FILES_LIST).toMap();
+    for (auto it = filesMap.begin(); it != filesMap.end(); ++it)
+    {
+        recentFilesWithPositions.insert(it.key(), it.value().toInt());
+    }
+}
+
 void MainWindow::saveSettings()
 {
     QSettings settings;
 
-    settings.setValue("geometry", saveGeometry());
-    settings.setValue("windowState", saveState());
+    settings.setValue(GeometryNames::GEOMETRY, saveGeometry());
+    settings.setValue(GeometryNames::SETTINGS_WINDOW_STATE, saveState());
 
-    settings.setValue("lastDirectory", lastDirectory);
+    if (! lastDirectory.isEmpty())
+    {
+        settings.setValue(GeometryNames::LAST_DIRECTORY, lastDirectory);
+    }
 
     QVariantMap recentFilesMap;
     for (auto it = recentFilesWithPositions.begin(); it != recentFilesWithPositions.end(); ++it)
     {
         recentFilesMap.insert(it.key(), it.value());
     }
-    settings.setValue("recentFiles", recentFilesMap);
+    if (! recentFilesMap.isEmpty())
+    {
+        settings.setValue(GeometryNames::RECENT_FILES_LIST, recentFilesMap);
+    }
 }
 
 void MainWindow::updateRecentFiles(const QString& path)

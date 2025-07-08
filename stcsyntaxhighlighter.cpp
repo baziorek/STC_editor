@@ -1,5 +1,6 @@
-#include "stcsyntaxhighlighter.h"
+#include <QDebug>
 #include <QRegularExpression>
+#include "stcsyntaxhighlighter.h"
 #include "types/stcTags.h"
 
 namespace
