@@ -911,6 +911,19 @@ void MainWindow::updateRecentFiles(const QString& path)
     }
 }
 
+void MainWindow::onFileContentChanged(const QString &fileName, int changedLines)
+{
+    if (changedLines)
+    {
+        const auto modificationInfo = ui->textEditor->modificationInfo();
+        updateWindowTitle(fileName, modificationInfo);
+    }
+    else
+    {
+        updateWindowTitle(fileName);
+    }
+}
+
 void MainWindow::onUpdateBreadcrumb()
 {
     if (ui->breadcrumbTextBrowser->isHidden())
@@ -923,19 +936,6 @@ void MainWindow::onUpdateBreadcrumb()
     QString breadcrumbHtml = getClickableBreadcrumbPath(fullText, cursorPos);
 
     ui->breadcrumbTextBrowser->setHtml(breadcrumbHtml);
-}
-
-void MainWindow::onFileContentChanged(const QString &fileName, int changedLines)
-{
-    if (changedLines)
-    {
-        const auto modificationInfo = ui->textEditor->modificationInfo();
-        updateWindowTitle(fileName, modificationInfo);
-    }
-    else
-    {
-        updateWindowTitle(fileName);
-    }
 }
 
 QString MainWindow::getClickableBreadcrumbPath(const QString& text, int cursorPos)
