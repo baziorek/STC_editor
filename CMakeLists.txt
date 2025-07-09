@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.20)
-
 project(Cpp0x VERSION 0.2 LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
@@ -12,9 +11,22 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
-include_directories(${PROJECT_SOURCE_DIR}
-    "${PROJECT_SOURCE_DIR}/libs/" # TODO: is this OK?
-) # to make sure that promoted types are visible from generated designer's files
+# In Linux it is possible to have sanitizers for g++ and Clang compilers:
+if (NOT CMAKE_SYSTEM_NAME MATCHES "Windows" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    include(CheckLibraryExists)
+
+    check_library_exists(asan __asan_init "" HAVE_LIBASAN)
+    check_library_exists(ubsan __ubsan_handle_add_overflow "" HAVE_LIBUBSAN)
+
+    if (HAVE_LIBASAN AND HAVE_LIBUBSAN)
+        message(STATUS "Sanitizers (AddressSanitizer + UndefinedBehaviorSanitizer) are available")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address,undefined")
+    else()
+        message(WARNING "No required libraries (libasan/libubsan). You can install them, e.g. for Fedora: sudo yum install libasan libubsan")
+    endif()
+endif()
+
+include_directories(${PROJECT_SOURCE_DIR}) # to make sure that promoted types are visible from generated designer's files
 
 set(PROJECT_SOURCES
     main.cpp
@@ -72,6 +84,11 @@ else()
     endif()
 endif()
 
+target_include_directories(${PROJECT_NAME}
+        PRIVATE
+        ${PROJECT_SOURCE_DIR}
+        ${PROJECT_SOURCE_DIR}/libs
+)
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

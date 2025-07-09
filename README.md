@@ -55,7 +55,7 @@ Jeśli ktoś chce tego używać do innych celów:
 - **Naprawy**:
   - Breadcrumb łapie wnętrze kodu w C++ np. rozmiary tablic czy atrybuty
   - Naprawa problemu z pytaniem o nadpisywanie zmian, mimo ich braku, przy sekwencyjnym otwieraniu wielu plików plików.
-  - Naprawa zapisywania geometrii okna (obecnie zapisywana jest tylko pozycja, a nie rozmiar).
+  - Przy przeciągnij i upuść wstawia tam gdzie kursor tekstu, a nie tam gdzie przeciągniemy
 - **Funkcje**:
   - Wyszukaj i zamień: `Ctrl+R` z możliwością wyłączenia poszczególnych wykrytych pozycji.
   - Sprawdzania:
@@ -66,6 +66,7 @@ Jeśli ktoś chce tego używać do innych celów:
   - Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
   - Otwieranie wielu plików jednocześnie.
   - Widok sąsiadujący do porównywania plików.
+  - Podpięcie sanitizers: do pamięci
 
 ### Pomysły na przyszłość
 
@@ -114,6 +115,7 @@ Jeśli ktoś chce tego używać do innych celów:
 - Wyszukiwanie tekstu może też oznaczyć szukany tekst w dokumencie np. ramką
 - Kontekst trzeba by uprościć, aby zawierał tylko nagłówki (domyślnie)
 - Historia zmian w linii
+- Precompiled headers dla codeEditor.h i moduły
 
 ## Współpraca
 

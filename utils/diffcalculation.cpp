@@ -1,8 +1,8 @@
-#include "diffcalculation.h"
-#include "libs/pydifflib-cpp/difflib.hpp"
-
 #include <QSet>
 #include <QStringList>
+#include "diffcalculation.h"
+#include "pydifflib-cpp/difflib.hpp"
+
 
 QSet<int> calculateModifiedLines(const QStringList& oldLines, const QStringList& newLines)
 {
