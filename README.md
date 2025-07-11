@@ -59,7 +59,7 @@ Jeśli ktoś chce tego używać do innych celów:
 - **Funkcje**:
   - Wyszukaj i zamień: `Ctrl+R` z możliwością wyłączenia poszczególnych wykrytych pozycji.
   - Sprawdzania:
-     - Sprawdzanie, czy znaciki `[run]` znajdują się wewnątrz `[pkt]`.
+     - Sprawdzanie, czy znaczniki `[run]` znajdują się wewnątrz `[pkt]`.
      - Weryfikacja, czy wszystkie znaczniki są zamknięte.
   - Obsługa zakładek do szybkiego przechodzenia do miejsc w kodzie.
   - Śledzenie TODO w dokumencie.
@@ -67,6 +67,7 @@ Jeśli ktoś chce tego używać do innych celów:
   - Otwieranie wielu plików jednocześnie.
   - Widok sąsiadujący do porównywania plików.
   - Podpięcie sanitizers: do pamięci
+  - Podgląd treści STC w formacie web - widget jest już
 
 ### Pomysły na przyszłość
 
@@ -81,7 +82,6 @@ Jeśli ktoś chce tego używać do innych celów:
 - Wyszukiwanie wielu słów w tej samej linii niezależnie od kolejności.
 - Sprawdzanie pisowni po polsku (np. [nuspell](https://github.com/nuspell/nuspell) lub [spellchecker Qt](https://doc.qt.io/qt-6/qtwebengine-webenginewidgets-spellchecker-example.html)).
 - Obsługa różnych kodowań plików z automatycznym rozpoznawaniem.
-- Podgląd treści STC w formacie web.
 - Obsługa wtyczek, być może z użyciem Lua.
 - Integracja dokumentacji cppreference (jak w `cppman` lub QtCreator).
 - Nagrywanie i odtwarzanie makr.
@@ -116,6 +116,7 @@ Jeśli ktoś chce tego używać do innych celów:
 - Kontekst trzeba by uprościć, aby zawierał tylko nagłówki (domyślnie)
 - Historia zmian w linii
 - Precompiled headers dla codeEditor.h i moduły
+- IWYU podpiąć pod CMake'a
 
 ## Współpraca
 

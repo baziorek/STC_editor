@@ -8,8 +8,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets WebEngineWidgets)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets WebEngineWidgets)
 
 # In Linux it is possible to have sanitizers for g++ and Clang compilers:
 if (NOT CMAKE_SYSTEM_NAME MATCHES "Windows" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
@@ -41,9 +41,11 @@ set(PROJECT_SOURCES
     ui/shortcutsdialog.h ui/shortcutsdialog.cpp
     ui/highlightdelegate.h ui/highlightdelegate.cpp
     ui/cppcompilerdialog.h ui/cppcompilerdialog.cpp
+    ui/documentcontextsummary.h ui/documentcontextsummary.cpp ui/documentcontextsummary.ui
     checkers/PairedTagsChecker.h checkers/PairedTagsChecker.cpp
     types/stcTags.h types/stcTags.cpp
     widgets/filteredtagtablewidget.h widgets/filteredtagtablewidget.cpp
+    widgets/stcpreviewwidget.h widgets/stcpreviewwidget.cpp
     types/documentstatistics.h types/documentstatistics.cpp
     utils/diffcalculation.h utils/diffcalculation.cpp
 )
@@ -89,7 +91,7 @@ target_include_directories(${PROJECT_NAME}
         ${PROJECT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/libs
 )
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::WebEngineWidgets)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
@@ -126,11 +128,11 @@ set(TEST_SOURCES
     tests/PairedTagsCheckerTests.cpp
 )
 
-add_executable(Cpp0xTests
+add_executable(${PROJECT_NAME}Tests
     ${TEST_SOURCES}
     checkers/PairedTagsChecker.cpp
 )
 
-target_link_libraries(Cpp0xTests PRIVATE ${GTEST_LIBRARIES} pthread gtest_main)
+target_link_libraries(${PROJECT_NAME}Tests PRIVATE ${GTEST_LIBRARIES} pthread gtest_main)
 
 add_test(NAME Cpp0xTests COMMAND Cpp0xTests)
