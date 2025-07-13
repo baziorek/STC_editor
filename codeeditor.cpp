@@ -1061,14 +1061,18 @@ QString CodeEditor::getFileModificationInfoText() const
 
 bool CodeEditor::isInsideCode(int position) const
 {
+    return static_cast<bool>(getCodeTagAtPosition(position));
+}
+std::optional<QString> CodeEditor::getCodeTagAtPosition(int position) const
+{
     for (const auto& block : codeBlocks)
     {
-        int start = block.cursor.selectionStart();
-        int end = block.cursor.selectionEnd();
-        if (position >= start && position <= end)
-            return true;
+        if (position >= block.cursor.selectionStart() && position <= block.cursor.selectionEnd())
+        {
+            return block.tag;
+        }
     }
-    return false;
+    return std::nullopt;
 }
 
 void CodeEditor::analizeEntireDocumentDetectingCodeBlocks()

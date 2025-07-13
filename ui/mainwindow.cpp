@@ -791,8 +791,8 @@ QString MainWindow::getClickableBreadcrumbPath(const QString& text, int cursorPo
 {
     static const QSet<QString> ignorableTags = { "img", "a" };
 
-    // 1. Processing headers h1–h6
-    QMap<int, QPair<QString, int>> headerLevels; // level hN -> (title, position)
+    // 1. Processing headers h1-h6
+    QMap<int, QPair<QString, int>> headerLevels;
     static QRegularExpression headerRegex(R"(\[(h[1-6])\](.*?)\[/\1\])",
                                           QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption);
     QRegularExpressionMatchIterator headerIt = headerRegex.globalMatch(text);
@@ -806,10 +806,11 @@ QString MainWindow::getClickableBreadcrumbPath(const QString& text, int cursorPo
         QString content = m.captured(2).trimmed();
         int level = levelStr.mid(1).toInt();
 
-        // Checking if text is not inside code
+        // Skip headers inside code blocks
         if (ui->textEditor->isInsideCode(m.capturedStart()))
             continue;
 
+        // Remove headers with same or deeper level
         auto it = headerLevels.begin();
         while (it != headerLevels.end())
         {
@@ -826,7 +827,7 @@ QString MainWindow::getClickableBreadcrumbPath(const QString& text, int cursorPo
 
     // 2. Processing dynamic tags
     QStack<QPair<QString, int>> contextStack;
-    QMap<QString, int> openTagPositions;
+    QMap<QString, int> openTagPositions; // Stores positions of opening tags
 
     static QRegularExpression tagOpenRegex(R"(\[([a-z0-9]+)(?:\s+[^\]]+)?\])", QRegularExpression::CaseInsensitiveOption);
     static QRegularExpression tagCloseRegex(R"(\[/([a-z0-9]+)\])", QRegularExpression::CaseInsensitiveOption);
@@ -857,6 +858,7 @@ QString MainWindow::getClickableBreadcrumbPath(const QString& text, int cursorPo
             QString tag = closeMatch.captured(1).toLower();
             if (!tag.startsWith("h"))
             {
+                // Check position of opening tag
                 if (openTagPositions.contains(tag) && !ui->textEditor->isInsideCode(openTagPositions[tag]))
                 {
                     int i = contextStack.size() - 1;
@@ -877,6 +879,7 @@ QString MainWindow::getClickableBreadcrumbPath(const QString& text, int cursorPo
     // 3. Building breadcrumb HTML
     QStringList breadcrumb;
 
+    // Add headers
     const QList<int> sortedHeaderLevels = headerLevels.keys();
     for (int level : sortedHeaderLevels)
     {
@@ -884,9 +887,16 @@ QString MainWindow::getClickableBreadcrumbPath(const QString& text, int cursorPo
         breadcrumb << QString(R"(<a href="%1">%2</a>)").arg(pos).arg(text.toHtmlEscaped());
     }
 
+    // Add context tags
     for (const auto& [tag, pos] : contextStack)
     {
         breadcrumb << QString(R"(<a href="%1">%2</a>)").arg(pos).arg(tag.toUpper());
+    }
+
+    // Add code tag if cursor is inside a code block
+    if (auto codeTag = ui->textEditor->getCodeTagAtPosition(cursorPos))
+    {
+        breadcrumb << QString(R"(<a href="%1">%2</a>)").arg(cursorPos).arg(codeTag->toUpper());
     }
 
     return breadcrumb.join(" &gt; ");

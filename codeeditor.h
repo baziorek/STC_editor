@@ -53,6 +53,7 @@ public:
         return codeBlocks;
     }
     bool isInsideCode(int position) const;
+    std::optional<QString> getCodeTagAtPosition(int position) const;
 
 signals:
     void totalLinesCountChanged(int currentLinesCount);
