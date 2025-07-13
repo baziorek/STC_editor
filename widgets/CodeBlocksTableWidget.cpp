@@ -1,11 +1,21 @@
 #include <QHeaderView>
 #include <QAction>
 #include <QTextBlock>
+#include <QToolTip>
 #include "widgets/CodeBlocksTableWidget.h"
 #include "codeeditor.h"
+#include "types/CodeBlock.h"
 
 namespace
 {
+    enum Columns
+    {
+        Position = 0,
+        Type = 1,
+        Code = 2,
+        ColumnCount
+    };
+
     void addPosition(QTableWidget *table, int row, QTextCursor cursor)
     {
         const int startLine = cursor.blockNumber() + 1;
@@ -33,6 +43,30 @@ namespace
         tableItem->setFlags(tableItem->flags() & ~Qt::ItemIsEditable);
         tableItem->setToolTip(positionToolTip);
     }
+    void addCode(QTableWidget *table, int row, const QString& codeWithoutTags)
+    {
+        constexpr int column = 2;
+
+        // Limit code preview to first line
+        int newlinePos = codeWithoutTags.indexOf('\n');
+        QString codePreview = newlinePos != -1 ?
+            codeWithoutTags.left(newlinePos) + "..." :
+            codeWithoutTags;
+
+        // auto* codeItem = new QTableWidgetItem(codePreview);
+        auto* codeItem = table->item(row, column);
+        if (!codeItem)
+        {
+            codeItem = new QTableWidgetItem(codePreview);
+            table->setItem(row, column, codeItem);
+        }
+
+        // Store full code in item data for tooltip
+        codeItem->setData(Qt::UserRole, codeWithoutTags);
+        codeItem->setFlags(codeItem->flags() & ~Qt::ItemIsEditable);
+
+        table->setItem(row, Code, codeItem);
+    }
 } // namespace
 
 
@@ -49,12 +83,16 @@ CodeBlocksTableWidget::CodeBlocksTableWidget(QWidget *parent)
 void CodeBlocksTableWidget::setupTable()
 {
     setColumnCount(ColumnCount);
-    setHorizontalHeaderLabels({"Position", "Type"});
+    setHorizontalHeaderLabels({"Position", "Type", "Code"});
     setSelectionBehavior(QAbstractItemView::SelectRows);
     setSelectionMode(QAbstractItemView::SingleSelection);
     horizontalHeader()->setSectionResizeMode(Position, QHeaderView::ResizeToContents);
-    horizontalHeader()->setSectionResizeMode(Type, QHeaderView::Stretch);
+    horizontalHeader()->setSectionResizeMode(Type, QHeaderView::ResizeToContents);
+    horizontalHeader()->setSectionResizeMode(Code, QHeaderView::Stretch);
     verticalHeader()->hide();
+
+    // Enable custom tooltips
+    setMouseTracking(true);
 }
 
 void CodeBlocksTableWidget::setTextEditor(CodeEditor *newTextEditor)
@@ -110,7 +148,7 @@ void CodeBlocksTableWidget::updateCodeBlocks()
         if (!filterStates4EachCategory[category])
             continue;
 
-        int row = rowCount();
+        const int row = rowCount();
         insertRow(row);
 
         auto cursor = block.cursor;
@@ -119,6 +157,8 @@ void CodeBlocksTableWidget::updateCodeBlocks()
 
         auto *typeItem = new QTableWidgetItem(getDisplayNameFromCodeType(block.tag, block.language));
         setItem(row, Type, typeItem);
+
+        addCode(this, row, getCodeWithoutTags(block));
     }
 }
 
@@ -195,4 +235,40 @@ void CodeBlocksTableWidget::showEvent(QShowEvent *event)
 {
     QTableWidget::showEvent(event);
     updateCodeBlocks();
+}
+
+QString CodeBlocksTableWidget::getCodeWithoutTags(const CodeBlock& block) const
+{
+    if (!textEditor)
+        return {};
+
+    // Use selectEnclosingCodeBlock to get code without tags
+    if (auto codeBlock = textEditor->selectEnclosingCodeBlock(block.cursor.selectionStart()))
+    {
+        return codeBlock->cursor.selectedText();
+    }
+    return QString();
+}
+
+bool CodeBlocksTableWidget::event(QEvent* event)
+{
+    if (event->type() == QEvent::ToolTip)
+    {
+        QHelpEvent* helpEvent = static_cast<QHelpEvent*>(event);
+        QPoint pos = helpEvent->pos();
+        QTableWidgetItem* item = itemAt(pos);
+
+        if (item && item->column() == Code)
+        {
+            QString fullCode = item->data(Qt::UserRole).toString();
+            if (!fullCode.isEmpty())
+            {
+                QToolTip::showText(helpEvent->globalPos(), fullCode);
+                return true;
+            }
+        }
+        QToolTip::hideText();
+        return true;
+    }
+    return QTableWidget::event(event);
 }

@@ -5,6 +5,8 @@
 #include <QFileSystemWatcher>
 #include <QDateTime>
 
+class CodeBlock;
+
 class CodeEditor : public QPlainTextEdit
 {
     Q_OBJECT
@@ -20,6 +22,7 @@ public:
     };
 
     CodeEditor(QWidget *parent = nullptr);
+    ~CodeEditor();
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();

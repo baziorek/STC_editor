@@ -7,6 +7,7 @@
 #include <QMap>
 
 class CodeEditor;
+class CodeBlock;
 
 class CodeBlocksTableWidget : public QTableWidget
 {
@@ -30,6 +31,9 @@ private slots:
 
 protected:
     void showEvent(QShowEvent* event) override;
+    QString getCodeWithoutTags(const CodeBlock& block) const;
+
+    bool event(QEvent* event) override;
 
 private:
     // Convert code type to display name (e.g. "code src="C++"" -> "code C++")
@@ -42,13 +46,6 @@ private:
     CodeEditor* textEditor{nullptr};
     QMenu* filterMenu{nullptr};
     QMap<QString, bool> filterStates4EachCategory;
-
-    enum Columns
-    {
-        Position = 0,
-        Type = 1,
-        ColumnCount
-    };
 
     // Filter categories
     const QString FILTER_CPP = "C++";

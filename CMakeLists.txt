@@ -43,6 +43,7 @@ set(PROJECT_SOURCES
     ui/cppcompilerdialog.h ui/cppcompilerdialog.cpp
     checkers/PairedTagsChecker.h checkers/PairedTagsChecker.cpp
     types/stcTags.h types/stcTags.cpp
+    types/CodeBlock.h
     widgets/filteredtagtablewidget.h widgets/filteredtagtablewidget.cpp
     widgets/stcpreviewwidget.h widgets/stcpreviewwidget.cpp
     widgets/CodeBlocksTableWidget.h widgets/CodeBlocksTableWidget.cpp

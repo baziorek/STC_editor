@@ -25,6 +25,8 @@ Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników
  9. **Statystyki pliku**: Wyświetla statystyki specyficzne dla STC, np. użycie znaczników, obok standardowych metryk edytora.
 10. **Nawigacja okruszkowa**: Dynamicznie aktualizowany pasek adresu pokazujący bieżącą pozycję w strukturze dokumentu STC, z możliwością kliknięcia.
 11. **Śledzenie zmian**: Śledzi zmienione linie za pomocą biblioteki pydifflib-cpp.
+12. **Listowanie kodów w pliku**: Oddzielny widget, który śledzi na bieżąco pozycje kodów `[cpp]` i innych.
+
 
 ## Ogólne funkcje edytora
 Jeśli ktoś chce tego używać do innych celów:
@@ -53,7 +55,6 @@ Jeśli ktoś chce tego używać do innych celów:
 ### Przed pierwszym wydaniem
 
 - **Naprawy**:
-  - Breadcrumb łapie wnętrze kodu w C++ np. rozmiary tablic czy atrybuty
   - Naprawa problemu z pytaniem o nadpisywanie zmian, mimo ich braku, przy sekwencyjnym otwieraniu wielu plików plików.
   - Przy przeciągnij i upuść wstawia tam gdzie kursor tekstu, a nie tam gdzie przeciągniemy
 - **Funkcje**:
@@ -66,7 +67,6 @@ Jeśli ktoś chce tego używać do innych celów:
   - Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
   - Otwieranie wielu plików jednocześnie.
   - Widok sąsiadujący do porównywania plików.
-  - Podpięcie sanitizers: do pamięci
   - Podgląd treści STC w formacie web - widget jest już
 
 ### Pomysły na przyszłość
@@ -87,7 +87,6 @@ Jeśli ktoś chce tego używać do innych celów:
 - Nagrywanie i odtwarzanie makr.
 - Zastąpienie listy kontekstu widżetem drzewiastym.
 - Dodanie ikon do akcji w menu i menu kontekstowym.
-- Dedykowana lista dla bloków kodu `[cpp]`.
 - Pokazywanie różnic w liniach znak po znaku.
 - Optymalizacja wydajności edytora przy szybkim pisaniu.
 - Dopasowanie rozmiaru numeracji linii do wielkości czcionki.
