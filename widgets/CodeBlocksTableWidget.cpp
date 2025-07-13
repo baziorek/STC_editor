@@ -44,12 +44,7 @@ CodeBlocksTableWidget::CodeBlocksTableWidget(QWidget *parent)
 {
     setupTable();
 
-    // Create filter menu
-    filterMenu = new QMenu(this);
-    filterStates[FILTER_CPP] = true;
-    filterStates[FILTER_PYTHON] = true;
-    filterStates[FILTER_GENERAL] = true;
-    updateFilterMenu();
+    createFilterMenu();
 
     connect(this, &QTableWidget::cellClicked, this, &CodeBlocksTableWidget::onCellClicked);
 }
@@ -81,7 +76,7 @@ void CodeBlocksTableWidget::setTextEditor(CodeEditor *newTextEditor)
     }
 }
 
-QString CodeBlocksTableWidget::getDisplayName(const QString &tag, const QString &language) const
+QString CodeBlocksTableWidget::getDisplayNameFromCodeType(const QString &tag, const QString &language) const
 {
     if (tag == "code" && !language.isEmpty())
     {
@@ -90,7 +85,7 @@ QString CodeBlocksTableWidget::getDisplayName(const QString &tag, const QString 
     return tag;
 }
 
-QString CodeBlocksTableWidget::getFilterCategory(const QString &tag, const QString &language) const
+QString CodeBlocksTableWidget::getFilterCategory4CodeBlock(const QString &tag, const QString &language) const
 {
     if (tag == "cpp" || (tag == "code" && language.contains("C++", Qt::CaseInsensitive)))
     {
@@ -114,8 +109,9 @@ void CodeBlocksTableWidget::updateCodeBlocks()
     const auto &blocks = textEditor->getCodeBlocks();
     for (const auto &block: blocks)
     {
-        QString category = getFilterCategory(block.tag, block.language);
-        if (!filterStates[category]) continue;
+        QString category = getFilterCategory4CodeBlock(block.tag, block.language);
+        if (!filterStates4EachCategory[category])
+            continue;
 
         int row = rowCount();
         insertRow(row);
@@ -124,7 +120,7 @@ void CodeBlocksTableWidget::updateCodeBlocks()
 
         addPosition(this, row, block.cursor);
 
-        auto *typeItem = new QTableWidgetItem(getDisplayName(block.tag, block.language));
+        auto *typeItem = new QTableWidgetItem(getDisplayNameFromCodeType(block.tag, block.language));
         setItem(row, Type, typeItem);
     }
 }
@@ -140,8 +136,8 @@ void CodeBlocksTableWidget::onCellClicked(int row, int /*column*/)
     // Find corresponding block accounting for filtered items
     for (const auto &block: blocks)
     {
-        QString category = getFilterCategory(block.tag, block.language);
-        if (!filterStates[category])
+        QString category = getFilterCategory4CodeBlock(block.tag, block.language);
+        if (!filterStates4EachCategory[category])
             continue;
 
         if (blockIndex == row)
@@ -154,11 +150,20 @@ void CodeBlocksTableWidget::onCellClicked(int row, int /*column*/)
     }
 }
 
+void CodeBlocksTableWidget::createFilterMenu()
+{
+    filterMenu = new QMenu(this);
+    filterStates4EachCategory[FILTER_CPP] = true;
+    filterStates4EachCategory[FILTER_PYTHON] = true;
+    filterStates4EachCategory[FILTER_GENERAL] = true;
+    updateFilterMenu();
+}
+
 void CodeBlocksTableWidget::updateFilterMenu()
 {
     filterMenu->clear();
 
-    for (auto it = filterStates.begin(); it != filterStates.end(); ++it)
+    for (auto it = filterStates4EachCategory.begin(); it != filterStates4EachCategory.end(); ++it)
     {
         QAction *action = filterMenu->addAction(it.key());
         action->setCheckable(true);
@@ -177,7 +182,7 @@ void CodeBlocksTableWidget::applyFilter()
     // Update filter states based on actions
     for (QAction *action: filterMenu->actions())
     {
-        filterStates[action->text()] = action->isChecked();
+        filterStates4EachCategory[action->text()] = action->isChecked();
     }
     updateCodeBlocks();
 }

@@ -72,7 +72,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->textEditor, &CodeEditor::numberOfModifiedLinesChanged, [this](int linesNumber) {
         this->onFileContentChanged(ui->textEditor->getFileName(), linesNumber);
     });
-    connect(ui->textEditor, &CodeEditor::codeBlocksChanged, ui->codesListTableWidget, &CodeBlocksTableWidget::updateCodeBlocks);
 
     connect(ui->breadcrumbTextBrowser, &QTextBrowser::anchorClicked, this, [this](const QUrl& url) {
         bool ok = true;

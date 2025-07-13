@@ -13,13 +13,14 @@ class CodeBlocksTableWidget : public QTableWidget
     Q_OBJECT
 
 public:
+    void createFilterMenu();
+
     explicit CodeBlocksTableWidget(QWidget* parent = nullptr);
 
     void setTextEditor(CodeEditor* newTextEditor);
     CodeEditor* getTextEditor() const { return textEditor; }
 
 public slots:
-    // Update table content when code blocks change in editor
     void updateCodeBlocks();
 
 private slots:
@@ -32,17 +33,15 @@ protected:
 
 private:
     // Convert code type to display name (e.g. "code src="C++"" -> "code C++")
-    QString getDisplayName(const QString& tag, const QString& language) const;
+    QString getDisplayNameFromCodeType(const QString& tag, const QString& language) const;
     
-    // Get filter category for code block
-    QString getFilterCategory(const QString& tag, const QString& language) const;
+    QString getFilterCategory4CodeBlock(const QString& tag, const QString& language) const;
 
-    // Initialize table structure
     void setupTable();
 
     CodeEditor* textEditor{nullptr};
     QMenu* filterMenu{nullptr};
-    QMap<QString, bool> filterStates;  // Stores filter states for each category
+    QMap<QString, bool> filterStates4EachCategory;
 
     enum Columns
     {
