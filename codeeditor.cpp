@@ -934,35 +934,37 @@ void CodeEditor::decreaseFontSize()
 
 std::optional<CodeEditor::CodeBlock> CodeEditor::selectEnclosingCodeBlock(int cursorPos)
 {
-    const QString fullText = toPlainText();
-
-    QRegularExpression codeBlockRegex(
-        R"(\[(cpp|code|log)(\s+[^\]]*)?\](.*?)\[/\1\])",
-        QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption);
-
-    QRegularExpressionMatchIterator it = codeBlockRegex.globalMatch(fullText);
-
-    while (it.hasNext())
+    if (auto codeInfo = getCodeTagAtPosition(cursorPos))
     {
-        const QRegularExpressionMatch match = it.next();
-        int start = match.capturedStart(3);
-        int end   = match.capturedEnd(3);
-
-        if (cursorPos >= start && cursorPos <= end)
+        for (const auto& block : codeBlocks)
         {
-            const QString innerText = match.captured(3);
-            if (!containsInnerTags(innerText))
+            if (block.tag == codeInfo->tag && block.cursor.selectionStart() == codeInfo->position)
             {
-                QTextCursor blockCursor = textCursor();
-                blockCursor.setPosition(start);
-                blockCursor.setPosition(end, QTextCursor::KeepAnchor);
-                return CodeBlock{blockCursor, match.captured(1).toLower()};
+                CodeBlock codeOnlyBlock = block;
+
+                QString blockText = block.cursor.selectedText();
+
+                // Detecting code by removing STC tags:
+                QRegularExpression tagPattern(QString("^\\[%1\\](.*)\\[\\/%1\\]$")
+                    .arg(QRegularExpression::escape(block.tag)));
+
+                auto match = tagPattern.match(blockText);
+                if (match.hasMatch())
+                {
+                    QTextCursor codeCursor = block.cursor;
+                    codeCursor.setPosition(block.cursor.selectionStart() + match.capturedStart(1));
+                    codeCursor.setPosition(block.cursor.selectionStart() + match.capturedEnd(1), QTextCursor::KeepAnchor);
+
+                    codeOnlyBlock.cursor = codeCursor;
+                    return codeOnlyBlock;
+                }
             }
         }
     }
 
-    return {};
+    return std::nullopt;
 }
+
 bool CodeEditor::containsInnerTags(const QString& text)
 {
     static QRegularExpression tagRegex(R"(\[/?(code|cpp|py|log|b|u|i|h[1-6]|run|div)(\s+[^\]]+)?\])", QRegularExpression::CaseInsensitiveOption);
