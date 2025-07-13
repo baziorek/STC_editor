@@ -16,57 +16,75 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="3" column="1">
-     <widget class="ErrorList" name="errorsInText" native="true">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="1">
-     <widget class="GoToLineWidget" name="goToLineGroupBox">
-      <property name="minimumSize">
+     <widget class="QTabWidget" name="contextsTabWidget">
+      <property name="maximumSize">
        <size>
-        <width>0</width>
-        <height>70</height>
+        <width>400</width>
+        <height>16777215</height>
        </size>
       </property>
-      <property name="title">
-       <string>Go to line</string>
+      <property name="currentIndex">
+       <number>1</number>
       </property>
+      <widget class="QWidget" name="conspect">
+       <attribute name="title">
+        <string>Conspect</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="FilteredTagTableWidget" name="contextTableWidget">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="alternatingRowColors">
+           <bool>false</bool>
+          </property>
+          <property name="cornerButtonEnabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="codes">
+       <attribute name="title">
+        <string>Codes</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <widget class="CodeBlocksTableWidget" name="codesListTableWidget"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="errors">
+       <attribute name="title">
+        <string>Error list</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_5">
+        <item>
+         <widget class="ErrorList" name="errorsInText" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>300</width>
+            <height>16777215</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
-    <item row="4" column="1">
-     <widget class="QGroupBox" name="contextGroup">
-      <property name="title">
-       <string>Short conspect</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
-       <item>
-        <widget class="FilteredTagTableWidget" name="contextTableWidget">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="alternatingRowColors">
-          <bool>false</bool>
-         </property>
-         <property name="cornerButtonEnabled">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item row="0" column="0" rowspan="7">
+    <item row="0" column="0" rowspan="6">
      <widget class="QWidget" name="containerForCodeEditorAndBreadcromb" native="true">
       <property name="minimumSize">
        <size>
@@ -121,6 +139,19 @@
       </layout>
      </widget>
     </item>
+    <item row="4" column="1">
+     <widget class="GoToLineWidget" name="goToLineGroupBox">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>70</height>
+       </size>
+      </property>
+      <property name="title">
+       <string>Go to line</string>
+      </property>
+     </widget>
+    </item>
     <item row="0" column="1" rowspan="2">
      <widget class="StcTagsButtons" name="buttonsEmittingStc">
       <property name="frameShape">
@@ -139,7 +170,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>30</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -402,6 +433,11 @@
    <class>FilteredTagTableWidget</class>
    <extends>QTableWidget</extends>
    <header>widgets/filteredtagtablewidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>CodeBlocksTableWidget</class>
+   <extends>QTableWidget</extends>
+   <header>widgets/CodeBlocksTableWidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

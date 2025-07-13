@@ -57,6 +57,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->textEditor->setFocus();
     ui->breadcrumbTextBrowser->setFrameStyle(QFrame::NoFrame);
     ui->contextTableWidget->setTextEditor(ui->textEditor);
+    ui->codesListTableWidget->setTextEditor(ui->textEditor);
 
     connect(ui->buttonsEmittingStc, &StcTagsButtons::buttonPressed, this, &MainWindow::onStcTagsButtonPressed);
     connect(ui->contextTableWidget, &FilteredTagTableWidget::goToLineClicked, ui->textEditor, &CodeEditor::go2LineRequested);
@@ -71,12 +72,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->textEditor, &CodeEditor::numberOfModifiedLinesChanged, [this](int linesNumber) {
         this->onFileContentChanged(ui->textEditor->getFileName(), linesNumber);
     });
-    // TODO: Handle the signal: ui->textEditor, &CodeEditor::codeBlocksChanged
-    // connect(ui->textEditor, &CodeEditor::codeBlocksChanged, [this] {
-    //     for (const auto& b : ui->textEditor->getCodeBlocks()) {
-    //         qDebug() << b.tag << b.language << b.cursor.selectedText() << "position:" << b.cursor.position() << b.cursor.positionInBlock();
-    //     }
-    // });
+    connect(ui->textEditor, &CodeEditor::codeBlocksChanged, ui->codesListTableWidget, &CodeBlocksTableWidget::updateCodeBlocks);
 
     connect(ui->breadcrumbTextBrowser, &QTextBrowser::anchorClicked, this, [this](const QUrl& url) {
         bool ok = true;
@@ -599,7 +595,7 @@ void MainWindow::onCheckTagsPressed()
 
 void MainWindow::onContextShowChanged(bool visible)
 {
-    ui->contextGroup->setVisible(visible);
+    ui->contextsTabWidget->setVisible(visible);
     ui->contextTableWidget->setVisible(visible);
 }
 

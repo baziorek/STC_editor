@@ -115,8 +115,6 @@ protected:
 
     std::optional<CodeBlock> selectEnclosingCodeBlock(int cursorPos);
 
-    bool containsInnerTags(const QString &text);
-
     QString formatCppWithClang(const QString& code);
 
     bool isContentModified() const

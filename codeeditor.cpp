@@ -965,21 +965,6 @@ std::optional<CodeEditor::CodeBlock> CodeEditor::selectEnclosingCodeBlock(int cu
     return std::nullopt;
 }
 
-bool CodeEditor::containsInnerTags(const QString& text)
-{
-    static QRegularExpression tagRegex(R"(\[/?(code|cpp|py|log|b|u|i|h[1-6]|run|div)(\s+[^\]]+)?\])", QRegularExpression::CaseInsensitiveOption);
-    QRegularExpressionMatchIterator it = tagRegex.globalMatch(text);
-    int count = 0;
-    while (it.hasNext())
-    {
-        auto match = it.next();
-        QString tag = match.captured(1).toLower();
-        if (tag != "cpp" && tag != "code" && tag != "log")
-            return true; // other tags are not allowed inside
-    }
-    return false;
-}
-
 void CodeEditor::wheelEvent(QWheelEvent* event)
 {
     if (event->modifiers() & Qt::ControlModifier)

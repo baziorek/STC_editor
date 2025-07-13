@@ -45,6 +45,7 @@ set(PROJECT_SOURCES
     types/stcTags.h types/stcTags.cpp
     widgets/filteredtagtablewidget.h widgets/filteredtagtablewidget.cpp
     widgets/stcpreviewwidget.h widgets/stcpreviewwidget.cpp
+    widgets/CodeBlocksTableWidget.h widgets/CodeBlocksTableWidget.cpp
     types/documentstatistics.h types/documentstatistics.cpp
     utils/diffcalculation.h utils/diffcalculation.cpp
 )

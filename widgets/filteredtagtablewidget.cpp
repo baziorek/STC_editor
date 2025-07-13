@@ -90,6 +90,8 @@ FilteredTagTableWidget::FilteredTagTableWidget(QWidget* parent)
     setEditTriggers(QAbstractItemView::NoEditTriggers);
     verticalHeader()->setVisible(false);
 
+    setAlternatingRowColors(true);
+
     connect(this, &QTableWidget::cellClicked, this, &FilteredTagTableWidget::onCellSingleClicked);
     connect(horizontalHeader(), &QHeaderView::sectionClicked, this, &FilteredTagTableWidget::onHeaderSectionClicked);
 }

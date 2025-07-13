@@ -10,8 +10,6 @@ ErrorList::ErrorList(QWidget *parent)
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
-
-    setHidden(true);
 }
 
 ErrorList::~ErrorList()
