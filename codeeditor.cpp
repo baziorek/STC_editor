@@ -53,6 +53,14 @@ bool isProbablyTextFile(const QString &filePath, int maxBytesToCheck = 2048)
 
     return true;
 }
+
+bool operator==(const CodeEditor::CodeBlock& a, const CodeEditor::CodeBlock& b)
+{
+    return a.cursor.selectionStart() == b.cursor.selectionStart()
+        && a.cursor.selectionEnd() == b.cursor.selectionEnd()
+        && a.tag == b.tag
+        && a.language == b.language;
+}
 } // namespace
 
 CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
@@ -76,6 +84,7 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
         updateDiffWithOriginal();
     });
     connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::onCursorPositionChanged);
+    connect(document(), &QTextDocument::contentsChange, this, &CodeEditor::onContentsChange);
 
 
     updateLineNumberAreaWidth(0);
@@ -269,6 +278,8 @@ bool CodeEditor::loadFileContentDistargingCurrentContent(const QString& fileName
     trackOriginalVersionOfFile(fileName);
 
     setFileName(fileName);
+
+    analizeEntireDocumentDetectingCodeBlocks();
 
     return true;
 }
@@ -1018,7 +1029,7 @@ void CodeEditor::markAsSaved()
     emit numberOfModifiedLinesChanged(0);
 }
 
-QString CodeEditor::modificationInfo() const
+QString CodeEditor::getFileModificationInfoText() const
 {
     QString fileDate = fileModificationTime.toString("yyyy-MM-dd hh:mm:ss");
     QString editTime;
@@ -1046,4 +1057,77 @@ QString CodeEditor::modificationInfo() const
     {
         return QString("File: %1 (no changes)").arg(fileDate);
     }
+}
+
+bool CodeEditor::isInsideCode(int position) const
+{
+    for (const auto& block : codeBlocks)
+    {
+        int start = block.cursor.selectionStart();
+        int end = block.cursor.selectionEnd();
+        if (position >= start && position <= end)
+            return true;
+    }
+    return false;
+}
+
+void CodeEditor::analizeEntireDocumentDetectingCodeBlocks()
+{
+    codeBlocks = parseAllCodeBlocks();
+    emit codeBlocksChanged();
+}
+
+void CodeEditor::onContentsChange(int position, int charsRemoved, int charsAdded)
+{
+    QTextBlock block = document()->findBlock(position);
+    if (!block.isValid())
+    {
+        analizeEntireDocumentDetectingCodeBlocks();
+        return;
+    }
+
+    const QString line = block.text();
+
+    static const QRegularExpression openTagRe(R"(\[(cpp|code|py|log)(\s+src\s*=\s*"[^"]*")?\])", QRegularExpression::CaseInsensitiveOption);
+    static const QRegularExpression closeTagRe(R"(\[/\s*(cpp|code|py|log)\s*\])", QRegularExpression::CaseInsensitiveOption);
+
+    bool lineHasOpen = openTagRe.match(line).hasMatch();
+    bool lineHasClose = closeTagRe.match(line).hasMatch();
+
+    if (lineHasOpen || lineHasClose)
+    {
+        analizeEntireDocumentDetectingCodeBlocks();
+    }
+    else
+    {
+        if (isInsideCode(position))
+        {
+            emit codeBlocksChanged();
+        }
+    }
+}
+
+QVector<CodeEditor::CodeBlock> CodeEditor::parseAllCodeBlocks()
+{
+    QVector<CodeBlock> result;
+    QString text = toPlainText();
+
+    QRegularExpression tagRe(R"__(\[(cpp|code|py|log)(\s+src\s*=\s*"([^"]*)")?\](.*?)\[/\s*\1\s*\])__",
+                             QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption | QRegularExpression::MultilineOption);
+
+    QRegularExpressionMatchIterator it = tagRe.globalMatch(text);
+    while (it.hasNext())
+    {
+        auto match = it.next();
+        QTextCursor c = textCursor();
+        c.setPosition(match.capturedStart(0));
+        c.setPosition(match.capturedEnd(0), QTextCursor::KeepAnchor);
+
+        CodeBlock b;
+        b.cursor = c;
+        b.tag = match.captured(1).toLower();
+        b.language = match.captured(3).toLower();
+        result.append(b);
+    }
+    return result;
 }

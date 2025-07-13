@@ -62,12 +62,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->contextTableWidget, &FilteredTagTableWidget::goToLineClicked, ui->textEditor, &CodeEditor::go2LineRequested);
     connect(ui->goToLineGroupBox, &GoToLineWidget::onGoToLineRequested, ui->textEditor, &CodeEditor::go2LineRequested);
     connect(ui->findWidget, &FindDialog::jumpToLocationRequested, ui->textEditor, &CodeEditor::goToLineAndOffset);
+    connect(ui->textEditor, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateBreadcrumb);
     connect(ui->textEditor, &QPlainTextEdit::cursorPositionChanged, ui->contextTableWidget, &FilteredTagTableWidget::onUpdateContextRequested);
+    // TODO: cursorPositionChanged should call FilteredTagTableWidget::highlightCurrentTagInContextTable()
+    // but editing of ui->textEditor should call FilteredTagTableWidget::onUpdateContextRequested and highlightCurrentTagInContextTable
     connect(ui->textEditor, &CodeEditor::totalLinesCountChanged, ui->goToLineGroupBox, &GoToLineWidget::setMaxLine);
     connect(ui->textEditor, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateBreadcrumb);
     connect(ui->textEditor, &CodeEditor::numberOfModifiedLinesChanged, [this](int linesNumber) {
         this->onFileContentChanged(ui->textEditor->getFileName(), linesNumber);
     });
+    // TODO: Handle the signal: ui->textEditor, &CodeEditor::codeBlocksChanged
+    // connect(ui->textEditor, &CodeEditor::codeBlocksChanged, [this] {
+    //     for (const auto& b : ui->textEditor->getCodeBlocks()) {
+    //         qDebug() << b.tag << b.language << b.cursor.selectedText() << "position:" << b.cursor.position() << b.cursor.positionInBlock();
+    //     }
+    // });
+
     connect(ui->breadcrumbTextBrowser, &QTextBrowser::anchorClicked, this, [this](const QUrl& url) {
         bool ok = true;
         int pos = url.toString().toInt(&ok);
@@ -429,23 +439,6 @@ bool MainWindow::closeApplicationReturningIfClosed()
     return false;
 }
 
-void MainWindow::updateContextTable(auto taggedTextLinePositions)
-{
-    ui->contextTableWidget->setRowCount(taggedTextLinePositions.size());
-
-    unsigned rowNumber = 0;
-    for (const auto& [lineNumber, tagAndText] : taggedTextLinePositions)
-    {
-        const auto& [tag, text] = tagAndText;
-        ui->contextTableWidget->insertRow(rowNumber,
-                                          /*lineNumber=*/lineNumber,
-                                          /*tagName=*/tag,
-                                          /*tagText=*/text);
-
-        ++rowNumber;
-    }
-}
-
 void MainWindow::onNewFilePressed()
 {
     if (operationWhichDiscardsChangesRequestedReturningIfDiscarded())
@@ -771,7 +764,7 @@ void MainWindow::onFileContentChanged(const QString &fileName, int changedLines)
 {
     if (changedLines)
     {
-        const auto modificationInfo = ui->textEditor->modificationInfo();
+        const auto modificationInfo = ui->textEditor->getFileModificationInfoText();
         updateWindowTitle(fileName, modificationInfo);
     }
     else
@@ -813,7 +806,10 @@ QString MainWindow::getClickableBreadcrumbPath(const QString& text, int cursorPo
         QString content = m.captured(2).trimmed();
         int level = levelStr.mid(1).toInt();
 
-        // Removing deepers or equal headers
+        // Checking if text is not inside code
+        if (ui->textEditor->isInsideCode(m.capturedStart()))
+            continue;
+
         auto it = headerLevels.begin();
         while (it != headerLevels.end())
         {
@@ -830,6 +826,8 @@ QString MainWindow::getClickableBreadcrumbPath(const QString& text, int cursorPo
 
     // 2. Processing dynamic tags
     QStack<QPair<QString, int>> contextStack;
+    QMap<QString, int> openTagPositions;
+
     static QRegularExpression tagOpenRegex(R"(\[([a-z0-9]+)(?:\s+[^\]]+)?\])", QRegularExpression::CaseInsensitiveOption);
     static QRegularExpression tagCloseRegex(R"(\[/([a-z0-9]+)\])", QRegularExpression::CaseInsensitiveOption);
 
@@ -846,18 +844,27 @@ QString MainWindow::getClickableBreadcrumbPath(const QString& text, int cursorPo
         {
             QString tag = openMatch.captured(1).toLower();
             if (!ignorableTags.contains(tag) && !tag.startsWith("h"))
-                contextStack.push({tag, openMatch.capturedEnd()});
+            {
+                if (!ui->textEditor->isInsideCode(openPos))
+                {
+                    contextStack.push({tag, openMatch.capturedEnd()});
+                    openTagPositions[tag] = openPos;
+                }
+            }
             index = openMatch.capturedEnd();
         }
         else if (closePos != -1 && closePos < cursorPos) {
             QString tag = closeMatch.captured(1).toLower();
             if (!tag.startsWith("h"))
             {
-                int i = contextStack.size() - 1;
-                while (i >= 0 && contextStack[i].first != tag)
-                    --i;
-                if (i >= 0)
-                    contextStack.remove(i);
+                if (openTagPositions.contains(tag) && !ui->textEditor->isInsideCode(openTagPositions[tag]))
+                {
+                    int i = contextStack.size() - 1;
+                    while (i >= 0 && contextStack[i].first != tag)
+                        --i;
+                    if (i >= 0)
+                        contextStack.remove(i);
+                }
             }
             index = closeMatch.capturedEnd();
         }

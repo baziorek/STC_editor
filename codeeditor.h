@@ -15,7 +15,8 @@ public:
     struct CodeBlock
     {
         QTextCursor cursor;
-        QString tag; // "cpp", "code", "py"
+        QString tag;        // "cpp", "code", "py"
+        QString language;   // "c++", "python", "" if no `src=`
     };
 
     CodeEditor(QWidget *parent = nullptr);
@@ -25,7 +26,7 @@ public:
 
     bool noUnsavedChanges() const;
 
-    auto getFileName() const
+    const auto& getFileName() const
     {
         return openedFileName;
     }
@@ -45,7 +46,13 @@ public:
 
     void markAsSaved();
 
-    QString modificationInfo() const;
+    QString getFileModificationInfoText() const;
+
+    const QVector<CodeBlock>& getCodeBlocks() const
+    {
+        return codeBlocks;
+    }
+    bool isInsideCode(int position) const;
 
 signals:
     void totalLinesCountChanged(int currentLinesCount);
@@ -61,6 +68,8 @@ signals:
 
     void numberOfModifiedLinesChanged(int changedLinesCount);
 
+    void codeBlocksChanged();
+
 public slots:
     void fileChanged(const QString &path);
 
@@ -69,6 +78,10 @@ public slots:
 
     void onScrollChanged(int);
     void onCursorPositionChanged();
+
+    void analizeEntireDocumentDetectingCodeBlocks();
+
+    void onContentsChange(int position, int charsRemoved, int charsAdded);
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
@@ -113,6 +126,8 @@ protected:
 
     void trackOriginalVersionOfFile(const QString& fileName);
 
+    QVector<CodeEditor::CodeBlock> parseAllCodeBlocks();
+
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();
@@ -129,4 +144,6 @@ private:
     QDateTime lastChangeTime;
 
     int currentLine = -1;
+
+    QVector<CodeBlock> codeBlocks;
 };
