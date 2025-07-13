@@ -27,12 +27,6 @@ namespace GeometryNames
     constexpr const char RECENT_FILES_LIST[] = "recentFiles";
 };
 
-
-struct TextInsideTags
-{
-    QString tag, text;
-};
-
 std::pair<QString, QString> extractLink(const QString& text) {
     static QRegularExpression regex("(https?://\\S+)");
     QRegularExpressionMatch match = regex.match(text);
@@ -45,46 +39,6 @@ std::pair<QString, QString> extractLink(const QString& text) {
 
     /// If no link is found, return just text
     return std::make_pair("", text);
-}
-
-std::map<int, TextInsideTags> findTagMatches(const QRegularExpression& regex, const QString& text)
-{
-    std::map<int, TextInsideTags> textPerLine;
-    for (QRegularExpressionMatchIterator matches = regex.globalMatch(text); matches.hasNext(); )
-    {
-        // TODO: Can we make finding line number more optimal?
-        QRegularExpressionMatch match = matches.next();
-        auto lineNumber = text.left(match.capturedStart(0)).count('\n') + 1;
-        textPerLine.insert({lineNumber, TextInsideTags{match.captured(1), match.captured(2)}});
-    }
-    return textPerLine;
-}
-
-QRegularExpression& allContextTagsRegex()
-{
-    // static QRegularExpression re(
-    //     R"(\[(h[1-6]|div|pkt|csv|cpp|py|code)(?:\s+[^\]]+)?\](.*?)\[/\1\])",
-    //     QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption);
-    static QRegularExpression re(
-        R"(\[(h[1-6]|div|pkt|csv)(?:\s+[^\]]+)?\](.*?)\[/\1\])", // no code here
-        QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption);
-    return re;
-}
-
-static int tagLevel(const QString& tag)
-{
-    QString lower = tag.toLower();
-    if (lower.startsWith("h"))
-        return lower.mid(1).toInt(); // h1 -> 1, h2 -> 2
-    if (lower == "div")
-        return 0;
-    if (lower == "pkt")
-        return -1;
-    if (lower == "csv")
-        return -2;
-    if (lower == "cpp" || lower == "py" || lower == "code")
-        return -3;
-    return -10; // fallback
 }
 } // namespace
 
@@ -102,15 +56,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->findWidget->setCodeEditor(ui->textEditor);
     ui->textEditor->setFocus();
     ui->breadcrumbTextBrowser->setFrameStyle(QFrame::NoFrame);
+    ui->contextTableWidget->setTextEditor(ui->textEditor);
 
     connect(ui->buttonsEmittingStc, &StcTagsButtons::buttonPressed, this, &MainWindow::onStcTagsButtonPressed);
     connect(ui->contextTableWidget, &FilteredTagTableWidget::goToLineClicked, ui->textEditor, &CodeEditor::go2LineRequested);
     connect(ui->goToLineGroupBox, &GoToLineWidget::onGoToLineRequested, ui->textEditor, &CodeEditor::go2LineRequested);
     connect(ui->findWidget, &FindDialog::jumpToLocationRequested, ui->textEditor, &CodeEditor::goToLineAndOffset);
-    connect(ui->textEditor, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateContextRequested);
+    connect(ui->textEditor, &QPlainTextEdit::cursorPositionChanged, ui->contextTableWidget, &FilteredTagTableWidget::onUpdateContextRequested);
     connect(ui->textEditor, &CodeEditor::totalLinesCountChanged, ui->goToLineGroupBox, &GoToLineWidget::setMaxLine);
     connect(ui->textEditor, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateBreadcrumb);
-    connect(ui->textEditor, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::highlightCurrentTagInContextTable);
     connect(ui->textEditor, &CodeEditor::numberOfModifiedLinesChanged, [this](int linesNumber) {
         this->onFileContentChanged(ui->textEditor->getFileName(), linesNumber);
     });
@@ -475,18 +429,6 @@ bool MainWindow::closeApplicationReturningIfClosed()
     return false;
 }
 
-void MainWindow::onUpdateContextRequested()
-{
-    if (ui->contextTableWidget->isHidden())
-        return;
-
-    const auto text = ui->textEditor->toPlainText();
-
-    auto taggedTextLinePositions = findTagMatches(allContextTagsRegex(), text);
-
-    updateContextTable(taggedTextLinePositions);
-}
-
 void MainWindow::updateContextTable(auto taggedTextLinePositions)
 {
     ui->contextTableWidget->setRowCount(taggedTextLinePositions.size());
@@ -501,92 +443,6 @@ void MainWindow::updateContextTable(auto taggedTextLinePositions)
                                           /*tagText=*/text);
 
         ++rowNumber;
-    }
-}
-
-void MainWindow::highlightCurrentTagInContextTable()
-{
-    if (ui->contextTableWidget->isHidden())
-        return;
-
-    const int cursorPos = ui->textEditor->textCursor().position();
-    const QString text = ui->textEditor->toPlainText();
-
-    struct TagEntry
-    {
-        int row;
-        int start;
-        int end;
-        QString tag;
-        int level;
-    };
-
-    QList<TagEntry> tags;
-
-    for (int row = 0; row < ui->contextTableWidget->rowCount(); ++row)
-    {
-        auto* lineItem = ui->contextTableWidget->item(row, 0);
-        if (!lineItem)
-            continue;
-
-        bool ok = false;
-        int lineNumber = lineItem->text().toInt(&ok);
-        if (!ok)
-            continue;
-
-        int startOffset = 0;
-        for (int i = 1; i < lineNumber; ++i)
-            startOffset = text.indexOf('\n', startOffset) + 1;
-
-        QRegularExpressionMatch match = allContextTagsRegex().match(text, startOffset);
-        if (match.hasMatch())
-        {
-            const QString tag = match.captured(1).toLower();
-            const int start = match.capturedStart();
-            const int end = match.capturedEnd();
-            const int level = tagLevel(tag);
-            tags.append({ row, start, end, tag, level });
-        }
-    }
-
-    // Sort by start position
-    std::sort(tags.begin(), tags.end(), [](const TagEntry& a, const TagEntry& b) {
-        return a.start < b.start;
-    });
-
-    int bestRow = -1;
-    int bestLevel = std::numeric_limits<int>::min();
-
-    for (int i = 0; i < tags.size(); ++i)
-    {
-        const auto& tag = tags[i];
-
-        if (tag.start > cursorPos)
-            break;
-
-        // Range tags - active only if the cursor is within their range
-        if (tag.tag == "div" || tag.tag == "pkt" || tag.tag == "csv")
-        {
-            if (cursorPos <= tag.end)
-            {
-                bestRow = tag.row;
-                bestLevel = tag.level;
-            }
-        }
-        else if (tag.tag.startsWith("h"))
-        {
-            // Header remains active until overridden
-            bestRow = tag.row;
-            bestLevel = tag.level;
-        }
-    }
-
-    ui->contextTableWidget->clearSelection();
-
-    if (bestRow >= 0)
-    {
-        ui->contextTableWidget->selectRow(bestRow);
-        ui->contextTableWidget->scrollToItem(ui->contextTableWidget->item(bestRow, 0), QAbstractItemView::PositionAtCenter);
     }
 }
 

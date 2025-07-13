@@ -6,6 +6,7 @@
 #include <QHeaderView>
 #include <QMap>
 
+class CodeEditor;
 
 class FilteredTagTableWidget : public QTableWidget
 {
@@ -19,8 +20,20 @@ public:
 
     void clearTags();
 
+    CodeEditor *getTextEditor() const
+    {
+        return textEditor;
+    }
+    void setTextEditor(CodeEditor *newTextEditor)
+    {
+        textEditor = newTextEditor;
+    }
+
 signals:
     void goToLineClicked(int lineNumber);
+
+public slots:
+    void onUpdateContextRequested();
 
 private slots:
     void updateFilterMenu();
@@ -28,7 +41,14 @@ private slots:
     void onCellSingleClicked(int row, int /*column*/);
     void onHeaderSectionClicked(int logicalIndex);
 
+protected:
+    void highlightCurrentTagInContextTable();
+
+    void showEvent(QShowEvent* event) override;
+
 private:
     QMenu* tagFilterMenu;
     QMap<QString, bool> tagVisibility;
+
+    CodeEditor* textEditor{};
 };

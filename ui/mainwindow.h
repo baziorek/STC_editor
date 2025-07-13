@@ -25,8 +25,6 @@ public slots:
 
     bool loadFileContentToEditorDistargingCurrentContent(QString fileName);
 
-    void onUpdateContextRequested();
-
     void onStcTagsButtonPressed(StcTags stcTag);
 
     void onUpdateBreadcrumb();
@@ -74,7 +72,7 @@ private: // methods
     void surroundSelectedTextWithTag(QString divClass, QString text, QString extraAttributes = "", bool closable = true);
 
     void updateContextTable(auto taggedTextLinePositions);
-    void highlightCurrentTagInContextTable();
+
     void connectShortcuts();
     void connectShortcutsFromCodeWidget();
     bool closeApplicationReturningIfClosed();

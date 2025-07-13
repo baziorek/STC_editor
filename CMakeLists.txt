@@ -41,7 +41,6 @@ set(PROJECT_SOURCES
     ui/shortcutsdialog.h ui/shortcutsdialog.cpp
     ui/highlightdelegate.h ui/highlightdelegate.cpp
     ui/cppcompilerdialog.h ui/cppcompilerdialog.cpp
-    ui/documentcontextsummary.h ui/documentcontextsummary.cpp ui/documentcontextsummary.ui
     checkers/PairedTagsChecker.h checkers/PairedTagsChecker.cpp
     types/stcTags.h types/stcTags.cpp
     widgets/filteredtagtablewidget.h widgets/filteredtagtablewidget.cpp
