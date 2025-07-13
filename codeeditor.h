@@ -61,6 +61,8 @@ public:
     };
     std::optional<CodeBlockInfo> getCodeTagAtPosition(int position) const;
 
+    std::optional<CodeBlock> selectEnclosingCodeBlock(int cursorPos);
+
 signals:
     void totalLinesCountChanged(int currentLinesCount);
     void shortcutPressed_bold();
@@ -112,8 +114,6 @@ protected:
 
     void increaseFontSize();
     void decreaseFontSize();
-
-    std::optional<CodeBlock> selectEnclosingCodeBlock(int cursorPos);
 
     QString formatCppWithClang(const QString& code);
 

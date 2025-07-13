@@ -6,7 +6,7 @@
 
 namespace
 {
-    QTableWidgetItem* addPosition(QTableWidget *table, int row, QTextCursor cursor)
+    void addPosition(QTableWidget *table, int row, QTextCursor cursor)
     {
         const int startLine = cursor.blockNumber() + 1;
         const int endLine = cursor.document()->findBlock(cursor.selectionEnd()).blockNumber() + 1;
@@ -29,12 +29,9 @@ namespace
             table->setItem(row, column, tableItem);
         }
 
-        auto *posItem = new QTableWidgetItem;
         tableItem->setData(Qt::DisplayRole, position);
         tableItem->setFlags(tableItem->flags() & ~Qt::ItemIsEditable);
-        posItem->setToolTip(positionToolTip);
-
-        return posItem;
+        tableItem->setToolTip(positionToolTip);
     }
 } // namespace
 
@@ -130,11 +127,11 @@ void CodeBlocksTableWidget::onCellClicked(int row, int /*column*/)
     if (!textEditor)
         return;
 
-    const auto &blocks = textEditor->getCodeBlocks();
+    const auto& blocks = textEditor->getCodeBlocks();
     int blockIndex = 0;
 
     // Find corresponding block accounting for filtered items
-    for (const auto &block: blocks)
+    for (const auto& block : blocks)
     {
         QString category = getFilterCategory4CodeBlock(block.tag, block.language);
         if (!filterStates4EachCategory[category])
@@ -142,8 +139,15 @@ void CodeBlocksTableWidget::onCellClicked(int row, int /*column*/)
 
         if (blockIndex == row)
         {
-            textEditor->setTextCursor(block.cursor);
-            textEditor->setFocus();
+            // Get cursor position from the block
+            int position = block.cursor.selectionStart();
+
+            // Find the code block without tags and select it
+            if (auto codeBlock = textEditor->selectEnclosingCodeBlock(position))
+            {
+                textEditor->setTextCursor(codeBlock->cursor);
+                textEditor->setFocus();
+            }
             return;
         }
         blockIndex++;
