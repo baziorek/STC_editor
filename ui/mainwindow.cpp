@@ -876,6 +876,20 @@ QString MainWindow::getClickableBreadcrumbPath(const QString& text, int cursorPo
         }
     }
 
+    // Helper function to create link with position tooltip
+    auto createLink = [this](int pos, const QString& text) {
+        QTextCursor cursor(ui->textEditor->document());
+        cursor.setPosition(pos);
+        int lineNumber = cursor.blockNumber() + 1;
+        int column = cursor.positionInBlock() + 1;
+
+        return QString(R"(<a href="%1" title="Line: %2, Column: %3">%4</a>)")
+            .arg(pos)
+            .arg(lineNumber)
+            .arg(column)
+            .arg(text.toHtmlEscaped());
+    };
+
     // 3. Building breadcrumb HTML
     QStringList breadcrumb;
 
@@ -884,19 +898,18 @@ QString MainWindow::getClickableBreadcrumbPath(const QString& text, int cursorPo
     for (int level : sortedHeaderLevels)
     {
         const auto& [text, pos] = headerLevels[level];
-        breadcrumb << QString(R"(<a href="%1">%2</a>)").arg(pos).arg(text.toHtmlEscaped());
+        breadcrumb << createLink(pos, text);
     }
 
     // Add context tags
     for (const auto& [tag, pos] : contextStack)
     {
-        breadcrumb << QString(R"(<a href="%1">%2</a>)").arg(pos).arg(tag.toUpper());
+        breadcrumb << createLink(pos, tag.toUpper());
     }
 
     // Add code tag if cursor is inside a code block
-    if (auto codeTag = ui->textEditor->getCodeTagAtPosition(cursorPos))
-    {
-        breadcrumb << QString(R"(<a href="%1">%2</a>)").arg(cursorPos).arg(codeTag->toUpper());
+    if (auto codeTag = ui->textEditor->getCodeTagAtPosition(cursorPos)) {
+        breadcrumb << createLink(cursorPos, codeTag->toUpper());
     }
 
     return breadcrumb.join(" &gt; ");
