@@ -1063,13 +1063,13 @@ bool CodeEditor::isInsideCode(int position) const
 {
     return static_cast<bool>(getCodeTagAtPosition(position));
 }
-std::optional<QString> CodeEditor::getCodeTagAtPosition(int position) const
+std::optional<CodeEditor::CodeBlockInfo> CodeEditor::getCodeTagAtPosition(int position) const
 {
     for (const auto& block : codeBlocks)
     {
         if (position >= block.cursor.selectionStart() && position <= block.cursor.selectionEnd())
         {
-            return block.tag;
+            return CodeBlockInfo{block.tag, block.cursor.selectionStart()};
         }
     }
     return std::nullopt;

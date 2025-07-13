@@ -854,7 +854,8 @@ QString MainWindow::getClickableBreadcrumbPath(const QString& text, int cursorPo
             }
             index = openMatch.capturedEnd();
         }
-        else if (closePos != -1 && closePos < cursorPos) {
+        else if (closePos != -1 && closePos < cursorPos)
+        {
             QString tag = closeMatch.captured(1).toLower();
             if (!tag.startsWith("h"))
             {
@@ -876,8 +877,9 @@ QString MainWindow::getClickableBreadcrumbPath(const QString& text, int cursorPo
         }
     }
 
-    // Helper function to create link with position tooltip
-    auto createLink = [this](int pos, const QString& text) {
+    // 3. Building breadcrumb HTML
+    auto createLink = [this](int pos, const QString& text)
+    {
         QTextCursor cursor(ui->textEditor->document());
         cursor.setPosition(pos);
         int lineNumber = cursor.blockNumber() + 1;
@@ -890,7 +892,6 @@ QString MainWindow::getClickableBreadcrumbPath(const QString& text, int cursorPo
             .arg(text.toHtmlEscaped());
     };
 
-    // 3. Building breadcrumb HTML
     QStringList breadcrumb;
 
     // Add headers
@@ -908,8 +909,9 @@ QString MainWindow::getClickableBreadcrumbPath(const QString& text, int cursorPo
     }
 
     // Add code tag if cursor is inside a code block
-    if (auto codeTag = ui->textEditor->getCodeTagAtPosition(cursorPos)) {
-        breadcrumb << createLink(cursorPos, codeTag->toUpper());
+    if (auto codeInfo = ui->textEditor->getCodeTagAtPosition(cursorPos))
+    {
+        breadcrumb << createLink(codeInfo->position, codeInfo->tag.toUpper());
     }
 
     return breadcrumb.join(" &gt; ");
