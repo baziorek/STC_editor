@@ -64,6 +64,9 @@ protected:
 
     QString getClickableBreadcrumbPath(const QString &text, int cursorPos);
 
+protected slots:
+    void onShowStcPreviewTriggered();
+
 private: // methods
     void putTextBackToCursorPosition(QTextCursor &cursor, QString divClass, QString selectedText,
                                      QString textEnding, QString modifiedText);

@@ -27,7 +27,8 @@ void StcPreviewWidget::login(const QString &username, const QString &password) {
         QRegularExpression re("name=\"SecurityToken\" value=\"([a-z0-9]+)\"");
         QRegularExpressionMatch match = re.match(html);
         if (!match.hasMatch()) {
-            throw std::runtime_error("Security token not found on login page.");
+            emit loginFailed("Security token not found on login page.");
+            return;
         }
 
         QString loginToken = match.captured(1);
@@ -48,7 +49,8 @@ void StcPreviewWidget::login(const QString &username, const QString &password) {
             reply->deleteLater();
 
             if (! resp.contains("Autoryzacja zakończona powodzeniem")) {
-                throw std::runtime_error("Login failed: authorization string not found.");
+                emit loginFailed("Login failed: authorization string not found.");
+                return;
             }
 
             fetchStcSecurityToken();
@@ -68,7 +70,8 @@ void StcPreviewWidget::fetchStcSecurityToken() {
         QRegularExpression re("name=\"SecurityToken\" value=\"([a-z0-9]+)\"");
         QRegularExpressionMatch match = re.match(html);
         if (!match.hasMatch()) {
-            throw std::runtime_error("STC security token not found.");
+            emit loginFailed("STC security token not found.");
+            return;
         }
 
         securityToken = match.captured(1);
@@ -95,15 +98,27 @@ void StcPreviewWidget::loadCssAndInitialize() {
         )").arg(baseCss);
 
         webView.setHtml(html, makeUrl("/"));
-        isInitialized = true;
-        scheduleTextUpdate();
+
+        connect(&webView, &QWebEngineView::loadFinished, this, [this](bool ok) {
+            if (ok) {
+                isInitialized = true;
+                scheduleTextUpdate();
+
+                emit loginSucceeded();
+            } else {
+                emit loginFailed("Failed to load preview HTML into WebView.");
+            }
+        });
     });
 }
 
 void StcPreviewWidget::updateText(const QString &text)
 {
     if (!isInitialized || securityToken.isEmpty())
-        throw std::runtime_error("Preview not ready. Not authenticated or initialized.");
+    {
+        emit loginFailed("Preview not ready. Not authenticated or initialized.");
+        return;
+    }
 
     pendingText = text;
     hasPendingUpdate = true;

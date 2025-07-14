@@ -68,8 +68,16 @@ public:
     }
     void printStats() const; // TODO TOREMOVE for debugging only
 
+    bool isPreviewInitialized() const
+    {
+        return isInitialized;
+    }
+
 signals:
     void htmlReady(const QString &html);
+
+    void loginFailed(const QString &message);
+    void loginSucceeded();
 
 private:
     void fetchStcSecurityToken();

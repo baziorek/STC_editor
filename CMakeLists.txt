@@ -8,23 +8,24 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets WebEngineWidgets)
+find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets WebView WebEngineWidgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets WebEngineWidgets)
 
 # In Linux it is possible to have sanitizers for g++ and Clang compilers:
-if (NOT CMAKE_SYSTEM_NAME MATCHES "Windows" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    include(CheckLibraryExists)
+# address sanitizer is not compatible with QWebEngineWidgets
+# if (NOT CMAKE_SYSTEM_NAME MATCHES "Windows" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+#     include(CheckLibraryExists)
 
-    check_library_exists(asan __asan_init "" HAVE_LIBASAN)
-    check_library_exists(ubsan __ubsan_handle_add_overflow "" HAVE_LIBUBSAN)
+#     check_library_exists(asan __asan_init "" HAVE_LIBASAN)
+#     check_library_exists(ubsan __ubsan_handle_add_overflow "" HAVE_LIBUBSAN)
 
-    if (HAVE_LIBASAN AND HAVE_LIBUBSAN)
-        message(STATUS "Sanitizers (AddressSanitizer + UndefinedBehaviorSanitizer) are available")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address,undefined")
-    else()
-        message(WARNING "No required libraries (libasan/libubsan). You can install them, e.g. for Fedora: sudo yum install libasan libubsan")
-    endif()
-endif()
+#     if (HAVE_LIBASAN AND HAVE_LIBUBSAN)
+#         message(STATUS "Sanitizers (AddressSanitizer + UndefinedBehaviorSanitizer) are available")
+#         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address,undefined")
+#     else()
+#         message(WARNING "No required libraries (libasan/libubsan). You can install them, e.g. for Fedora: sudo yum install libasan libubsan")
+#     endif()
+# endif()
 
 include_directories(${PROJECT_SOURCE_DIR}) # to make sure that promoted types are visible from generated designer's files
 
@@ -47,6 +48,7 @@ set(PROJECT_SOURCES
     widgets/filteredtagtablewidget.h widgets/filteredtagtablewidget.cpp
     widgets/stcpreviewwidget.h widgets/stcpreviewwidget.cpp
     widgets/CodeBlocksTableWidget.h widgets/CodeBlocksTableWidget.cpp
+    widgets/LoginDialog.h widgets/LoginDialog.cpp
     types/documentstatistics.h types/documentstatistics.cpp
     utils/diffcalculation.h utils/diffcalculation.cpp
 )

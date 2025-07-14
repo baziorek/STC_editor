@@ -15,6 +15,61 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0" rowspan="6">
+     <widget class="QWidget" name="containerForCodeEditorAndBreadcromb" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>100</width>
+        <height>0</height>
+       </size>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QTextBrowser" name="breadcrumbTextBrowser">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>24</height>
+          </size>
+         </property>
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="openLinks">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="CodeEditor" name="textEditor">
+         <property name="font">
+          <font>
+           <pointsize>14</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPlainText {
+	background-color: rgb(255, 255, 255);
+	color: rgb(0, 0, 0);
+    font-family: monospace;
+}
+
+</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
     <item row="3" column="1">
      <widget class="QTabWidget" name="contextsTabWidget">
       <property name="maximumSize">
@@ -84,59 +139,14 @@
       </widget>
      </widget>
     </item>
-    <item row="0" column="0" rowspan="6">
-     <widget class="QWidget" name="containerForCodeEditorAndBreadcromb" native="true">
-      <property name="minimumSize">
-       <size>
-        <width>100</width>
-        <height>0</height>
-       </size>
+    <item row="0" column="1" rowspan="2">
+     <widget class="StcTagsButtons" name="buttonsEmittingStc">
+      <property name="frameShape">
+       <enum>QFrame::Shape::StyledPanel</enum>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QTextBrowser" name="breadcrumbTextBrowser">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>24</height>
-          </size>
-         </property>
-         <property name="verticalScrollBarPolicy">
-          <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
-         </property>
-         <property name="horizontalScrollBarPolicy">
-          <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
-         </property>
-         <property name="openLinks">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="CodeEditor" name="textEditor">
-         <property name="font">
-          <font>
-           <pointsize>14</pointsize>
-          </font>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QPlainText {
-	background-color: rgb(255, 255, 255);
-	color: rgb(0, 0, 0);
-    font-family: monospace;
-}
-
-</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <property name="frameShadow">
+       <enum>QFrame::Shadow::Raised</enum>
+      </property>
      </widget>
     </item>
     <item row="4" column="1">
@@ -149,16 +159,6 @@
       </property>
       <property name="title">
        <string>Go to line</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1" rowspan="2">
-     <widget class="StcTagsButtons" name="buttonsEmittingStc">
-      <property name="frameShape">
-       <enum>QFrame::Shape::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Shadow::Raised</enum>
       </property>
      </widget>
     </item>
@@ -222,6 +222,7 @@
     <addaction name="actionShort_conspect"/>
     <addaction name="actionGo_to_line"/>
     <addaction name="actionBreadcrumb"/>
+    <addaction name="actionStc_Preview_account_at_Cpp0x_pl_required"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -243,6 +244,17 @@
       <widget class="FindDialog" name="findWidget" native="true"/>
      </item>
     </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="stcPreviewDockWidget">
+   <property name="features">
+    <set>QDockWidget::DockWidgetFeature::DockWidgetVerticalTitleBar</set>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="StcPreviewWidget" name="stcPreviewWidget">
+    <layout class="QVBoxLayout" name="verticalLayout_6"/>
    </widget>
   </widget>
   <action name="actionLoad_file">
@@ -398,6 +410,14 @@
     <string>Breadcrumb</string>
    </property>
   </action>
+  <action name="actionStc_Preview_account_at_Cpp0x_pl_required">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Stc Preview (account at Cpp0x.pl required)</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -438,6 +458,12 @@
    <class>CodeBlocksTableWidget</class>
    <extends>QTableWidget</extends>
    <header>widgets/CodeBlocksTableWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>StcPreviewWidget</class>
+   <extends>QWidget</extends>
+   <header>widgets/stcpreviewwidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
@@ -746,6 +772,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionStc_Preview_account_at_Cpp0x_pl_required</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>stcPreviewDockWidget</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>18</x>
+     <y>218</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionStc_Preview_account_at_Cpp0x_pl_required</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onShowStcPreviewTriggered()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>242</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onSaveAsPressed()</slot>
@@ -768,5 +826,6 @@
   <slot>onContextShowChanged(bool)</slot>
   <slot>onGoToLineShowChanged(bool)</slot>
   <slot>onBreadcrumbVisibilityChanged(bool)</slot>
+  <slot>onShowStcPreviewTriggered()</slot>
  </slots>
 </ui>

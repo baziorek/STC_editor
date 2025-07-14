@@ -30,6 +30,7 @@ Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników
     - Ścieżka do plików graficznych zostanie otoczona tagami `[img src="ścieżka/do/przeciagnietego/obrazu.png"]`
     - Zawartość plików tekstowych o rozszerzeniach wskazujących na C/C++ zostanie wstawione i otoczona tagami `[cpp]...[/cpp]`
     - Zawartość pozostałych plików tekstowych zostanie wstawiona i otoczona tagami `[code]...[/code]`
+14. **Podgląd strony w czasie rzeczywistym**: Jest możliwe użycie w programie [backendu konwertującego kod ze znacznikami STC na kod HTML](https://cpp0x.pl/stc/).
 
 ## Ogólne funkcje edytora
 Jeśli ktoś chce tego używać do innych celów:
@@ -67,7 +68,6 @@ Jeśli ktoś chce tego używać do innych celów:
      - Weryfikacja, czy wszystkie znaczniki są zamknięte (np. po opuszczeniu linijki sprawdzamy czy są tam zmiany, jak tak, to czy jest tam nowy tag)
      - Weryfikacja odpowiednich atrybutów w tagach (czy w cudzysłowiu, czy tylko dozwole atrubytu)
      - Weryfikacja czy wprowadzono tylko legalne tagi STC
-- Podgląd treści STC w formacie web - widget jest już
 
 ### Pomysły na przyszłość
 
@@ -126,6 +126,7 @@ Jeśli ktoś chce tego używać do innych celów:
 - Klikanie na linku Ctrl + click - otwieranie linka
 - Kurs STC wbudowany w program
 - Prawy przycisk myszy na: tagach `img`, `a href`, `pkt`, `csv` powinien dawać możliwość dodania/usunięcia atrybutów
+- Śledzenie pozycji między pozycją w dokumencie źródłowym a podglądem HTML
 
 ## Współpraca
 

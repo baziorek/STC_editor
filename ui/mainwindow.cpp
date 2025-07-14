@@ -13,6 +13,7 @@
 #include "checkers/PairedTagsChecker.h"
 #include "errorlist.h"
 #include "types/documentstatistics.h"
+#include "widgets/LoginDialog.h"
 using namespace std;
 
 namespace
@@ -50,6 +51,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     loadSettings();
 
     setDisabledMenuActionsDependingOnOpenedFile();
+
+    ui->stcPreviewDockWidget->hide();
 
     ui->findWidget->hide();
     ui->findDockWidget->hide();
@@ -907,4 +910,44 @@ QString MainWindow::getClickableBreadcrumbPath(const QString& text, int cursorPo
     }
 
     return breadcrumb.join(" &gt; ");
+}
+
+void MainWindow::onShowStcPreviewTriggered()
+{
+    ui->stcPreviewDockWidget->show();
+    ui->stcPreviewDockWidget->raise();
+
+    if (ui->stcPreviewDockWidget->isHidden())
+    {
+        return;
+    }
+
+    if (ui->stcPreviewWidget->isPreviewInitialized())
+    {
+        return;
+    }
+
+    LoginDialog dlg(this);
+    if (dlg.exec() != QDialog::Accepted)
+        return;
+
+    ui->stcPreviewWidget->login(dlg.username(), dlg.password());
+
+    connect(ui->textEditor, &CodeEditor::textChanged, [this]() {
+        if (ui->stcPreviewWidget->isVisible())
+        {
+            ui->stcPreviewWidget->updateText(ui->textEditor->toPlainText());
+        }
+    });
+
+    connect(ui->stcPreviewWidget, &StcPreviewWidget::loginFailed, this, [this](const QString &msg) {
+        QMessageBox::warning(this, "Login error", msg);
+    });
+
+    connect(ui->stcPreviewWidget, &StcPreviewWidget::loginSucceeded, this, [this]() {
+        connect(ui->textEditor, &CodeEditor::textChanged, this, [this]() {
+            ui->stcPreviewWidget->updateText(ui->textEditor->toPlainText());
+        });
+        ui->stcPreviewWidget->updateText(ui->textEditor->toPlainText());
+    });
 }
