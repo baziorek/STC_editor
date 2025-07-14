@@ -845,10 +845,9 @@ void CodeEditor::dropEvent(QDropEvent *event)
     }
 
     // moving cursor position to position where we dropped something
-    QPoint dropPosition = event->pos();
+    QPoint dropPosition = event->position().toPoint();
     QTextCursor cursor = cursorForPosition(dropPosition);
     setTextCursor(cursor);
-
 
     QList<QUrl> urls = mimeData->urls();
     for (const QUrl &url : urls)
@@ -880,7 +879,7 @@ void CodeEditor::dropEvent(QDropEvent *event)
         else if (QImageReader::supportedImageFormats().contains(suffix.toUtf8()))
         {
             QTextCursor cursor = textCursor();
-            cursor.insertText(QString(R"([img src="%1"])").arg(localPath));
+            cursor.insertText(QString(R"([img src="%1" alt="%2"])").arg(localPath, fileInfo.baseName()));
         }
     }
 
@@ -899,49 +898,89 @@ void CodeEditor::mouseMoveEvent(QMouseEvent* event)
     cursor.select(QTextCursor::WordUnderCursor);
     const QString word = cursor.selectedText();
 
-    static QRegularExpression imgRegex("\\[img\\s+src=\"([^\"]+)\"\\]");
+    static QRegularExpression imgRegex(R"__(
+        \[img\s+
+        (?:
+            (?:src="([^"]+)")|
+            (?:alt="[^"]*")|
+            (?:opis="[^"]*")|
+            (?:autofit\b)
+        )
+        (?:\s+
+            (?:
+                (?:src="([^"]+)")|
+                (?:alt="[^"]*")|
+                (?:opis="[^"]*")|
+                (?:autofit\b)
+            )
+        )*
+        \s*\])__", QRegularExpression::ExtendedPatternSyntaxOption);
+
     QTextBlock block = cursor.block();
     const QString blockText = block.text();
     QRegularExpressionMatch match = imgRegex.match(blockText);
-    if (match.hasMatch()) {
-        QString imagePath = match.captured(1);
-        QFileInfo fi(imagePath);
-        if (fi.exists() && fi.isFile() &&
-            QImageReader::supportedImageFormats().contains(fi.suffix().toLower().toUtf8()))
-        {
-            QImage image(imagePath);
-            if (!image.isNull()) {
-                const QSize previewSize = image.size().boundedTo(QSize(200, 150));
-                const QPixmap pixmap = QPixmap::fromImage(image.scaled(previewSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
-                // To make sure tooltip is not hiding instantly after moving mouse
+    if (match.hasMatch())
+    {
+        // Finding src attribute
+        QString imagePath;
+        for (int i = 1; i < match.lastCapturedIndex() + 1; ++i)
+        {
+            if (!match.captured(i).isEmpty())
+            {
+                imagePath = match.captured(i);
+                break;
+            }
+        }
+
+        if (!imagePath.isEmpty())
+        {
+            QFileInfo fi(imagePath);
+            if (fi.exists() && fi.isFile() &&
+                QImageReader::supportedImageFormats().contains(fi.suffix().toLower().toUtf8()))
+            {
+                QImage image(imagePath);
+                if (!image.isNull())
+                {
+                    const QSize previewSize = image.size().boundedTo(QSize(200, 150));
+                    const QPixmap pixmap = QPixmap::fromImage(image.scaled(previewSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+
+                    if (imagePath != lastTooltipImagePath)
+                    {
+                        lastTooltipImagePath = imagePath;
+
+                        const QString tooltipHtml = QString(R"(
+                            <b>%1</b><br/>
+                            <img src="%2" height="%3"/><br/>
+                            <i>%4 x %5 px</i><br/>
+                            Last modified: %6
+                        )")
+                            .arg(fi.fileName())
+                            .arg(imagePath)
+                            .arg(previewSize.height())
+                            .arg(image.width())
+                            .arg(image.height())
+                            .arg(fi.lastModified().toString(Qt::ISODate));
+
+                        QToolTip::showText(event->globalPosition().toPoint(), tooltipHtml, this);
+                    }
+                    return;
+                }
+            }
+            else // file does not exist or it is not image
+            {
                 if (imagePath != lastTooltipImagePath)
                 {
                     lastTooltipImagePath = imagePath;
-
-                    const QString tooltipHtml = QString(R"(
-                        <b>%1</b><br/>
-                        <img src="%2" height="%3"/><br/>
-                        <i>%4 x %5 px</i><br/>
-                        Last modified: %6
-                    )")
-                                                    .arg(fi.fileName())
-                                                    .arg(imagePath)
-                                                    // .arg(previewSize.width())
-                                                    .arg(previewSize.height())
-                                                    .arg(image.width())
-                                                    .arg(image.height())
-                                                    .arg(fi.lastModified().toString(Qt::ISODate));
-
-                    QToolTip::showText(event->globalPosition().toPoint(), tooltipHtml, this);
+                    QString errorMessage = QString("Error: Image file not found or invalid:<br/>%1").arg(imagePath);
+                    QToolTip::showText(event->globalPosition().toPoint(), errorMessage, this);
                 }
-
                 return;
             }
         }
     }
 
-    // If regex does not match: hide tool tip and reset path
+    // If not match - hide ToolTip
     lastTooltipImagePath.clear();
     QToolTip::hideText();
     QPlainTextEdit::mouseMoveEvent(event);
