@@ -14,13 +14,6 @@ class CodeEditor : public QPlainTextEdit
     QString openedFileName;
 
 public:
-    struct CodeBlock
-    {
-        QTextCursor cursor;
-        QString tag;        // "cpp", "code", "py"
-        QString language;   // "c++", "python", "" if no `src=`
-    };
-
     CodeEditor(QWidget *parent = nullptr);
     ~CodeEditor();
 
@@ -57,7 +50,7 @@ public:
     }
     bool isInsideCode(int position) const;
 
-    struct CodeBlockInfo
+    struct CodeBlockInfo // TODO: Do we need this if we have CodeBlock?
     {
         QString tag;
         int position;
@@ -134,7 +127,7 @@ protected:
 
     void trackOriginalVersionOfFile(const QString& fileName);
 
-    QVector<CodeEditor::CodeBlock> parseAllCodeBlocks();
+    QVector<CodeBlock> parseAllCodeBlocks();
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);

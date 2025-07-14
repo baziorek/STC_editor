@@ -1,7 +1,5 @@
 /// the code of the class is copied from: https://doc.qt.io/qt-6.2/qtwidgets-widgets-codeeditor-example.html
-#include <QFile>
 #include <QPainter>
-#include <QTextBlock>
 #include <QMenu>
 #include <QMessageBox>
 #include <QScrollBar>
@@ -12,12 +10,12 @@
 #include <QImageReader>
 #include <QShortcut>
 #include <QProcess>
-#include <QTextDocumentFragment>
 #include "codeeditor.h"
 #include "linenumberarea.h"
 #include "stcsyntaxhighlighter.h"
 #include "ui/cppcompilerdialog.h"
 #include "utils/diffcalculation.h"
+#include "types/CodeBlock.h"
 
 
 namespace
@@ -54,7 +52,7 @@ bool isProbablyTextFile(const QString &filePath, int maxBytesToCheck = 2048)
     return true;
 }
 
-bool operator==(const CodeEditor::CodeBlock& a, const CodeEditor::CodeBlock& b)
+bool operator==(const CodeBlock& a, const CodeBlock& b)
 {
     return a.cursor.selectionStart() == b.cursor.selectionStart()
         && a.cursor.selectionEnd() == b.cursor.selectionEnd()
@@ -92,6 +90,7 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 
     STCSyntaxHighlighter *highlighter = new STCSyntaxHighlighter(document());
 }
+CodeEditor::~CodeEditor() = default;
 
 void CodeEditor::registerShortcuts()
 {
@@ -932,7 +931,7 @@ void CodeEditor::decreaseFontSize()
     setFont(f);
 }
 
-std::optional<CodeEditor::CodeBlock> CodeEditor::selectEnclosingCodeBlock(int cursorPos)
+std::optional<CodeBlock> CodeEditor::selectEnclosingCodeBlock(int cursorPos)
 {
     if (auto codeInfo = getCodeTagAtPosition(cursorPos))
     {
@@ -1098,7 +1097,7 @@ void CodeEditor::onContentsChange(int position, int charsRemoved, int charsAdded
     }
 }
 
-QVector<CodeEditor::CodeBlock> CodeEditor::parseAllCodeBlocks()
+QVector<CodeBlock> CodeEditor::parseAllCodeBlocks()
 {
     QVector<CodeBlock> result;
     QString text = toPlainText();
