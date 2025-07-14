@@ -96,8 +96,8 @@ STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
     styledTagsMap.insert("img.src", { "img.src", imgSrcFormat });
 
     QTextCharFormat imgAltFormat;
-    imgAltFormat.setForeground(QColor("darkgray"));
-    imgAltFormat.setFontPointSize(9);
+    imgAltFormat.setForeground(Qt::darkGreen);
+    imgAltFormat.setFontPointSize(10);
     imgAltFormat.setFontItalic(true);
     styledTagsMap.insert("img.alt", { "img.alt", imgAltFormat });
 
@@ -105,6 +105,12 @@ STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
     imgOpisFormat.setForeground(mint);
     imgOpisFormat.setFontItalic(true);
     styledTagsMap.insert("img.opis", { "img.opis", imgOpisFormat });
+
+    QTextCharFormat autofitFormat;
+    autofitFormat.setFontWeight(QFont::Bold);
+    autofitFormat.setForeground(QColor("darkgray"));
+    imgAltFormat.setFontPointSize(10);
+    styledTagsMap.insert("img.autofit", {"img.autofit", autofitFormat});
 
     // Styl ogólny tagu [img ...] lub [a ...]
     QTextCharFormat tagFmt;
@@ -799,6 +805,16 @@ bool STCSyntaxHighlighter::highlightTagsWithAttributes(const QString& text)
             int opisStart = start + opisMatch.capturedStart(1);
             int opisLen = opisMatch.capturedLength(1);
             setFormat(opisStart, opisLen, styledTagsMap.value("img.opis").format);
+        }
+
+        // Szukaj autofit
+        QRegularExpression autofitRe(R"__(autofit\b)__");
+        auto autofitMatch = autofitRe.match(matchedText);
+        if (autofitMatch.hasMatch())
+        {
+            int autofitStart = start + autofitMatch.capturedStart(0);
+            int autofitLen = autofitMatch.capturedLength(0);
+            setFormat(autofitStart, autofitLen, styledTagsMap.value("img.autofit").format);
         }
 
         found = true;

@@ -126,6 +126,7 @@ Jeśli ktoś chce tego używać do innych celów:
 - Do formatowania znajduje plik `clang-format`, który jest w aktualnym katalogu (obok pliku, który edytujemy)
 - Klikanie na linku Ctrl + click - otwieranie linka
 - Kurs STC wbudowany w program
+- Prawy przycisk myszy na: tagach `img`, `a href`, `pkt`, `csv` powinien dawać możliwość dodania/usunięcia atrybutów
 
 ## Współpraca
 
