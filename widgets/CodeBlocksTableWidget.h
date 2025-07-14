@@ -35,8 +35,9 @@ protected:
 
     bool event(QEvent* event) override;
 
-    void addCodeBlockLocation(int row, const CodeBlock& block);
+    void addCodeBlockLocationToTable(int row, const CodeBlock& block);
     void addCodeToTable(int row, const CodeBlock& block);
+    void addCodeTypeToTable(int row, const CodeBlock& block);
 
 private:
     // Convert code type to display name (e.g. "code src="C++"" -> "code C++")

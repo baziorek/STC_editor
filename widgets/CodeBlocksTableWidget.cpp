@@ -16,56 +16,21 @@ namespace
         ColumnCount
     };
 
-    void addPosition(QTableWidget *table, int row, QTextCursor cursor)
+    void setCellValue(QTableWidget *table, int row, int column, const QString &value, const QString &toolTip = QString())
     {
-        const int startLine = cursor.blockNumber() + 1;
-        const int endLine = cursor.document()->findBlock(cursor.selectionEnd()).blockNumber() + 1;
-        const int startPos = cursor.positionInBlock();
-        const int endPos = cursor.document()->findBlock(cursor.selectionEnd()).length();
-
-        const QString position = QString("%1:%2 - %3:%4")
-            .arg(startLine).arg(startPos)
-            .arg(endLine).arg(endPos);
-        const QString positionToolTip = QString("Code starting in line %1 and column %2, until line %3 and column %4")
-            .arg(startLine).arg(startPos)
-            .arg(endLine).arg(endPos);
-
-        constexpr int column = 0;
-
         auto *tableItem = table->item(row, column);
-        if (!tableItem)
+        if (! tableItem)
         {
             tableItem = new QTableWidgetItem;
             table->setItem(row, column, tableItem);
         }
 
-        tableItem->setData(Qt::DisplayRole, position);
+        tableItem->setData(Qt::DisplayRole, value);
         tableItem->setFlags(tableItem->flags() & ~Qt::ItemIsEditable);
-        tableItem->setToolTip(positionToolTip);
-    }
-    void addCode(QTableWidget *table, int row, const QString& codeWithoutTags)
-    {
-        constexpr int column = 2;
-
-        // Limit code preview to first line
-        int newlinePos = codeWithoutTags.indexOf('\n');
-        QString codePreview = newlinePos != -1 ?
-            codeWithoutTags.left(newlinePos) + "..." :
-            codeWithoutTags;
-
-        // auto* codeItem = new QTableWidgetItem(codePreview);
-        auto* codeItem = table->item(row, column);
-        if (!codeItem)
+        if (! toolTip.isEmpty())
         {
-            codeItem = new QTableWidgetItem(codePreview);
-            table->setItem(row, column, codeItem);
+            tableItem->setToolTip(toolTip);
         }
-
-        // Store full code in item data for tooltip
-        codeItem->setData(Qt::UserRole, codeWithoutTags);
-        codeItem->setFlags(codeItem->flags() & ~Qt::ItemIsEditable);
-
-        table->setItem(row, Code, codeItem);
     }
 } // namespace
 
@@ -153,15 +118,13 @@ void CodeBlocksTableWidget::updateCodeBlocks()
 
         auto cursor = block.cursor;
 
-        addCodeBlockLocation(row, block);
-
-        auto *typeItem = new QTableWidgetItem(getDisplayNameFromCodeType(block.tag, block.language));
-        setItem(row, Type, typeItem);
-
+        addCodeBlockLocationToTable(row, block);
+        addCodeTypeToTable(row, block);
         addCodeToTable(row, block);
     }
 }
-void CodeBlocksTableWidget::addCodeBlockLocation(int row, const CodeBlock& block)
+
+void CodeBlocksTableWidget::addCodeBlockLocationToTable(int row, const CodeBlock& block)
 {
     QTextCursor cursor = block.cursor;
 
@@ -196,23 +159,17 @@ void CodeBlocksTableWidget::addCodeBlockLocation(int row, const CodeBlock& block
         .arg(startLine).arg(startPos)
         .arg(endLine).arg(endPos);
 
-    constexpr int column = 0;
-
-    auto *tableItem = item(row, column);
-    if (!tableItem)
-    {
-        tableItem = new QTableWidgetItem;
-        setItem(row, column, tableItem);
-    }
-
-    tableItem->setData(Qt::DisplayRole, position);
-    tableItem->setFlags(tableItem->flags() & ~Qt::ItemIsEditable);
-    tableItem->setToolTip(positionToolTip); // TODO: Błąd
+    setCellValue(this, row, Columns::Position, position, positionToolTip);
 }
+
+void CodeBlocksTableWidget::addCodeTypeToTable(int row, const CodeBlock& block)
+{
+    const auto codeType = getDisplayNameFromCodeType(block.tag, block.language);
+    setCellValue(this, row, Columns::Type, codeType);
+}
+
 void CodeBlocksTableWidget::addCodeToTable(int row, const CodeBlock& block)
 {
-    constexpr int column = 2;
-
     const auto codeWithoutTags = getCodeWithoutTags(block);
 
     // Limit code preview to first line
@@ -221,17 +178,9 @@ void CodeBlocksTableWidget::addCodeToTable(int row, const CodeBlock& block)
         codeWithoutTags.left(newlinePos) + "..." :
         codeWithoutTags;
 
-    auto* codeItem = item(row, column);
-    if (!codeItem)
-    {
-        codeItem = new QTableWidgetItem(codePreview);
-        setItem(row, column, codeItem);
-    }
-
-    // Store full code in item data for tooltip
-    codeItem->setData(Qt::UserRole, codeWithoutTags);
-    codeItem->setFlags(codeItem->flags() & ~Qt::ItemIsEditable);
+    setCellValue(this, row, Columns::Code, codePreview);
 }
+
 
 void CodeBlocksTableWidget::onCellClicked(int row, int /*column*/)
 {
@@ -321,29 +270,48 @@ QString CodeBlocksTableWidget::getCodeWithoutTags(const CodeBlock& block) const
     return QString();
 }
 
-bool CodeBlocksTableWidget::event(QEvent* event)
+bool CodeBlocksTableWidget::event(QEvent *event)
 {
-    if (event->type() == QEvent::ToolTip) {
-        QHelpEvent* helpEvent = static_cast<QHelpEvent*>(event);
-        QModelIndex index = indexAt(helpEvent->pos());
+    if (QEvent::ToolTip == event->type())
+    {
+        QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
+        QPoint pos = helpEvent->pos();
+        int row = rowAt(pos.y());
 
-        // Check if mouse is above cell in column Code
-        if (index.isValid() && index.column() == Code) {
-            QTableWidgetItem* item = this->item(index.row(), Code);
-            if (item) {
-                QString fullCode = item->data(Qt::UserRole).toString();
-                if (!fullCode.isEmpty()) {
-                    QString htmlCode = fullCode.toHtmlEscaped()
-                                            .replace("\n", "<br>")
-                                            .replace(" ", "&nbsp;"); // zachowaj spacje
-                    QToolTip::showText(helpEvent->globalPos(),
-                                     "<pre style='white-space: pre-wrap;'>" + htmlCode + "</pre>");
-                    return true;
-                }
-            }
+        // Return if we're in header (row == 0) or outside the table (row == -1)
+        if (row <= 0)
+        {
+            return QTableWidget::event(event);
         }
-        QToolTip::hideText();
-        return true;
+
+        // Adjust row index to account for header row
+        int blockIndex = row - 1;
+
+        // Show tooltip only if we have valid block index
+        const auto codeBlocks = textEditor->getCodeBlocks();
+        if (blockIndex >= 0 && blockIndex < codeBlocks.size())
+        {
+            const CodeBlock& block = codeBlocks[blockIndex];
+            QString selectedText = block.cursor.selectedText();
+
+            // Remove opening and closing tags
+            QString openTag = QString("[%1]").arg(block.tag);
+            QString closeTag = QString("[/%1]").arg(block.tag);
+            selectedText.remove(openTag);
+            selectedText.remove(closeTag);
+
+            // Convert paragraph separators to newlines for better readability
+            selectedText.replace(QChar::ParagraphSeparator, '\n');
+            selectedText = selectedText.trimmed(); // Remove any extra whitespace
+
+            QToolTip::showText(helpEvent->globalPos(), selectedText);
+            return true;
+        }
+        else
+        {
+            QToolTip::hideText();
+        }
     }
+
     return QTableWidget::event(event);
 }
