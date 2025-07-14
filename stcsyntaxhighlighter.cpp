@@ -714,33 +714,34 @@ bool STCSyntaxHighlighter::overlapsWithRange(int start, int length, const QVecto
 
 bool STCSyntaxHighlighter::highlightTagsWithAttributes(const QString& text)
 {
-    // Reguła dla [a href="..." name="..."]
-    static const QRegularExpression anchorRe(R"__(\[a\s+href="([^"]+)"\s+name="([^"]+)"\])__");
+    // Match [a href="..."] or [a href="..." name="..."]
+    static const QRegularExpression anchorRe(R"__(\[a\s+href="([^"]+)"(?:\s+name="([^"]+)")?\])__");
 
-    // Reguła dla [img src="..." alt="..." opis="..."] – atrybuty alt i opis mogą być opcjonalne
+    // Match [img ...] with optional attributes in any order
     static const QRegularExpression imgRe(R"__(
-    \[img\s+
-    (?:
-        (?:src="([^"]+)")|
-        (?:alt="([^"]*)")|
-        (?:opis="([^"]*)")|
-        (?:autofit\b)
-    )
-    (?:\s+
+        \[img\s+
         (?:
             (?:src="([^"]+)")|
             (?:alt="([^"]*)")|
             (?:opis="([^"]*)")|
             (?:autofit\b)
         )
-    )*
-    \s*\])__", QRegularExpression::ExtendedPatternSyntaxOption);
+        (?:\s+
+            (?:
+                (?:src="([^"]+)")|
+                (?:alt="([^"]*)")|
+                (?:opis="([^"]*)")|
+                (?:autofit\b)
+            )
+        )*
+        \s*\])__", QRegularExpression::ExtendedPatternSyntaxOption);
 
     bool found = false;
 
-    // Szukaj linków
+    // Find all anchor tags
     auto anchorIt = anchorRe.globalMatch(text);
-    while (anchorIt.hasNext()) {
+    while (anchorIt.hasNext())
+    {
         auto match = anchorIt.next();
         int start = match.capturedStart();
         int end = match.capturedEnd();
@@ -748,25 +749,29 @@ bool STCSyntaxHighlighter::highlightTagsWithAttributes(const QString& text)
         if (overlapsWithNoFormat(start, end - start))
             continue;
 
-        // tag
+        // Format the full tag
         setFormat(start, end - start, styledTagsMap.value("tag.attr").format);
 
-        // href
+        // Format href attribute value
         int hrefStart = match.capturedStart(1);
         int hrefLen = match.capturedLength(1);
         setFormat(hrefStart, hrefLen, styledTagsMap.value("a.href").format);
 
-        // name
-        int nameStart = match.capturedStart(2);
-        int nameLen = match.capturedLength(2);
-        setFormat(nameStart, nameLen, styledTagsMap.value("a.name").format);
+        // Format name attribute value, if present
+        if (match.lastCapturedIndex() >= 2 && match.captured(2).length() > 0)
+        {
+            int nameStart = match.capturedStart(2);
+            int nameLen = match.capturedLength(2);
+            setFormat(nameStart, nameLen, styledTagsMap.value("a.name").format);
+        }
 
         found = true;
     }
 
-    // Szukaj obrazków
+    // Find all image tags
     auto imgIt = imgRe.globalMatch(text);
-    while (imgIt.hasNext()) {
+    while (imgIt.hasNext())
+    {
         auto match = imgIt.next();
         int start = match.capturedStart();
         int end = match.capturedEnd();
@@ -774,46 +779,48 @@ bool STCSyntaxHighlighter::highlightTagsWithAttributes(const QString& text)
         if (overlapsWithNoFormat(start, end - start))
             continue;
 
-        // Formatuj cały tag
+        // Format the entire [img ...] block
         setFormat(start, end - start, styledTagsMap.value("tag.attr").format);
 
-        // Znajdź wszystkie atrybuty w dopasowanym tekście
         QString matchedText = match.captured(0);
 
-        // Szukaj src
+        // Find and format src attribute
         QRegularExpression srcRe(R"__(src="([^"]+)")__");
         auto srcMatch = srcRe.match(matchedText);
-        if (srcMatch.hasMatch()) {
+        if (srcMatch.hasMatch())
+        {
             int srcStart = start + srcMatch.capturedStart(1);
             int srcLen = srcMatch.capturedLength(1);
             setFormat(srcStart, srcLen, styledTagsMap.value("img.src").format);
         }
 
-        // Szukaj alt
-        QRegularExpression altRe(R"__(alt="([^"]+)")__");
+        // Find and format alt attribute
+        QRegularExpression altRe(R"__(alt="([^"]*)")__");
         auto altMatch = altRe.match(matchedText);
-        if (altMatch.hasMatch()) {
+        if (altMatch.hasMatch())
+        {
             int altStart = start + altMatch.capturedStart(1);
             int altLen = altMatch.capturedLength(1);
             setFormat(altStart, altLen, styledTagsMap.value("img.alt").format);
         }
 
-        // Szukaj opis
-        QRegularExpression opisRe(R"__(opis="([^"]+)")__");
+        // Find and format opis attribute
+        QRegularExpression opisRe(R"__(opis="([^"]*)")__");
         auto opisMatch = opisRe.match(matchedText);
-        if (opisMatch.hasMatch()) {
+        if (opisMatch.hasMatch())
+        {
             int opisStart = start + opisMatch.capturedStart(1);
             int opisLen = opisMatch.capturedLength(1);
             setFormat(opisStart, opisLen, styledTagsMap.value("img.opis").format);
         }
 
-        // Szukaj autofit
-        QRegularExpression autofitRe(R"__(autofit\b)__");
+        // Find and format 'autofit' keyword
+        QRegularExpression autofitRe(R"__(\bautofit\b)__");
         auto autofitMatch = autofitRe.match(matchedText);
         if (autofitMatch.hasMatch())
         {
-            int autofitStart = start + autofitMatch.capturedStart(0);
-            int autofitLen = autofitMatch.capturedLength(0);
+            int autofitStart = start + autofitMatch.capturedStart();
+            int autofitLen = autofitMatch.capturedLength();
             setFormat(autofitStart, autofitLen, styledTagsMap.value("img.autofit").format);
         }
 

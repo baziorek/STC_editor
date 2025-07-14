@@ -59,7 +59,8 @@ Jeśli ktoś chce tego używać do innych celów:
 
 - **Naprawy**:
   - Naprawa problemu z pytaniem o nadpisywanie zmian, mimo ich braku, przy sekwencyjnym otwieraniu wielu plików.
-  - Gdy mamy `[a href=""]` bez `name=""` to nie podkreśla składni
+  - SMALL BUG: Jak mam obrazki to nie mogę tekstu zaznaczyć bo się pojawiają podglądy. Podglądy tylko jak przycisk myszy nie jest wciśnięty
+
 - **Funkcje**:
 - Śledzenie TODO w dokumencie.
 - Wyszukaj i zamień: `Ctrl+R` z możliwością wyłączenia poszczególnych wykrytych pozycji.
