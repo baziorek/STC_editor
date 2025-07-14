@@ -26,7 +26,10 @@ Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników
 10. **Nawigacja okruszkowa**: Dynamicznie aktualizowany pasek adresu pokazujący bieżącą pozycję w strukturze dokumentu STC, z możliwością kliknięcia.
 11. **Śledzenie zmian**: Śledzi zmienione linie za pomocą biblioteki pydifflib-cpp.
 12. **Listowanie kodów w pliku**: Oddzielny widget, który śledzi na bieżąco pozycje kodów `[cpp]` i innych.
-
+13. **Dedykowane przeciągnij i upuść**: Do aplikacji można przeciągać pliki i zostaną odpowiednio obsłużone:
+    - Ścieżka do plików graficznych zostanie otoczona tagami `[img src="ścieżka/do/przeciagnietego/obrazu.png"]`
+    - Zawartość plików tekstowych o rozszerzeniach wskazujących na C/C++ zostanie wstawione i otoczona tagami `[cpp]...[/cpp]`
+    - Zawartość pozostałych plików tekstowych zostanie wstawiona i otoczona tagami `[code]...[/code]`
 
 ## Ogólne funkcje edytora
 Jeśli ktoś chce tego używać do innych celów:
@@ -55,22 +58,24 @@ Jeśli ktoś chce tego używać do innych celów:
 ### Przed pierwszym wydaniem
 
 - **Naprawy**:
-  - Naprawa problemu z pytaniem o nadpisywanie zmian, mimo ich braku, przy sekwencyjnym otwieraniu wielu plików plików.
-  - Przy przeciągnij i upuść wstawia tam gdzie kursor tekstu, a nie tam gdzie przeciągniemy
+  - Naprawa problemu z pytaniem o nadpisywanie zmian, mimo ich braku, przy sekwencyjnym otwieraniu wielu plików.
+  - Gdy mamy `[a href=""]` bez `name=""` to nie podkreśla składni
 - **Funkcje**:
-  - Wyszukaj i zamień: `Ctrl+R` z możliwością wyłączenia poszczególnych wykrytych pozycji.
+- Śledzenie TODO w dokumencie.
+- Wyszukaj i zamień: `Ctrl+R` z możliwością wyłączenia poszczególnych wykrytych pozycji.
   - Sprawdzania:
      - Sprawdzanie, czy znaczniki `[run]` znajdują się wewnątrz `[pkt]`.
-     - Weryfikacja, czy wszystkie znaczniki są zamknięte.
-  - Obsługa zakładek do szybkiego przechodzenia do miejsc w kodzie.
-  - Śledzenie TODO w dokumencie.
-  - Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
-  - Otwieranie wielu plików jednocześnie.
-  - Widok sąsiadujący do porównywania plików.
-  - Podgląd treści STC w formacie web - widget jest już
+     - Weryfikacja, czy wszystkie znaczniki są zamknięte (np. po opuszczeniu linijki sprawdzamy czy są tam zmiany, jak tak, to czy jest tam nowy tag)
+     - Weryfikacja odpowiednich atrybutów w tagach (czy w cudzysłowiu, czy tylko dozwole atrubytu)
+     - Weryfikacja czy wprowadzono tylko legalne tagi STC
+- Podgląd treści STC w formacie web - widget jest już
 
 ### Pomysły na przyszłość
 
+- Obsługa zakładek do szybkiego przechodzenia do miejsc w kodzie.
+- Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
+- Otwieranie wielu plików jednocześnie.
+- Widok sąsiadujący do porównywania plików.
 - Eksport bloków kodu do osobnych plików.
 - Konsolidacja obrazów do jednego katalogu z aktualizacją ścieżek w znacznikach STC.
 - Integracja analizatora składni C++ (np. [flex](https://github.com/westes/flex)).
@@ -80,7 +85,7 @@ Jeśli ktoś chce tego używać do innych celów:
 - Zamiana prefiksów adresów URL dla obrazów na serwerze.
 - Historia wprowadzanych zmian (`Ctrl+Z`).
 - Wyszukiwanie wielu słów w tej samej linii niezależnie od kolejności.
-- Sprawdzanie pisowni po polsku (np. [nuspell](https://github.com/nuspell/nuspell) lub [spellchecker Qt](https://doc.qt.io/qt-6/qtwebengine-webenginewidgets-spellchecker-example.html)).
+- Sprawdzanie pisowni po polsku (np. [nuspell](https://github.com/nuspell/nuspell) lub [spellchecker Qt](https://doc.qt.io/qt-6/qtwebengine-webenginewidgets-spellchecker-example.html)). https://forum.qt.io/topic/158878/check-spelling-in-qlineedit-and-qplaintextedit
 - Obsługa różnych kodowań plików z automatycznym rozpoznawaniem.
 - Obsługa wtyczek, być może z użyciem Lua.
 - Integracja dokumentacji cppreference (jak w `cppman` lub QtCreator).
@@ -116,10 +121,21 @@ Jeśli ktoś chce tego używać do innych celów:
 - Historia zmian w linii
 - Precompiled headers dla codeEditor.h i moduły
 - IWYU podpiąć pod CMake'a
+- Zwijanie nagłówków i kodu (jak funkcje w środowiskach programistycznych)
+- Automatyczne backupy treści
+- Do formatowania znajduje plik `clang-format`, który jest w aktualnym katalogu (obok pliku, który edytujemy)
+- Klikanie na linku Ctrl + click - otwieranie linka
+- Kurs STC wbudowany w program
 
 ## Współpraca
 
 Zapraszam do współpracy! Propozycje zmian i pull requesty są mile widziane, aby uczynić ten edytor jeszcze bardziej użytecznym.
+
+### Znalezione bugi
+Bardzo proszę o dokładne informacje jakie to bugi, czyli:
+1. W jakiej sytuacji (Sekwencja kroków)
+2. Kod STC, który to spowodował
+3. Jakie jest oczekiwane zachowanie wg Ciebie?
 
 ## Przydatność
 

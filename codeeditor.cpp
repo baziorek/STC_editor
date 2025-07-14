@@ -59,6 +59,24 @@ bool operator==(const CodeBlock& a, const CodeBlock& b)
         && a.tag == b.tag
         && a.language == b.language;
 }
+
+QString getFileContent(const QString& fileName)
+{
+    QFile file(fileName);
+    if (!file.exists())
+    {
+        throw std::runtime_error("File '" + fileName.toStdString() + "' does not exist!");
+    }
+    if (!file.open(QFile::ReadOnly))
+    {
+        throw std::runtime_error("Could not open file '" + fileName.toStdString() + "'.");
+    }
+
+    const QByteArray content = file.readAll();
+    file.close();
+
+    return QString::fromUtf8(content);
+}
 } // namespace
 
 CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
@@ -257,30 +275,24 @@ void CodeEditor::reloadFromFile(bool discardChanges)
 
 bool CodeEditor::loadFileContentDistargingCurrentContent(const QString& fileName)
 {
-    QFile file(fileName);
-    if (!file.exists())
+    try
     {
-        QMessageBox::warning(this, tr("Reloading error"), tr("File '%1' does not exist!").arg(openedFileName));
+        const auto fileContent = getFileContent(fileName);
+        setPlainText(fileContent);
+
+        trackOriginalVersionOfFile(fileName);
+
+        setFileName(fileName);
+
+        analizeEntireDocumentDetectingCodeBlocks();
+
+        return true;
+    }
+    catch (const std::exception& e)
+    {
+        QMessageBox::warning(this, tr("Loading file error"), QString::fromStdString(e.what()));
         return false;
     }
-    if (!file.open(QFile::ReadOnly))
-    {
-        QMessageBox::warning(this, tr("Reloading error"), tr("Could not open '%1'.").arg(openedFileName));
-        return false;
-    }
-
-    const QByteArray content = file.readAll();
-    file.close();
-
-    setPlainText(QString::fromUtf8(content));
-
-    trackOriginalVersionOfFile(fileName);
-
-    setFileName(fileName);
-
-    analizeEntireDocumentDetectingCodeBlocks();
-
-    return true;
 }
 void CodeEditor::trackOriginalVersionOfFile(const QString& fileName)
 {
@@ -832,6 +844,12 @@ void CodeEditor::dropEvent(QDropEvent *event)
         return;
     }
 
+    // moving cursor position to position where we dropped something
+    QPoint dropPosition = event->pos();
+    QTextCursor cursor = cursorForPosition(dropPosition);
+    setTextCursor(cursor);
+
+
     QList<QUrl> urls = mimeData->urls();
     for (const QUrl &url : urls)
     {
@@ -847,9 +865,15 @@ void CodeEditor::dropEvent(QDropEvent *event)
         // 1. Handle text files
         if (isProbablyTextFile(localPath))
         {
-            if (loadFileContentDistargingCurrentContent(localPath))
+            const auto fileContent = getFileContent(localPath).trimmed();
+            const QStringList cppExtensions = {"c", "cpp", "h", "hpp", "cc", "cxx", "hxx"};
+            if (cppExtensions.contains(fileInfo.suffix().toLower()))
             {
-                break; // only one file at once
+                insertPlainText("[cpp]" + fileContent + "[/cpp]");
+            }
+            else // other text file type
+            {
+                insertPlainText("[code]" + fileContent + "[/code]");
             }
         }
         // 2. Add link to image file
@@ -858,6 +882,12 @@ void CodeEditor::dropEvent(QDropEvent *event)
             QTextCursor cursor = textCursor();
             cursor.insertText(QString(R"([img src="%1"])").arg(localPath));
         }
+    }
+
+    if (0 == urls.size()) // no urls:
+    {
+        insertPlainText(event->mimeData()->text());
+        event->acceptProposedAction();
     }
 
     event->acceptProposedAction();
