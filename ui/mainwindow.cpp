@@ -64,9 +64,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->goToLineGroupBox, &GoToLineWidget::onGoToLineRequested, ui->textEditor, &CodeEditor::go2LineRequested);
     connect(ui->findWidget, &FindDialog::jumpToLocationRequested, ui->textEditor, &CodeEditor::goToLineAndOffset);
     connect(ui->textEditor, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateBreadcrumb);
-    connect(ui->textEditor, &QPlainTextEdit::cursorPositionChanged, ui->contextTableWidget, &FilteredTagTableWidget::onUpdateContextRequested);
-    // TODO: cursorPositionChanged should call FilteredTagTableWidget::highlightCurrentTagInContextTable()
-    // but editing of ui->textEditor should call FilteredTagTableWidget::onUpdateContextRequested and highlightCurrentTagInContextTable
     connect(ui->textEditor, &CodeEditor::totalLinesCountChanged, ui->goToLineGroupBox, &GoToLineWidget::setMaxLine);
     connect(ui->textEditor, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateBreadcrumb);
     connect(ui->textEditor, &CodeEditor::numberOfModifiedLinesChanged, [this](int linesNumber) {

@@ -24,16 +24,15 @@ public:
     {
         return textEditor;
     }
-    void setTextEditor(CodeEditor *newTextEditor)
-    {
-        textEditor = newTextEditor;
-    }
+    void setTextEditor(CodeEditor *newTextEditor);
 
 signals:
     void goToLineClicked(int lineNumber);
 
 public slots:
     void onUpdateContextRequested();
+
+    void highlightCurrentTagInContextTable();
 
 private slots:
     void updateFilterMenu();
@@ -42,8 +41,6 @@ private slots:
     void onHeaderSectionClicked(int logicalIndex);
 
 protected:
-    void highlightCurrentTagInContextTable();
-
     void showEvent(QShowEvent* event) override;
 
 private:

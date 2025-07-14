@@ -162,7 +162,7 @@ void FilteredTagTableWidget::onUpdateContextRequested()
 
     updateContextTable(this, taggedTextLinePositions);
 
-    highlightCurrentTagInContextTable();
+    emit highlightCurrentTagInContextTable();
 }
 
 void FilteredTagTableWidget::updateFilterMenu()
@@ -334,5 +334,23 @@ void FilteredTagTableWidget::highlightCurrentTagInContextTable()
     {
         selectRow(bestRow);
         scrollToItem(item(bestRow, 0), QAbstractItemView::PositionAtCenter);
+    }
+}
+
+void FilteredTagTableWidget::setTextEditor(CodeEditor *newTextEditor)
+{
+    if (textEditor)
+    {
+        disconnect(textEditor, &CodeEditor::textChanged, this, &FilteredTagTableWidget::onUpdateContextRequested);
+        disconnect(textEditor, &CodeEditor::cursorPositionChanged, this, &FilteredTagTableWidget::highlightCurrentTagInContextTable);
+    }
+
+    textEditor = newTextEditor;
+
+    if (textEditor)
+    {
+        connect(textEditor, &CodeEditor::textChanged, this, &FilteredTagTableWidget::onUpdateContextRequested);
+        connect(textEditor, &CodeEditor::cursorPositionChanged, this, &FilteredTagTableWidget::highlightCurrentTagInContextTable);
+        onUpdateContextRequested();
     }
 }
