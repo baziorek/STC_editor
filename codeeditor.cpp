@@ -894,6 +894,14 @@ void CodeEditor::dropEvent(QDropEvent *event)
 
 void CodeEditor::mouseMoveEvent(QMouseEvent* event)
 {
+    // Do not show tooltip while selecting with the left mouse button
+    if (event->buttons() & Qt::LeftButton) {
+        lastTooltipImagePath.clear();
+        QToolTip::hideText();
+        QPlainTextEdit::mouseMoveEvent(event);
+        return;
+    }
+
     QTextCursor cursor = cursorForPosition(event->pos());
     cursor.select(QTextCursor::WordUnderCursor);
     const QString word = cursor.selectedText();
@@ -922,9 +930,9 @@ void CodeEditor::mouseMoveEvent(QMouseEvent* event)
 
     if (match.hasMatch())
     {
-        // Finding src attribute
+        // Find first non-empty src attribute value
         QString imagePath;
-        for (int i = 1; i < match.lastCapturedIndex() + 1; ++i)
+        for (int i = 1; i <= match.lastCapturedIndex(); ++i)
         {
             if (!match.captured(i).isEmpty())
             {
@@ -967,7 +975,7 @@ void CodeEditor::mouseMoveEvent(QMouseEvent* event)
                     return;
                 }
             }
-            else // file does not exist or it is not image
+            else // file not found or unsupported format
             {
                 if (imagePath != lastTooltipImagePath)
                 {
@@ -980,7 +988,7 @@ void CodeEditor::mouseMoveEvent(QMouseEvent* event)
         }
     }
 
-    // If not match - hide ToolTip
+    // No match – hide tooltip and call base method
     lastTooltipImagePath.clear();
     QToolTip::hideText();
     QPlainTextEdit::mouseMoveEvent(event);
