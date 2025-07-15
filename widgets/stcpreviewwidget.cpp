@@ -114,6 +114,11 @@ void StcPreviewWidget::loadCssAndInitialize() {
 
 void StcPreviewWidget::updateText(const QString &text)
 {
+    if (isHidden() || parentWidget()->isHidden())
+    {
+        return;
+    }
+
     if (!isInitialized || securityToken.isEmpty())
     {
         emit loginFailed("Preview not ready. Not authenticated or initialized.");

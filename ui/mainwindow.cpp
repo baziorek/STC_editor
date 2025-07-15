@@ -914,7 +914,6 @@ QString MainWindow::getClickableBreadcrumbPath(const QString& text, int cursorPo
 
 void MainWindow::onShowStcPreviewTriggered()
 {
-    ui->stcPreviewDockWidget->show();
     ui->stcPreviewDockWidget->raise();
 
     if (ui->stcPreviewDockWidget->isHidden())

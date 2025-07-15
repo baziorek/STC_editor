@@ -253,9 +253,7 @@
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
-   <widget class="StcPreviewWidget" name="stcPreviewWidget">
-    <layout class="QVBoxLayout" name="verticalLayout_6"/>
-   </widget>
+   <widget class="StcPreviewWidget" name="stcPreviewWidget"/>
   </widget>
   <action name="actionLoad_file">
    <property name="text">
