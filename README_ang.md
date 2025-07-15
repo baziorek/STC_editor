@@ -1,4 +1,4 @@
-[![pl](https://img.shields.io/badge/lang-pl-green.svg)](https://github.com/baziorek/STC_editor/tree/master/README_pl.md)
+[![pl](https://img.shields.io/badge/lang-pl-green.svg)](https://github.com/baziorek/STC_editor/tree/master/README.md)
 
 # STC Editor
 A simple text editor built with Qt to streamline the insertion of [STC](https://cpp0x.pl/kursy/Kurs-STC/169) markup tags used by the [cpp0x.pl](https://cpp0x.pl/) platform.

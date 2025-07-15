@@ -50,7 +50,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     loadSettings();
 
-    setDisabledMenuActionsDependingOnOpenedFile();
+    setDisabledMenuActionsDependingOnOpenedFile(/*disabled=*/true);
 
     ui->stcPreviewDockWidget->hide();
 
@@ -385,7 +385,8 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    if (operationWhichDiscardsChangesRequestedReturningIfDiscarded())
+    if (operationWhichDiscardsChangesRequestedReturningIfDiscarded(
+            tr("Close without saving?"), tr("Do You really want to close the editor without saving unsaved changes?")))
     {
         QWidget::closeEvent(event);
     }
@@ -395,14 +396,14 @@ void MainWindow::closeEvent(QCloseEvent *event)
     }
 }
 
-bool MainWindow::operationWhichDiscardsChangesRequestedReturningIfDiscarded()
+bool MainWindow::operationWhichDiscardsChangesRequestedReturningIfDiscarded(const QString& dialogTitle, const QString& dialogMessage)
 {
     if (!ui->textEditor->noUnsavedChanges())
     {
         QMessageBox::StandardButton reply =
             QMessageBox::question(this,
-                                  "Close without saving?",
-                                  "Do You really want to exit without saving unsaved changes?",
+                                  dialogTitle, //"Close without saving?",
+                                  dialogMessage, //"Do You really want to exit without saving unsaved changes?",
                                   QMessageBox::Discard|QMessageBox::No|QMessageBox::Save);
         if (reply == QMessageBox::Save)
         {
@@ -428,7 +429,8 @@ bool MainWindow::operationWhichDiscardsChangesRequestedReturningIfDiscarded()
 
 bool MainWindow::closeApplicationReturningIfClosed()
 {
-    if (operationWhichDiscardsChangesRequestedReturningIfDiscarded())
+    if (operationWhichDiscardsChangesRequestedReturningIfDiscarded(
+            tr("Close without saving?"), tr("Do You really want to close the editor without saving unsaved changes?")))
     {
         close();
         return true;
@@ -438,11 +440,13 @@ bool MainWindow::closeApplicationReturningIfClosed()
 
 void MainWindow::onNewFilePressed()
 {
-    if (operationWhichDiscardsChangesRequestedReturningIfDiscarded())
+    if (operationWhichDiscardsChangesRequestedReturningIfDiscarded(
+            tr("Confirm discarding current file content?"), tr("Do You really want to lose currently unsaved changes and create new file")))
     {
         ui->textEditor->clear();
         updateWindowTitle();
         ui->textEditor->setFileName("");
+        setDisabledMenuActionsDependingOnOpenedFile(/*disabled=*/true);
     }
 }
 
@@ -532,7 +536,8 @@ bool MainWindow::onSavePressed()
 
 void MainWindow::onOpenPressed()
 {
-    if (! operationWhichDiscardsChangesRequestedReturningIfDiscarded())
+    if (! operationWhichDiscardsChangesRequestedReturningIfDiscarded(
+            tr("Decline currently unsaved changes?"), tr("Do You really want to decline currently unsaved changes and open new file?")))
     {
         return;
     }
@@ -540,9 +545,28 @@ void MainWindow::onOpenPressed()
     const auto fileName = chooseFileWithDialog(QFileDialog::AcceptOpen).trimmed();
     if (!fileName.isEmpty() && loadFileContentToEditorDistargingCurrentContent(fileName))
     {
+        ui->actionReload_file->setEnabled(true);
         updateRecentFiles(fileName);
     }
 }
+
+void MainWindow::onReloadFilePressed()
+{
+    if (ui->textEditor->getFileName().isEmpty())
+    {
+        return;
+    }
+
+    if (! operationWhichDiscardsChangesRequestedReturningIfDiscarded(
+        tr("Confirm reloading and loosing unsaved content"), tr("Do You really want to reload the currently opened file?\n"
+                                                                "Currently unsaved changes would be declined.")))
+    {
+        return;
+    }
+
+    ui->textEditor->reloadFromFile(/*discardChanges=*/true);
+}
+
 bool MainWindow::loadFileContentToEditorDistargingCurrentContent(QString fileName)
 {
     if (ui->textEditor->loadFileContentDistargingCurrentContent(fileName))
@@ -681,6 +705,7 @@ void MainWindow::setDisabledMenuActionsDependingOnOpenedFile(bool disabled)
 {
     ui->actionCopy_absolute_path->setDisabled(disabled);
     ui->actionCopy_basename->setDisabled(disabled);
+    ui->actionReload_file->setDisabled(disabled);
 }
 
 void MainWindow::loadSettings()

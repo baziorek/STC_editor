@@ -35,6 +35,7 @@ public slots:
     bool onSaveAsPressed();
     bool onSavePressed();
     void onOpenPressed();
+    void onReloadFilePressed();
     void onExitFromApplicationMenuPressed();
     void onRecentRecentFilesMenuOpened();
     void onCopyFileAbsoluteNamePressed();
@@ -77,7 +78,7 @@ private: // methods
     void connectShortcuts();
     void connectShortcutsFromCodeWidget();
     bool closeApplicationReturningIfClosed();
-    bool operationWhichDiscardsChangesRequestedReturningIfDiscarded();
+    bool operationWhichDiscardsChangesRequestedReturningIfDiscarded(const QString &dialogTitle, const QString &dialogMessage);
     bool saveEntireContent2File(QString fileName);
     void updateWindowTitle(QString fileName="", QString suffix="");
 

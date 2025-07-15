@@ -61,6 +61,8 @@ public:
 
     QTextCursor cursor4Line(int lineNumber) const;
 
+    void reloadFromFile(bool discardChanges=false);
+
 signals:
     void totalLinesCountChanged(int currentLinesCount);
     void shortcutPressed_bold();
@@ -94,8 +96,6 @@ protected:
     void keyPressEvent(QKeyEvent *event) override;
 
     void resizeEvent(QResizeEvent *event) override;
-
-    void reloadFromFile(bool discardChanges=false);
 
     void contextMenuEvent(QContextMenuEvent* event) override;
 

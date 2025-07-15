@@ -194,6 +194,7 @@
     </widget>
     <addaction name="actionNew"/>
     <addaction name="actionLoad_file"/>
+    <addaction name="actionReload_file"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_as"/>
     <addaction name="menuOpen_recent"/>
@@ -333,6 +334,9 @@
    </property>
   </action>
   <action name="actionExit">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::ApplicationExit"/>
+   </property>
    <property name="text">
     <string>Exit</string>
    </property>
@@ -424,6 +428,20 @@
    </property>
    <property name="text">
     <string>Stc Preview (account at Cpp0x.pl required)</string>
+   </property>
+  </action>
+  <action name="actionReload_file">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::DocumentRevert"/>
+   </property>
+   <property name="text">
+    <string>Reload file</string>
+   </property>
+   <property name="shortcut">
+    <string>F5</string>
    </property>
   </action>
  </widget>
@@ -770,22 +788,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>menuFile</sender>
-   <signal>aboutToShow()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>onRecentRecentFilesMenuOpened()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>100</x>
-     <y>159</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>399</x>
-     <y>242</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>actionStc_Preview_account_at_Cpp0x_pl_required</sender>
    <signal>toggled(bool)</signal>
    <receiver>stcPreviewDockWidget</receiver>
@@ -806,6 +808,22 @@
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>onShowStcPreviewTriggered()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>242</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionReload_file</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onReloadFilePressed()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -840,5 +858,6 @@
   <slot>onGoToLineShowChanged(bool)</slot>
   <slot>onBreadcrumbVisibilityChanged(bool)</slot>
   <slot>onShowStcPreviewTriggered()</slot>
+  <slot>onReloadFilePressed()</slot>
  </slots>
 </ui>

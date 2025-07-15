@@ -816,7 +816,7 @@ void CodeEditor::fileChanged(const QString &path)
 
         if (response == QMessageBox::Yes)
         {
-            reloadFromFile(true);
+            reloadFromFile(/*discardChanges=*/true);
         }
 
         enableWatchingOfFile(path);

@@ -1,11 +1,11 @@
-[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/baziorek/STC_editor/tree/master/README.md)
+[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/baziorek/STC_editor/tree/master/README_ang.md)
 
 # Edytor STC
 
 Prosty edytor tekstu stworzony w Qt, ułatwiający wstawianie znaczników [STC](https://cpp0x.pl/kursy/Kurs-STC/169) używanych na platformie [cpp0x.pl](https://cpp0x.pl/).
 
 ## Opis
-Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników STC na potrzeby tworzenia treści dla cpp0x.pl. Oferuje prosty interfejs oparty na Qt z polem tekstowym i przyciskami do wstawiania znaczników STC oraz dedykowane funkcje zwiększające produktywność.
+Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników STC na potrzeby tworzenia treści dla [cpp0x.pl](https://cpp0x.pl/). Oferuje prosty interfejs oparty na Qt z polem tekstowym i przyciskami do wstawiania znaczników STC oraz dedykowane funkcje zwiększające produktywność.
 
 ![Zrzut ekranu](screens/applicationSample.png)
 
@@ -36,9 +36,9 @@ Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników
 
 ## Ogólne funkcje edytora
 Jeśli ktoś chce tego używać do innych celów:
- 1. **Operacje na plikach**: Wczytywanie i zapisywanie plików z obsługą kodowania UTF-8.
+ 1. **Operacje na plikach**: Wczytywanie i zapisywanie plików z obsługą kodowania UTF-8, przeładowanie pliku.
  2. **Ostatnio otwarte pliki**: Zapamiętuje ostatnio używane pliki wraz z ostatnią pozycją w pliku dla szybkiego dostępu.
-   - Zapamiętana jest również data ostatniego otwarcia pliku w edytorze. 
+    - Zapamiętana jest również data ostatniego otwarcia pliku w edytorze. 
  3. **Wykrywanie zmian zewnętrznych**: Powiadamia o modyfikacjach pliku z zewnątrz.
  4. **Numerowanie linii**: Dodawanie numeracji do zaznaczonych linii przez menu kontekstowe (funkcja z menu kontekstowego).
  5. **Łączenie linii**: Łączenie wielu zaznaczonych linii w jedną, oddzieloną spacjami (funkcja z menu kontekstowego).
@@ -53,7 +53,7 @@ Jeśli ktoś chce tego używać do innych celów:
       - Z uwzględnieniem wielkości liter, tylko całe słowa.
       - Bez uwzględniania wielkości liter, tylko całe słowa.
 10. **Skalowanie czcionki**: Powiększanie/pomniejszanie czcionki za pomocą `Ctrl++` i `Ctrl+-` lub `Ctrl+MOUSE_SCROLL`.
-11. **Pasek stanu**: Pokazuje liczbę niezapisanych zmienionych linii, czas ostatniej edycji i zapisu (tylko przy niezapisanych zmianach).
+11. **Pasek stanu**: Pokazuje nazwę otwartego pliku, ale też liczbę niezapisanych zmienionych linii, czas ostatniej edycji i zapisu (tylko przy niezapisanych zmianach).
 12. **Oznaczenie aktualnej linii**: Śledzenie aktualnej pozycji kursora klawiatury w ramach linijki
 
 ## Planowane funkcjonalności
@@ -69,6 +69,8 @@ Jeśli ktoś chce tego używać do innych celów:
      - Weryfikacja, czy wszystkie znaczniki są zamknięte (np. po opuszczeniu linijki sprawdzamy czy są tam zmiany, jak tak, to czy jest tam nowy tag)
      - Weryfikacja odpowiednich atrybutów w tagach (czy w cudzysłowiu, czy tylko dozwole atrubytu)
      - Weryfikacja czy wprowadzono tylko legalne tagi STC
+- Dodatkowe eventy z edytora: zmieniona linia i reakcja na nie różnych przeglądających koncepty
+- MiniBug: funkcjonalność zmiany wielkości czcionki zakłóca nowe tagi. Jak powiększymy czcionkę i potem dodamy coś np. H1, to on będzie miał czcionkę nawet mniejszą niż reszta, mimo iż to nagłówek
 
 ### Pomysły na przyszłość
 
@@ -103,7 +105,7 @@ Jeśli ktoś chce tego używać do innych celów:
 29. Następna zmiana: przycisk pozwalający skakać po zmianach w dokumencie
 30. chowanie breadcrumb
 31. enter na wyszukiwaniu skacze do miejsca wykrycia
-32.     SHIFT N: kolejne wykrycie i też trzeba by wymyślić poprzednie
+32. SHIFT N: kolejne wykrycie i też trzeba by wymyślić poprzednie
 33. Dodać check: czy nie zamykam nieotwartego tagu?
 34. Sprawdzenie czy Run nie jest poza csv lub pkt
 35. Refaktoring: Jeśli wczytywanie pliku jest przez CodeEditor, to zapis pliku też konsekwentnie powinien stamtąd iść
@@ -129,6 +131,15 @@ Jeśli ktoś chce tego używać do innych celów:
 55. Prawy przycisk myszy na: tagach `img`, `a href`, `pkt`, `csv` powinien dawać możliwość dodania/usunięcia atrybutów
 56. Śledzenie pozycji między pozycją w dokumencie źródłowym a podglądem HTML
 57. Podgląd terminala
+58. Wklejenie linka na zaznaczony tekst powinno otoczyć tekst przez `[a href=`
+59. Ctrl + V gdy mamy obrazek
+60. Ctrl + V gdy mamy tabelkę
+61. Podgląd obrazka po najechaniu - nawet gdy adres internetowy
+62. Brakuje przycisku wstawiającego img
+63. Zmiana wielkości czcionki powinna też wpłynąć na czcionkę w ramach numeracji linii
+64. Podgląd strony internetowej po najechaniu myszką
+65. Popraw numeracje dla zaznaczonego tekstu
+66. Klikalne linki
 
 ## Współpraca
 
