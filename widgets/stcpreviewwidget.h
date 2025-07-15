@@ -9,8 +9,6 @@
 #include <QUrlQuery>
 #include <QRegularExpression>
 
-class QLabel;
-
 /**
  * @class StcPreviewWidget
  * @brief A widget that provides real-time HTML preview rendering for STC-formatted (Smart Text Converter) text using cpp0x.pl backend.
@@ -47,7 +45,8 @@ class QLabel;
  * - This widget is designed to be embedded in applications like editors or documentation tools.
  * - It requires an active internet connection.
  */
-class StcPreviewWidget : public QWidget {
+class StcPreviewWidget : public QWidget
+{
     Q_OBJECT
 
 public:
@@ -79,7 +78,7 @@ signals:
     void loginFailed(const QString &message);
     void loginSucceeded();
 
-private:
+protected:
     void updateStatsLabel();
     void fetchStcSecurityToken();
     void loadCssAndInitialize();
@@ -87,11 +86,15 @@ private:
     void scheduleTextUpdate();
     QString escapeHtmlToJsString(const QString &html);
 
+    void enterEvent(QEnterEvent *event) override;
+    void leaveEvent(QEvent *event) override;
+
     QUrl makeUrl(const QString &path) const
     {
         return baseUrl.resolved(QUrl(path));
     }
 
+private:
     const QUrl baseUrl{"https://cpp0x.pl"};
 
     QWebEngineView webView;
@@ -106,5 +109,4 @@ private:
     bool hasPendingUpdate = false;
 
     Stats stats;
-    QLabel *statsLabel = nullptr;
 };

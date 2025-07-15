@@ -2,6 +2,9 @@
 #include <QVBoxLayout>
 #include <QNetworkReply>
 #include <QNetworkReply>
+#include <QEnterEvent>
+#include <QToolTip>
+#include <QCursor>
 #include "stcpreviewwidget.h"
 
 
@@ -27,13 +30,6 @@ StcPreviewWidget::StcPreviewWidget(QWidget *parent) : QWidget(parent)
     auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
 
-    statsLabel = new QLabel(this);
-    statsLabel->setText("Preview statistics will appear here...");
-    statsLabel->setStyleSheet("QLabel { color: gray; font-size: 11px; }");
-    statsLabel->setFixedHeight(fontMetrics().height() + 4);
-    statsLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-
-    layout->addWidget(statsLabel);
     layout->addWidget(&webView);
 
     // Display initial empty preview container
@@ -216,8 +212,6 @@ void StcPreviewWidget::sendTextRequest(const QString &text)
         webView.page()->runJavaScript(js);
         emit htmlReady(html);
 
-        updateStatsLabel();
-
         if (hasPendingUpdate && pendingText != lastSentText)
         {
             scheduleTextUpdate();
@@ -235,8 +229,24 @@ QString StcPreviewWidget::escapeHtmlToJsString(const QString &html)
 
 void StcPreviewWidget::updateStatsLabel()
 {
-    statsLabel->setText(QString("Requests: %1 | Sent: %2 | Received: %3")
-                            .arg(stats.requestCount)
-                            .arg(humanReadableBytes(stats.bytesSent))
-                            .arg(humanReadableBytes(stats.bytesReceived)));
+    QString text = QString("Requests: %1 | Sent: %2 | Received: %3")
+        .arg(stats.requestCount)
+        .arg(humanReadableBytes(stats.bytesSent))
+        .arg(humanReadableBytes(stats.bytesReceived));
+
+    // Show the tooltip at the top of the widget (under mouse or at fixed point)
+    QPoint globalPos = mapToGlobal(QPoint(width() / 2, 0));
+    QToolTip::showText(globalPos, text, this);
+}
+
+void StcPreviewWidget::enterEvent(QEnterEvent *event)
+{
+    Q_UNUSED(event);
+    updateStatsLabel();
+}
+
+void StcPreviewWidget::leaveEvent(QEvent *event)
+{
+    Q_UNUSED(event);
+    QToolTip::hideText();
 }
