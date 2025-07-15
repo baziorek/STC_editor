@@ -45,7 +45,7 @@ set(PROJECT_SOURCES
     checkers/PairedTagsChecker.h checkers/PairedTagsChecker.cpp
     types/stcTags.h types/stcTags.cpp
     types/CodeBlock.h
-    widgets/filteredtagtablewidget.h widgets/filteredtagtablewidget.cpp
+    widgets/FilteredTagTableWidget.h widgets/FilteredTagTableWidget.cpp
     widgets/stcpreviewwidget.h widgets/stcpreviewwidget.cpp
     widgets/CodeBlocksTableWidget.h widgets/CodeBlocksTableWidget.cpp
     widgets/LoginDialog.h widgets/LoginDialog.cpp

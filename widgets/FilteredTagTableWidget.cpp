@@ -1,6 +1,6 @@
 #include <QToolTip>
 #include <QAction>
-#include "filteredtagtablewidget.h"
+#include "FilteredTagTableWidget.h"
 #include "codeeditor.h"
 
 
