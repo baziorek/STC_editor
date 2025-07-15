@@ -10,6 +10,7 @@
 #include <QImageReader>
 #include <QShortcut>
 #include <QProcess>
+#include <QDesktopServices>
 #include "codeeditor.h"
 #include "linenumberarea.h"
 #include "stcsyntaxhighlighter.h"
@@ -1215,4 +1216,37 @@ QVector<CodeBlock> CodeEditor::parseAllCodeBlocks()
         result.append(b);
     }
     return result;
+}
+
+void CodeEditor::mousePressEvent(QMouseEvent* event)
+{
+    if (event->button() == Qt::LeftButton && (event->modifiers() & Qt::ControlModifier))
+    {
+        QTextCursor cursor = cursorForPosition(event->pos());
+        const QTextBlock block = cursor.block();
+        const QString text = block.text();
+        const int clickPosInBlock = cursor.position() - block.position();
+
+        static const QRegularExpression hrefRegex(
+            R"__(\[a\s+href="([^"]+)"(?:\s+name="([^"]*)")?\])__",
+            QRegularExpression::CaseInsensitiveOption);
+
+        auto matchIterator = hrefRegex.globalMatch(text);
+        while (matchIterator.hasNext())
+        {
+            const QRegularExpressionMatch match = matchIterator.next();
+            const int start = match.capturedStart(0);
+            const int end = match.capturedEnd(0);
+
+            if (clickPosInBlock >= start && clickPosInBlock <= end)
+            {
+                const QString url = match.captured(1).trimmed();
+                QDesktopServices::openUrl(QUrl(url, QUrl::TolerantMode));
+                return; // stop propagation
+            }
+        }
+    }
+
+    // default behavior
+    QPlainTextEdit::mousePressEvent(event);
 }

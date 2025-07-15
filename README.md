@@ -33,6 +33,7 @@ Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników
 14. **Podgląd strony w czasie rzeczywistym**: Jest możliwe użycie w programie [backendu konwertującego kod ze znacznikami STC na kod HTML](https://cpp0x.pl/stc/).
     - Dostępne są również statystyki: ile danych wysłano i pobrano, widoczne po najechaniu myszką na obszar renderujący
 15. **Śledzenie TODO w dokumencie**: W podglądzie dokumentu widać komentarze `TODO: ` wraz z tekstem na prawo od tego.
+16. **Klikalne linki**: wewnątrz tagów z linkiem `[a href="..."]` lub `[a href="..." name="..."]` możemy przytrzymać CTRL + lewy przycisk myszy i nam się otworzy dany link
 
 ## Ogólne funkcje edytora
 Jeśli ktoś chce tego używać do innych celów:
@@ -140,6 +141,7 @@ Jeśli ktoś chce tego używać do innych celów:
 64. Podgląd strony internetowej po najechaniu myszką
 65. Popraw numeracje dla zaznaczonego tekstu
 66. Klikalne linki
+67. W danej linii da się wpisać dane np.: `QTextBlockUserData` i potem `block.setUserData(data);` - może da się to wykorzystać w optymalizacji
 
 ## Współpraca
 
