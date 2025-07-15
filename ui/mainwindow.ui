@@ -835,6 +835,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>menuFile</sender>
+   <signal>aboutToShow()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onRecentRecentFilesMenuOpened()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>92</x>
+     <y>162</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>242</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onSaveAsPressed()</slot>

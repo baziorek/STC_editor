@@ -1,4 +1,4 @@
-/// the code of the class is copied from: https://doc.qt.io/qt-6.2/qtwidgets-widgets-codeeditor-example.html
+/// the code of the class was inspired by: https://doc.qt.io/qt-6.2/qtwidgets-widgets-codeeditor-example.html
 #pragma once
 
 #include <QPlainTextEdit>
@@ -11,8 +11,6 @@ class CodeEditor : public QPlainTextEdit
 {
     Q_OBJECT
 
-    QString openedFileName;
-
 public:
     CodeEditor(QWidget *parent = nullptr);
     ~CodeEditor();
@@ -22,10 +20,7 @@ public:
 
     bool noUnsavedChanges() const;
 
-    const auto& getFileName() const
-    {
-        return openedFileName;
-    }
+    const QString getFileName() const;
     void setFileName(const QString& newFileName);
     void enableWatchingOfFile(const QString& newFileName);
 

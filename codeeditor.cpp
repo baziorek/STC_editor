@@ -146,14 +146,14 @@ int CodeEditor::lineNumberAreaWidth()
 bool CodeEditor::noUnsavedChanges() const
 {
     const auto currentlyVisibleText = toPlainText();
-    if (openedFileName.isEmpty())
+    if (getFileName().isEmpty())
     {
         return currentlyVisibleText.isEmpty();
     }
 
     try
     {
-        const auto fileContent = getFileContent(openedFileName);
+        const auto fileContent = getFileContent(getFileName());
 
         return fileContent == currentlyVisibleText;
     }
@@ -164,18 +164,44 @@ bool CodeEditor::noUnsavedChanges() const
     }
 }
 
+const QString CodeEditor::getFileName() const
+{
+    return document()->baseUrl().toLocalFile();
+}
+
 void CodeEditor::setFileName(const QString &newFileName)
 {
-    openedFileName = newFileName;
-    if (! openedFileName.isEmpty() && QFile::exists(openedFileName))
+    document()->setBaseUrl(QUrl::fromLocalFile(newFileName));
+    setDocumentTitle(QFileInfo(newFileName).fileName());
+
+    // File watching
+    if (!newFileName.isEmpty() && QFile::exists(newFileName))
     {
-        enableWatchingOfFile(openedFileName);
+        enableWatchingOfFile(newFileName);
     }
     else
     {
         fileWatcher.removePaths(fileWatcher.files());
     }
+    // openedFileName = newFileName;
+    // if (! openedFileName.isEmpty() && QFile::exists(openedFileName))
+    // {
+    //     enableWatchingOfFile(openedFileName);
+    // }
+    // else
+    // {
+    //     fileWatcher.removePaths(fileWatcher.files());
+    // }
 }
+// void CodeEditor::setFileName(const QString& filePath)
+// {
+//     document()->setBaseUrl(QUrl::fromLocalFile(filePath));
+//     setDocumentTitle(QFileInfo(filePath).fileName());
+
+//     // Jeśli potrzebujesz dodatkowo, możesz też:
+//     trackOriginalVersionOfFile(filePath);
+// }
+
 
 void CodeEditor::enableWatchingOfFile(const QString &newFileName)
 {
@@ -265,7 +291,7 @@ void CodeEditor::reloadFromFile(bool discardChanges)
     const auto currentLineBeforeReloading = textCursor().block().blockNumber();
     const auto currentColumnBeforeReloading = textCursor().positionInBlock();
 
-    if (loadFileContentDistargingCurrentContent(openedFileName))
+    if (loadFileContentDistargingCurrentContent(getFileName()))
     {
         // restore cursor position
         QTextCursor cursor = cursor4Line(currentLineBeforeReloading + 1); // +1 because lines are being counted from 1
@@ -587,7 +613,7 @@ QString CodeEditor::formatCppWithClang(const QString& code)
 
 void CodeEditor::restoreStateWhichDoesNotRequireSaving(bool discardChanges)
 {
-    if (openedFileName.isEmpty())
+    if (getFileName().isEmpty())
     {
         clear();
     }
@@ -1081,7 +1107,7 @@ void CodeEditor::markAsSaved()
     originalLines = toPlainText().split('\n');
     modifiedLines.clear();
     lastChangeTime = {};
-    fileModificationTime = QFileInfo(openedFileName).lastModified();
+    fileModificationTime = QFileInfo(getFileName()).lastModified();
     lineNumberArea->update();
 
     emit numberOfModifiedLinesChanged(0);

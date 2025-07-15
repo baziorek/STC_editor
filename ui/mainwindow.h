@@ -30,6 +30,8 @@ public slots:
     void onUpdateBreadcrumb();
     void onFileContentChanged(const QString& fileName, int changedLines);
 
+    void onShowStcPreviewTriggered();
+
     /// file menu:
     void onNewFilePressed();
     bool onSaveAsPressed();
@@ -65,9 +67,6 @@ protected:
 
     QString getClickableBreadcrumbPath(const QString &text, int cursorPos);
 
-protected slots:
-    void onShowStcPreviewTriggered();
-
 private: // methods
     void putTextBackToCursorPosition(QTextCursor &cursor, QString divClass, QString selectedText,
                                      QString textEnding, QString modifiedText);
@@ -81,7 +80,6 @@ private: // methods
     bool operationWhichDiscardsChangesRequestedReturningIfDiscarded(const QString &dialogTitle, const QString &dialogMessage);
     bool saveEntireContent2File(QString fileName);
     void updateWindowTitle(QString fileName="", QString suffix="");
-
 
     void loadSettings();
     void saveSettings();
