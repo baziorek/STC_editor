@@ -59,6 +59,8 @@ public:
 
     std::optional<CodeBlock> selectEnclosingCodeBlock(int cursorPos);
 
+    QTextCursor cursor4Line(int lineNumber) const;
+
 signals:
     void totalLinesCountChanged(int currentLinesCount);
     void shortcutPressed_bold();
@@ -96,8 +98,6 @@ protected:
     void reloadFromFile(bool discardChanges=false);
 
     void contextMenuEvent(QContextMenuEvent* event) override;
-
-    QTextCursor cursor4Line(int lineNumber) const;
 
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;

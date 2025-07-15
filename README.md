@@ -31,7 +31,8 @@ Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników
     - Zawartość plików tekstowych o rozszerzeniach wskazujących na C/C++ zostanie wstawione i otoczona tagami `[cpp]...[/cpp]`
     - Zawartość pozostałych plików tekstowych zostanie wstawiona i otoczona tagami `[code]...[/code]`
 14. **Podgląd strony w czasie rzeczywistym**: Jest możliwe użycie w programie [backendu konwertującego kod ze znacznikami STC na kod HTML](https://cpp0x.pl/stc/).
-    - Dostępne są również statystyki: ile danych wysłano i pobrano
+    - Dostępne są również statystyki: ile danych wysłano i pobrano, widoczne po najechaniu myszką na obszar renderujący
+15. **Śledzenie TODO w dokumencie**: W podglądzie dokumentu widać komentarze `TODO: ` wraz z tekstem na prawo od tego.
 
 ## Ogólne funkcje edytora
 Jeśli ktoś chce tego używać do innych celów:
@@ -60,7 +61,8 @@ Jeśli ktoś chce tego używać do innych celów:
 ### Przed pierwszym wydaniem
 
 - **Funkcje**:
-- Śledzenie TODO w dokumencie.
+- Pokazywanie zmienionych linii:
+    https://github.com/cubicdaiya/dtl używane przez https://github.com/qtpm/QDiffView ewentualnie to https://github.com/google/diff-match-patch https://stackoverflow.com/questions/47375116/how-to-use-google-diff-match-patch-library-in-c-qt
 - Wyszukaj i zamień: `Ctrl+R` z możliwością wyłączenia poszczególnych wykrytych pozycji.
   - Sprawdzania:
      - Sprawdzanie, czy znaczniki `[run]` znajdują się wewnątrz `[pkt]`.
@@ -70,62 +72,63 @@ Jeśli ktoś chce tego używać do innych celów:
 
 ### Pomysły na przyszłość
 
-- Obsługa zakładek do szybkiego przechodzenia do miejsc w kodzie.
-- Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
-- Otwieranie wielu plików jednocześnie.
-- Widok sąsiadujący do porównywania plików.
-- Eksport bloków kodu do osobnych plików.
-- Konsolidacja obrazów do jednego katalogu z aktualizacją ścieżek w znacznikach STC.
-- Integracja analizatora składni C++ (np. [flex](https://github.com/westes/flex)).
-- Podświetlanie składni C++ i Pythona za pomocą [QCXXHighlighter](https://github.com/Megaxela/QCodeEditor) (licencja MIT).
-- Kreator tabel dla znaczników STC.
-- Wyświetlanie statystyk zmian w czasie rzeczywistym (dodane, zmodyfikowane, usunięte linie).
-- Zamiana prefiksów adresów URL dla obrazów na serwerze.
-- Historia wprowadzanych zmian (`Ctrl+Z`).
-- Wyszukiwanie wielu słów w tej samej linii niezależnie od kolejności.
-- Sprawdzanie pisowni po polsku (np. [nuspell](https://github.com/nuspell/nuspell) lub [spellchecker Qt](https://doc.qt.io/qt-6/qtwebengine-webenginewidgets-spellchecker-example.html)). https://forum.qt.io/topic/158878/check-spelling-in-qlineedit-and-qplaintextedit
-- Obsługa różnych kodowań plików z automatycznym rozpoznawaniem.
-- Obsługa wtyczek, być może z użyciem Lua.
-- Integracja dokumentacji cppreference (jak w `cppman` lub QtCreator).
-- Nagrywanie i odtwarzanie makr.
-- Zastąpienie listy kontekstu widżetem drzewiastym.
-- Dodanie ikon do akcji w menu i menu kontekstowym.
-- Pokazywanie różnic w liniach znak po znaku.
-- Optymalizacja wydajności edytora przy szybkim pisaniu.
-- Dopasowanie rozmiaru numeracji linii do wielkości czcionki.
-- Skanowanie dokumentu w osobnym wątku dla lepszej wydajności.
-- Podświetlanie bieżącej linii dla lepszej widoczności kursora.
-- Sensowne funkcjonalności z innych podobnych edytorów np. [Scribe-Text-Editor](https://github.com/AleksandrHovhannisyan/Scribe-Text-Editor)
-- Ctrl + F gdy mamy focus w dokumencie powinno zyskać focus, a nie zniknąć
-- Sprawdzenie czy link istnieje
-- Następna zmiana - przycisk pozwalający skakać po zmianach w dokumencie
-- chowanie breadcrumb
-- enter na wyszukiwaniu skacze do miejsca wykrycia
-    - SHIFT N - kolejne wykrycie i też trzeba by wymyślić poprzednie
-- Dodać check: czy nie zamykam nieotwartego tagu?
-- Sprawdzenie czy Run nie jest poza csv lub pkt
-- Refaktoring: Jeśli wczytywanie pliku jest przez CodeEditor, to zapis pliku też konsekwentnie powinien stamtąd iść
-- Tłumaczenia aplikacji na wiele języków: QLinguist
-- Rozważyć użycie innej biblioteki do porównywania np. https://github.com/google/diff-match-patch
-- Szukanie tylko w kodzie
-- Przeciągnij i upuść pliku z kodem
-- Formatowanie kodu C++ dedykowane
-- W linijce gradient ostatnio używanych linii z numerami ile temu
-- Przy CTRL + SCROLL wyświetlanie informacji o rozmiarze czcionki (jak QtCreator)
-- Ukrycie tagów, nie licząc otaczających (rich text editor)
-- Przycisk na sformatowanym tekście powinien usunąć dane formatowanie - np. jak klikniemy CTRL+B na pogrubionym to aby nie był pogrubiony
-- Wyszukiwanie tekstu może też oznaczyć szukany tekst w dokumencie np. ramką
-- Kontekst trzeba by uprościć, aby zawierał tylko nagłówki (domyślnie)
-- Historia zmian w linii
-- Precompiled headers dla codeEditor.h i moduły
-- IWYU podpiąć pod CMake'a
-- Zwijanie nagłówków i kodu (jak funkcje w środowiskach programistycznych)
-- Automatyczne backupy treści
-- Do formatowania znajduje plik `clang-format`, który jest w aktualnym katalogu (obok pliku, który edytujemy)
-- Klikanie na linku Ctrl + click - otwieranie linka
-- Kurs STC wbudowany w program
-- Prawy przycisk myszy na: tagach `img`, `a href`, `pkt`, `csv` powinien dawać możliwość dodania/usunięcia atrybutów
-- Śledzenie pozycji między pozycją w dokumencie źródłowym a podglądem HTML
+1. Obsługa zakładek do szybkiego przechodzenia do miejsc w kodzie.
+2. Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
+3. Otwieranie wielu plików jednocześnie.
+4. Widok sąsiadujący do porównywania plików.
+5. Eksport bloków kodu do osobnych plików.
+6. Konsolidacja obrazów do jednego katalogu z aktualizacją ścieżek w znacznikach STC.
+7. Integracja analizatora składni C++ (np. [flex](https://github.com/westes/flex)).
+8. Podświetlanie składni C++ i Pythona za pomocą [QCXXHighlighter](https://github.com/Megaxela/QCodeEditor) (licencja MIT).
+9. Kreator tabel dla znaczników STC.
+10. Wyświetlanie statystyk zmian w czasie rzeczywistym (dodane, zmodyfikowane, usunięte linie).
+11. Zamiana prefiksów adresów URL dla obrazów na serwerze.
+12. Historia wprowadzanych zmian (`Ctrl+Z`).
+13. Wyszukiwanie wielu słów w tej samej linii niezależnie od kolejności.
+14. Sprawdzanie pisowni po polsku (np. [nuspell](https://github.com/nuspell/nuspell) lub [spellchecker Qt](https://doc.qt.io/qt-6/qtwebengine-webenginewidgets-spellchecker-example.html)). https://forum.qt.io/topic/158878/check-spelling-in-qlineedit-and-qplaintextedit
+15. Obsługa różnych kodowań plików z automatycznym rozpoznawaniem.
+16. Obsługa wtyczek, być może z użyciem Lua.
+17. Integracja dokumentacji cppreference (jak w `cppman` lub QtCreator).
+18. Nagrywanie i odtwarzanie makr.
+19. Zastąpienie listy kontekstu widżetem drzewiastym.
+20. Dodanie ikon do akcji w menu i menu kontekstowym.
+21. Pokazywanie różnic w liniach znak po znaku.
+22. Optymalizacja wydajności edytora przy szybkim pisaniu.
+23. Dopasowanie rozmiaru numeracji linii do wielkości czcionki.
+24. Skanowanie dokumentu w osobnym wątku dla lepszej wydajności.
+25. Podświetlanie bieżącej linii dla lepszej widoczności kursora.
+26. Sensowne funkcjonalności z innych podobnych edytorów np. [Scribe-Text-Editor](https://github.com/AleksandrHovhannisyan/Scribe-Text-Editor)
+27. Ctrl + F gdy mamy focus w dokumencie powinno zyskać focus, a nie zniknąć
+28. Sprawdzenie czy link istnieje
+29. Następna zmiana: przycisk pozwalający skakać po zmianach w dokumencie
+30. chowanie breadcrumb
+31. enter na wyszukiwaniu skacze do miejsca wykrycia
+32.     SHIFT N: kolejne wykrycie i też trzeba by wymyślić poprzednie
+33. Dodać check: czy nie zamykam nieotwartego tagu?
+34. Sprawdzenie czy Run nie jest poza csv lub pkt
+35. Refaktoring: Jeśli wczytywanie pliku jest przez CodeEditor, to zapis pliku też konsekwentnie powinien stamtąd iść
+36. Tłumaczenia aplikacji na wiele języków: QLinguist
+37. Rozważyć użycie innej biblioteki do porównywania np. https://github.com/google/diff-match-patch
+38. Szukanie tylko w kodzie
+39. Przeciągnij i upuść pliku z kodem
+40. Formatowanie kodu C++ dedykowane
+41. W linijce gradient ostatnio używanych linii z numerami ile temu
+42. Przy CTRL + SCROLL wyświetlanie informacji o rozmiarze czcionki (jak QtCreator)
+43. Ukrycie tagów, nie licząc otaczających (rich text editor)
+44. Przycisk na sformatowanym tekście powinien usunąć dane formatowanie: np. jak klikniemy CTRL+B na pogrubionym to aby nie był pogrubiony
+45. Wyszukiwanie tekstu może też oznaczyć szukany tekst w dokumencie np. ramką
+46. Kontekst trzeba by uprościć, aby zawierał tylko nagłówki (domyślnie)
+47. Historia zmian w linii
+48. Precompiled headers dla codeEditor.h i moduły
+49. IWYU podpiąć pod CMake'a
+50. Zwijanie nagłówków i kodu (jak funkcje w środowiskach programistycznych)
+51. Automatyczne backupy treści
+52. Do formatowania znajduje plik `clang-format`, który jest w aktualnym katalogu (obok pliku, który edytujemy)
+53. Klikanie na linku Ctrl + click: otwieranie linka
+54. Kurs STC wbudowany w program
+55. Prawy przycisk myszy na: tagach `img`, `a href`, `pkt`, `csv` powinien dawać możliwość dodania/usunięcia atrybutów
+56. Śledzenie pozycji między pozycją w dokumencie źródłowym a podglądem HTML
+57. Podgląd terminala
 
 ## Współpraca
 

@@ -59,8 +59,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->findWidget->setCodeEditor(ui->textEditor);
     ui->textEditor->setFocus();
     ui->breadcrumbTextBrowser->setFrameStyle(QFrame::NoFrame);
+
     ui->contextTableWidget->setTextEditor(ui->textEditor);
     ui->codesListTableWidget->setTextEditor(ui->textEditor);
+    ui->todosTableWidget->setTextEditor(ui->textEditor);
 
     connect(ui->buttonsEmittingStc, &StcTagsButtons::buttonPressed, this, &MainWindow::onStcTagsButtonPressed);
     connect(ui->contextTableWidget, &FilteredTagTableWidget::goToLineClicked, ui->textEditor, &CodeEditor::go2LineRequested);

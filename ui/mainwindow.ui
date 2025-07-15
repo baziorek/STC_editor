@@ -114,6 +114,16 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="todos">
+       <attribute name="title">
+        <string>TODOs</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_6">
+        <item>
+         <widget class="TodoTrackerTableWidget" name="todosTableWidget"/>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="errors">
        <attribute name="title">
         <string>Error list</string>
@@ -462,6 +472,11 @@
    <extends>QWidget</extends>
    <header>widgets/stcpreviewwidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>TodoTrackerTableWidget</class>
+   <extends>QTableWidget</extends>
+   <header>widgets/TodosTrackerTableWidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
