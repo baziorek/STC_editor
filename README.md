@@ -31,6 +31,7 @@ Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników
     - Zawartość plików tekstowych o rozszerzeniach wskazujących na C/C++ zostanie wstawione i otoczona tagami `[cpp]...[/cpp]`
     - Zawartość pozostałych plików tekstowych zostanie wstawiona i otoczona tagami `[code]...[/code]`
 14. **Podgląd strony w czasie rzeczywistym**: Jest możliwe użycie w programie [backendu konwertującego kod ze znacznikami STC na kod HTML](https://cpp0x.pl/stc/).
+    - Dostępne są również statystyki: ile danych wysłano i pobrano
 
 ## Ogólne funkcje edytora
 Jeśli ktoś chce tego używać do innych celów:

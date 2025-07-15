@@ -1,14 +1,39 @@
-#include <stdexcept>
+#include <QLabel>
 #include <QVBoxLayout>
 #include <QNetworkReply>
 #include <QNetworkReply>
 #include "stcpreviewwidget.h"
 
 
+namespace
+{
+QString humanReadableBytes(qint64 bytes)
+{
+    constexpr const char *units[] = {"B", "KB", "MB", "GB"};
+    double size = bytes;
+    int unit = 0;
+    while (size >= 1024.0 && unit < 3)
+    {
+        size /= 1024.0;
+        ++unit;
+    }
+    return QString::number(size, 'f', 1) + " " + units[unit];
+}
+} // namespace
+
+
 StcPreviewWidget::StcPreviewWidget(QWidget *parent) : QWidget(parent)
 {
     auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
+
+    statsLabel = new QLabel(this);
+    statsLabel->setText("Preview statistics will appear here...");
+    statsLabel->setStyleSheet("QLabel { color: gray; font-size: 11px; }");
+    statsLabel->setFixedHeight(fontMetrics().height() + 4);
+    statsLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    layout->addWidget(statsLabel);
     layout->addWidget(&webView);
 
     // Display initial empty preview container
@@ -26,7 +51,8 @@ void StcPreviewWidget::login(const QString &username, const QString &password) {
 
         QRegularExpression re("name=\"SecurityToken\" value=\"([a-z0-9]+)\"");
         QRegularExpressionMatch match = re.match(html);
-        if (!match.hasMatch()) {
+        if (!match.hasMatch())
+        {
             emit loginFailed("Security token not found on login page.");
             return;
         }
@@ -48,7 +74,8 @@ void StcPreviewWidget::login(const QString &username, const QString &password) {
             QString resp = reply->readAll();
             reply->deleteLater();
 
-            if (! resp.contains("Autoryzacja zakończona powodzeniem")) {
+            if (! resp.contains("Autoryzacja zakończona powodzeniem"))
+            {
                 emit loginFailed("Login failed: authorization string not found.");
                 return;
             }
@@ -58,7 +85,8 @@ void StcPreviewWidget::login(const QString &username, const QString &password) {
     });
 }
 
-void StcPreviewWidget::fetchStcSecurityToken() {
+void StcPreviewWidget::fetchStcSecurityToken()
+{
     // Step 2: Retrieve STC token from the STC panel page
     QNetworkRequest req(makeUrl("/stc/"));
     QNetworkReply *reply = network.get(req);
@@ -79,7 +107,8 @@ void StcPreviewWidget::fetchStcSecurityToken() {
     });
 }
 
-void StcPreviewWidget::loadCssAndInitialize() {
+void StcPreviewWidget::loadCssAndInitialize()
+{
     // Step 3: Load and embed the main stylesheet
     QNetworkRequest req(makeUrl("/release.css"));
     QNetworkReply *reply = network.get(req);
@@ -130,7 +159,8 @@ void StcPreviewWidget::updateText(const QString &text)
     scheduleTextUpdate();
 }
 
-void StcPreviewWidget::scheduleTextUpdate() {
+void StcPreviewWidget::scheduleTextUpdate()
+{
     if (requestInProgress)
     {
         return;
@@ -147,7 +177,8 @@ void StcPreviewWidget::scheduleTextUpdate() {
     sendTextRequest(pendingText);
 }
 
-void StcPreviewWidget::sendTextRequest(const QString &text) {
+void StcPreviewWidget::sendTextRequest(const QString &text)
+{
     QUrlQuery postData;
     postData.addQueryItem("stc", text);
     postData.addQueryItem("ajax", "ddt");
@@ -185,21 +216,27 @@ void StcPreviewWidget::sendTextRequest(const QString &text) {
         webView.page()->runJavaScript(js);
         emit htmlReady(html);
 
-        if (hasPendingUpdate && pendingText != lastSentText) {
+        updateStatsLabel();
+
+        if (hasPendingUpdate && pendingText != lastSentText)
+        {
             scheduleTextUpdate();
         }
     });
 }
 
-QString StcPreviewWidget::escapeHtmlToJsString(const QString &html) {
+QString StcPreviewWidget::escapeHtmlToJsString(const QString &html)
+{
     QJsonArray arr;
     arr.append(html);
     QString wrapped = QJsonDocument(arr).toJson(QJsonDocument::Compact);
     return wrapped.mid(2, wrapped.length() - 4); // Strip leading [" and trailing "]
 }
 
-void StcPreviewWidget::printStats() const {
-    qDebug() << "Requests:" << stats.requestCount;
-    qDebug() << "Bytes sent:" << stats.bytesSent;
-    qDebug() << "Bytes received:" << stats.bytesReceived;
+void StcPreviewWidget::updateStatsLabel()
+{
+    statsLabel->setText(QString("Requests: %1 | Sent: %2 | Received: %3")
+                            .arg(stats.requestCount)
+                            .arg(humanReadableBytes(stats.bytesSent))
+                            .arg(humanReadableBytes(stats.bytesReceived)));
 }

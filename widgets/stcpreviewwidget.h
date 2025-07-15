@@ -9,6 +9,7 @@
 #include <QUrlQuery>
 #include <QRegularExpression>
 
+class QLabel;
 
 /**
  * @class StcPreviewWidget
@@ -66,7 +67,6 @@ public:
     {
         return stats;
     }
-    void printStats() const; // TODO TOREMOVE for debugging only
 
     bool isPreviewInitialized() const
     {
@@ -80,6 +80,7 @@ signals:
     void loginSucceeded();
 
 private:
+    void updateStatsLabel();
     void fetchStcSecurityToken();
     void loadCssAndInitialize();
     void sendTextRequest(const QString &text);
@@ -105,4 +106,5 @@ private:
     bool hasPendingUpdate = false;
 
     Stats stats;
+    QLabel *statsLabel = nullptr;
 };
