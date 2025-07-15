@@ -91,7 +91,7 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);
     connect(this, &CodeEditor::updateRequest, this, &CodeEditor::updateLineNumberArea);
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::totalLinesCountChanged);
-    // connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::highlightCurrentLine);
+    connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::highlightCurrentLine);
     connect(verticalScrollBar(), &QScrollBar::valueChanged, this, &CodeEditor::onScrollChanged);
     connect(&fileWatcher, &QFileSystemWatcher::fileChanged, this, &CodeEditor::fileChanged);
 
@@ -104,9 +104,9 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 
 
     updateLineNumberAreaWidth(0);
-    // highlightCurrentLine();
+    highlightCurrentLine();
 
-    STCSyntaxHighlighter *highlighter = new STCSyntaxHighlighter(document());
+    STCSyntaxHighlighter *highlighter = new STCSyntaxHighlighter(document()); // it does not leak
 }
 CodeEditor::~CodeEditor() = default;
 
@@ -151,15 +151,17 @@ bool CodeEditor::noUnsavedChanges() const
         return currentlyVisibleText.isEmpty();
     }
 
-    QFile file(openedFileName);
-    if (!file.exists())
+    try
     {
+        const auto fileContent = getFileContent(openedFileName);
+
+        return fileContent == currentlyVisibleText;
+    }
+    catch (const std::exception& e)
+    {
+        QMessageBox::warning(const_cast<CodeEditor*>(this), "Checking if no unsaved changes failed!", e.what());
         return false;
     }
-    //  TODO: consider: !file.exists() && currentlyVisibleText.isEmpty()
-
-    file.open(QFile::ReadOnly);
-    return QString::fromUtf8(file.readAll()) == currentlyVisibleText;
 }
 
 void CodeEditor::setFileName(const QString &newFileName)
@@ -306,7 +308,8 @@ QMultiMap<QString, QKeySequence> CodeEditor::listOfShortcuts() const
 {
     QMultiMap<QString, QKeySequence> result;
 
-    for (QShortcut* s : findChildren<QShortcut*>()) {
+    for (QShortcut* s : findChildren<QShortcut*>())
+    {
         QString desc = s->objectName();
         if (desc.isEmpty())
             desc = "Editor shortcut";
@@ -613,7 +616,7 @@ void CodeEditor::highlightCurrentLine()
     {
         QTextEdit::ExtraSelection selection;
 
-        QColor lineColor = QColor(Qt::yellow).lighter(160);
+        QColor lineColor = QColor(Qt::gray).lighter(60);
 
         selection.format.setBackground(lineColor);
         selection.format.setProperty(QTextFormat::FullWidthSelection, true);
@@ -785,29 +788,21 @@ void CodeEditor::fileChanged(const QString &path)
 
     // delayed reaction
     QTimer::singleShot(300, this, [this, path]() {
-        QFile file(path);
-
-        if (!file.exists())
-        {
-            QMessageBox::warning(this, tr("File removed"),
-                                 tr("File '%1' has been removed from disk.").arg(path));
-            return; // we stop listening because file does not exist anymore
-        }
-
-        if (!file.open(QFile::ReadOnly))
-        {
-            QMessageBox::warning(this, tr("File error"),
-                                 tr("Cannot open file '%1'.").arg(path));
-            return;
-        }
-
-        const QByteArray newContent = file.readAll();
-        file.close();
-
         const QByteArray currentContent = toPlainText().toUtf8();
-        if (newContent == currentContent)
+
+        try
         {
-            enableWatchingOfFile(path);
+            const QString newContent = getFileContent(path);
+
+            if (newContent == currentContent)
+            {
+                enableWatchingOfFile(path);
+                return;
+            }
+        }
+        catch (const std::exception& e)
+        {
+            QMessageBox::warning(const_cast<CodeEditor*>(this), "Checking if no unsaved changes failed!", e.what());
             return;
         }
 

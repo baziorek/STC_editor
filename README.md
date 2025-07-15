@@ -59,8 +59,6 @@ Jeśli ktoś chce tego używać do innych celów:
 
 ### Przed pierwszym wydaniem
 
-- **Naprawy**:
-  - Naprawa problemu z pytaniem o nadpisywanie zmian, mimo ich braku, przy sekwencyjnym otwieraniu wielu plików.
 - **Funkcje**:
 - Śledzenie TODO w dokumencie.
 - Wyszukaj i zamień: `Ctrl+R` z możliwością wyłączenia poszczególnych wykrytych pozycji.
