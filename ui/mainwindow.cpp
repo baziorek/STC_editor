@@ -536,7 +536,7 @@ void MainWindow::onOpenPressed()
     }
 
     const auto fileName = chooseFileWithDialog(QFileDialog::AcceptOpen).trimmed();
-    if (loadFileContentToEditorDistargingCurrentContent(fileName))
+    if (!fileName.isEmpty() && loadFileContentToEditorDistargingCurrentContent(fileName))
     {
         updateRecentFiles(fileName);
     }
