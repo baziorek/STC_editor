@@ -34,6 +34,9 @@ StcPreviewWidget::StcPreviewWidget(QWidget *parent) : QWidget(parent)
 
     // Display initial empty preview container
     webView.setHtml("<html><body><div id='Preview'></div></body></html>", makeUrl("/"));
+
+    setFocusPolicy(Qt::NoFocus);
+    webView.setFocusPolicy(Qt::NoFocus);
 }
 
 void StcPreviewWidget::login(const QString &username, const QString &password) {
