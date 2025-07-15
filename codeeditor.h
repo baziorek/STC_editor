@@ -59,7 +59,6 @@ public:
     void reloadFromFile(bool discardChanges=false);
 
 signals:
-    void totalLinesCountChanged(int currentLinesCount);
     void shortcutPressed_bold();
     void shortcutPressed_run();
     void shortcutPressed_warning();
@@ -69,6 +68,8 @@ signals:
     void shortcutPressed_h2();
     void shortcutPressed_h3();
     void shortcutPressed_h4();
+
+    void totalLinesCountChanged(int currentLinesCount);
 
     void numberOfModifiedLinesChanged(int changedLinesCount);
 
@@ -113,7 +114,7 @@ protected:
         return !modifiedLines.isEmpty();
     }
 
-    int modifiedLineCount() const
+    auto modifiedLineCount() const
     {
         return modifiedLines.size();
     }

@@ -83,6 +83,7 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 {
     setAcceptDrops(true);
     setMouseTracking(true);
+    document()->setModified(false);
 
     registerShortcuts();
 
@@ -108,6 +109,7 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 
     STCSyntaxHighlighter *highlighter = new STCSyntaxHighlighter(document()); // it does not leak
 }
+
 CodeEditor::~CodeEditor() = default;
 
 void CodeEditor::registerShortcuts()
@@ -145,6 +147,11 @@ int CodeEditor::lineNumberAreaWidth()
 
 bool CodeEditor::noUnsavedChanges() const
 {
+    if (document()->isModified())
+    {
+        return false;
+    }
+
     const auto currentlyVisibleText = toPlainText();
     if (getFileName().isEmpty())
     {
@@ -179,29 +186,11 @@ void CodeEditor::setFileName(const QString &newFileName)
     {
         enableWatchingOfFile(newFileName);
     }
-    else
+    else if (! fileWatcher.files().isEmpty())
     {
         fileWatcher.removePaths(fileWatcher.files());
     }
-    // openedFileName = newFileName;
-    // if (! openedFileName.isEmpty() && QFile::exists(openedFileName))
-    // {
-    //     enableWatchingOfFile(openedFileName);
-    // }
-    // else
-    // {
-    //     fileWatcher.removePaths(fileWatcher.files());
-    // }
 }
-// void CodeEditor::setFileName(const QString& filePath)
-// {
-//     document()->setBaseUrl(QUrl::fromLocalFile(filePath));
-//     setDocumentTitle(QFileInfo(filePath).fileName());
-
-//     // Jeśli potrzebujesz dodatkowo, możesz też:
-//     trackOriginalVersionOfFile(filePath);
-// }
-
 
 void CodeEditor::enableWatchingOfFile(const QString &newFileName)
 {
@@ -307,6 +296,8 @@ bool CodeEditor::loadFileContentDistargingCurrentContent(const QString& fileName
     {
         const auto fileContent = getFileContent(fileName);
         setPlainText(fileContent);
+
+        document()->setModified(false);
 
         trackOriginalVersionOfFile(fileName);
 
@@ -1093,6 +1084,10 @@ void CodeEditor::updateDiffWithOriginal()
     {
         modifiedLines = newDiff;
         emit numberOfModifiedLinesChanged(modifiedLines.size());
+        if (0 == modifiedLines.size()) // CTRL + Z or CTRL + Y can remove changes to file
+        {
+            document()->setModified(false);
+        }
     }
 
     // Optional: emit signal to refresh UI with updated status bar
@@ -1111,6 +1106,8 @@ void CodeEditor::markAsSaved()
     lineNumberArea->update();
 
     emit numberOfModifiedLinesChanged(0);
+
+    document()->setModified(false);
 }
 
 QString CodeEditor::getFileModificationInfoText() const
