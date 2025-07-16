@@ -23,7 +23,7 @@ public slots:
     void keyPressEvent(QKeyEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
 
-    bool loadFileContentToEditorDistargingCurrentContent(QString fileName);
+    bool loadFileContentToEditorDistargingCurrentContent(const QString& fileName);
 
     void onStcTagsButtonPressed(StcTags stcTag);
 

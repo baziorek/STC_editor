@@ -546,10 +546,9 @@ void MainWindow::onOpenPressed()
     }
 
     const auto fileName = chooseFileWithDialog(QFileDialog::AcceptOpen).trimmed();
-    if (!fileName.isEmpty() && loadFileContentToEditorDistargingCurrentContent(fileName))
+    if (! fileName.isEmpty())
     {
-        ui->actionReload_file->setEnabled(true);
-        updateRecentFiles(fileName);
+        loadFileContentToEditorDistargingCurrentContent(fileName);
     }
 }
 
@@ -570,7 +569,7 @@ void MainWindow::onReloadFilePressed()
     ui->textEditor->reloadFromFile(/*discardChanges=*/true);
 }
 
-bool MainWindow::loadFileContentToEditorDistargingCurrentContent(QString fileName)
+bool MainWindow::loadFileContentToEditorDistargingCurrentContent(const QString& fileName)
 {
     if (ui->textEditor->loadFileContentDistargingCurrentContent(fileName))
     {
@@ -580,8 +579,14 @@ bool MainWindow::loadFileContentToEditorDistargingCurrentContent(QString fileNam
 
         updateWindowTitle(fileName);
 
+        ui->actionReload_file->setEnabled(true);
+        updateRecentFiles(fileName);
+
         return true;
     }
+
+    QMessageBox::warning(this, "Error opening file", "File '" + fileName + "' failed to be opened from commandline!");
+
     return false;
 }
 
