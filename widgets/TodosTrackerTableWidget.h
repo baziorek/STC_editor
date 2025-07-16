@@ -2,6 +2,7 @@
 
 #include <QTableWidget>
 #include <QMap>
+#include <QTextCursor>
 
 class CodeEditor;
 
@@ -11,31 +12,38 @@ class TodoTrackerTableWidget : public QTableWidget
     Q_OBJECT
 
 public:
+    struct TodoInfo
+    {
+        QTextCursor cursor;   // live position in document
+        QString text;         // todo message
+    };
+
     explicit TodoTrackerTableWidget(QWidget* parent = nullptr);
 
     void setTextEditor(CodeEditor* newEditor);
 
     CodeEditor* getTextEditor() const { return textEditor; }
 
-    void clearTodos();
+signals:
+    void goToLineRequested(int lineNumber);
+    void goToLineAndOffsetRequested(int lineNumber, int linePosition);
+    void todosTotalCountChanged(int totalTodos);
 
 private slots:
+    void onCellSingleClicked(int row, int);
     void onLineContentChanged(int position, int, int);
 
 protected:
     void scanEntireDocumentDetectingAllTodos();
     void showEvent(QShowEvent *event) override;
 
+    void refreshTable();
 private:
     void setupTable();
 
-    void updateOrRemoveTodoForLine(int lineNumber, const QString& lineText);
-
-    void removeTodoRow(int lineNumber);
-
 private:
     CodeEditor* textEditor = nullptr;
-    QMap<int, int> lineToRowMap; // maps line number to row in table
-    // static inline const QRegularExpression todoRegex{R"__(\bTODO\s*:\s*(.*))__"};
+    QList<TodoInfo> todoList;
+
     static inline const QRegularExpression todoRegex{R"(\bTODO\b[:]? *(.*))", QRegularExpression::CaseInsensitiveOption};
 };

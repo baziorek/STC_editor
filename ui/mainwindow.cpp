@@ -74,6 +74,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->textEditor, &CodeEditor::numberOfModifiedLinesChanged, [this](int linesNumber) {
         this->onFileContentChanged(ui->textEditor->getFileName(), linesNumber);
     });
+    connect(ui->todosTableWidget, &TodoTrackerTableWidget::todosTotalCountChanged, [this](int todosTotal) {
+        ui->contextsTabWidget->setTabText(2, tr("TODOs (") + QString::number(todosTotal) + ")");
+    });
 
     connect(ui->breadcrumbTextBrowser, &QTextBrowser::anchorClicked, this, [this](const QUrl& url) {
         bool ok = true;

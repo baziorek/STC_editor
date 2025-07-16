@@ -32,7 +32,7 @@ Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników
     - Zawartość pozostałych plików tekstowych zostanie wstawiona i otoczona tagami `[code]...[/code]`
 14. **Podgląd strony w czasie rzeczywistym**: Jest możliwe użycie w programie [backendu konwertującego kod ze znacznikami STC na kod HTML](https://cpp0x.pl/stc/).
     - Dostępne są również statystyki: ile danych wysłano i pobrano, widoczne po najechaniu myszką na obszar renderujący
-15. **Śledzenie TODO w dokumencie**: W podglądzie dokumentu widać komentarze `TODO: ` wraz z tekstem na prawo od tego.
+15. **Śledzenie TODO w dokumencie**: W podglądzie dokumentu widać komentarze `TODO: ` wraz z tekstem na prawo od tego, są one klikalne i wtedy przechodzą do danej pozycji.
 16. **Klikalne linki**: wewnątrz tagów z linkiem `[a href="..."]` lub `[a href="..." name="..."]` możemy przytrzymać CTRL + lewy przycisk myszy i nam się otworzy dany link
 
 ## Ogólne funkcje edytora
@@ -127,7 +127,7 @@ Jeśli ktoś chce tego używać do innych celów:
 50. Zwijanie nagłówków i kodu (jak funkcje w środowiskach programistycznych)
 51. Automatyczne backupy treści
 52. Do formatowania znajduje plik `clang-format`, który jest w aktualnym katalogu (obok pliku, który edytujemy)
-53. Klikanie na linku Ctrl + click: otwieranie linka
+53. W danej linii da się wpisać dane np.: `QTextBlockUserData` i potem `block.setUserData(data);` - może da się to wykorzystać w optymalizacji
 54. Kurs STC wbudowany w program
 55. Prawy przycisk myszy na: tagach `img`, `a href`, `pkt`, `csv` powinien dawać możliwość dodania/usunięcia atrybutów
 56. Śledzenie pozycji między pozycją w dokumencie źródłowym a podglądem HTML
@@ -140,8 +140,6 @@ Jeśli ktoś chce tego używać do innych celów:
 63. Zmiana wielkości czcionki powinna też wpłynąć na czcionkę w ramach numeracji linii
 64. Podgląd strony internetowej po najechaniu myszką
 65. Popraw numeracje dla zaznaczonego tekstu
-66. Klikalne linki
-67. W danej linii da się wpisać dane np.: `QTextBlockUserData` i potem `block.setUserData(data);` - może da się to wykorzystać w optymalizacji
 
 ## Współpraca
 

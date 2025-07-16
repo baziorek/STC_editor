@@ -14,6 +14,8 @@ TodoTrackerTableWidget::TodoTrackerTableWidget(QWidget *parent)
     : QTableWidget(parent)
 {
     setupTable();
+
+    connect(this, &QTableWidget::cellClicked, this, &TodoTrackerTableWidget::onCellSingleClicked);
 }
 
 void TodoTrackerTableWidget::setTextEditor(CodeEditor *newEditor)
@@ -21,6 +23,9 @@ void TodoTrackerTableWidget::setTextEditor(CodeEditor *newEditor)
     if (textEditor)
     {
         disconnect(textEditor->document(), &QTextDocument::contentsChange, this, &TodoTrackerTableWidget::onLineContentChanged);
+
+        disconnect(this, &TodoTrackerTableWidget::goToLineAndOffsetRequested, textEditor, &CodeEditor::goToLineAndOffset);
+        disconnect(this, &TodoTrackerTableWidget::goToLineRequested, textEditor, &CodeEditor::go2LineRequested);
     }
 
     textEditor = newEditor;
@@ -28,28 +33,78 @@ void TodoTrackerTableWidget::setTextEditor(CodeEditor *newEditor)
     if (textEditor)
     {
         connect(textEditor->document(), &QTextDocument::contentsChange, this, &TodoTrackerTableWidget::onLineContentChanged);
-        QTimer::singleShot(1000, this, &TodoTrackerTableWidget::scanEntireDocumentDetectingAllTodos);
+
+        connect(this, &TodoTrackerTableWidget::goToLineAndOffsetRequested, textEditor, &CodeEditor::goToLineAndOffset);
+        connect(this, &TodoTrackerTableWidget::goToLineRequested, textEditor, &CodeEditor::go2LineRequested);
+
+        QTimer::singleShot(500, this, &TodoTrackerTableWidget::scanEntireDocumentDetectingAllTodos);
     }
 }
 
-void TodoTrackerTableWidget::clearTodos()
-{
-    setRowCount(0);
-    lineToRowMap.clear();
-}
-
-void TodoTrackerTableWidget::onLineContentChanged(int position, int, int)
+void TodoTrackerTableWidget::onLineContentChanged(int position, int charsRemoved, int charsAdded)
 {
     if (!textEditor)
         return;
 
     QTextCursor cursor(textEditor->document());
     cursor.setPosition(position);
-    int lineNumber = cursor.block().blockNumber();
-    QString lineText = cursor.block().text();
 
-    updateOrRemoveTodoForLine(lineNumber, lineText);
+    QTextBlock block = cursor.block();
+    const QString lineText = block.text();
+
+    // update existing TODO or remove it
+    QRegularExpressionMatch match = todoRegex.match(lineText);
+    auto it = std::find_if(todoList.begin(), todoList.end(),
+                           [&block](const TodoInfo& info) {
+                               return info.cursor.block() == block;
+                           });
+
+    if (match.hasMatch())
+    {
+        QString todoText = match.captured(1).trimmed();
+        if (it != todoList.end())
+        {
+            it->text = todoText;
+            it->cursor.setPosition(block.position() + match.capturedStart());
+        }
+        else
+        {
+            TodoInfo newTodo;
+            newTodo.cursor = QTextCursor(block);
+            newTodo.text = todoText;
+            todoList.append(newTodo);
+        }
+    }
+    else if (it != todoList.end())
+    {
+        todoList.erase(it);
+    }
+
+    refreshTable();
 }
+
+void TodoTrackerTableWidget::refreshTable()
+{
+    setRowCount(0);
+    int index = 0;
+
+    for (const TodoInfo& todo : todoList)
+    {
+        const int row = rowCount();
+        insertRow(row);
+
+        int line = todo.cursor.block().blockNumber() + 1;
+        int posInLine = todo.cursor.positionInBlock();
+
+        setItem(row, 0, new QTableWidgetItem(QString::number(index + 1)));
+        setItem(row, 1, new QTableWidgetItem(QString("%1:%2").arg(line).arg(posInLine)));
+        setItem(row, 2, new QTableWidgetItem(todo.text));
+        ++index;
+    }
+
+    emit todosTotalCountChanged(todoList.size());
+}
+
 
 void TodoTrackerTableWidget::showEvent(QShowEvent *event)
 {
@@ -62,16 +117,59 @@ void TodoTrackerTableWidget::showEvent(QShowEvent *event)
 
 void TodoTrackerTableWidget::scanEntireDocumentDetectingAllTodos()
 {
-    clearTodos();
-    if (textEditor)
+    todoList.clear();
+
+    QTextDocument* doc = textEditor->document();
+    for (QTextBlock block = doc->begin(); block != doc->end(); block = block.next())
     {
-        const int lineCount = textEditor->linesCount();
-        for (int i = 0; i < lineCount; ++i)
+        QString lineText = block.text();
+        QRegularExpressionMatch match = todoRegex.match(lineText);
+        if (match.hasMatch())
         {
-            QTextCursor cursor = textEditor->cursor4Line(i + 1);
-            updateOrRemoveTodoForLine(i, cursor.block().text());
+            TodoInfo info;
+            info.cursor = QTextCursor(block);
+            info.cursor.setPosition(block.position() + match.capturedStart());
+            info.text = match.captured(1).trimmed();
+            todoList.append(info);
         }
     }
+
+    refreshTable();    
+}
+
+void TodoTrackerTableWidget::onCellSingleClicked(int row, int)
+{
+    QTableWidgetItem* item = this->item(row, 1);
+    if (!item)
+        return;
+
+    auto positionLineColonColumn = item->text();
+    if (positionLineColonColumn.isEmpty())
+    {
+        return;
+    }
+
+    auto positionLineColonColumnSplitted = positionLineColonColumn.split(':');
+
+    bool ok;
+    const auto lineNumber = positionLineColonColumnSplitted.front().toInt(&ok);
+
+    if (! ok) // parsing number failed
+    {
+        return;
+    }
+
+    if (positionLineColonColumnSplitted.size() > 1)
+    {
+        auto positionInLine = positionLineColonColumnSplitted[1].toInt(&ok);
+        if (ok)
+        {
+            emit goToLineAndOffsetRequested(lineNumber, positionInLine);
+            return;
+        }
+    }
+
+    emit goToLineRequested(lineNumber);
 }
 
 void TodoTrackerTableWidget::setupTable()
@@ -85,52 +183,4 @@ void TodoTrackerTableWidget::setupTable()
     setEditTriggers(QAbstractItemView::NoEditTriggers);
     verticalHeader()->hide();
     setAlternatingRowColors(true);
-}
-
-void TodoTrackerTableWidget::updateOrRemoveTodoForLine(int lineNumber, const QString &lineText)
-{
-    QRegularExpressionMatch match = todoRegex.match(lineText);
-    if (match.hasMatch())
-    {
-        QString todoText = match.captured(1).trimmed();
-
-        QTextCursor cursor = textEditor->cursor4Line(lineNumber + 1);
-        int column = cursor.positionInBlock();
-
-        if (lineToRowMap.contains(lineNumber))
-        {
-            int row = lineToRowMap[lineNumber];
-            item(row, 1)->setText(QString("%1:%2").arg(lineNumber + 1).arg(column));
-            item(row, 2)->setText(todoText);
-        }
-        else
-        {
-            int row = rowCount();
-            insertRow(row);
-            setItem(row, 0, new QTableWidgetItem(QString::number(row + 1)));
-            setItem(row, 1, new QTableWidgetItem(QString("%1:%2").arg(lineNumber + 1).arg(column)));
-            setItem(row, 2, new QTableWidgetItem(todoText));
-            lineToRowMap[lineNumber] = row;
-        }
-    }
-    else if (lineToRowMap.contains(lineNumber))
-    {
-        removeTodoRow(lineNumber);
-    }
-}
-
-void TodoTrackerTableWidget::removeTodoRow(int lineNumber)
-{
-    int row = lineToRowMap.take(lineNumber);
-    removeRow(row);
-
-    // Update lineToRowMap indexes
-    QMap<int, int> updated;
-    for (auto it = lineToRowMap.begin(); it != lineToRowMap.end(); ++it)
-    {
-        int oldRow = it.value();
-        int updatedRow = oldRow > row ? oldRow - 1 : oldRow;
-        updated[it.key()] = updatedRow;
-    }
-    lineToRowMap = updated;
 }
