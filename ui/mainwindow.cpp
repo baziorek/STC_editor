@@ -18,7 +18,7 @@ using namespace std;
 
 namespace
 {
-constexpr int maxElementsInListOfLastElements = 5;
+constexpr int maxElementsInListOfLastElements = 10;
 
 namespace GeometryNames
 {

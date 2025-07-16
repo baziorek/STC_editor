@@ -10,6 +10,25 @@
 #include "TodosTrackerTableWidget.h"
 
 
+namespace
+{
+QList<const TodoTrackerTableWidget::TodoInfo*> sortedTagsCopy(const QList<TodoTrackerTableWidget::TodoInfo>& todoList)
+{
+    QList<const TodoTrackerTableWidget::TodoInfo*> sortedTodos;
+    for (const auto& todo : todoList)
+        sortedTodos << &todo;
+
+    std::sort(sortedTodos.begin(), sortedTodos.end(), [](const TodoTrackerTableWidget::TodoInfo* a, const TodoTrackerTableWidget::TodoInfo* b) {
+        int lineA = a->cursor.block().blockNumber();
+        int lineB = b->cursor.block().blockNumber();
+        if (lineA != lineB)
+            return lineA < lineB;
+        return a->cursor.positionInBlock() < b->cursor.positionInBlock();
+    });
+    return sortedTodos;
+}
+} // namespace
+
 TodoTrackerTableWidget::TodoTrackerTableWidget(QWidget *parent)
     : QTableWidget(parent)
 {
@@ -86,25 +105,23 @@ void TodoTrackerTableWidget::onLineContentChanged(int position, int charsRemoved
 void TodoTrackerTableWidget::refreshTable()
 {
     setRowCount(0);
+
+    QList<const TodoInfo*> sortedTodos = sortedTagsCopy(todoList);
+
     int index = 0;
-
-    for (const TodoInfo& todo : todoList)
+    for (const TodoInfo* todo : sortedTodos)
     {
-        const int row = rowCount();
-        insertRow(row);
-
-        int line = todo.cursor.block().blockNumber() + 1;
-        int posInLine = todo.cursor.positionInBlock();
-
-        setItem(row, 0, new QTableWidgetItem(QString::number(index + 1)));
-        setItem(row, 1, new QTableWidgetItem(QString("%1:%2").arg(line).arg(posInLine)));
-        setItem(row, 2, new QTableWidgetItem(todo.text));
+        int line = todo->cursor.block().blockNumber() + 1;
+        int posInLine = todo->cursor.positionInBlock();
+        insertRow(index);
+        setItem(index, 0, new QTableWidgetItem(QString::number(index + 1)));
+        setItem(index, 1, new QTableWidgetItem(QString("%1:%2").arg(line).arg(posInLine)));
+        setItem(index, 2, new QTableWidgetItem(todo->text));
         ++index;
     }
 
     emit todosTotalCountChanged(todoList.size());
 }
-
 
 void TodoTrackerTableWidget::showEvent(QShowEvent *event)
 {
