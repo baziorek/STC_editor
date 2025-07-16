@@ -1,13 +1,10 @@
 [![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/baziorek/STC_editor/tree/master/README_ang.md)
 
+<a href="https://pl.wikipedia.org/wiki/Totus_Tuus"><img width="10%"  alt="Totus Tuus" src="https://github.com/user-attachments/assets/02c77754-5d69-4688-b99b-496995de4cfe" /></a>
+
 # Edytor STC
 
 Prosty edytor tekstu stworzony w Qt, ułatwiający wstawianie znaczników [STC](https://cpp0x.pl/kursy/Kurs-STC/169) używanych na platformie [cpp0x.pl](https://cpp0x.pl/).
-
-<div style="float: right; border: 1px solid #ccc; padding: 10px; background-color: #f9f9f9;">
-  <strong>Totus Tuus</strong><br>
-  <a href="https://pl.wikipedia.org/wiki/Totus_Tuus">Dowiedz się więcej o Totus Tuus</a>
-</div>
 
 ## Opis
 Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników STC na potrzeby tworzenia treści dla [cpp0x.pl](https://cpp0x.pl/). Oferuje prosty interfejs oparty na Qt z polem tekstowym i przyciskami do wstawiania znaczników STC oraz dedykowane funkcje zwiększające produktywność.
