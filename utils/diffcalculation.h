@@ -15,8 +15,8 @@ enum /*class*/ DiffType
 
 struct DiffLine
 {
-    int oldIndex = -1;            // line number in oldLines (or -1 if added)
-    int newIndex = -1;            // line number in newLines (or -1 if removed)
+    int oldIndex = -1; // line number in oldLines (or -1 if added)
+    int newIndex = -1; // line number in newLines (or -1 if removed)
     QString oldText;
     QString newText;
     DiffType type;

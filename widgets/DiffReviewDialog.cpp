@@ -5,6 +5,7 @@
 #include <QFileInfo>
 #include <QFont>
 #include <QDateTime>
+#include <QTextBlock>
 #include "DiffReviewDialog.h"
 #include "utils/diffcalculation.h"
 
@@ -87,12 +88,65 @@ DiffReviewDialog::DiffReviewDialog(CodeEditor* editor, const QString &dialogTitl
         diffWidget->setDiffData(diffs);
 
         // Direct connections
-        connect(diffWidget, &DiffViewerWidget::jumpToLineInEditor,
-                editor, &CodeEditor::go2LineRequested);
-        connect(diffWidget, &DiffViewerWidget::lineRestored, editor, [editor](int newLineIndex, const QString& restoredText) {
-            QTextCursor cursor = editor->cursor4Line(newLineIndex);
-            cursor.select(QTextCursor::LineUnderCursor);
-            cursor.insertText(restoredText);
+        connect(diffWidget, &DiffViewerWidget::jumpToLineInEditor, editor, &CodeEditor::go2LineRequested);
+
+        connect(diffWidget, &DiffViewerWidget::lineRestored, editor, [=, this](int lineIndex, const QString& restoredText) {
+            const QStringList oldLines = editor->getOriginalLines();
+            QStringList lines = editor->toPlainText().split('\n');
+
+            QTextCursor cursor = editor->textCursor();
+
+            const auto& diffList = diffWidget->diffData();  // potrzebujemy dostępu do oryginalnych diffów
+            const auto it = std::find_if(diffList.begin(), diffList.end(),
+                                         [lineIndex](const DiffCalculation::LineDiffResult& d) {
+                                             return d.newLineIndex == lineIndex || d.oldLineIndex == lineIndex;
+                                         });
+
+            if (it == diffList.end())
+                return;
+
+            const auto& diff = *it;
+
+            if (diff.oldLineIndex == -1 && diff.newLineIndex >= 0) {
+                // ➖ This is a line added by user — remove it
+                QTextBlock block = editor->document()->findBlockByNumber(diff.newLineIndex);
+                if (block.isValid()) {
+                    QTextCursor lineCursor(block);
+                    lineCursor.select(QTextCursor::LineUnderCursor);
+                    lineCursor.removeSelectedText();
+                    lineCursor.deleteChar(); // remove newline
+                }
+            }
+            else if (diff.newLineIndex == -1 && diff.oldLineIndex >= 0) {
+                // ➕ Line was deleted — insert it back
+                QTextBlock block = editor->document()->findBlockByNumber(diff.oldLineIndex);
+                QTextCursor insertCursor = block.isValid()
+                                               ? QTextCursor(block)
+                                               : editor->textCursor();  // fallback
+
+                insertCursor.movePosition(QTextCursor::StartOfBlock);
+                insertCursor.insertText(restoredText + '\n');
+            }
+            else {
+                // ✏️ Modified line — replace content
+                QTextBlock block = editor->document()->findBlockByNumber(diff.newLineIndex);
+                if (block.isValid()) {
+                    QTextCursor lineCursor(block);
+                    lineCursor.select(QTextCursor::LineUnderCursor);
+                    lineCursor.insertText(restoredText);
+                }
+            }
+
+            // 🔁 Recompute diff after change
+            const QStringList newLines = editor->toPlainText().split('\n');
+            const auto diffLines = DiffCalculation::computeDiff(oldLines, newLines);
+            const auto diffs = computeModifiedLineDiffs(diffLines);
+
+            diffWidget->setDiffData(diffs);  // update viewer
+            populateMetadata(oldLines, newLines, editor->getFileName(),
+                             editor->getFileModificationTime(),
+                             editor->getLastChangeTime(),
+                             diffs); // update header
         });
     }
 

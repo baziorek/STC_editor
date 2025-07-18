@@ -30,6 +30,8 @@ DiffViewerWidget::DiffViewerWidget(QWidget *parent) : QTableWidget(parent)
     horizontalHeaderItem(4)->setToolTip("Buttons to restore to original");
 }
 
+DiffViewerWidget::~DiffViewerWidget() = default;
+
 void DiffViewerWidget::setDiffData(const QList<DiffCalculation::LineDiffResult> &diffs)
 {
     using namespace DiffCalculation;
@@ -137,8 +139,9 @@ void DiffViewerWidget::setDiffData(const QList<DiffCalculation::LineDiffResult> 
         // Restore button
         QPushButton *restoreBtn = new QPushButton("↩", this);
         restoreBtn->setToolTip("Restore original line");
-        connect(restoreBtn, &QPushButton::clicked, this, [this, row, diff]() {
-            emit lineRestored(diff.newLineIndex, diff.oldText());
+        connect(restoreBtn, &QPushButton::clicked, this, [this, diff]() {
+            int lineIndexToRestore = (diff.newLineIndex >= 0) ? diff.newLineIndex : diff.oldLineIndex;
+            emit lineRestored(lineIndexToRestore, diff.oldText());
         });
         restoreBtn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         restoreBtn->setFixedSize(24, 24);
@@ -171,4 +174,6 @@ void DiffViewerWidget::setDiffData(const QList<DiffCalculation::LineDiffResult> 
     }
 
     resizeRowsToContents();
+
+    currentDiffs = diffs;
 }

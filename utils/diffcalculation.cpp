@@ -291,7 +291,6 @@ QList<DiffCalculation::LineDiffResult> computeAllLineDiffs(const std::vector<Dif
             break;
 
         case DiffType::Unchanged:
-            // dodaj całość jako Equal
             oldFragments.append({ FragmentType::Equal, line.oldText });
             newFragments.append({ FragmentType::Equal, line.newText });
             break;
