@@ -58,6 +58,21 @@ public:
 
     void reloadFromFile(bool discardChanges=false);
 
+    const auto &getOriginalLines() const
+    {
+        return originalLines;
+    }
+
+    const QDateTime &getFileModificationTime() const
+    {
+        return fileModificationTime;
+    }
+
+    const QDateTime &getLastChangeTime() const
+    {
+        return lastChangeTime;
+    }
+
 signals:
     void shortcutPressed_bold();
     void shortcutPressed_run();

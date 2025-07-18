@@ -50,6 +50,8 @@ set(PROJECT_SOURCES
     widgets/TodosTrackerTableWidget.h widgets/TodosTrackerTableWidget.cpp
     widgets/LoginDialog.h widgets/LoginDialog.cpp
     widgets/stcpreviewwidget.h widgets/stcpreviewwidget.cpp
+    widgets/DiffViewerWidget.h widgets/DiffViewerWidget.cpp
+    widgets/DiffReviewDialog.h widgets/DiffReviewDialog.cpp
     types/documentstatistics.h types/documentstatistics.cpp
     utils/diffcalculation.h utils/diffcalculation.cpp
 )

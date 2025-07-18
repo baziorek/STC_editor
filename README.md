@@ -58,26 +58,27 @@ Jeśli ktoś chce tego używać do innych celów:
 10. **Skalowanie czcionki**: Powiększanie/pomniejszanie czcionki za pomocą `Ctrl++` i `Ctrl+-` lub `Ctrl+MOUSE_SCROLL`.
 11. **Pasek stanu**: Pokazuje nazwę otwartego pliku, ale też liczbę niezapisanych zmienionych linii, czas ostatniej edycji i zapisu (tylko przy niezapisanych zmianach).
 12. **Oznaczenie aktualnej linii**: Śledzenie aktualnej pozycji kursora klawiatury w ramach linijki
+13. **Szczegółowy wykaz niezapisanych zmian**: Gdy mamy niezapisane zmiany i próbujemy wyjść z programu to poza spytaniem użytkownika czy na pewno chce wyjść bez zapisania zmian pojawia się od razu diff w formie tabeli pokazujący różnice w odpowiadających sobie liniach.
+    - Możliwść przywrócenia zmian względem danej linii z dysku.
+    - Zmiany mają również pokazane różnicę w numerach poszczególnych znaków, wtedy możemy lepiej odróżnić znaki, które "na oko" są takie same.
 
 ## Planowane funkcjonalności
 
 ### Przed pierwszym wydaniem
 
 - **Funkcje**:
-- Pokazywanie zmienionych linii:
-    https://github.com/cubicdaiya/dtl używane przez https://github.com/qtpm/QDiffView ewentualnie to https://github.com/google/diff-match-patch https://stackoverflow.com/questions/47375116/how-to-use-google-diff-match-patch-library-in-c-qt
 - Wyszukaj i zamień: `Ctrl+R` z możliwością wyłączenia poszczególnych wykrytych pozycji.
   - Sprawdzania:
      - Sprawdzanie, czy znaczniki `[run]` znajdują się wewnątrz `[pkt]`.
      - Weryfikacja, czy wszystkie znaczniki są zamknięte (np. po opuszczeniu linijki sprawdzamy czy są tam zmiany, jak tak, to czy jest tam nowy tag)
      - Weryfikacja odpowiednich atrybutów w tagach (czy w cudzysłowiu, czy tylko dozwole atrubytu)
      - Weryfikacja czy wprowadzono tylko legalne tagi STC
-- Dodatkowe eventy z edytora: zmieniona linia i reakcja na nie różnych przeglądających koncepty
+- Dodatkowe eventy z edytora: zmieniona linia i reakcja na nie różnych przeglądających koncepty, opuszczono zmienioną linie
 - MiniBug: funkcjonalność zmiany wielkości czcionki zakłóca nowe tagi. Jak powiększymy czcionkę i potem dodamy coś np. H1, to on będzie miał czcionkę nawet mniejszą niż reszta, mimo iż to nagłówek
 
 ### Pomysły na przyszłość
 
-1. Obsługa zakładek do szybkiego przechodzenia do miejsc w kodzie.
+1. Podpięcie sztucznej inteligencji np. [Ollama](https://ollama.com)
 2. Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
 3. Otwieranie wielu plików jednocześnie.
 4. Widok sąsiadujący do porównywania plików.
@@ -142,6 +143,9 @@ Jeśli ktoś chce tego używać do innych celów:
 63. Zmiana wielkości czcionki powinna też wpłynąć na czcionkę w ramach numeracji linii
 64. Podgląd strony internetowej po najechaniu myszką
 65. Popraw numeracje dla zaznaczonego tekstu
+66. Wsparcie dla MD na bazie: https://github.com/Qt-Widgets/notes
+67. Inne widgety np. https://github.com/Qt-Widgets/SlidingStackedWidget-1 z listy: https://github.com/Qt-Widgets/ lub https://qwt.sourceforge.io/index.html
+68. Sortowanie zaznaczonych linii
 
 ## Współpraca
 
@@ -161,6 +165,10 @@ Narzędzie to okazało się bardzo pomocne przy tworzeniu artykułów na cpp0x.p
 
 - [Interpreter STC on-line](https://cpp0x.pl/stc/)
 - [Źródło użytych ikonek: MDI](https://pictogrammers.com/library/mdi/)
+
+## Używane biblioteki zewnętrzne
+1. [pydifflib-cpp](https://github.com/dominicprice/pydifflib-cpp) - do znajdywania różnic między liniami: które linie dodane, usunięte, zmodyfikowane
+2. [diff-match-patch-cpp-stl](https://github.com/leutloff/diff-match-patch-cpp-stl/) - do znajdywania różnic między znakami w ramach odpowiadających sobie linijkach
 
 ## Ostrzeżenie
 

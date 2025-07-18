@@ -14,6 +14,7 @@
 #include "errorlist.h"
 #include "types/documentstatistics.h"
 #include "widgets/LoginDialog.h"
+#include "widgets/DiffReviewDialog.h"
 using namespace std;
 
 namespace
@@ -399,34 +400,36 @@ void MainWindow::closeEvent(QCloseEvent *event)
     }
 }
 
-bool MainWindow::operationWhichDiscardsChangesRequestedReturningIfDiscarded(const QString& dialogTitle, const QString& dialogMessage)
+bool MainWindow::operationWhichDiscardsChangesRequestedReturningIfDiscarded(const QString &dialogTitle, const QString &dialogMessage)
 {
     if (!ui->textEditor->noUnsavedChanges())
     {
-        QMessageBox::StandardButton reply =
-            QMessageBox::question(this,
-                                  dialogTitle, //"Close without saving?",
-                                  dialogMessage, //"Do You really want to exit without saving unsaved changes?",
-                                  QMessageBox::Discard|QMessageBox::No|QMessageBox::Save);
-        if (reply == QMessageBox::Save)
+        DiffReviewDialog dialog(ui->textEditor, dialogTitle, dialogMessage, this);
+        if (dialog.exec() == QDialog::Accepted)
         {
-            if (! onSavePressed())
+            switch (dialog.userChoice())
             {
-                /// the state needs to be restored to prevend asking again
+            case DiffReviewDialog::Save:
+                if (!onSavePressed())
+                {
+                    ui->textEditor->restoreStateWhichDoesNotRequireSaving(/*discardChanges=*/true);
+                    return false;
+                }
+                break;
+            case DiffReviewDialog::Discard:
                 ui->textEditor->restoreStateWhichDoesNotRequireSaving(/*discardChanges=*/true);
+                break;
+            case DiffReviewDialog::Cancel:
+            default:
                 return false;
             }
         }
-        else if (reply == QMessageBox::No)
+        else
         {
             return false;
         }
-        else if (reply == QMessageBox::Discard)
-        {
-            /// the state needs to be restored to prevend asking again
-            ui->textEditor->restoreStateWhichDoesNotRequireSaving(/*discardChanges=*/true);
-        }
     }
+
     return true;
 }
 
