@@ -5,7 +5,7 @@
 
 namespace DiffCalculation
 {
-enum /*class*/ DiffType
+enum class DiffType
 {
     Unchanged,
     Added,

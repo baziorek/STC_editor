@@ -7,150 +7,121 @@
 #include <QDateTime>
 #include <QTextBlock>
 #include "DiffReviewDialog.h"
+#include "codeeditor.h"
 #include "utils/diffcalculation.h"
 
 
 DiffReviewDialog::DiffReviewDialog(CodeEditor* editor, const QString &dialogTitle, const QString &dialogMessage, QWidget* parent)
     : QDialog(parent)
 {
-    setWindowTitle(dialogTitle.isEmpty()
-                   ? tr("Unsaved Changes Detected")
-                   : dialogTitle);
-
-    resize(1000, 700);
-    QVBoxLayout* mainLayout = new QVBoxLayout(this);
+    setupDialogTitleAndLayout(dialogTitle);
 
     if (!dialogMessage.isEmpty())
-    {
-        QLabel* msgLabel = new QLabel(dialogMessage, this);
-        msgLabel->setWordWrap(true);
-        QFont font = msgLabel->font();
-        font.setPointSizeF(font.pointSizeF() + 1);
-        msgLabel->setFont(font);
-        mainLayout->addWidget(msgLabel);
-    }
+        addDialogMessage(dialogMessage);
 
     const QString filePath = editor->getFileName();
     if (filePath.isEmpty())
     {
-        // File not saved - no diff
-        QLabel* infoLabel = new QLabel(tr("This file has not been saved yet — no diff available."), this);
-        QFont font = infoLabel->font();
-        font.setItalic(true);
-        font.setPointSizeF(font.pointSizeF() + 1);
-        infoLabel->setFont(font);
-        infoLabel->setStyleSheet("color: gray");
-        infoLabel->setAlignment(Qt::AlignCenter);
-        mainLayout->addWidget(infoLabel, 1);
+        addFileNotSavedMessage();
     }
     else
     {
-        // 2. Metadata + diff
-        const QFileInfo fi(filePath);
-
-        fileLabel = new QLabel(fi.fileName(), this);
-        QFont f = font();
-        f.setPointSize(f.pointSize() + 2);
-        f.setBold(true);
-        fileLabel->setFont(f);
-
-        filePathLabel = new QLabel(fi.absolutePath(), this);
-        QFont smallFont = font();
-        smallFont.setPointSizeF(font().pointSizeF() - 1);
-        filePathLabel->setFont(smallFont);
-        filePathLabel->setStyleSheet("color: gray");
-
-        modifiedStatsLabel = new QLabel(this);
-        timestampLabel = new QLabel(this);
-        timestampLabel->setStyleSheet("color: gray");
-
-        auto* headerLayout = new QVBoxLayout();
-        headerLayout->addWidget(fileLabel);
-        headerLayout->addWidget(filePathLabel);
-        headerLayout->addWidget(modifiedStatsLabel);
-        headerLayout->addWidget(timestampLabel);
-        mainLayout->addLayout(headerLayout);
-
-        // Diff area
-        diffWidget = new DiffViewerWidget(this);
-        mainLayout->addWidget(diffWidget, 1); // Expanding
-
-        const QStringList oldLines = editor->getOriginalLines();
-        const QStringList newLines = editor->toPlainText().split('\n');
-
-        const auto diffLines = DiffCalculation::computeDiff(oldLines, newLines);
-        const auto diffs = computeModifiedLineDiffs(diffLines);
-
-        populateMetadata(oldLines, newLines, filePath,
-                         editor->getFileModificationTime(),
-                         editor->getLastChangeTime(),
-                         diffs);
-        diffWidget->setDiffData(diffs);
-
-        // Direct connections
-        connect(diffWidget, &DiffViewerWidget::jumpToLineInEditor, editor, &CodeEditor::go2LineRequested);
-
-        connect(diffWidget, &DiffViewerWidget::lineRestored, editor, [=, this](int lineIndex, const QString& restoredText) {
-            const QStringList oldLines = editor->getOriginalLines();
-            QStringList lines = editor->toPlainText().split('\n');
-
-            QTextCursor cursor = editor->textCursor();
-
-            const auto& diffList = diffWidget->diffData();  // potrzebujemy dostępu do oryginalnych diffów
-            const auto it = std::find_if(diffList.begin(), diffList.end(),
-                                         [lineIndex](const DiffCalculation::LineDiffResult& d) {
-                                             return d.newLineIndex == lineIndex || d.oldLineIndex == lineIndex;
-                                         });
-
-            if (it == diffList.end())
-                return;
-
-            const auto& diff = *it;
-
-            if (diff.oldLineIndex == -1 && diff.newLineIndex >= 0) {
-                // ➖ This is a line added by user — remove it
-                QTextBlock block = editor->document()->findBlockByNumber(diff.newLineIndex);
-                if (block.isValid()) {
-                    QTextCursor lineCursor(block);
-                    lineCursor.select(QTextCursor::LineUnderCursor);
-                    lineCursor.removeSelectedText();
-                    lineCursor.deleteChar(); // remove newline
-                }
-            }
-            else if (diff.newLineIndex == -1 && diff.oldLineIndex >= 0) {
-                // ➕ Line was deleted — insert it back
-                QTextBlock block = editor->document()->findBlockByNumber(diff.oldLineIndex);
-                QTextCursor insertCursor = block.isValid()
-                                               ? QTextCursor(block)
-                                               : editor->textCursor();  // fallback
-
-                insertCursor.movePosition(QTextCursor::StartOfBlock);
-                insertCursor.insertText(restoredText + '\n');
-            }
-            else {
-                // ✏️ Modified line — replace content
-                QTextBlock block = editor->document()->findBlockByNumber(diff.newLineIndex);
-                if (block.isValid()) {
-                    QTextCursor lineCursor(block);
-                    lineCursor.select(QTextCursor::LineUnderCursor);
-                    lineCursor.insertText(restoredText);
-                }
-            }
-
-            // 🔁 Recompute diff after change
-            const QStringList newLines = editor->toPlainText().split('\n');
-            const auto diffLines = DiffCalculation::computeDiff(oldLines, newLines);
-            const auto diffs = computeModifiedLineDiffs(diffLines);
-
-            diffWidget->setDiffData(diffs);  // update viewer
-            populateMetadata(oldLines, newLines, editor->getFileName(),
-                             editor->getFileModificationTime(),
-                             editor->getLastChangeTime(),
-                             diffs); // update header
-        });
+        setupFileInfoHeader(filePath);
+        setupDiffArea(editor);
+        setupEditorConnections(editor);
     }
 
-    // 3. Buttons
+    setupButtons();
+}
+
+void DiffReviewDialog::setupDialogTitleAndLayout(const QString& dialogTitle)
+{
+    setWindowTitle(dialogTitle.isEmpty()
+                   ? tr("Unsaved Changes Detected")
+                   : dialogTitle);
+    resize(1000, 700);
+    mainLayout = new QVBoxLayout(this);
+}
+
+void DiffReviewDialog::addDialogMessage(const QString& message)
+{
+    QLabel* msgLabel = new QLabel(message, this);
+    msgLabel->setWordWrap(true);
+    QFont font = msgLabel->font();
+    font.setPointSizeF(font.pointSizeF() + 1);
+    msgLabel->setFont(font);
+    mainLayout->addWidget(msgLabel);
+}
+
+void DiffReviewDialog::addFileNotSavedMessage()
+{
+    QLabel* infoLabel = new QLabel(tr("This file has not been saved yet — no diff available."), this);
+    QFont font = infoLabel->font();
+    font.setItalic(true);
+    font.setPointSizeF(font.pointSizeF() + 1);
+    infoLabel->setFont(font);
+    infoLabel->setStyleSheet("color: gray");
+    infoLabel->setAlignment(Qt::AlignCenter);
+    mainLayout->addWidget(infoLabel, 1);
+}
+
+void DiffReviewDialog::setupFileInfoHeader(const QString& filePath)
+{
+    QFileInfo fi(filePath);
+
+    fileLabel = new QLabel(fi.fileName(), this);
+    QFont f = font();
+    f.setPointSize(f.pointSize() + 2);
+    f.setBold(true);
+    fileLabel->setFont(f);
+
+    filePathLabel = new QLabel(fi.absolutePath(), this);
+    QFont smallFont = font();
+    smallFont.setPointSizeF(font().pointSizeF() - 1);
+    filePathLabel->setFont(smallFont);
+    filePathLabel->setStyleSheet("color: gray");
+
+    modifiedStatsLabel = new QLabel(this);
+    timestampLabel = new QLabel(this);
+    timestampLabel->setStyleSheet("color: gray");
+
+    auto* headerLayout = new QVBoxLayout();
+    headerLayout->addWidget(fileLabel);
+    headerLayout->addWidget(filePathLabel);
+    headerLayout->addWidget(modifiedStatsLabel);
+    headerLayout->addWidget(timestampLabel);
+    mainLayout->addLayout(headerLayout);
+}
+
+void DiffReviewDialog::setupDiffArea(CodeEditor* editor)
+{
+    diffWidget = new DiffViewerWidget(this);
+    mainLayout->addWidget(diffWidget, 1); // Expanding
+
+    const QStringList oldLines = editor->getOriginalLines();
+    const QStringList newLines = editor->toPlainText().split('\n');
+
+    const auto diffLines = DiffCalculation::computeDiff(oldLines, newLines);
+    const auto diffs = computeModifiedLineDiffs(diffLines);
+
+    populateMetadata(oldLines, newLines, editor->getFileName(),
+                     editor->getFileModificationTime(),
+                     editor->getLastChangeTime(),
+                     diffs);
+    diffWidget->setDiffData(diffs);
+}
+
+void DiffReviewDialog::setupEditorConnections(CodeEditor* editor)
+{
+    connect(diffWidget, &DiffViewerWidget::jumpToLineInEditor, editor, &CodeEditor::go2LineRequested);
+
+    connect(diffWidget, &DiffViewerWidget::lineRestored, editor, [=, this](int lineIndex, const QString& restoredText) {
+        handleLineRestoration(editor, lineIndex, restoredText);
+    });
+}
+
+void DiffReviewDialog::setupButtons()
+{
     QHBoxLayout* buttonLayout = new QHBoxLayout();
     QPushButton* saveButton = new QPushButton(tr("Save"), this);
     QPushButton* discardButton = new QPushButton(tr("Discard Changes"), this);
@@ -174,6 +145,62 @@ DiffReviewDialog::DiffReviewDialog(CodeEditor* editor, const QString &dialogTitl
     buttonLayout->addWidget(discardButton);
     buttonLayout->addWidget(cancelButton);
     mainLayout->addLayout(buttonLayout);
+}
+
+void DiffReviewDialog::handleLineRestoration(CodeEditor* editor, int lineIndex, const QString& restoredText)
+{
+    const QStringList oldLines = editor->getOriginalLines();
+    QStringList lines = editor->toPlainText().split('\n');
+
+    const auto& diffList = diffWidget->diffData();
+    const auto it = std::find_if(diffList.begin(), diffList.end(),
+                                 [lineIndex](const DiffCalculation::LineDiffResult& d) {
+                                     return d.newLineIndex == lineIndex || d.oldLineIndex == lineIndex;
+                                 });
+    if (it == diffList.end())
+        return;
+
+    const auto& diff = *it;
+    QTextDocument* doc = editor->document();
+
+    if (diff.oldLineIndex == -1 && diff.newLineIndex >= 0)
+    {
+        QTextBlock block = doc->findBlockByNumber(diff.newLineIndex);
+        if (block.isValid())
+        {
+            QTextCursor cursor(block);
+            cursor.select(QTextCursor::LineUnderCursor);
+            cursor.removeSelectedText();
+            cursor.deleteChar();
+        }
+    }
+    else if (diff.newLineIndex == -1 && diff.oldLineIndex >= 0)
+    {
+        QTextBlock block = doc->findBlockByNumber(diff.oldLineIndex);
+        QTextCursor cursor = block.isValid() ? QTextCursor(block) : QTextCursor(doc);
+        cursor.movePosition(QTextCursor::StartOfBlock);
+        cursor.insertText(restoredText + '\n');
+    }
+    else
+    {
+        QTextBlock block = doc->findBlockByNumber(diff.newLineIndex);
+        if (block.isValid())
+        {
+            QTextCursor cursor(block);
+            cursor.select(QTextCursor::LineUnderCursor);
+            cursor.insertText(restoredText);
+        }
+    }
+
+    const QStringList newLines = editor->toPlainText().split('\n');
+    const auto diffLines = DiffCalculation::computeDiff(oldLines, newLines);
+    const auto diffs = computeModifiedLineDiffs(diffLines);
+
+    diffWidget->setDiffData(diffs);
+    populateMetadata(oldLines, newLines, editor->getFileName(),
+                     editor->getFileModificationTime(),
+                     editor->getLastChangeTime(),
+                     diffs);
 }
 
 DiffReviewDialog::Result DiffReviewDialog::userChoice() const

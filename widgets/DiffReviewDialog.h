@@ -1,10 +1,12 @@
 #pragma once
 
 #include <QDialog>
-#include "codeeditor.h"
 #include "DiffViewerWidget.h"
 
 class QLabel;
+class QVBoxLayout;
+
+class CodeEditor;
 
 class DiffReviewDialog : public QDialog
 {
@@ -27,12 +29,22 @@ protected:
                           const QDateTime& fileTime, const QDateTime& lastEditTime,
                           const QList<DiffCalculation::LineDiffResult>& diffs);
 
+    void setupDialogTitleAndLayout(const QString& dialogTitle);
+    void addDialogMessage(const QString& message);
+    void addFileNotSavedMessage();
+    void setupFileInfoHeader(const QString& filePath);
+    void setupDiffArea(CodeEditor* editor);
+    void setupEditorConnections(CodeEditor* editor);
+    void setupButtons();
+    void handleLineRestoration(CodeEditor* editor, int lineIndex, const QString& restoredText);
+
 private:
     Result selectedResult = Cancel;
 
-    QLabel* fileLabel;
-    QLabel* filePathLabel;
-    QLabel* modifiedStatsLabel;
-    QLabel* timestampLabel;
-    DiffViewerWidget* diffWidget;
+    QVBoxLayout* mainLayout = {};
+    QLabel* fileLabel = {};
+    QLabel* filePathLabel = {};
+    QLabel* modifiedStatsLabel = {};
+    QLabel* timestampLabel = {};
+    DiffViewerWidget* diffWidget = {};
 };
