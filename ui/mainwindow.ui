@@ -191,6 +191,9 @@
      <property name="title">
       <string>Open recent</string>
      </property>
+     <property name="icon">
+      <iconset theme="QIcon::ThemeIcon::DocumentOpenRecent"/>
+     </property>
     </widget>
     <addaction name="actionNew"/>
     <addaction name="actionLoad_file"/>
@@ -268,6 +271,9 @@
    <widget class="StcPreviewWidget" name="stcPreviewWidget"/>
   </widget>
   <action name="actionLoad_file">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::DocumentOpen"/>
+   </property>
    <property name="text">
     <string>Open file</string>
    </property>
@@ -301,6 +307,9 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::EditFind"/>
+   </property>
    <property name="text">
     <string>Find</string>
    </property>
@@ -312,6 +321,9 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset theme="edit-find-replace"/>
+   </property>
    <property name="text">
     <string>Find and replace</string>
    </property>
@@ -320,6 +332,9 @@
    </property>
   </action>
   <action name="actioncheck_if_tags_are_closed">
+   <property name="icon">
+    <iconset theme="tools-check-spelling"/>
+   </property>
    <property name="text">
     <string>check if tags are closed</string>
    </property>
@@ -343,6 +358,9 @@
    </property>
   </action>
   <action name="actionNew">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::DocumentNew"/>
+   </property>
    <property name="text">
     <string>New</string>
    </property>
@@ -351,41 +369,66 @@
    </property>
   </action>
   <action name="actionProject_repository">
+   <property name="icon">
+    <iconset theme="system-run"/>
+   </property>
    <property name="text">
     <string>Go to project repository</string>
    </property>
   </action>
   <action name="actionKurs_STC">
+   <property name="icon">
+    <iconset theme="document-properties"/>
+   </property>
    <property name="text">
     <string>Kurs STC</string>
    </property>
   </action>
   <action name="actionGo_to_cpp0x_pl">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::MailForward"/>
+   </property>
    <property name="text">
     <string>Go to cpp0x.pl</string>
    </property>
   </action>
   <action name="actionShortcut_list">
+   <property name="icon">
+    <iconset theme="help-contents"/>
+   </property>
    <property name="text">
     <string>Shortcut list</string>
    </property>
   </action>
   <action name="actionCopy_basename">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::EditCopy"/>
+   </property>
    <property name="text">
     <string>Copy basename</string>
    </property>
   </action>
   <action name="actionCopy_absolute_path">
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::EditCopy"/>
+   </property>
    <property name="text">
     <string>Copy absolute path</string>
    </property>
   </action>
   <action name="actionOpen_parent_directory">
+   <property name="icon">
+    <iconset theme="folder"/>
+   </property>
    <property name="text">
     <string>Open parent directory</string>
    </property>
   </action>
   <action name="actionFile_statistics">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/icons/mdi/resources/icons/mdi/chart-bar.svg</normaloff>:/icons/mdi/resources/icons/mdi/chart-bar.svg</iconset>
+   </property>
    <property name="text">
     <string>File statistics</string>
    </property>
@@ -396,6 +439,9 @@
    </property>
    <property name="checked">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="view-sort-ascending"/>
    </property>
    <property name="text">
     <string>Short conspect</string>
@@ -408,6 +454,9 @@
    <property name="checked">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset theme="go-jump"/>
+   </property>
    <property name="text">
     <string>Go to line</string>
    </property>
@@ -419,6 +468,9 @@
    <property name="checked">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::GoUp"/>
+   </property>
    <property name="text">
     <string>Breadcrumb</string>
    </property>
@@ -426,6 +478,9 @@
   <action name="actionStc_Preview_account_at_Cpp0x_pl_required">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="view-refresh"/>
    </property>
    <property name="text">
     <string>Stc Preview (account at Cpp0x.pl required)</string>
@@ -451,6 +506,9 @@
    </property>
    <property name="checked">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="format-indent-more"/>
    </property>
    <property name="text">
     <string>STC Tags buttons</string>
@@ -512,7 +570,9 @@
    <header>widgets/TodosTrackerTableWidget.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../resources.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>actionSave_as</sender>
