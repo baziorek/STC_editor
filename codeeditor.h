@@ -159,6 +159,8 @@ protected:
     void handleTabIndent();
     void handleTabUnindent();
     void applyToSelectedBlocks(const std::function<void (QTextCursor &)> &callback);
+    bool handlePasteWithLinkWrapping();
+
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();

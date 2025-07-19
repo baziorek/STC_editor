@@ -14,6 +14,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QBuffer>
+#include <QClipboard>
 #include "codeeditor.h"
 #include "linenumberarea.h"
 #include "stcsyntaxhighlighter.h"
@@ -702,10 +703,18 @@ void CodeEditor::keyPressEvent(QKeyEvent* event)
 {
     if (isControlOnly(event))
     {
-        if (event->key() == Qt::Key_B) // TODO: This shortcut should be set up in constructor, but it is not working
+        if (event->key() == Qt::Key_B)  // TODO: This shortcut should be set up in constructor, but it is not working
         {
             emit shortcutPressed_bold();
             return;
+        }
+        if (event->key() == Qt::Key_V)
+        {
+            if (!(event->modifiers() & Qt::ShiftModifier))
+            {
+                if (handlePasteWithLinkWrapping())
+                    return; // link pasted, stop propagation
+            }
         }
     }
 
@@ -721,13 +730,38 @@ void CodeEditor::keyPressEvent(QKeyEvent* event)
         return;
     }
 
-    QPlainTextEdit::keyPressEvent(event); // Default handling
+    QPlainTextEdit::keyPressEvent(event); // Default behavior
 }
+
 bool CodeEditor::isControlOnly(QKeyEvent* event) const
 {
     return (event->modifiers() & Qt::ControlModifier) &&
            !(event->modifiers() & ~Qt::ControlModifier);
 }
+
+bool CodeEditor::handlePasteWithLinkWrapping()
+{
+    const QString clipboardText = QGuiApplication::clipboard()->text().trimmed();
+    if (!isLink(clipboardText))
+        return false; // it is not link
+
+    QTextCursor cursor = textCursor();
+    QString result;
+
+    if (cursor.hasSelection())
+    {
+        const QString selectedText = cursor.selectedText();
+        result = QString(R"([a href="%1" name="%2"])").arg(clipboardText, selectedText);
+    }
+    else
+    {
+        result = QString(R"([a href="%1"])").arg(clipboardText);
+    }
+
+    cursor.insertText(result);
+    return true;
+}
+
 void CodeEditor::handleTabIndent()
 {
     QTextCursor cursor = textCursor();

@@ -37,6 +37,8 @@ Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników
     - Dostępne są również statystyki: ile danych wysłano i pobrano, widoczne po najechaniu myszką na obszar renderujący
 15. **Śledzenie TODO w dokumencie**: W podglądzie dokumentu widać komentarze `TODO: ` wraz z tekstem na prawo od tego, są one klikalne i wtedy przechodzą do danej pozycji.
 16. **Klikalne linki**: wewnątrz tagów z linkiem `[a href="..."]` lub `[a href="..." name="..."]` możemy przytrzymać CTRL + lewy przycisk myszy i nam się otworzy dany link
+17. **Wklejane linki wklejane w odpowiedni sposób**: jak wklejamy przez CTRL+V, a w schowku jest link to otacza linka tagami linka `[a href="link"]`
+    - Jeśli jest zaznaczony tekst to "podlinkowuje go" przez otoczenie: `[a href="link" name="Zaznaczony wcześniej tekst"]`
 
 ## Ogólne funkcje edytora
 Jeśli ktoś chce tego używać do innych celów:
@@ -135,18 +137,6 @@ Jeśli ktoś chce tego używać do innych celów:
 54. Kurs STC wbudowany w program
 55. Prawy przycisk myszy na: tagach `img`, `a href`, `pkt`, `csv` powinien dawać możliwość dodania/usunięcia atrybutów
 56. Otwarcie tekstu po URL.
-57. Podgląd terminala
-58. Wklejenie linka na zaznaczony tekst powinno otoczyć tekst przez `[a href=`
-59. Ctrl + V gdy mamy obrazek
-60. Ctrl + V gdy mamy tabelkę
-61. Podgląd obrazka po najechaniu - nawet gdy adres internetowy
-62. Brakuje przycisku wstawiającego img
-63. Zmiana wielkości czcionki powinna też wpłynąć na czcionkę w ramach numeracji linii
-64. Podgląd strony internetowej po najechaniu myszką
-65. Popraw numeracje dla zaznaczonego tekstu
-66. Wsparcie dla MD na bazie: https://github.com/Qt-Widgets/notes
-67. Inne widgety np. https://github.com/Qt-Widgets/SlidingStackedWidget-1 z listy: https://github.com/Qt-Widgets/ lub https://qwt.sourceforge.io/index.html
-68. Sortowanie zaznaczonych linii
 
 ## Współpraca
 
