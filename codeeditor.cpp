@@ -1220,33 +1220,45 @@ QVector<CodeBlock> CodeEditor::parseAllCodeBlocks()
 
 void CodeEditor::mousePressEvent(QMouseEvent* event)
 {
-    if (event->button() == Qt::LeftButton && (event->modifiers() & Qt::ControlModifier))
+    if (isCtrlLeftClick(event))
     {
-        QTextCursor cursor = cursorForPosition(event->pos());
+        const QTextCursor cursor = cursorForPosition(event->pos());
         const QTextBlock block = cursor.block();
-        const QString text = block.text();
         const int clickPosInBlock = cursor.position() - block.position();
 
-        static const QRegularExpression hrefRegex(
-            R"__(\[a\s+href="([^"]+)"(?:\s+name="([^"]*)")?\])__",
-            QRegularExpression::CaseInsensitiveOption);
+        if (tryOpenLinkAtPosition(block.text(), clickPosInBlock))
+            return; // link found and opened
+    }
 
-        auto matchIterator = hrefRegex.globalMatch(text);
-        while (matchIterator.hasNext())
+    QPlainTextEdit::mousePressEvent(event); // default behavior
+}
+
+bool CodeEditor::isCtrlLeftClick(QMouseEvent* event) const
+{
+    return event->button() == Qt::LeftButton &&
+           (event->modifiers() & Qt::ControlModifier);
+}
+
+bool CodeEditor::tryOpenLinkAtPosition(const QString& text, int posInBlock)
+{
+    static const QRegularExpression hrefRegex(
+        R"__(\[a\s+href="([^"]+)"(?:\s+name="([^"]*)")?\])__",
+        QRegularExpression::CaseInsensitiveOption);
+
+    auto matchIterator = hrefRegex.globalMatch(text);
+    while (matchIterator.hasNext())
+    {
+        const QRegularExpressionMatch match = matchIterator.next();
+        const int start = match.capturedStart(0);
+        const int end = match.capturedEnd(0);
+
+        if (posInBlock >= start && posInBlock <= end)
         {
-            const QRegularExpressionMatch match = matchIterator.next();
-            const int start = match.capturedStart(0);
-            const int end = match.capturedEnd(0);
-
-            if (clickPosInBlock >= start && clickPosInBlock <= end)
-            {
-                const QString url = match.captured(1).trimmed();
-                QDesktopServices::openUrl(QUrl(url, QUrl::TolerantMode));
-                return; // stop propagation
-            }
+            const QString url = match.captured(1).trimmed();
+            QDesktopServices::openUrl(QUrl(url, QUrl::TolerantMode));
+            return true;
         }
     }
 
-    // default behavior
-    QPlainTextEdit::mousePressEvent(event);
+    return false;
 }

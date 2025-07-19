@@ -141,6 +141,8 @@ protected:
 
     QVector<CodeBlock> parseAllCodeBlocks();
 
+    bool isCtrlLeftClick(QMouseEvent *event) const;
+    bool tryOpenLinkAtPosition(const QString &text, int posInBlock);
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();
