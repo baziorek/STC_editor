@@ -11,6 +11,37 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets WebView WebEngineWidgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets WebEngineWidgets)
 
+##################### uchardet:
+include(FetchContent)
+
+# Try system installation
+find_path(UCHARDET_INCLUDE_DIR uchardet/uchardet.h)
+find_library(UCHARDET_LIBRARY NAMES uchardet)
+
+if (UCHARDET_INCLUDE_DIR AND UCHARDET_LIBRARY)
+    message(STATUS "Found system uchardet: ${UCHARDET_LIBRARY}")
+    add_library(uchardet::uchardet UNKNOWN IMPORTED)
+    set_target_properties(uchardet::uchardet PROPERTIES
+        IMPORTED_LOCATION "${UCHARDET_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${UCHARDET_INCLUDE_DIR}"
+    )
+else()
+    message(STATUS "uchardet not found – using FetchContent to download")
+
+    FetchContent_Declare(
+        uchardet
+        GIT_REPOSITORY https://github.com/freedesktop/uchardet.git
+        GIT_TAG        master
+    )
+
+    FetchContent_MakeAvailable(uchardet)
+
+    # The built target from the original CMakeLists is `uchardet`
+    add_library(uchardet::uchardet ALIAS uchardet)
+endif()
+
+
+
 # In Linux it is possible to have sanitizers for g++ and Clang compilers:
 # address sanitizer is not compatible with QWebEngineWidgets
 # if (NOT CMAKE_SYSTEM_NAME MATCHES "Windows" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
@@ -45,6 +76,7 @@ set(PROJECT_SOURCES
     checkers/PairedTagsChecker.h checkers/PairedTagsChecker.cpp
     types/stcTags.h types/stcTags.cpp
     types/CodeBlock.h
+    types/documentstatistics.h types/documentstatistics.cpp
     widgets/FilteredTagTableWidget.h widgets/FilteredTagTableWidget.cpp
     widgets/CodeBlocksTableWidget.h widgets/CodeBlocksTableWidget.cpp
     widgets/TodosTrackerTableWidget.h widgets/TodosTrackerTableWidget.cpp
@@ -52,8 +84,8 @@ set(PROJECT_SOURCES
     widgets/stcpreviewwidget.h widgets/stcpreviewwidget.cpp
     widgets/DiffViewerWidget.h widgets/DiffViewerWidget.cpp
     widgets/DiffReviewDialog.h widgets/DiffReviewDialog.cpp
-    types/documentstatistics.h types/documentstatistics.cpp
     utils/diffcalculation.h utils/diffcalculation.cpp
+    utils/FileEncodingHandler.h utils/FileEncodingHandler.cpp
 )
 
 set(TEXT_FILES
@@ -98,6 +130,8 @@ target_include_directories(${PROJECT_NAME}
         ${PROJECT_SOURCE_DIR}/libs
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::WebEngineWidgets)
+target_link_libraries(${PROJECT_NAME} PRIVATE uchardet::uchardet)
+
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

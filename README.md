@@ -73,7 +73,8 @@ Jeśli ktoś chce tego używać do innych celów:
 12. **Szczegółowy wykaz niezapisanych zmian**: Gdy mamy niezapisane zmiany i próbujemy wyjść z programu to poza spytaniem użytkownika czy na pewno chce wyjść bez zapisania zmian pojawia się od razu diff w formie tabeli pokazujący różnice w odpowiadających sobie liniach.
     - Możliwść przywrócenia zmian względem danej linii z dysku.
     - Zmiany mają również pokazane różnicę w numerach poszczególnych znaków, wtedy możemy lepiej odróżnić znaki, które "na oko" są takie same.
-13. **Ukrywalne widgety**: wszystko poza edytorem tekstu można ukryć, dzięki temu pewne funkcje są wyłączone i edytowanie działa szybciej
+13. **Ukrywalne widgety**: wszystko poza edytorem tekstu można ukryć, dzięki temu pewne funkcje są wyłączone i edytowanie działa szybciej.
+14. **Obsługa różnych kodowań pliku tekstowego**: Nie tylko UTF-8. Jest to dzięki bibliotece [uchardet](https://github.com/BYVoid/uchardet).
 
 ## Planowane funkcjonalności
 
@@ -105,7 +106,7 @@ Jeśli ktoś chce tego używać do innych celów:
 12. Historia wprowadzanych zmian (`Ctrl+Z`).
 13. Wyszukiwanie wielu słów w tej samej linii niezależnie od kolejności.
 14. Sprawdzanie pisowni po polsku (np. [nuspell](https://github.com/nuspell/nuspell) lub [spellchecker Qt](https://doc.qt.io/qt-6/qtwebengine-webenginewidgets-spellchecker-example.html)). https://forum.qt.io/topic/158878/check-spelling-in-qlineedit-and-qplaintextedit
-15. Obsługa różnych kodowań plików z automatycznym rozpoznawaniem.
+15. Dodać stoper aktywności
 16. Obsługa wtyczek, być może z użyciem Lua.
 17. Integracja dokumentacji cppreference (jak w `cppman` lub QtCreator).
 18. Nagrywanie i odtwarzanie makr.
@@ -167,8 +168,9 @@ Narzędzie to okazało się bardzo pomocne przy tworzeniu artykułów na cpp0x.p
 - [Źródło użytych ikonek: MDI](https://pictogrammers.com/library/mdi/)
 
 ## Używane biblioteki zewnętrzne
-1. [pydifflib-cpp](https://github.com/dominicprice/pydifflib-cpp) - do znajdywania różnic między liniami: które linie dodane, usunięte, zmodyfikowane
-2. [diff-match-patch-cpp-stl](https://github.com/leutloff/diff-match-patch-cpp-stl/) - do znajdywania różnic między znakami w ramach odpowiadających sobie linijkach
+1. [pydifflib-cpp](https://github.com/dominicprice/pydifflib-cpp) - do znajdywania różnic między liniami: które linie dodane, usunięte, zmodyfikowane. Licencja "PSF"
+2. [diff-match-patch-cpp-stl](https://github.com/leutloff/diff-match-patch-cpp-stl/) - do znajdywania różnic między znakami w ramach odpowiadających sobie linijkach. Licencja "Apache 2.0"
+3. [uchardet](https://github.com/BYVoid/uchardet) - biblioteka obsługujące różne rodzaje kodowań plików (nie tylko UTF-8). Licencja "MOZILLA PUBLIC LICENSE"
 
 ## Ostrzeżenie
 

@@ -22,6 +22,7 @@
 #include "ui/cppcompilerdialog.h"
 #include "utils/diffcalculation.h"
 #include "types/CodeBlock.h"
+#include "utils/FileEncodingHandler.h"
 
 
 namespace
@@ -65,29 +66,10 @@ bool operator==(const CodeBlock& a, const CodeBlock& b)
         && a.tag == b.tag
         && a.language == b.language;
 }
-
-QString getFileContent(const QString& fileName)
-{
-    QFile file(fileName);
-    if (!file.exists())
-    {
-        throw std::runtime_error("File '" + fileName.toStdString() + "' does not exist!");
-    }
-    if (!file.open(QFile::ReadOnly))
-    {
-        throw std::runtime_error("Could not open file '" + fileName.toStdString() + "'.");
-    }
-
-    const QByteArray content = file.readAll();
-    file.close();
-
-    return QString::fromUtf8(content);
-}
 } // namespace
 
-
 CodeEditor::CodeEditor(QWidget *parent)
-    : QPlainTextEdit(parent), networkManager{new QNetworkAccessManager(this)}, lineNumberArea{new LineNumberArea(this)}
+    : QPlainTextEdit(parent), networkManager{new QNetworkAccessManager(this)}, lineNumberArea{new LineNumberArea(this)}, fileEncodingHandler{std::make_unique<FileEncodingHandler>()}
 {
     setAcceptDrops(true);
     setMouseTracking(true);
@@ -170,8 +152,7 @@ bool CodeEditor::noUnsavedChanges() const
 
     try
     {
-        const auto fileContent = getFileContent(getFileName());
-
+        const auto fileContent = fileEncodingHandler->loadFile(getFileName());
         return fileContent == currentlyVisibleText;
     }
     catch (const std::exception& e)
@@ -304,7 +285,7 @@ bool CodeEditor::loadFileContentDistargingCurrentContent(const QString& fileName
 {
     try
     {
-        const auto fileContent = getFileContent(fileName);
+        const auto fileContent = fileEncodingHandler->loadFile(fileName);
         setPlainText(fileContent);
 
         document()->setModified(false);
@@ -322,6 +303,21 @@ bool CodeEditor::loadFileContentDistargingCurrentContent(const QString& fileName
         QMessageBox::warning(this, tr("Loading file error"), QString::fromStdString(e.what()));
         return false;
     }
+}
+
+bool CodeEditor::saveEntireContent2File(const QString &fileName)
+{
+    QFile outputFile(fileName);
+    outputFile.open(QIODeviceBase::WriteOnly);
+    setFileName(fileName);
+
+    auto savedNumberOfBytes = outputFile.write(toPlainText().toUtf8());
+    if (savedNumberOfBytes > -1)
+    {
+        markAsSaved();
+        return true;
+    }
+    return false;
 }
 void CodeEditor::trackOriginalVersionOfFile(const QString& fileName)
 {
@@ -971,7 +967,7 @@ void CodeEditor::fileChanged(const QString &path)
 
         try
         {
-            const QString newContent = getFileContent(path);
+            const QString newContent = fileEncodingHandler->loadFile(path);
 
             if (newContent == currentContent)
             {
@@ -1038,7 +1034,7 @@ void CodeEditor::dropEvent(QDropEvent *event)
         // 1. Handle text files
         if (isProbablyTextFile(localPath))
         {
-            const auto fileContent = getFileContent(localPath).trimmed();
+            const QString fileContent = fileEncodingHandler->loadFile(localPath).trimmed();
             const QStringList cppExtensions = {"c", "cpp", "h", "hpp", "cc", "cxx", "hxx"};
             if (cppExtensions.contains(fileInfo.suffix().toLower()))
             {

@@ -539,14 +539,10 @@ bool MainWindow::saveEntireContent2File(QString fileName)
     if (!fileName.isEmpty())
     {
         updateWindowTitle(fileName);
-        QFile outputFile(fileName);
-        outputFile.open(QIODeviceBase::WriteOnly);
-        ui->textEditor->setFileName(fileName);
-        auto savedNumberOfBytes = outputFile.write(ui->textEditor->toPlainText().toUtf8());
-        if (savedNumberOfBytes > -1)
+        if (ui->textEditor->saveEntireContent2File(fileName))
         {
-            ui->textEditor->markAsSaved();
             setDisabledMenuActionsDependingOnOpenedFile(/*disabled=*/false);
+            return true;
         }
     }
     return false;

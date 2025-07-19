@@ -6,6 +6,7 @@
 #include <QDateTime>
 
 class CodeBlock;
+class FileEncodingHandler;
 class QNetworkAccessManager;
 
 class CodeEditor : public QPlainTextEdit
@@ -33,6 +34,7 @@ public:
     }
 
     bool loadFileContentDistargingCurrentContent(const QString& fileName);
+    bool saveEntireContent2File(const QString& fileName);
 
     QMultiMap<QString, QKeySequence> listOfShortcuts() const;
 
@@ -194,4 +196,6 @@ private:
     QVector<CodeBlock> codeBlocks;
 
     QNetworkAccessManager* networkManager = {};
+
+    std::unique_ptr<FileEncodingHandler> fileEncodingHandler;
 };
