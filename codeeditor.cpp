@@ -15,6 +15,7 @@
 #include <QNetworkReply>
 #include <QBuffer>
 #include <QClipboard>
+#include <QDir>
 #include "codeeditor.h"
 #include "linenumberarea.h"
 #include "stcsyntaxhighlighter.h"
@@ -84,6 +85,7 @@ QString getFileContent(const QString& fileName)
 }
 } // namespace
 
+
 CodeEditor::CodeEditor(QWidget *parent)
     : QPlainTextEdit(parent), networkManager{new QNetworkAccessManager(this)}, lineNumberArea{new LineNumberArea(this)}
 {
@@ -93,19 +95,7 @@ CodeEditor::CodeEditor(QWidget *parent)
 
     registerShortcuts();
 
-    connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);
-    connect(this, &CodeEditor::updateRequest, this, &CodeEditor::updateLineNumberArea);
-    connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::totalLinesCountChanged);
-    connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::highlightCurrentLine);
-    connect(verticalScrollBar(), &QScrollBar::valueChanged, this, &CodeEditor::onScrollChanged);
-    connect(&fileWatcher, &QFileSystemWatcher::fileChanged, this, &CodeEditor::fileChanged);
-
-    connect(this, &CodeEditor::textChanged, this, [this]() {
-        this->lastChangeTime = QDateTime::currentDateTime();
-        updateDiffWithOriginal();
-    });
-    connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::onCursorPositionChanged);
-    connect(document(), &QTextDocument::contentsChange, this, &CodeEditor::onContentsChange);
+    connectSignalsWithSlots();
 
 
     updateLineNumberAreaWidth(0);
@@ -139,13 +129,29 @@ void CodeEditor::registerShortcuts()
     makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_Minus), &CodeEditor::decreaseFontSize,    "Decrease font size");
 }
 
+void CodeEditor::connectSignalsWithSlots()
+{
+    connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);
+    connect(this, &CodeEditor::updateRequest, this, &CodeEditor::updateLineNumberArea);
+    connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::totalLinesCountChanged);
+    connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::highlightCurrentLine);
+    connect(verticalScrollBar(), &QScrollBar::valueChanged, this, &CodeEditor::onScrollChanged);
+    connect(&fileWatcher, &QFileSystemWatcher::fileChanged, this, &CodeEditor::fileChanged);
+
+    connect(this, &CodeEditor::textChanged, this, [this]() {
+        this->lastChangeTime = QDateTime::currentDateTime();
+        updateDiffWithOriginal();
+    });
+    connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::onCursorPositionChanged);
+    connect(document(), &QTextDocument::contentsChange, this, &CodeEditor::onContentsChange);
+}
 
 int CodeEditor::lineNumberAreaWidth()
 {
     const int maxLine = linesCount();
     const int digits4LineNumber = std::log10(maxLine) + 1;
 
-    int space = 3 + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits4LineNumber;
+    const int space = 3 + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits4LineNumber;
     return space;
 }
 
@@ -619,8 +625,35 @@ void CodeEditor::addCodeBlockActionsIfApplicable(QMenu* menu, const QPoint& pos)
 
 QString CodeEditor::formatCppWithClang(const QString& code)
 {
+    constexpr const char clangFormatConfigDefaultName[] = ".clang-format";
+    constexpr const char clangFormatDefaultStyleIfNoConfigFound[] = "-style=LLVM";
+
+    QStringList args;
+    const QString sourceFilePath = getFileName();
+
+    // Try to find a clang-format configuration file in the current or parent directories
+    QFileInfo fileInfo(sourceFilePath);
+    QDir dir = fileInfo.dir();
+
+    bool foundClangFormatFile = false;
+    while (dir.exists())
+    {
+        if (dir.exists(clangFormatConfigDefaultName))
+        {
+            foundClangFormatFile = true;
+            break;
+        }
+
+        // Stop if we reach the root directory
+        if (!dir.cdUp())
+            break;
+    }
+
+    if (! foundClangFormatFile)
+        args << clangFormatDefaultStyleIfNoConfigFound;  // fallback style if no config file found
+
     QProcess clang;
-    clang.start("clang-format", QStringList() << "-style=LLVM");
+    clang.start("clang-format", args);
 
     if (!clang.waitForStarted(1000))
         return {};

@@ -122,6 +122,7 @@ protected:
     void wheelEvent(QWheelEvent* event) override;
 
     void registerShortcuts();
+    void connectSignalsWithSlots();
 
     void increaseFontSize();
     void decreaseFontSize();
