@@ -11,6 +11,9 @@
 #include <QShortcut>
 #include <QProcess>
 #include <QDesktopServices>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QBuffer>
 #include "codeeditor.h"
 #include "linenumberarea.h"
 #include "stcsyntaxhighlighter.h"
@@ -80,15 +83,14 @@ QString getFileContent(const QString& fileName)
 }
 } // namespace
 
-CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
+CodeEditor::CodeEditor(QWidget *parent)
+    : QPlainTextEdit(parent), networkManager{new QNetworkAccessManager(this)}, lineNumberArea{new LineNumberArea(this)}
 {
     setAcceptDrops(true);
     setMouseTracking(true);
     document()->setModified(false);
 
     registerShortcuts();
-
-    lineNumberArea = new LineNumberArea(this);
 
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);
     connect(this, &CodeEditor::updateRequest, this, &CodeEditor::updateLineNumberArea);
@@ -908,17 +910,53 @@ void CodeEditor::dropEvent(QDropEvent *event)
 void CodeEditor::mouseMoveEvent(QMouseEvent* event)
 {
     // Do not show tooltip while selecting with the left mouse button
-    if (event->buttons() & Qt::LeftButton) {
-        lastTooltipImagePath.clear();
-        QToolTip::hideText();
+    if (const bool isSelectingWithLeftMouseButtonActive = event->buttons() & Qt::LeftButton)
+    {
+        clearTooltipState();
         QPlainTextEdit::mouseMoveEvent(event);
         return;
     }
 
     QTextCursor cursor = cursorForPosition(event->pos());
     cursor.select(QTextCursor::WordUnderCursor);
-    const QString word = cursor.selectedText();
 
+    auto imagePathOpt = extractImagePath("does not matter", cursor);
+    if (!imagePathOpt)
+    {
+        return;
+    }
+
+    auto imagePath = *imagePathOpt;
+    if (!imagePath.isEmpty())
+    {
+        if (isLocalImageFile(imagePath))
+        {
+            showLocalImageTooltip(imagePath, event->globalPosition().toPoint());
+            return;
+        }
+        else if (isLink(imagePath))
+        {
+            showWebLinkPreview(imagePath, event->globalPosition().toPoint());
+            return;
+        }
+        else // file not found or unsupported format
+        {
+            if (imagePath != lastTooltipImagePath)
+            {
+                lastTooltipImagePath = imagePath;
+                QString errorMessage = QString("2Error: Image file not found or invalid:<br/>%1").arg(imagePath);
+                QToolTip::showText(event->globalPosition().toPoint(), errorMessage, this);
+            }
+            return;
+        }
+    }
+    // No match – hide tooltip and call base method
+    clearTooltipState();
+    QPlainTextEdit::mouseMoveEvent(event);
+}
+
+std::optional<QString> CodeEditor::extractImagePath(const QString& /*text*/, const QTextCursor& cursor) const
+{
     static QRegularExpression imgRegex(R"__(
         \[img\s+
         (?:
@@ -950,61 +988,113 @@ void CodeEditor::mouseMoveEvent(QMouseEvent* event)
             if (!match.captured(i).isEmpty())
             {
                 imagePath = match.captured(i);
-                break;
-            }
-        }
-
-        if (!imagePath.isEmpty())
-        {
-            QFileInfo fi(imagePath);
-            if (fi.exists() && fi.isFile() &&
-                QImageReader::supportedImageFormats().contains(fi.suffix().toLower().toUtf8()))
-            {
-                QImage image(imagePath);
-                if (!image.isNull())
-                {
-                    const QSize previewSize = image.size().boundedTo(QSize(200, 150));
-                    const QPixmap pixmap = QPixmap::fromImage(image.scaled(previewSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-
-                    if (imagePath != lastTooltipImagePath)
-                    {
-                        lastTooltipImagePath = imagePath;
-
-                        const QString tooltipHtml = QString(R"(
-                            <b>%1</b><br/>
-                            <img src="%2" height="%3"/><br/>
-                            <i>%4 x %5 px</i><br/>
-                            Last modified: %6
-                        )")
-                            .arg(fi.fileName())
-                            .arg(imagePath)
-                            .arg(previewSize.height())
-                            .arg(image.width())
-                            .arg(image.height())
-                            .arg(fi.lastModified().toString(Qt::ISODate));
-
-                        QToolTip::showText(event->globalPosition().toPoint(), tooltipHtml, this);
-                    }
-                    return;
-                }
-            }
-            else // file not found or unsupported format
-            {
-                if (imagePath != lastTooltipImagePath)
-                {
-                    lastTooltipImagePath = imagePath;
-                    QString errorMessage = QString("Error: Image file not found or invalid:<br/>%1").arg(imagePath);
-                    QToolTip::showText(event->globalPosition().toPoint(), errorMessage, this);
-                }
-                return;
+                return imagePath;
             }
         }
     }
+    return std::nullopt;
+}
 
-    // No match – hide tooltip and call base method
+bool CodeEditor::isLocalImageFile(const QString& path) const
+{
+    QFileInfo fi(path);
+    return fi.exists() && fi.isFile() &&
+           QImageReader::supportedImageFormats().contains(fi.suffix().toLower().toUtf8());
+}
+
+bool CodeEditor::isLink(const QString& path) const
+{
+    return path.startsWith("http://", Qt::CaseInsensitive) || path.startsWith("https://", Qt::CaseInsensitive);
+}
+
+
+void CodeEditor::showLocalImageTooltip(const QString& path, const QPoint& globalPos)
+{
+    if (path == lastTooltipImagePath)   // avoid flicker
+        return;
+    lastTooltipImagePath = path;
+
+    QFileInfo fi(path);
+    if (!fi.exists() || !QImageReader::supportedImageFormats().contains(fi.suffix().toLower().toUtf8())) {
+        QToolTip::showText(globalPos, QString("Error: Image not found or invalid:<br/>%1").arg(path), this);
+        return;
+    }
+
+    QImage img(path);
+    if (img.isNull()) {
+        QToolTip::showText(globalPos, QString("Error: Cannot load image:<br/>%1").arg(path), this);
+        return;
+    }
+
+    const QSize preview = img.size().boundedTo({200,150});
+    QPixmap pix = QPixmap::fromImage(img.scaled(preview, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+
+    QString html = QString("<b>%1</b><br/>"
+                           "<img src=\"%2\" height=\"%3\"/><br/>"
+                           "<i>%4×%5 px</i><br/>"
+                           "Last modified: %6"
+                           ).arg(fi.fileName())
+                           .arg(path)
+                           .arg(preview.height())
+                           .arg(img.width()).arg(img.height())
+                           .arg(fi.lastModified().toString(Qt::ISODate));
+
+    QToolTip::showText(globalPos, html, this);
+}
+
+void CodeEditor::showWebLinkPreview(const QString& url, const QPoint& globalPos)
+{
+    if (url == lastTooltipImagePath)
+        return;
+
+    lastTooltipImagePath = url;
+    QToolTip::showText(globalPos, "Loading preview…", this);
+
+    QNetworkRequest request{QUrl(url)};
+    QNetworkReply* reply = networkManager->get(request);
+
+    connect(reply, &QNetworkReply::finished, this, [=, this]() {
+        reply->deleteLater();
+
+        if (reply->error() != QNetworkReply::NoError) {
+            QToolTip::showText(globalPos, QString("Error: %1").arg(reply->errorString()), this);
+            return;
+        }
+
+        QByteArray data = reply->readAll();
+        QImage image;
+        if (!image.loadFromData(data)) {
+            QToolTip::showText(globalPos, "Received data is not a valid image.", this);
+            return;
+        }
+
+        const QSize preview = image.size().boundedTo({200, 150});
+        QImage scaled = image.scaled(preview, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+        QByteArray imageBytes;
+        QBuffer buffer(&imageBytes);
+        buffer.open(QIODevice::WriteOnly);
+        scaled.save(&buffer, "PNG");
+
+        const QString base64 = QString::fromLatin1(imageBytes.toBase64());
+
+        const QString html = QString("<img src=\"data:image/png;base64,%1\" height=\"%2\"/><br/>"
+                                     "<i>%3 × %4 px</i><br/>"
+                                     "From: %5")
+                                     .arg(base64)
+                                     .arg(preview.height())
+                                     .arg(image.width())
+                                     .arg(image.height())
+                                     .arg(url);
+
+        QToolTip::showText(globalPos, html, this);
+    });
+}
+
+void CodeEditor::clearTooltipState()
+{
     lastTooltipImagePath.clear();
     QToolTip::hideText();
-    QPlainTextEdit::mouseMoveEvent(event);
 }
 
 void CodeEditor::increaseFontSize()

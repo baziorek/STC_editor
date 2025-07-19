@@ -6,6 +6,7 @@
 #include <QDateTime>
 
 class CodeBlock;
+class QNetworkAccessManager;
 
 class CodeEditor : public QPlainTextEdit
 {
@@ -141,8 +142,18 @@ protected:
 
     QVector<CodeBlock> parseAllCodeBlocks();
 
+    /// methods to handle opening links on click:
     bool isCtrlLeftClick(QMouseEvent *event) const;
     bool tryOpenLinkAtPosition(const QString &text, int posInBlock);
+
+    /// methods to load preview of images: both local and remote:
+    std::optional<QString> extractImagePath(const QString& text, const QTextCursor &cursor) const;
+    void showLocalImageTooltip(const QString &path, const QPoint &globalPos);
+    void clearTooltipState();
+    void showWebLinkPreview(const QString &url, const QPoint &globalPos);
+    bool isLink(const QString &path) const;
+    bool isLocalImageFile(const QString &path) const;
+
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();
@@ -161,4 +172,6 @@ private:
     int currentLine = -1;
 
     QVector<CodeBlock> codeBlocks;
+
+    QNetworkAccessManager* networkManager = {};
 };
