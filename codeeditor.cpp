@@ -48,6 +48,26 @@ CodeEditor::CodeEditor(QWidget *parent)
     STCSyntaxHighlighter *highlighter = new STCSyntaxHighlighter(document()); // it does not leak
 }
 
+void CodeEditor::newEmptyFile()
+{
+    clear();
+    setFileName("");
+
+    document()->setModified(false);
+
+    originalLines.clear();
+    modifiedLines.clear();
+
+    fileModificationTime = {};
+    lastChangeTime = QDateTime::currentDateTime();
+
+    currentLine = -1;
+
+    codeBlocks = {};
+
+    fileEncodingHandler = std::make_unique<FileEncodingHandler>();
+}
+
 CodeEditor::~CodeEditor() = default;
 
 void CodeEditor::registerShortcuts()

@@ -495,9 +495,8 @@ void MainWindow::onNewFilePressed()
     if (operationWhichDiscardsChangesRequestedReturningIfDiscarded(
             tr("Confirm discarding current file content?"), tr("Do You really want to lose currently unsaved changes and create new file")))
     {
-        ui->textEditor->clear();
+        ui->textEditor->newEmptyFile();
         updateWindowTitle();
-        ui->textEditor->setFileName("");
         setDisabledMenuActionsDependingOnOpenedFile(/*disabled=*/true);
     }
 }

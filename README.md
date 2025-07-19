@@ -12,6 +12,7 @@ Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników
 ![Zrzut ekranu](screens/applicationSample.png)
 
 ## Dedykowane funkcje
+Jak ktoś chce tego używać na potrzeby pisania na stronę Cpp0x.pl (do czego zachęcam):
  1. **Kolorowanie składni**: Podświetlanie znaczników STC dla lepszej czytelności.
  2. **Weryfikacja zamknięcia znaczników**: Sprawdza, czy wszystkie znaczniki STC są poprawnie zamknięte.
  3. **Transformacja tekstu**: Zmiana zaznaczonego tekstu na małe litery, wielkie litery, camelCase na snake_case lub odwrotnie.
@@ -147,6 +148,7 @@ Jeśli ktoś chce tego używać do innych celów:
 53. W danej linii da się wpisać dane np.: `QTextBlockUserData` i potem `block.setUserData(data);` - może da się to wykorzystać w optymalizacji
 54. Kurs STC wbudowany w program
 55. Prawy przycisk myszy na: tagach `img`, `a href`, `pkt`, `csv` powinien dawać możliwość dodania/usunięcia atrybutów
+56. Wyłączanie poszczególnych aspektów kolorowania składni.
 
 ## Współpraca
 

@@ -104,7 +104,7 @@ void TodoTrackerTableWidget::onLineContentChanged(int position, int charsRemoved
 
 void TodoTrackerTableWidget::refreshTable()
 {
-    setRowCount(0);
+    clearContents();
 
     QList<const TodoInfo*> sortedTodos = sortedTagsCopy(todoList);
 

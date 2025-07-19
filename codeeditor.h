@@ -17,6 +17,8 @@ public:
     CodeEditor(QWidget *parent = nullptr);
     ~CodeEditor();
 
+    void newEmptyFile();
+
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
 
