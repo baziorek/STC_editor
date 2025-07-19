@@ -340,253 +340,233 @@ QMultiMap<QString, QKeySequence> CodeEditor::listOfShortcuts() const
     return result;
 }
 
-void CodeEditor::contextMenuEvent(QContextMenuEvent *event)
+void CodeEditor::contextMenuEvent(QContextMenuEvent* event)
 {
-    // Move cursor to click position
-    QTextCursor clickCursor = cursorForPosition(event->pos());
-
-    // remove selection if clicked out of the selection
-    QTextCursor current = textCursor();
-    if (current.hasSelection())
-    {
-        int clickPos = clickCursor.position();
-        if (clickPos < current.selectionStart() || clickPos > current.selectionEnd())
-        {
-            setTextCursor(clickCursor);  // move current text cursor
-        }
-    }
-    else
-    {
-        setTextCursor(clickCursor); // move current text cursor
-    }
-
-    QTextCursor selection = textCursor();
-
+    moveCursorToClickPosition(event->pos());
     QMenu* menu = createStandardContextMenu();
+
+    const QTextCursor selection = textCursor();
 
     if (selection.hasSelection())
     {
-        QString selectedText = selection.selectedText();
-        bool isSingleWord = !selectedText.contains(QRegularExpression("\\s"));
-
-        menu->addSeparator();
-
-        // Uppercase
-        if (!selectedText.isUpper())
-        {
-            QAction* actionUpper = new QAction("To UPPER CASE", this);
-            connect(actionUpper, &QAction::triggered, this, [this]() {
-                QTextCursor sel = textCursor();
-                sel.insertText(sel.selectedText().toUpper());
-            });
-            menu->addAction(actionUpper);
-        }
-
-        // Lowercase
-        if (!selectedText.isLower())
-        {
-            QAction* actionLower = new QAction("To lower case", this);
-            connect(actionLower, &QAction::triggered, this, [this]() {
-                QTextCursor sel = textCursor();
-                sel.insertText(sel.selectedText().toLower());
-            });
-            menu->addAction(actionLower);
-        }
-
-        // CamelCase <-> snake_case
-        if (isSingleWord) {
-            QString text = selectedText;
-
-            QAction* casingAction = nullptr;
-            if (text.contains('_')) {
-                casingAction = new QAction("To camelCase", this);
-                connect(casingAction, &QAction::triggered, this, [this, text]() {
-                    QStringList parts = text.split('_', Qt::SkipEmptyParts);
-                    for (int i = 1; i < parts.size(); ++i)
-                        parts[i][0] = parts[i][0].toUpper();
-                    QString camel = parts.join("");
-                    QTextCursor sel = textCursor();
-                    sel.insertText(camel);
-                });
-            } else {
-                casingAction = new QAction("To snake_case", this);
-                connect(casingAction, &QAction::triggered, this, [this, text]() {
-                    QString snake;
-                    for (int i = 0; i < text.length(); ++i) {
-                        if (i > 0 && text[i].isUpper()) {
-                            snake += '_';
-                            snake += text[i].toLower();
-                        } else {
-                            snake += text[i].toLower();
-                        }
-                    }
-                    QTextCursor sel = textCursor();
-                    sel.insertText(snake);
-                });
-            }
-
-            if (casingAction)
-                menu->addAction(casingAction);
-        }
-
-        // Adding numeration - if selected more than one lines:
-        int start = selection.selectionStart();
-        int end = selection.selectionEnd();
-        int startLine = document()->findBlock(start).blockNumber();
-        int endLine = document()->findBlock(end).blockNumber();
-
-        if (endLine > startLine)
-        {
-            menu->addSeparator();
-
-            // Numeration 1. 2. 3.
-            QAction* numberedList = new QAction("Add numeration: 1., 2., 3. ...", this);
-            connect(numberedList, &QAction::triggered, this, [this, startLine, endLine]() {
-                QTextCursor cursor(document()->findBlockByNumber(startLine));
-                for (int i = startLine, n = 1; i <= endLine; ++i, ++n)
-                {
-                    QTextBlock block = document()->findBlockByNumber(i);
-                    if (block.isValid()) {
-                        QTextCursor lineCursor(block);
-                        lineCursor.movePosition(QTextCursor::StartOfBlock);
-                        lineCursor.insertText(QString::number(n) + ". ");
-                    }
-                }
-            });
-            menu->addAction(numberedList);
-
-            // Numeration: -
-            QAction* dashedList = new QAction("Add numeration: bullet points", this);
-            connect(dashedList, &QAction::triggered, this, [this, startLine, endLine]() {
-                for (int i = startLine; i <= endLine; ++i)
-                {
-                    QTextBlock block = document()->findBlockByNumber(i);
-                    if (block.isValid()) {
-                        QTextCursor lineCursor(block);
-                        lineCursor.movePosition(QTextCursor::StartOfBlock);
-                        lineCursor.insertText("- ");
-                    }
-                }
-            });
-            menu->addAction(dashedList);
-
-            // Join lines with space
-            QAction* joinLines = new QAction("Join lines with space", this);
-            connect(joinLines, &QAction::triggered, this, [this]() {
-                QTextCursor sel = textCursor();
-                QString joined = sel.selectedText();
-                joined.replace(QChar::ParagraphSeparator, " ");
-                sel.insertText(joined);
-            });
-            menu->addAction(joinLines);
-        }
+        addCaseConversionActions(menu, selection);
+        addWordFormatActions(menu, selection);
+        addMultiLineSelectionActions(menu, selection);
     }
-    else // if (! selection.hasSelection())
+    else
     {
-        // No selection - we are cheching if cursor is inside one of tags
-        QTextCursor cursor = textCursor();
-        QString blockText = cursor.block().text();
-        int posInBlock = cursor.position() - cursor.block().position();
-
-        static const QStringList tagList =
-        {
-            "code", "cpp", "py", "b", "u", "i", "h1", "h2", "h3", "h4", "run"
-        };
-
-        for (const QString& tag : tagList)
-        {
-            QRegularExpression regex(QString(R"(\[%1\](.*?)\[/%1\])").arg(tag));
-            QRegularExpressionMatchIterator it = regex.globalMatch(blockText);
-
-            while (it.hasNext())
-            {
-                QRegularExpressionMatch match = it.next();
-                int start = match.capturedStart(1);
-                int end = match.capturedEnd(1);
-
-                if (posInBlock >= start && posInBlock <= end)
-                {
-                    // cursor inside one of tags
-                    menu->addSeparator();
-                    QAction* removeTag = new QAction(QString("Remove [%1]").arg(tag), this);
-                    connect(removeTag, &QAction::triggered, this, [this, tag]() {
-                        QTextCursor cursor = textCursor();
-                        QString blockText = cursor.block().text();
-
-                        // Find position of cursor in line
-                        int posInBlock = cursor.position() - cursor.block().position();
-
-                        QRegularExpression regex(QString(R"(\[%1\](.*?)\[/%1\])").arg(tag));
-                        QRegularExpressionMatchIterator it = regex.globalMatch(blockText);
-
-                        while (it.hasNext())
-                        {
-                            QRegularExpressionMatch match = it.next();
-                            int start = match.capturedStart(1);
-                            int end = match.capturedEnd(1);
-
-                            if (posInBlock >= start && posInBlock <= end) {
-                                QTextCursor lineCursor(cursor.block());
-                                lineCursor.setPosition(cursor.block().position() + match.capturedStart());
-                                lineCursor.setPosition(cursor.block().position() + match.capturedEnd(), QTextCursor::KeepAnchor);
-
-                                QString inner = match.captured(1);
-                                lineCursor.insertText(inner);
-                                break;
-                            }
-                        }
-                    });
-                    menu->addAction(removeTag);
-                    break; // only first matching tag
-                }
-            }
-        }
-
-        const int clickedPos = cursorForPosition(event->pos()).position();
-        if (auto maybeBlock = selectEnclosingCodeBlock(clickedPos); maybeBlock.has_value())
-        {
-            QTextCursor cursor = maybeBlock->cursor;
-            QString tag = maybeBlock->tag;
-
-            menu->addSeparator();
-
-            QAction* selectAllCodeAction = new QAction("Select this source code", this);
-            connect(selectAllCodeAction, &QAction::triggered, this, [this, cursor]() {
-                setTextCursor(cursor);
-            });
-            menu->addAction(selectAllCodeAction);
-
-            if ("cpp" == tag)
-            {
-                QAction* formatCppAction = new QAction("Format C++ with clang-format", this);
-                connect(formatCppAction, &QAction::triggered, this, [this, cursor]() mutable {
-                    QString rawCode = cursor.selectedText().replace(QChar::ParagraphSeparator, '\n');
-                    QString formatted = formatCppWithClang(rawCode);
-
-                    if (!formatted.isEmpty())
-                    {
-                        cursor.insertText(formatted.replace(QChar::LineSeparator, "\n"));
-                    }
-                    else
-                    {
-                        QMessageBox::warning(this, "clang-format", "Formatting failed or clang-format not available.");
-                    }
-                });
-                menu->addAction(formatCppAction);
-
-                QAction* compileCppAction = new QAction("Compile C++ with g++", this);
-                connect(compileCppAction, &QAction::triggered, this, [this, cursor]() {
-                    QString rawCode = cursor.selectedText().replace(QChar::ParagraphSeparator, '\n');
-                    auto* dialog = new CppCompilerDialog(rawCode, this);
-                    dialog->exec();
-                });
-                menu->addAction(compileCppAction);
-            }
-        }
+        addTagRemovalActionIfInsideTag(menu);
+        addCodeBlockActionsIfApplicable(menu, event->pos());
     }
 
     menu->exec(event->globalPos());
     delete menu;
+}
+void CodeEditor::moveCursorToClickPosition(const QPoint& pos)
+{
+    QTextCursor clickCursor = cursorForPosition(pos);
+    QTextCursor current = textCursor();
+
+    if (current.hasSelection())
+    {
+        int clickPos = clickCursor.position();
+        if (clickPos < current.selectionStart() || clickPos > current.selectionEnd())
+            setTextCursor(clickCursor);
+    }
+    else
+    {
+        setTextCursor(clickCursor);
+    }
+}
+
+void CodeEditor::addCaseConversionActions(QMenu* menu, const QTextCursor& selection)
+{
+    const QString text = selection.selectedText();
+
+    menu->addSeparator();
+
+    if (!text.isUpper())
+    {
+        QAction* upper = new QAction(QIcon::fromTheme("format-text-uppercase"), "To UPPER CASE", this);
+        connect(upper, &QAction::triggered, this, [this]() {
+            auto cursor = textCursor();
+            cursor.insertText(cursor.selectedText().toUpper());
+        });
+        menu->addAction(upper);
+    }
+
+    if (!text.isLower())
+    {
+        QAction* lower = new QAction(QIcon::fromTheme("format-text-lowercase"), "To lower case", this);
+        connect(lower, &QAction::triggered, this, [this]() {
+            auto cursor = textCursor();
+            cursor.insertText(cursor.selectedText().toLower());
+        });
+        menu->addAction(lower);
+    }
+}
+
+void CodeEditor::addWordFormatActions(QMenu* menu, const QTextCursor& selection)
+{
+    const QString text = selection.selectedText();
+    if (text.contains(QRegularExpression("\\s"))) return;
+
+    if (text.contains('_'))
+    {
+        QAction* toCamel = new QAction(QIcon::fromTheme("format-text-italic"), "To camelCase", this);
+        connect(toCamel, &QAction::triggered, this, [this, text]() {
+            QStringList parts = text.split('_', Qt::SkipEmptyParts);
+            for (int i = 1; i < parts.size(); ++i)
+                parts[i][0] = parts[i][0].toUpper();
+            textCursor().insertText(parts.join(""));
+        });
+        menu->addAction(toCamel);
+    }
+    else
+    {
+        QAction* toSnake = new QAction(QIcon::fromTheme("format-text-bold"), "To snake_case", this);
+        connect(toSnake, &QAction::triggered, this, [this, text]() {
+            QString result;
+            for (QChar ch : text)
+            {
+                if (ch.isUpper())
+                    result += QString{"_"} + ch.toLower();
+                else
+                    result += ch;
+            }
+            textCursor().insertText(result);
+        });
+        menu->addAction(toSnake);
+    }
+}
+
+void CodeEditor::addMultiLineSelectionActions(QMenu* menu, const QTextCursor& selection)
+{
+    const int start = selection.selectionStart();
+    const int end = selection.selectionEnd();
+    const int startLine = document()->findBlock(start).blockNumber();
+    const int endLine = document()->findBlock(end).blockNumber();
+
+    if (endLine <= startLine)
+        return;
+
+    menu->addSeparator();
+
+    QAction* numbered = new QAction(QIcon::fromTheme("format-list-numbered"), "Add numeration: 1., 2., 3. ...", this);
+    connect(numbered, &QAction::triggered, this, [=, this]() {
+        for (int i = startLine, n = 1; i <= endLine; ++i, ++n)
+        {
+            QTextBlock block = document()->findBlockByNumber(i);
+            QTextCursor c(block);
+            c.movePosition(QTextCursor::StartOfBlock);
+            c.insertText(QString::number(n) + ". ");
+        }
+    });
+    menu->addAction(numbered);
+
+    QAction* bulleted = new QAction(QIcon::fromTheme("format-list-unordered"), "Add bullet points", this);
+    connect(bulleted, &QAction::triggered, this, [=, this]() {
+        for (int i = startLine; i <= endLine; ++i)
+        {
+            QTextBlock block = document()->findBlockByNumber(i);
+            QTextCursor c(block);
+            c.movePosition(QTextCursor::StartOfBlock);
+            c.insertText("- ");
+        }
+    });
+    menu->addAction(bulleted);
+
+    QAction* joinLines = new QAction(QIcon::fromTheme("insert-text"), "Join lines with space", this);
+    connect(joinLines, &QAction::triggered, this, [this]() {
+        auto c = textCursor();
+        QString joined = c.selectedText().replace(QChar::ParagraphSeparator, " ");
+        c.insertText(joined);
+    });
+    menu->addAction(joinLines);
+}
+
+void CodeEditor::addTagRemovalActionIfInsideTag(QMenu* menu)
+{
+    const QStringList tags = { "code", "cpp", "py", "b", "u", "i", "h1", "h2", "h3", "h4", "run" };
+
+    QTextCursor cursor = textCursor();
+    QString text = cursor.block().text();
+    int offset = cursor.position() - cursor.block().position();
+
+    for (const QString& tag : tags)
+    {
+        QRegularExpression re(QString(R"(\[%1\](.*?)\[/%1\])").arg(tag));
+        QRegularExpressionMatchIterator it = re.globalMatch(text);
+
+        while (it.hasNext())
+        {
+            QRegularExpressionMatch m = it.next();
+            if (offset >= m.capturedStart(1) && offset <= m.capturedEnd(1))
+            {
+                QAction* remove = new QAction(QIcon::fromTheme("edit-delete"), QString("Remove [%1]").arg(tag), this);
+                connect(remove, &QAction::triggered, this, [=, this]() {
+                    QTextCursor c = textCursor();
+                    int lineOffset = c.position() - c.block().position();
+                    QRegularExpressionMatchIterator it2 = re.globalMatch(c.block().text());
+                    while (it2.hasNext())
+                    {
+                        QRegularExpressionMatch m2 = it2.next();
+                        if (lineOffset >= m2.capturedStart(1) && lineOffset <= m2.capturedEnd(1))
+                        {
+                            QTextCursor lineCursor(c.block());
+                            lineCursor.setPosition(c.block().position() + m2.capturedStart());
+                            lineCursor.setPosition(c.block().position() + m2.capturedEnd(), QTextCursor::KeepAnchor);
+                            lineCursor.insertText(m2.captured(1));
+                            break;
+                        }
+                    }
+                });
+                menu->addSeparator();
+                menu->addAction(remove);
+                return;
+            }
+        }
+    }
+}
+
+void CodeEditor::addCodeBlockActionsIfApplicable(QMenu* menu, const QPoint& pos)
+{
+    const int cursorPos = cursorForPosition(pos).position();
+    if (auto maybeBlock = selectEnclosingCodeBlock(cursorPos); maybeBlock.has_value())
+    {
+        auto cursor = maybeBlock->cursor;
+        auto tag = maybeBlock->tag;
+
+        menu->addSeparator();
+
+        QAction* selectAll = new QAction(QIcon::fromTheme("edit-select-all"), "Select this source code", this);
+        connect(selectAll, &QAction::triggered, this, [=, this]() {
+            setTextCursor(cursor);
+        });
+        menu->addAction(selectAll);
+
+        if (tag == "cpp")
+        {
+            QAction* format = new QAction(QIcon::fromTheme("tools-wizard"), "Format C++ with clang-format", this);
+            connect(format, &QAction::triggered, this, [=, this]() mutable {
+                QString raw = cursor.selectedText().replace(QChar::ParagraphSeparator, '\n');
+                QString formatted = formatCppWithClang(raw);
+                if (!formatted.isEmpty())
+                    cursor.insertText(formatted.replace(QChar::LineSeparator, "\n"));
+                else
+                    QMessageBox::warning(this, "clang-format", "Formatting failed or clang-format not available.");
+            });
+            menu->addAction(format);
+
+            QAction* compile = new QAction(QIcon::fromTheme("applications-development"), "Compile C++ with g++", this);
+            connect(compile, &QAction::triggered, this, [=, this]() {
+                QString raw = cursor.selectedText().replace(QChar::ParagraphSeparator, '\n');
+                auto* dlg = new CppCompilerDialog(raw, this);
+                dlg->exec();
+            });
+            menu->addAction(compile);
+        }
+    }
 }
 
 QString CodeEditor::formatCppWithClang(const QString& code)

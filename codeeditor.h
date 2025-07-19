@@ -164,6 +164,14 @@ protected:
     bool handlePasteWithLinkWrapping();
     void fetchAndInsertTitle(const QString &url, int insertedPos);
 
+    /// methods to handle contest menu actions:
+    void moveCursorToClickPosition(const QPoint &pos);
+    void addCaseConversionActions(QMenu *menu, const QTextCursor &selection);
+    void addWordFormatActions(QMenu *menu, const QTextCursor &selection);
+    void addMultiLineSelectionActions(QMenu *menu, const QTextCursor &selection);
+    void addTagRemovalActionIfInsideTag(QMenu *menu);
+    void addCodeBlockActionsIfApplicable(QMenu *menu, const QPoint &pos);
+
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();
