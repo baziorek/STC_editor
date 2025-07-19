@@ -28,14 +28,6 @@
 namespace
 {
 constexpr int spacesPerTab = 4;
-
-bool operator==(const CodeBlock& a, const CodeBlock& b)
-{
-    return a.cursor.selectionStart() == b.cursor.selectionStart()
-        && a.cursor.selectionEnd() == b.cursor.selectionEnd()
-        && a.tag == b.tag
-        && a.language == b.language;
-}
 } // namespace
 
 CodeEditor::CodeEditor(QWidget *parent)
