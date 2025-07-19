@@ -64,6 +64,22 @@ std::pair<QString, QString> extractLink(const QString& text)
     // No link found — return empty link and original text as description
     return {"", text};
 }
+
+QList<QPair<QString, MainWindow::RecentFileInfo>> getSortedExistingRecentFiles(const QMap<QString, MainWindow::RecentFileInfo>& recentFilesWithPositions)
+{
+    QList<QPair<QString, MainWindow::RecentFileInfo>> files;
+    for (auto it = recentFilesWithPositions.begin(); it != recentFilesWithPositions.end(); ++it)
+    {
+        if (QFile::exists(it.key()))
+            files.append({it.key(), it.value()});
+    }
+
+    std::sort(files.begin(), files.end(), [](const auto& a, const auto& b) {
+        return a.second.lastOpened > b.second.lastOpened;
+    });
+
+    return files;
+}
 } // namespace
 
 
@@ -87,6 +103,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->codesListTableWidget->setTextEditor(ui->textEditor);
     ui->todosTableWidget->setTextEditor(ui->textEditor);
 
+    connectSignals2Slots();
+    connectShortcutsFromCodeWidget();
+    connectShortcuts();
+}
+
+void MainWindow::connectSignals2Slots()
+{
     connect(ui->buttonsEmittingStc, &StcTagsButtons::buttonPressed, this, &MainWindow::onStcTagsButtonPressed);
     connect(ui->contextTableWidget, &FilteredTagTableWidget::goToLineClicked, ui->textEditor, &CodeEditor::go2LineRequested);
     connect(ui->goToLineGroupBox, &GoToLineWidget::onGoToLineRequested, ui->textEditor, &CodeEditor::go2LineRequested);
@@ -113,10 +136,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         ui->textEditor->ensureCursorVisible();
         ui->textEditor->setFocus();
     });
-
-
-    connectShortcutsFromCodeWidget();
-    connectShortcuts();
 }
 
 void MainWindow::onStcTagsButtonPressed(StcTags stcTag)
@@ -202,78 +221,80 @@ void MainWindow::onRecentRecentFilesMenuOpened()
 {
     ui->menuOpen_recent->clear();
 
-    // Create a list of pairs (filepath, info) for sorting
-    QList<QPair<QString, RecentFileInfo>> sortedFiles;
-    for (auto it = recentFilesWithPositions.begin(); it != recentFilesWithPositions.end(); ++it)
+    const auto sortedRecentFiles = getSortedExistingRecentFiles(recentFilesWithPositions);
+
+    int filesAdded = 0;
+    for (const auto& [filePath, info] : sortedRecentFiles)
     {
-        if (QFile::exists(it.key()))
-        {
-            sortedFiles.append({it.key(), it.value()});
-        }
+        if (++filesAdded > maxElementsInListOfLastElements)
+            break;
+
+        ui->menuOpen_recent->addAction(createRecentFileAction(filePath, info));
     }
 
-    // Sort by last opened datetime (newest first)
-    std::sort(sortedFiles.begin(), sortedFiles.end(), [](const auto& a, const auto& b) {
-                  return a.second.lastOpened > b.second.lastOpened;
+    if (filesAdded == 0)
+        addEmptyRecentFilesLabel();
+    else
+        addClearRecentFilesAction();
+}
+
+QAction* MainWindow::createRecentFileAction(const QString& filePath, const RecentFileInfo& fileInfo)
+{
+    QString fileName = QFileInfo(filePath).fileName();
+
+    QString tooltip = QString("%1\n\nRecently opened on: %2")
+                          .arg(filePath)
+                          .arg(fileInfo.lastOpened.toString("dd.MM.yyyy hh:mm:ss"));
+
+    QString label = QString("%1   [last opened: %2]")
+                        .arg(fileName)
+                        .arg(fileInfo.lastOpened.toString("dd.MM.yy hh:mm"));
+
+    QAction* action = new QAction(label, this);
+    action->setToolTip(tooltip);
+    action->setData(filePath);
+
+    connect(action, &QAction::triggered, this, [this, filePath]() {
+        if (!QFile::exists(filePath))
+        {
+            QMessageBox::warning(this, tr("File not found"), tr("File does not exist:\n") + filePath);
+            return;
+        }
+
+        updateRecentFiles(filePath);
+        onRecentRecentFilesMenuOpened();
+        loadFileContentToEditorDistargingCurrentContent(filePath);
+
+        const int position = recentFilesWithPositions.value(filePath).cursorPosition;
+        QTextCursor cursor = ui->textEditor->textCursor();
+        cursor.setPosition(position);
+        ui->textEditor->setTextCursor(cursor);
+        ui->textEditor->ensureCursorVisible();
     });
 
-    int shown = 0;
-    for (const auto& [filePath, fileInfo] : sortedFiles)
-    {
-        const QString fileName = QFileInfo(filePath).fileName();
-        QAction* recentAction = new QAction(fileName, ui->menuOpen_recent);
-
-        // Add information about datetime in tooltip
-        QString tooltip = filePath + "\n\nRecently opened on: " + fileInfo.lastOpened.toString("dd.MM.yyyy hh:mm:ss");
-        recentAction->setToolTip(tooltip);
-
-        // Add datetime to action text
-        QString actionText = fileName + "  ";
-        actionText += QString("   [last opened: %1]").arg(fileInfo.lastOpened.toString("dd.MM.yy hh:mm"));
-        recentAction->setText(actionText);
-
-        recentAction->setData(filePath);
-        recentAction->setToolTip(filePath);
-
-        connect(recentAction, &QAction::triggered, this, [this, filePath]() {
-            if (!QFile::exists(filePath))
-            {
-                QMessageBox::warning(this, "File not found", "File does not exist:\n" + filePath);
-                return;
-            }
-            updateRecentFiles(filePath);
-            onRecentRecentFilesMenuOpened();
-            loadFileContentToEditorDistargingCurrentContent(filePath);
-
-            int pos = recentFilesWithPositions.value(filePath).cursorPosition;
-            QTextCursor cursor = ui->textEditor->textCursor();
-            cursor.setPosition(pos);
-            ui->textEditor->setTextCursor(cursor);
-            ui->textEditor->ensureCursorVisible();
-        });
-
-        ui->menuOpen_recent->addAction(recentAction);
-
-        if (++shown >= maxElementsInListOfLastElements)
-            break;
-    }
-
-    if (shown == 0) {
-        QAction* emptyAction = new QAction(tr("No recent files"), this);
-        emptyAction->setEnabled(false);
-        ui->menuOpen_recent->addAction(emptyAction);
-    }
-    else if (shown > 0) {
-        ui->menuOpen_recent->addSeparator();
-
-        QAction* clearAction = new QAction(tr("Clear Recent Files"), ui->menuOpen_recent);
-        connect(clearAction, &QAction::triggered, this, [this]() {
-            recentFilesWithPositions.clear();
-            onRecentRecentFilesMenuOpened();
-        });
-        ui->menuOpen_recent->addAction(clearAction);
-    }
+    return action;
 }
+
+void MainWindow::addEmptyRecentFilesLabel()
+{
+    QAction* noFilesAction = new QAction(tr("No recent files"), this);
+    noFilesAction->setEnabled(false);
+    ui->menuOpen_recent->addAction(noFilesAction);
+}
+
+void MainWindow::addClearRecentFilesAction()
+{
+    ui->menuOpen_recent->addSeparator();
+
+    QAction* clearAction = new QAction(tr("Clear Recent Files"), this);
+    connect(clearAction, &QAction::triggered, this, [this]() {
+        recentFilesWithPositions.clear();
+        onRecentRecentFilesMenuOpened();
+    });
+
+    ui->menuOpen_recent->addAction(clearAction);
+}
+
 
 void MainWindow::onCopyFileAbsoluteNamePressed()
 {

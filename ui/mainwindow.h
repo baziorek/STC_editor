@@ -16,6 +16,13 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    struct RecentFileInfo
+    {
+        int cursorPosition;
+        QDateTime lastOpened;
+    };
+
+
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
@@ -67,7 +74,8 @@ protected:
 
     QString getClickableBreadcrumbPath(const QString &text, int cursorPos);
 
-private: // methods
+    void connectSignals2Slots();
+
     void putTextBackToCursorPosition(QTextCursor &cursor, QString divClass, QString selectedText,
                                      QString textEnding, QString modifiedText);
     void surroundSelectedTextWithAHrefTag();
@@ -88,15 +96,15 @@ private: // methods
 
     QString chooseFileWithDialog(QFileDialog::AcceptMode acceptMode);
 
+    /// methods to handle recent files:
+    QAction *createRecentFileAction(const QString &filePath, const RecentFileInfo &fileInfo);
+    void addEmptyRecentFilesLabel();
+    void addClearRecentFilesAction();
+
 private: // members
     Ui::MainWindow *ui;
 
     QString lastDirectory;
 
-    struct RecentFileInfo
-    {
-        int cursorPosition;
-        QDateTime lastOpened;
-    };
     QMap<QString, RecentFileInfo> recentFilesWithPositions;
 };
