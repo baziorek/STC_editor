@@ -65,6 +65,7 @@ Jeśli ktoś chce tego używać do innych celów:
 13. **Szczegółowy wykaz niezapisanych zmian**: Gdy mamy niezapisane zmiany i próbujemy wyjść z programu to poza spytaniem użytkownika czy na pewno chce wyjść bez zapisania zmian pojawia się od razu diff w formie tabeli pokazujący różnice w odpowiadających sobie liniach.
     - Możliwść przywrócenia zmian względem danej linii z dysku.
     - Zmiany mają również pokazane różnicę w numerach poszczególnych znaków, wtedy możemy lepiej odróżnić znaki, które "na oko" są takie same.
+14. **Ukrywalne widgety**: wszystko poza edytorem tekstu można ukryć, dzięki temu pewne funkcje są wyłączone i edytowanie działa szybciej
 
 ## Planowane funkcjonalności
 
