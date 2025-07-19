@@ -483,6 +483,54 @@ void CodeEditor::addMultiLineSelectionActions(QMenu* menu, const QTextCursor& se
         c.insertText(joined);
     });
     menu->addAction(joinLines);
+
+    // Sort ascending
+    QAction* sortAsc = new QAction(QIcon::fromTheme("view-sort-ascending"), "Sort lines ascending", this);
+    connect(sortAsc, &QAction::triggered, this, [this, startLine, endLine]() {
+        sortLinesInRange(startLine, endLine, /*ascending=*/true);
+    });
+    menu->addAction(sortAsc);
+
+    // Sort descending
+    QAction* sortDesc = new QAction(QIcon::fromTheme("view-sort-descending"), "Sort lines descending", this);
+    connect(sortDesc, &QAction::triggered, this, [this, startLine, endLine]() {
+        sortLinesInRange(startLine, endLine, /*ascending=*/false);
+    });
+    menu->addAction(sortDesc);
+}
+void CodeEditor::sortLinesInRange(int startLine, int endLine, bool ascending)
+{
+    QStringList lines;
+
+    for (int i = startLine; i <= endLine; ++i)
+    {
+        QTextBlock block = document()->findBlockByNumber(i);
+        if (block.isValid())
+            lines << block.text();
+    }
+
+    std::sort(lines.begin(), lines.end(), [ascending](const QString& a, const QString& b) {
+        return ascending
+                   ? QString::compare(a, b, Qt::CaseInsensitive) < 0
+                   : QString::compare(a, b, Qt::CaseInsensitive) > 0;
+    });
+
+    QTextCursor cursor(document()->findBlockByNumber(startLine));
+    cursor.beginEditBlock();
+
+    for (int i = startLine; i <= endLine; ++i)
+    {
+        QTextBlock block = document()->findBlockByNumber(i);
+        if (block.isValid())
+        {
+            QTextCursor lineCursor(block);
+            lineCursor.select(QTextCursor::LineUnderCursor);
+            lineCursor.removeSelectedText();
+            lineCursor.insertText(lines[i - startLine]);
+        }
+    }
+
+    cursor.endEditBlock();
 }
 
 void CodeEditor::addTagRemovalActionIfInsideTag(QMenu* menu)

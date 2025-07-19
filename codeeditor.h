@@ -171,6 +171,7 @@ protected:
     void addMultiLineSelectionActions(QMenu *menu, const QTextCursor &selection);
     void addTagRemovalActionIfInsideTag(QMenu *menu);
     void addCodeBlockActionsIfApplicable(QMenu *menu, const QPoint &pos);
+    void sortLinesInRange(int startLine, int endLine, bool ascending);
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
