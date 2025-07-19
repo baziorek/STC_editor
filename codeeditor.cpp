@@ -698,11 +698,11 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
     }
 }
 
-void CodeEditor::keyPressEvent(QKeyEvent *event)
+void CodeEditor::keyPressEvent(QKeyEvent* event)
 {
-    if ((event->modifiers() & Qt::ControlModifier) && !(event->modifiers() & ~Qt::ControlModifier))
-    { // TODO: This shortcut should be set up in constructor, but it is not working
-        if (Qt::Key_B == event->key())
+    if (isControlOnly(event))
+    {
+        if (event->key() == Qt::Key_B) // TODO: This shortcut should be set up in constructor, but it is not working
         {
             emit shortcutPressed_bold();
             return;
@@ -711,93 +711,94 @@ void CodeEditor::keyPressEvent(QKeyEvent *event)
 
     if (event->key() == Qt::Key_Tab && !(event->modifiers() & Qt::ShiftModifier))
     {
-        QTextCursor cursor = textCursor();
-
-        if (cursor.hasSelection())
-        {
-            int start = cursor.selectionStart();
-            int end = cursor.selectionEnd();
-
-            cursor.setPosition(start);
-            int firstBlock = cursor.blockNumber();
-
-            cursor.setPosition(end);
-            if (cursor.position() > 0 && cursor.atBlockStart())
-                cursor.movePosition(QTextCursor::PreviousBlock);
-            int lastBlock = cursor.blockNumber();
-
-            cursor.beginEditBlock();
-            for (int i = firstBlock; i <= lastBlock; ++i)
-            {
-                QTextBlock block = document()->findBlockByNumber(i);
-                QTextCursor blockCursor(block);
-                blockCursor.movePosition(QTextCursor::StartOfBlock);
-                blockCursor.insertText(QString(spacesPerTab, ' '));
-            }
-            cursor.endEditBlock();
-        }
-        else
-        {
-            insertPlainText(QString(spacesPerTab, ' '));
-        }
+        handleTabIndent();
         return;
     }
 
-    if (event->key() == Qt::Key_Backtab || (event->key() == Qt::Key_Tab && (event->modifiers() & Qt::ShiftModifier))) {
-        QTextCursor cursor = textCursor();
+    if (event->key() == Qt::Key_Backtab || (event->key() == Qt::Key_Tab && (event->modifiers() & Qt::ShiftModifier)))
+    {
+        handleTabUnindent();
+        return;
+    }
 
-        if (cursor.hasSelection())
+    QPlainTextEdit::keyPressEvent(event); // Default handling
+}
+bool CodeEditor::isControlOnly(QKeyEvent* event) const
+{
+    return (event->modifiers() & Qt::ControlModifier) &&
+           !(event->modifiers() & ~Qt::ControlModifier);
+}
+void CodeEditor::handleTabIndent()
+{
+    QTextCursor cursor = textCursor();
+
+    if (cursor.hasSelection())
+    {
+        applyToSelectedBlocks([this](QTextCursor& blockCursor) {
+            blockCursor.insertText(QString(spacesPerTab, ' '));
+        });
+    }
+    else
+    {
+        insertPlainText(QString(spacesPerTab, ' '));
+    }
+}
+void CodeEditor::handleTabUnindent()
+{
+    QTextCursor cursor = textCursor();
+
+    if (!cursor.hasSelection())
+        return;
+
+    applyToSelectedBlocks([this](QTextCursor& blockCursor) {
+        blockCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
+        QString firstChar = blockCursor.selectedText();
+
+        if (firstChar == "\t")
         {
-            int start = cursor.selectionStart();
-            int end = cursor.selectionEnd();
-
-            cursor.setPosition(start);
-            int firstBlock = cursor.blockNumber();
-
-            cursor.setPosition(end);
-            if (cursor.position() > 0 && cursor.atBlockStart())
-                cursor.movePosition(QTextCursor::PreviousBlock);
-            int lastBlock = cursor.blockNumber();
-
-            cursor.beginEditBlock();
-            for (int i = firstBlock; i <= lastBlock; ++i)
+            blockCursor.removeSelectedText();
+        }
+        else
+        {
+            blockCursor = QTextCursor(blockCursor.block()); // reset to block start
+            for (int j = 0; j < spacesPerTab; ++j)
             {
-                QTextBlock block = document()->findBlockByNumber(i);
-                QTextCursor blockCursor(block);
-                blockCursor.movePosition(QTextCursor::StartOfBlock);
-
-                blockCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor, 1);
-                QString firstChar = blockCursor.selectedText();
-
-                if (firstChar == "\t")
+                blockCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
+                if (blockCursor.selectedText().endsWith(" "))
                 {
                     blockCursor.removeSelectedText();
                 }
                 else
                 {
-                    // try to remove 4 spaces in the beginning
-                    blockCursor = QTextCursor(block);
-                    for (int j = 0; j < spacesPerTab; ++j)
-                    {
-                        blockCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
-                        if (blockCursor.selectedText().endsWith(" "))
-                        {
-                            blockCursor.removeSelectedText();
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
+                    break;
                 }
             }
-            cursor.endEditBlock();
         }
-        return;
-    }
+    });
+}
+void CodeEditor::applyToSelectedBlocks(const std::function<void(QTextCursor&)>& callback)
+{
+    QTextCursor cursor = textCursor();
+    int start = cursor.selectionStart();
+    int end = cursor.selectionEnd();
 
-    // default behaviour:
-    QPlainTextEdit::keyPressEvent(event);
+    cursor.setPosition(start);
+    int firstBlock = cursor.blockNumber();
+
+    cursor.setPosition(end);
+    if (cursor.position() > 0 && cursor.atBlockStart())
+        cursor.movePosition(QTextCursor::PreviousBlock);
+    int lastBlock = cursor.blockNumber();
+
+    cursor.beginEditBlock();
+    for (int i = firstBlock; i <= lastBlock; ++i)
+    {
+        QTextBlock block = document()->findBlockByNumber(i);
+        QTextCursor blockCursor(block);
+        blockCursor.movePosition(QTextCursor::StartOfBlock);
+        callback(blockCursor);
+    }
+    cursor.endEditBlock();
 }
 
 

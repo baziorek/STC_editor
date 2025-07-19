@@ -21,6 +21,7 @@ Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników
     - Filtrowanie wybranych znaczników (np. tylko `[h1]`).
     - Śledzenie pozycji kursora w kontekście dokumentu w czasie rzeczywistym.
  5. **Podgląd obrazów**: Najedź myszą na `[img src="ścieżka/do/obrazu.png"]`, aby zobaczyć podgląd obrazu (wymaga prawidłowej ścieżki).
+    - Podgląd również obrazków z internetu
  6. **Usuwanie znaczników**: Kliknij prawym przyciskiem wewnątrz znaczników (np. `[b]Pogrubiony tekst[/b]`), aby usunąć znaczniki, pozostawiając tylko treść (np. `Pogrubiony tekst`).
  7. **Formatowanie kodu C++**: Kliknij prawym przyciskiem wewnątrz `[cpp]...[/cpp]`, aby sformatować kod za pomocą `clang-format` (wymaga zainstalowanego `clang-format`).
  8. **Kompilacja kodu C++**: Kliknij prawym przyciskiem wewnątrz `[cpp]...[/cpp]`, aby skompilować kod za pomocą `g++` (wymaga zainstalowanego `g++`).
@@ -87,7 +88,7 @@ Jeśli ktoś chce tego używać do innych celów:
 7. Integracja analizatora składni C++ (np. [flex](https://github.com/westes/flex)).
 8. Podświetlanie składni C++ i Pythona za pomocą [QCXXHighlighter](https://github.com/Megaxela/QCodeEditor) (licencja MIT).
 9. Kreator tabel dla znaczników STC.
-10. Wyświetlanie statystyk zmian w czasie rzeczywistym (dodane, zmodyfikowane, usunięte linie).
+10. Wyświetlanie statystyk zmian w czasie rzeczywistym (liczba linii, znaków, rozmiar pliku, linia i kolumna).
 11. Zamiana prefiksów adresów URL dla obrazów na serwerze.
 12. Historia wprowadzanych zmian (`Ctrl+Z`).
 13. Wyszukiwanie wielu słów w tej samej linii niezależnie od kolejności.
@@ -96,34 +97,34 @@ Jeśli ktoś chce tego używać do innych celów:
 16. Obsługa wtyczek, być może z użyciem Lua.
 17. Integracja dokumentacji cppreference (jak w `cppman` lub QtCreator).
 18. Nagrywanie i odtwarzanie makr.
-19. Zastąpienie listy kontekstu widżetem drzewiastym.
-20. Dodanie ikon do akcji w menu i menu kontekstowym.
-21. Pokazywanie różnic w liniach znak po znaku.
-22. Optymalizacja wydajności edytora przy szybkim pisaniu.
-23. Dopasowanie rozmiaru numeracji linii do wielkości czcionki.
-24. Skanowanie dokumentu w osobnym wątku dla lepszej wydajności.
-25. Podświetlanie bieżącej linii dla lepszej widoczności kursora.
+19. Dopasowanie rozmiaru numeracji linii do wielkości czcionki.
+20. Skanowanie dokumentu w osobnym wątku dla lepszej wydajności.
+21. Zamiana warunkowa -np. zamień jeśli już nie jest. Np. jak chcę zamienić `cout` na `std::cout` to zamieni tylko jeśli nie jest to `std::cout`
+22. Inne widgety np. https://github.com/Qt-Widgets/SlidingStackedWidget-1 z listy: https://github.com/Qt-Widgets/ lub https://qwt.sourceforge.io/index.html
+23. Wsparcie dla MD na bazie: https://github.com/Qt-Widgets/notes
+24. Popraw numeracje dla zaznaczonego tekstu
+25. Podgląd strony internetowej po najechaniu myszką
 26. Sensowne funkcjonalności z innych podobnych edytorów np. [Scribe-Text-Editor](https://github.com/AleksandrHovhannisyan/Scribe-Text-Editor)
-27. Ctrl + F gdy mamy focus w dokumencie powinno zyskać focus, a nie zniknąć
+27. Zmiana wielkości czcionki powinna też wpłynąć na czcionkę w ramach numeracji linii
 28. Sprawdzenie czy link istnieje
 29. Następna zmiana: przycisk pozwalający skakać po zmianach w dokumencie
-30. chowanie breadcrumb
+30. Ctrl + V gdy mamy tabelkę
 31. enter na wyszukiwaniu skacze do miejsca wykrycia
 32. SHIFT N: kolejne wykrycie i też trzeba by wymyślić poprzednie
 33. Dodać check: czy nie zamykam nieotwartego tagu?
 34. Sprawdzenie czy Run nie jest poza csv lub pkt
-35. Refaktoring: Jeśli wczytywanie pliku jest przez CodeEditor, to zapis pliku też konsekwentnie powinien stamtąd iść
+35. Ctrl + V gdy mamy obrazek
 36. Tłumaczenia aplikacji na wiele języków: QLinguist
-37. Rozważyć użycie innej biblioteki do porównywania np. https://github.com/google/diff-match-patch
+37. Rozważyć użycie tej samej biblioteki do porównywania zarówno linii jak i znaków np. https://github.com/google/diff-match-patch
 38. Szukanie tylko w kodzie
-39. Przeciągnij i upuść pliku z kodem
+39. Podgląd terminala np. przez https://github.com/lxqt/qtermwidget - tylko czy mi to nie zrobi GPLa?
 40. Formatowanie kodu C++ dedykowane
 41. W linijce gradient ostatnio używanych linii z numerami ile temu
 42. Przy CTRL + SCROLL wyświetlanie informacji o rozmiarze czcionki (jak QtCreator)
 43. Ukrycie tagów, nie licząc otaczających (rich text editor)
 44. Przycisk na sformatowanym tekście powinien usunąć dane formatowanie: np. jak klikniemy CTRL+B na pogrubionym to aby nie był pogrubiony
 45. Wyszukiwanie tekstu może też oznaczyć szukany tekst w dokumencie np. ramką
-46. Kontekst trzeba by uprościć, aby zawierał tylko nagłówki (domyślnie)
+46. Śledzenie pozycji między pozycją w dokumencie źródłowym a podglądem HTML
 47. Historia zmian w linii
 48. Precompiled headers dla codeEditor.h i moduły
 49. IWYU podpiąć pod CMake'a
@@ -133,7 +134,7 @@ Jeśli ktoś chce tego używać do innych celów:
 53. W danej linii da się wpisać dane np.: `QTextBlockUserData` i potem `block.setUserData(data);` - może da się to wykorzystać w optymalizacji
 54. Kurs STC wbudowany w program
 55. Prawy przycisk myszy na: tagach `img`, `a href`, `pkt`, `csv` powinien dawać możliwość dodania/usunięcia atrybutów
-56. Śledzenie pozycji między pozycją w dokumencie źródłowym a podglądem HTML
+56. Otwarcie tekstu po URL.
 57. Podgląd terminala
 58. Wklejenie linka na zaznaczony tekst powinno otoczyć tekst przez `[a href=`
 59. Ctrl + V gdy mamy obrazek

@@ -154,6 +154,11 @@ protected:
     bool isLink(const QString &path) const;
     bool isLocalImageFile(const QString &path) const;
 
+    /// methods to handle key pressed events:
+    bool isControlOnly(QKeyEvent *event) const;
+    void handleTabIndent();
+    void handleTabUnindent();
+    void applyToSelectedBlocks(const std::function<void (QTextCursor &)> &callback);
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();
