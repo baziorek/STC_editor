@@ -20,6 +20,8 @@ public:
 
     bool overwriteLine(const QString& filePath, int lineNumber, const QString& newLineContent);
 
+    bool isProbablyTextFile(const QString &filePath, int maxBytesToCheck = 2048);
+
 private:
     struct Impl;
     std::unique_ptr<Impl> impl;

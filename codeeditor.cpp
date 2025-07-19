@@ -29,36 +29,6 @@ namespace
 {
 constexpr int spacesPerTab = 4;
 
-/// in Qt it is impossible to check if we really have text file (without external library).
-/// That is why we are checking first characters and checking if they are printable:
-bool isProbablyTextFile(const QString &filePath, int maxBytesToCheck = 2048)
-{
-    QFile file(filePath);
-    if (!file.open(QIODevice::ReadOnly))
-        return false;
-
-    QByteArray buffer = file.read(maxBytesToCheck);
-    file.close();
-
-    for (char byte : buffer)
-    {
-        uchar c = static_cast<uchar>(byte);
-
-        // Printable ASCII + common whitespace (tab, newline, carriage return)
-        if ((c >= 0x20 && c <= 0x7E) || c == '\n' || c == '\r' || c == '\t')
-            continue;
-
-        // UTF-8 continuation bytes or BOM may appear — allow some
-        if (c >= 0x80)
-            continue;
-
-        // Otherwise, probably binary
-        return false;
-    }
-
-    return true;
-}
-
 bool operator==(const CodeBlock& a, const CodeBlock& b)
 {
     return a.cursor.selectionStart() == b.cursor.selectionStart()
@@ -1032,7 +1002,7 @@ void CodeEditor::dropEvent(QDropEvent *event)
         const QString suffix = fileInfo.suffix().toLower();
 
         // 1. Handle text files
-        if (isProbablyTextFile(localPath))
+        if (fileEncodingHandler->isProbablyTextFile(localPath))
         {
             const QString fileContent = fileEncodingHandler->loadFile(localPath).trimmed();
             const QStringList cppExtensions = {"c", "cpp", "h", "hpp", "cc", "cxx", "hxx"};

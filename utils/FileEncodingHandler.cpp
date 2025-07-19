@@ -105,3 +105,43 @@ bool FileEncodingHandler::overwriteLine(const QString& filePath, int lineNumber,
     QString updatedContent = lines.join('\n');
     return saveFile(filePath, updatedContent);
 }
+
+bool FileEncodingHandler::isProbablyTextFile(const QString& filePath, int maxBytesToCheck)
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly))
+        return false;
+
+    QByteArray buffer = file.read(maxBytesToCheck);
+    file.close();
+
+    if (buffer.isEmpty())
+        return false;
+
+    uchardet_t detector = uchardet_new();
+    int result = uchardet_handle_data(detector, buffer.constData(), buffer.size());
+    uchardet_data_end(detector);
+
+    QString detectedCharset;
+    if (result == 0)
+        detectedCharset = QString::fromUtf8(uchardet_get_charset(detector)).trimmed();
+
+    uchardet_delete(detector);
+
+    if (detectedCharset.isEmpty())
+        return false;
+
+    // Accept only common text encodings — to avoid false positives from binary files
+    static const QStringList commonTextEncodings = {
+        "UTF-8", "ASCII", "ISO-8859", "windows-125", "UTF-16", "UTF-32"
+    };
+
+    for (const QString& pattern : commonTextEncodings)
+    {
+        if (detectedCharset.startsWith(pattern, Qt::CaseInsensitive))
+            return true;
+    }
+
+    // Unknown or rare encoding → treat as non-text
+    return false;
+}
