@@ -71,6 +71,7 @@ private: // methods
     void putTextBackToCursorPosition(QTextCursor &cursor, QString divClass, QString selectedText,
                                      QString textEnding, QString modifiedText);
     void surroundSelectedTextWithAHrefTag();
+    void surroundSelectedTextWithImgTag();
 
     void surroundSelectedTextWithTag(QString divClass, QString text, QString extraAttributes = "", bool closable = true);
 

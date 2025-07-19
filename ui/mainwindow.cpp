@@ -29,18 +29,40 @@ namespace GeometryNames
     constexpr const char RECENT_FILES_LIST[] = "recentFiles";
 };
 
-std::pair<QString, QString> extractLink(const QString& text) {
-    static QRegularExpression regex("(https?://\\S+)");
+std::pair<QString, QString> extractLink(const QString& text)
+{
+    static QRegularExpression regex(R"(https?://\S+)");
     QRegularExpressionMatch match = regex.match(text);
 
-    if (match.hasMatch()) {
-        QString link = match.captured(1);
-        QString restOfText = text.mid(match.capturedEnd());
-        return std::make_pair(link, restOfText);
+    if (match.hasMatch())
+    {
+        QString link = match.captured(0);
+        int start = match.capturedStart();
+        int end = match.capturedEnd();
+
+        QString left = text.left(start).trimmed();
+        QString right = text.mid(end).trimmed();
+
+        QString description;
+
+        if (!left.isEmpty() && !right.isEmpty())
+        {
+            description = left + " " + right;
+        }
+        else if (!left.isEmpty())
+        {
+            description = left;
+        }
+        else if (!right.isEmpty())
+        {
+            description = right;
+        }
+
+        return {link, description};
     }
 
-    /// If no link is found, return just text
-    return std::make_pair("", text);
+    // No link found — return empty link and original text as description
+    return {"", text};
 }
 } // namespace
 
@@ -127,6 +149,9 @@ void MainWindow::onStcTagsButtonPressed(StcTags stcTag)
         break;
     case StcTags::A_HREF:
         this->surroundSelectedTextWithAHrefTag();
+        break;
+    case StcTags::IMG:
+        this->surroundSelectedTextWithImgTag();
         break;
     case StcTags::PKT:
         surroundSelectedTextWithTag(tagsClasses[StcTags::PKT], tagsClasses[StcTags::PKT], " ext");
@@ -710,6 +735,80 @@ void MainWindow::surroundSelectedTextWithAHrefTag()
     }
     modifiedText += endOfTag;
     putTextBackToCursorPosition(cursor, "a", selectedText, "", modifiedText);
+}
+
+void MainWindow::surroundSelectedTextWithImgTag()
+{
+    auto cursor = ui->textEditor->textCursor();
+    QString selectedText = cursor.selectedText().trimmed();
+
+    constexpr const char* beginOfTag = R"([img src=")";
+    constexpr const char* endOfTag = R"("])";
+    constexpr const char* opisAttr = R"(" opis=")";
+
+    if (selectedText.isEmpty())
+    {
+        // No text selected — insert empty img tag
+        putTextBackToCursorPosition(cursor, "img", selectedText, "", QString(beginOfTag) + endOfTag);
+        return;
+    }
+
+    // Common image file extensions (extend as needed)
+    static const QStringList imageExtensions = {
+        ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".svg", ".avif", ".tiff"
+    };
+
+    // Split selected text into words
+    const QStringList words = selectedText.split(QRegularExpression(R"(\s+)"), Qt::SkipEmptyParts);
+    QString detectedImage;
+    int imageIndex = -1;
+
+    // Look for any word that ends with a known image extension
+    for (int i = 0; i < words.size(); ++i)
+    {
+        const QString& word = words[i];
+        for (const auto& ext : imageExtensions)
+        {
+            if (word.endsWith(ext, Qt::CaseInsensitive))
+            {
+                detectedImage = word;
+                imageIndex = i;
+                break;
+            }
+        }
+        if (!detectedImage.isEmpty())
+            break;
+    }
+
+    QString result;
+
+    if (!detectedImage.isEmpty())
+    {
+        // Found a likely image path in the selection
+        QString description;
+
+        if (words.size() == 1)
+        {
+            // Only one word selected and it's an image path — no description needed
+            result = beginOfTag + detectedImage + endOfTag;
+        }
+        else
+        {
+            // Build description from remaining words
+            QStringList copy = words;
+            copy.removeAt(imageIndex);
+            description = copy.join(' ');
+            result = beginOfTag + detectedImage + opisAttr + description + endOfTag;
+        }
+    }
+    else
+    {
+        // No image path detected — use full selection as description, leave src empty
+        result = beginOfTag;
+        result += R"(" opis=")" + selectedText + endOfTag;
+    }
+
+    putTextBackToCursorPosition(cursor, "img", selectedText, "", result);
 }
 
 void MainWindow::setDisabledMenuActionsDependingOnOpenedFile(bool disabled)

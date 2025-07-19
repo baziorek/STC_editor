@@ -29,6 +29,7 @@ enum class StcTags: std::uint32_t
     SUBSCRIPT   = 0x80000,
     SUPSCRIPT   = 0x100000,
     TELE_TYPE   = 0x200000,
+    IMG         = 0x400000,
 };
 using StdTagsUnderlying = std::underlying_type_t<StcTags>;
 

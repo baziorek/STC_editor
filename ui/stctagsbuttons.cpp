@@ -74,6 +74,9 @@ StcTagsButtons::StcTagsButtons(QWidget *parent)
     connect(ui->button_teleType, &QPushButton::pressed, [this] {
         emit buttonPressed(StcTags::TELE_TYPE);
     });
+    connect(ui->button_img, &QPushButton::pressed, [this] {
+        emit buttonPressed(StcTags::IMG);
+    });
 }
 
 StcTagsButtons::~StcTagsButtons()

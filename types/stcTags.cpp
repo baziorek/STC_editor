@@ -27,4 +27,5 @@ std::map<StcTags, QString> tagsClasses =
     make_pair(SUBSCRIPT, "sub"),
     make_pair(SUPSCRIPT, "sup"),
     make_pair(TELE_TYPE, "tt"),
+    make_pair(IMG, "img")
 };
