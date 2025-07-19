@@ -38,6 +38,7 @@ Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników
 15. **Śledzenie TODO w dokumencie**: W podglądzie dokumentu widać komentarze `TODO: ` wraz z tekstem na prawo od tego, są one klikalne i wtedy przechodzą do danej pozycji.
 16. **Klikalne linki**: wewnątrz tagów z linkiem `[a href="..."]` lub `[a href="..." name="..."]` możemy przytrzymać CTRL + lewy przycisk myszy i nam się otworzy dany link
 17. **Wklejane linki wklejane w odpowiedni sposób**: jak wklejamy przez CTRL+V, a w schowku jest link to otacza linka tagami linka `[a href="link"]`
+    - Po chwili zostanie pobrana z linka i dodana jako kolejny atrybut nazwa strony, czyli zamiast `[a href="link"]` będzie `[a href="link" name="Nazwa strony dla linka"]`
     - Jeśli jest zaznaczony tekst to "podlinkowuje go" przez otoczenie: `[a href="link" name="Zaznaczony wcześniej tekst"]`
 
 ## Ogólne funkcje edytora

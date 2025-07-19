@@ -91,6 +91,8 @@ signals:
 
     void codeBlocksChanged();
 
+    void linkTitleFetchFailed(const QString& url, int lineNumber, const QString& reason);
+
 public slots:
     void fileChanged(const QString &path);
 
@@ -160,6 +162,7 @@ protected:
     void handleTabUnindent();
     void applyToSelectedBlocks(const std::function<void (QTextCursor &)> &callback);
     bool handlePasteWithLinkWrapping();
+    void fetchAndInsertTitle(const QString &url, int insertedPos);
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);

@@ -743,24 +743,87 @@ bool CodeEditor::handlePasteWithLinkWrapping()
 {
     const QString clipboardText = QGuiApplication::clipboard()->text().trimmed();
     if (!isLink(clipboardText))
-        return false; // it is not link
+        return false;
 
     QTextCursor cursor = textCursor();
-    QString result;
 
     if (cursor.hasSelection())
     {
         const QString selectedText = cursor.selectedText();
-        result = QString(R"([a href="%1" name="%2"])").arg(clipboardText, selectedText);
+        const QString wrapped = QString(R"([a href="%1" name="%2"])").arg(clipboardText, selectedText);
+        cursor.insertText(wrapped);
     }
     else
     {
-        result = QString(R"([a href="%1"])").arg(clipboardText);
+        // Insert link and start downloading of page title:
+        const QString linkText = QString(R"([a href="%1"])").arg(clipboardText);
+        int insertPos = cursor.position();
+        cursor.insertText(linkText);
+
+        fetchAndInsertTitle(clipboardText, insertPos);
     }
 
-    cursor.insertText(result);
     return true;
 }
+void CodeEditor::fetchAndInsertTitle(const QString& url, int insertedPos)
+{
+    QUrl qurl(url);
+    QNetworkRequest request(qurl);
+    QNetworkReply* reply = networkManager->get(request);
+
+    connect(reply, &QNetworkReply::finished, this, [=, this]() {
+        reply->deleteLater();
+
+        QTextDocument* doc = this->document();
+        QTextCursor cursor(doc);
+        cursor.setPosition(insertedPos);
+
+        // Find position of `[a href="url"]` — and limit to 200 characters
+        const int searchLen = 200;
+        cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor, searchLen);
+        const QString fragment = cursor.selectedText();
+
+        QRegularExpression rx(R"(\[a\s+href=")" + QRegularExpression::escape(url) + R"("\])");
+        QRegularExpressionMatch match = rx.match(fragment);
+        if (!match.hasMatch()) // link not found
+        {
+            return;
+        }
+
+        const int relativeStart = match.capturedStart();
+        const int absStart = insertedPos + relativeStart;
+        const int absEnd = absStart + match.capturedLength();
+
+        // set coursor on [a href="..."]
+        QTextCursor replaceCursor(doc);
+        replaceCursor.setPosition(absStart);
+        replaceCursor.setPosition(absEnd, QTextCursor::KeepAnchor);
+
+        if (reply->error() != QNetworkReply::NoError)
+        {
+            replaceCursor.insertText(QString(R"([a href="%1" name="LINK NIE ISTNIEJE"])").arg(url));
+            int lineNumber = doc->findBlock(absStart).blockNumber();
+            emit linkTitleFetchFailed(url, lineNumber + 1, reply->errorString());
+            return;
+        }
+
+        const QByteArray html = reply->readAll();
+
+        static const QRegularExpression titleRx(R"(<title[^>]*>(.*?)</title>)",
+                                                QRegularExpression::CaseInsensitiveOption | QRegularExpression::DotMatchesEverythingOption);
+        const QRegularExpressionMatch tMatch = titleRx.match(QString::fromUtf8(html));
+
+        QString title = url; // fallback
+        if (tMatch.hasMatch())
+        {
+            title = tMatch.captured(1).simplified();
+        }
+
+        const QString updated = QString(R"([a href="%1" name="%2"])").arg(url, title);
+        replaceCursor.insertText(updated);
+    });
+}
+
 
 void CodeEditor::handleTabIndent()
 {
