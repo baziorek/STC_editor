@@ -1,8 +1,10 @@
 #pragma once
 #include <QRegularExpression>
 
-namespace stc {
-namespace syntax {
+namespace stc
+{
+namespace syntax
+{
     extern const QRegularExpression stdDefaultTagRe;
     // DIV
     extern const QRegularExpression divOpenRe;
@@ -21,9 +23,15 @@ namespace syntax {
     // href and image tags with attributes:
     extern const QRegularExpression anchorRe;
     extern const QRegularExpression imgRe;
-    extern const QRegularExpression srcRe;
-    extern const QRegularExpression altRe;
-    extern const QRegularExpression opisRe;
-    extern const QRegularExpression autofitRe;
+    extern const QRegularExpression imgAttributeSrcRe;
+    extern const QRegularExpression imgAttributeAltRe;
+    extern const QRegularExpression imgAttributeDescRe;
+    extern const QRegularExpression imgAttributeAutofitRe;
+    // others
+    extern const QRegularExpression baseFormatting_boldItalicUnderlineStrikeRe;
+    extern const QRegularExpression boldCloseRe;
+    extern const QRegularExpression italicCloseRe;
+    extern const QRegularExpression underlineCloseRe;
+    extern const QRegularExpression strikeOutCloseRe;
 } // namespace syntax
 } // namespace stc

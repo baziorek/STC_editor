@@ -1,7 +1,9 @@
 #include "stcsyntaxpatterns.h"
 
-namespace stc {
-namespace syntax {
+namespace stc
+{
+namespace syntax
+{
     const QRegularExpression stdDefaultTagRe(R"(\[/?\w+(=[^\]]+)?\])");
     // DIV
     const QRegularExpression divOpenRe(R"___(\[(div)(?:\s+class="(tip|uwaga)")?\]|\[(cytat)\])___");
@@ -18,11 +20,33 @@ namespace syntax {
     const QRegularExpression cppCloseRe(R"(\[/cpp\])");
     const QRegularExpression pythonCloseRe(R"(\[/py\])");
     // href and image tags with attributes:
-    const QRegularExpression anchorRe(R"__(\[a\s+href=\"([^\"]+)\"(?:\s+name=\"([^\"]+)\")?\])__");
-    const QRegularExpression imgRe(R"__(\[img\s+(?: (?:src=\"([^\"]+)\")| (?:alt=\"([^\"]*)\")| (?:opis=\"([^\"]*)\")| (?:autofit\b) )+\])__");
-    const QRegularExpression srcRe(R"__(src=\"([^\"]+)\")__");
-    const QRegularExpression altRe(R"__(alt=\"([^\"]*)\")__");
-    const QRegularExpression opisRe(R"__(opis=\"([^\"]*)\")__");
-    const QRegularExpression autofitRe(R"__(\bautofit\b)__");
+    const QRegularExpression anchorRe(R"__(\[a\s+href="([^"]+)"(?:\s+name="([^"]+)")?\])__"); // Match [a href="..."] or [a href="..." name="..."]
+    const QRegularExpression imgRe(R"__(
+        \[img\s+
+        (?:
+            (?:src="([^"]+)")|
+            (?:alt="([^"]*)")|
+            (?:opis="([^"]*)")|
+            (?:autofit\b)
+        )
+        (?:\s+
+            (?:
+                (?:src="([^"]+)")|
+                (?:alt="([^"]*)")|
+                (?:opis="([^"]*)")|
+                (?:autofit\b)
+            )
+        )*
+        \s*\])__", QRegularExpression::ExtendedPatternSyntaxOption); // Match [img ...] with optional attributes in any order
+    const QRegularExpression imgAttributeSrcRe(R"__(src="([^"]+)")__");
+    const QRegularExpression imgAttributeAltRe(R"__(alt="([^"]*)")__");
+    const QRegularExpression imgAttributeDescRe(R"__(opis="([^"]*)")__");
+    const QRegularExpression imgAttributeAutofitRe(R"__(\bautofit\b)__");
+    // others
+    const QRegularExpression baseFormatting_boldItalicUnderlineStrikeRe(R"(\[(b|i|u|s)\])");
+    const QRegularExpression boldCloseRe(R"(\[/b\])");
+    const QRegularExpression italicCloseRe(R"(\[/i\])");
+    const QRegularExpression underlineCloseRe(R"(\[/u\])");
+    const QRegularExpression strikeOutCloseRe(R"(\[/s\])");
 } // namespace syntax
 } // namespace stc

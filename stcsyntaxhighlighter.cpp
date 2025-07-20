@@ -242,7 +242,8 @@ bool STCSyntaxHighlighter::highlightDivBlock(const QString &text)
     // --- 2. Wyszukiwanie nowych DIV-ów lub cytatów w linii ---
     bool foundAny = false;
     QRegularExpressionMatchIterator it = stc::syntax::divOpenRe.globalMatch(text);
-    while (it.hasNext()) {
+    while (it.hasNext())
+    {
         QRegularExpressionMatch openMatch = it.next();
         int tagStart = openMatch.capturedStart(0);
         int tagEnd = openMatch.capturedEnd(0);
@@ -254,24 +255,33 @@ bool STCSyntaxHighlighter::highlightDivBlock(const QString &text)
         QTextCharFormat fmt;
         int blockState = DIV_CLASS_PLAIN;
 
-        if (tagName == "div") {
-            if (divClass == "tip") {
+        if (tagName == "div")
+        {
+            if (divClass == "tip")
+            {
                 fmt = styledTagsMap.value("tip").format;
                 blockState = DIV_CLASS_TIP;
-            } else if (divClass == "uwaga") {
+            }
+            else if (divClass == "uwaga")
+            {
                 fmt = styledTagsMap.value("warning").format;
                 blockState = DIV_CLASS_UWAGA;
-            } else {
+            }
+            else
+            {
                 fmt = styledTagsMap.value("div").format;
                 blockState = DIV_CLASS_PLAIN;
             }
-        } else if (!quoteTag.isEmpty()) {
+        }
+        else if (!quoteTag.isEmpty())
+        {
             fmt = styledTagsMap.value("cytat").format;
             blockState = DIV_CLASS_CYTAT;
         }
 
         QRegularExpressionMatch closeMatch = stc::syntax::divCloseRe.match(text, tagEnd);
-        if (closeMatch.hasMatch()) {
+        if (closeMatch.hasMatch())
+        {
             // Zamknięcie w tej samej linii
             int contentStart = tagEnd;
             int contentEnd = closeMatch.capturedStart(0);
@@ -281,7 +291,9 @@ bool STCSyntaxHighlighter::highlightDivBlock(const QString &text)
             setFormat(contentStart, contentLen, fmt);                       // zawartość
             setFormat(closeMatch.capturedStart(0), closeMatch.capturedLength(0), tagFmt);  // [/div] lub [/cytat]
             currentBlockStateWithFlag(prevState);
-        } else {
+        }
+        else
+        {
             // Początek wieloliniowego bloku
             setFormat(tagStart, tagEnd - tagStart, tagFmt);
             setFormat(tagEnd, text.length() - tagEnd, fmt);
@@ -464,11 +476,14 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
             { STATE_CPP,      "py", stc::syntax::pythonCloseRe }
         };
 
-        for (const auto& blk : blocks) {
-            if (prev & blk.stateFlag) {
+        for (const auto& blk : blocks)
+        {
+            if (prev & blk.stateFlag)
+            {
                 QTextCharFormat fmt = styledTagsMap.value(blk.styleKey).format;
                 QRegularExpressionMatch close = blk.closeRe.match(text);
-                if (close.hasMatch()) {
+                if (close.hasMatch())
+                {
                     int closeStart = close.capturedStart();
 
                     // if (overlapsWithNoFormat(closeStart, text.size())) // TODO:
@@ -481,7 +496,9 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
                     offset = close.capturedEnd();
                     found = true;
                     continue; // nie break – idź dalej z analizą!
-                } else {
+                }
+                else
+                {
                     setFormat(0, text.length(), fmt);
                     currentBlockStateWithFlag(blk.stateFlag);
                     _codeRangesThisLine.append({ 0, text.length() });
@@ -530,7 +547,8 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
         }
 
         QRegularExpressionMatch closeMatch = closeRe.match(text, tagEnd);
-        if (closeMatch.hasMatch()) {
+        if (closeMatch.hasMatch())
+        {
             // Kod inline
             const int closeStart = closeMatch.capturedStart();
             const int contentStart = tagEnd;
@@ -547,7 +565,9 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
             setFormat(closeStart, closeLen, tagFmt);
 
             found = true;
-        } else {
+        }
+        else
+        {
             // Rozpoczęcie wieloliniowego bloku
             setFormat(tagStart, tagEnd - tagStart, tagFmt);
             setFormat(tagEnd, text.length() - tagEnd, fmt);
@@ -576,20 +596,21 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
         return map;
     }();
 
-    static const QMap<QString, int> tagStates = {
-                                                 { "b", STATE_STYLE_BOLD },
-                                                 { "i", STATE_STYLE_ITALIC },
-                                                 { "u", STATE_STYLE_UNDERLINE },
-                                                 { "s", STATE_STYLE_STRIKE },
-                                                 };
+    static const QMap<QString, int> tagStates =
+    {
+        { "b", STATE_STYLE_BOLD },
+        { "i", STATE_STYLE_ITALIC },
+        { "u", STATE_STYLE_UNDERLINE },
+        { "s", STATE_STYLE_STRIKE },
+    };
 
-    static const QRegularExpression openRe(R"(\[(b|i|u|s)\])");
-    static const QMap<QString, QRegularExpression> closeRes = {
-                                                               { "b", QRegularExpression(R"(\[/b\])") },
-                                                               { "i", QRegularExpression(R"(\[/i\])") },
-                                                               { "u", QRegularExpression(R"(\[/u\])") },
-                                                               { "s", QRegularExpression(R"(\[/s\])") },
-                                                               };
+    static const QMap<QString, QRegularExpression> closeRes =
+    {
+        { "b", stc::syntax::boldCloseRe },
+        { "i", stc::syntax::italicCloseRe },
+        { "u", stc::syntax::underlineCloseRe },
+        { "s", stc::syntax::strikeOutCloseRe },
+    };
 
     static QTextCharFormat tagFmt = [] {
         QTextCharFormat fmt;
@@ -601,16 +622,19 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
     // --- 1. Kontynuacja wieloliniowego stylu ---
     if (prev != STATE_NONE)
     {
-        for (auto it = tagStates.constBegin(); it != tagStates.constEnd(); ++it) {
+        for (auto it = tagStates.constBegin(); it != tagStates.constEnd(); ++it)
+        {
             const QString& tag = it.key();
             const int flag = it.value();
 
-            if (prev & flag) {
+            if (prev & flag)
+            {
                 const QRegularExpression& closeRe = closeRes[tag];
                 QTextCharFormat fmt = tagFormats[tag];
 
                 QRegularExpressionMatch closeMatch = closeRe.match(text);
-                if (closeMatch.hasMatch()) {
+                if (closeMatch.hasMatch())
+                {
                     int closeStart = closeMatch.capturedStart();
 
                     // Jeśli zamknięcie stylu znajduje się wewnątrz kodu — pomiń cały styl
@@ -622,7 +646,9 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
                     setFormat(0, closeStart, fmt);
                     setFormat(closeStart, closeMatch.capturedLength(), tagFmt);
                     currentBlockStateWithoutFlag(flag);
-                } else {
+                }
+                else
+                {
                     // Cała linia stylizowana — tylko jeśli nie pokrywa się z kodem
                     if (!overlapsWithCode(0, text.length()) && !overlapsWithNoFormat(0, text.length()))
                     {
@@ -639,8 +665,9 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
     int offset = 0;
     bool foundAny = false;
 
-    while (offset < text.length()) {
-        QRegularExpressionMatch match = openRe.match(text, offset);
+    while (offset < text.length())
+    {
+        QRegularExpressionMatch match = stc::syntax::baseFormatting_boldItalicUnderlineStrikeRe.match(text, offset);
         if (!match.hasMatch())
             break;
 
@@ -660,7 +687,8 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
             const int contentLen = closeStart - contentStart;
 
             // IGNORUJ tagi stylizujące wewnątrz kodu
-            if (overlapsWithCode(tagStart, closeEnd - tagStart) || overlapsWithNoFormat(tagStart, closeEnd - tagStart)) {
+            if (overlapsWithCode(tagStart, closeEnd - tagStart) || overlapsWithNoFormat(tagStart, closeEnd - tagStart))
+            {
                 offset = closeEnd;
                 continue;
             }
@@ -671,14 +699,19 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
 
             offset = closeEnd;
             foundAny = true;
-        } else {
+        }
+        else
+        {
             // Początek wieloliniowego stylu — tylko jeśli nie zaczyna się w kodzie
-            if (!overlapsWithCode(tagStart, text.length() - tagStart) && !overlapsWithNoFormat(tagStart, text.length() - tagStart)) {
+            if (!overlapsWithCode(tagStart, text.length() - tagStart) && !overlapsWithNoFormat(tagStart, text.length() - tagStart))
+            {
                 setFormat(tagStart, tagEnd - tagStart, tagFmt);
                 setFormatKeepingBackground(tagEnd, text.length() - tagEnd, fmt);
                 currentBlockStateWithFlag(flag);
                 return true;
-            } else {
+            }
+            else
+            {
                 // Jeśli był w kodzie — pomiń
                 offset = tagEnd;
             }
@@ -691,7 +724,7 @@ void STCSyntaxHighlighter::setFormatKeepingBackground(int contentStart, int cont
 {
     for (int i = contentStart; i < contentStart + contentLen; ++i)
     {
-        QTextCharFormat baseFmt = this->format(i); // odzyskaj bieżący format
+        QTextCharFormat baseFmt = this->format(i);
         baseFmt.setFontWeight(format.fontWeight());
         baseFmt.setFontItalic(format.fontItalic());
         baseFmt.setFontUnderline(format.fontUnderline());
@@ -702,7 +735,8 @@ void STCSyntaxHighlighter::setFormatKeepingBackground(int contentStart, int cont
 
 bool STCSyntaxHighlighter::overlapsWithRange(int start, int length, const QVector<QPair<int, int>>& range)
 {
-    for (const auto& range : range) {
+    for (const auto& range : range)
+    {
         const int a1 = start;
         const int a2 = start + length;
         const int b1 = range.first;
@@ -715,32 +749,10 @@ bool STCSyntaxHighlighter::overlapsWithRange(int start, int length, const QVecto
 
 bool STCSyntaxHighlighter::highlightTagsWithAttributes(const QString& text)
 {
-    // Match [a href="..."] or [a href="..." name="..."]
-    static const QRegularExpression anchorRe(R"__(\[a\s+href="([^"]+)"(?:\s+name="([^"]+)")?\])__");
-
-    // Match [img ...] with optional attributes in any order
-    static const QRegularExpression imgRe(R"__(
-        \[img\s+
-        (?:
-            (?:src="([^"]+)")|
-            (?:alt="([^"]*)")|
-            (?:opis="([^"]*)")|
-            (?:autofit\b)
-        )
-        (?:\s+
-            (?:
-                (?:src="([^"]+)")|
-                (?:alt="([^"]*)")|
-                (?:opis="([^"]*)")|
-                (?:autofit\b)
-            )
-        )*
-        \s*\])__", QRegularExpression::ExtendedPatternSyntaxOption);
-
     bool found = false;
 
     // Find all anchor tags
-    auto anchorIt = anchorRe.globalMatch(text);
+    auto anchorIt = stc::syntax::anchorRe.globalMatch(text);
     while (anchorIt.hasNext())
     {
         auto match = anchorIt.next();
@@ -770,7 +782,7 @@ bool STCSyntaxHighlighter::highlightTagsWithAttributes(const QString& text)
     }
 
     // Find all image tags
-    auto imgIt = imgRe.globalMatch(text);
+    auto imgIt = stc::syntax::imgRe.globalMatch(text);
     while (imgIt.hasNext())
     {
         auto match = imgIt.next();
@@ -786,8 +798,7 @@ bool STCSyntaxHighlighter::highlightTagsWithAttributes(const QString& text)
         QString matchedText = match.captured(0);
 
         // Find and format src attribute
-        QRegularExpression srcRe(R"__(src="([^"]+)")__");
-        auto srcMatch = srcRe.match(matchedText);
+        auto srcMatch = stc::syntax::imgAttributeSrcRe.match(matchedText);
         if (srcMatch.hasMatch())
         {
             int srcStart = start + srcMatch.capturedStart(1);
@@ -796,8 +807,7 @@ bool STCSyntaxHighlighter::highlightTagsWithAttributes(const QString& text)
         }
 
         // Find and format alt attribute
-        QRegularExpression altRe(R"__(alt="([^"]*)")__");
-        auto altMatch = altRe.match(matchedText);
+        auto altMatch = stc::syntax::imgAttributeSrcRe.match(matchedText);
         if (altMatch.hasMatch())
         {
             int altStart = start + altMatch.capturedStart(1);
@@ -806,8 +816,7 @@ bool STCSyntaxHighlighter::highlightTagsWithAttributes(const QString& text)
         }
 
         // Find and format opis attribute
-        QRegularExpression opisRe(R"__(opis="([^"]*)")__");
-        auto opisMatch = opisRe.match(matchedText);
+        auto opisMatch = stc::syntax::imgAttributeDescRe.match(matchedText);
         if (opisMatch.hasMatch())
         {
             int opisStart = start + opisMatch.capturedStart(1);
@@ -816,8 +825,7 @@ bool STCSyntaxHighlighter::highlightTagsWithAttributes(const QString& text)
         }
 
         // Find and format 'autofit' keyword
-        QRegularExpression autofitRe(R"__(\bautofit\b)__");
-        auto autofitMatch = autofitRe.match(matchedText);
+        auto autofitMatch = stc::syntax::imgAttributeAutofitRe.match(matchedText);
         if (autofitMatch.hasMatch())
         {
             int autofitStart = start + autofitMatch.capturedStart();
