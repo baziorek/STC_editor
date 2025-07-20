@@ -487,9 +487,13 @@ bool MainWindow::operationWhichDiscardsChangesRequestedReturningIfDiscarded(cons
             switch (dialog.userChoice())
             {
             case DiffReviewDialog::Save:
-                if (!onSavePressed())
+                if (onSavePressed())
                 {
                     ui->textEditor->restoreStateWhichDoesNotRequireSaving(/*discardChanges=*/true);
+                    return true;
+                }
+                else // saving failed
+                {
                     return false;
                 }
                 break;
