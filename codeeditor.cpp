@@ -458,6 +458,136 @@ void CodeEditor::addImgTagActionsIfApplicable(QMenu* menu)
     }
 }
 
+void CodeEditor::addPktTagActionsIfApplicable(QMenu* menu)
+{
+    using namespace stc::syntax;
+    QTextCursor cursor = textCursor();
+    QString line = cursor.block().text();
+    int offset = cursor.position() - cursor.block().position();
+
+    // Search all [pkt ...] tags in the current line
+    QRegularExpressionMatchIterator it = pktOpenRe.globalMatch(line);
+    while (it.hasNext())
+    {
+        QRegularExpressionMatch match = it.next();
+        int tagStart = match.capturedStart(0);
+        int tagEnd = match.capturedEnd(0);
+        if (offset >= tagStart && offset <= tagEnd)
+        {
+            QString pktTag = match.captured(0);
+            bool hasExt = pktTag.contains(QRegularExpression("\\bext\\b"));
+
+            // Add a separator before pkt tag actions
+            menu->addSeparator();
+
+            // EXT attribute action
+            QAction* toggleExt = new QAction(tr("ext attribute"), this);
+            toggleExt->setCheckable(true);
+            toggleExt->setChecked(hasExt);
+            connect(toggleExt, &QAction::triggered, this, [=, this]() {
+                QTextCursor c = textCursor();
+                c.beginEditBlock();
+                QString newTag = pktTag;
+                if (!hasExt)
+                {
+                    // Add ext
+                    newTag.insert(newTag.length() - 1, " ext");
+                }
+                else
+                {
+                    // Remove ext
+                    newTag.replace(QRegularExpression("\\s*ext\\b"), "");
+                }
+                c.setPosition(cursor.block().position() + tagStart);
+                c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
+                c.insertText(newTag);
+                c.endEditBlock();
+            });
+            menu->addAction(toggleExt);
+            // Only handle the first [pkt ...] tag in the line
+            return;
+        }
+    }
+}
+
+void CodeEditor::addCsvTagActionsIfApplicable(QMenu* menu)
+{
+    using namespace stc::syntax;
+    QTextCursor cursor = textCursor();
+    QString line = cursor.block().text();
+    int offset = cursor.position() - cursor.block().position();
+
+    // Search all [csv ...] tags in the current line
+    QRegularExpressionMatchIterator it = csvOpenRe.globalMatch(line);
+    while (it.hasNext())
+    {
+        QRegularExpressionMatch match = it.next();
+        int tagStart = match.capturedStart(0);
+        int tagEnd = match.capturedEnd(0);
+        if (offset >= tagStart && offset <= tagEnd)
+        {
+            QString csvTag = match.captured(0);
+            bool hasExtended = csvTag.contains(QRegularExpression("\\bextended\\b"));
+            bool hasHeader = csvTag.contains(QRegularExpression("\\bheader\\b"));
+
+            // Add a separator before csv tag actions
+            menu->addSeparator();
+
+            // EXTENDED attribute action
+            QAction* toggleExtended = new QAction(tr("extended attribute"), this);
+            toggleExtended->setCheckable(true);
+            toggleExtended->setChecked(hasExtended);
+            connect(toggleExtended, &QAction::triggered, this, [=, this]() {
+                QTextCursor c = textCursor();
+                c.beginEditBlock();
+                QString newTag = csvTag;
+                if (!hasExtended)
+                {
+                    // Add extended
+                    newTag.insert(newTag.length() - 1, " extended");
+                }
+                else
+                {
+                    // Remove extended
+                    newTag.replace(QRegularExpression("\\s*extended\\b"), "");
+                }
+                c.setPosition(cursor.block().position() + tagStart);
+                c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
+                c.insertText(newTag);
+                c.endEditBlock();
+            });
+            menu->addAction(toggleExtended);
+
+            // HEADER attribute action
+            QAction* toggleHeader = new QAction(tr("header attribute"), this);
+            toggleHeader->setCheckable(true);
+            toggleHeader->setChecked(hasHeader);
+            connect(toggleHeader, &QAction::triggered, this, [=, this]() {
+                QTextCursor c = textCursor();
+                c.beginEditBlock();
+                QString newTag = csvTag;
+                if (!hasHeader)
+                {
+                    // Add header
+                    newTag.insert(newTag.length() - 1, " header");
+                }
+                else
+                {
+                    // Remove header
+                    newTag.replace(QRegularExpression("\\s*header\\b"), "");
+                }
+                c.setPosition(cursor.block().position() + tagStart);
+                c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
+                c.insertText(newTag);
+                c.endEditBlock();
+            });
+            menu->addAction(toggleHeader);
+            // Only handle the first [csv ...] tag in the line
+            return;
+        }
+    }
+}
+
 void CodeEditor::moveCursorToClickPosition(const QPoint& pos)
 {
     QTextCursor clickCursor = cursorForPosition(pos);
