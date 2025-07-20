@@ -345,6 +345,7 @@ void CodeEditor::contextMenuEvent(QContextMenuEvent* event)
         addImgTagActionsIfApplicable(menu);
         addPktTagActionsIfApplicable(menu);
         addCsvTagActionsIfApplicable(menu);
+        addAnchorTagActionsIfApplicable(menu);
     }
 
     menu->exec(event->globalPos());
@@ -583,6 +584,58 @@ void CodeEditor::addCsvTagActionsIfApplicable(QMenu* menu)
             });
             menu->addAction(toggleHeader);
             // Only handle the first [csv ...] tag in the line
+            return;
+        }
+    }
+}
+
+void CodeEditor::addAnchorTagActionsIfApplicable(QMenu* menu)
+{
+    using namespace stc::syntax;
+    QTextCursor cursor = textCursor();
+    QString line = cursor.block().text();
+    int offset = cursor.position() - cursor.block().position();
+
+    // Search all [a href=...] tags in the current line
+    QRegularExpressionMatchIterator it = anchorRe.globalMatch(line);
+    while (it.hasNext())
+    {
+        QRegularExpressionMatch match = it.next();
+        int tagStart = match.capturedStart(0);
+        int tagEnd = match.capturedEnd(0);
+        if (offset >= tagStart && offset <= tagEnd)
+        {
+            QString anchorTag = match.captured(0);
+            bool hasName = anchorTag.contains(QRegularExpression("name=\"[^\"]*\""));
+
+            // Add a separator before anchor tag actions
+            menu->addSeparator();
+
+            // NAME attribute action
+            QAction* toggleName = new QAction(tr("name attribute"), this);
+            toggleName->setCheckable(true);
+            toggleName->setChecked(hasName);
+            connect(toggleName, &QAction::triggered, this, [=, this]() {
+                QTextCursor c = textCursor();
+                c.beginEditBlock();
+                QString newTag = anchorTag;
+                if (!hasName)
+                {
+                    // Add name=""
+                    newTag.insert(newTag.length() - 1, " name=\"\"");
+                }
+                else
+                {
+                    // Remove name
+                    newTag.replace(QRegularExpression("\\s*name=\\\"[^\\\"]*\\\""), "");
+                }
+                c.setPosition(cursor.block().position() + tagStart);
+                c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
+                c.insertText(newTag);
+                c.endEditBlock();
+            });
+            menu->addAction(toggleName);
+            // Only handle the first [a href=...] tag in the line
             return;
         }
     }
