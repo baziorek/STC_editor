@@ -60,6 +60,7 @@ public slots:
     void onCheckTagsPressed();
 
     /// view menu:
+    void onViewMenuAboutToShow();
     void onContextShowChanged(bool visible);
     void onGoToLineShowChanged(bool visible);
     void onBreadcrumbVisibilityChanged(bool visible);

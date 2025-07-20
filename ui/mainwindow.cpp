@@ -689,6 +689,31 @@ void MainWindow::onBreadcrumbVisibilityChanged(bool visible)
     }
 }
 
+void MainWindow::onViewMenuAboutToShow()
+{
+    /** this functions is because checkboxes are not visible when there are icons close to actions.
+     *  That is why when we want to have both: checkboxes and icons we need to have checkbox as unicode character **/
+    auto changeCheckedState = [](QAction* action)
+    {
+        if (action->isChecked())
+        {
+            auto newText = action->text().replace(u8"☐", u8"☑");
+            action->setText(newText);
+        }
+        else
+        {
+            auto newText = action->text().replace(u8"☑", u8"☐");
+            action->setText(newText);
+        }
+    };
+
+    changeCheckedState(ui->actionBreadcrumb);
+    changeCheckedState(ui->actionGo_to_line);
+    changeCheckedState(ui->actionSTC_Tags_buttons);
+    changeCheckedState(ui->actionShort_conspect);
+    changeCheckedState(ui->actionStc_Preview_account_at_Cpp0x_pl_required);
+}
+
 void MainWindow::surroundSelectedTextWithTag(QString divClass, QString textBase, QString extraAttributes, bool closable)
 {
     auto cursor = ui->textEditor->textCursor();

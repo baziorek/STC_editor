@@ -444,7 +444,7 @@
     <iconset theme="view-sort-ascending"/>
    </property>
    <property name="text">
-    <string>Short conspect</string>
+    <string>Short conspect ☑</string>
    </property>
   </action>
   <action name="actionGo_to_line">
@@ -458,7 +458,7 @@
     <iconset theme="go-jump"/>
    </property>
    <property name="text">
-    <string>Go to line</string>
+    <string>Go to line ☑</string>
    </property>
   </action>
   <action name="actionBreadcrumb">
@@ -472,7 +472,7 @@
     <iconset theme="QIcon::ThemeIcon::GoUp"/>
    </property>
    <property name="text">
-    <string>Breadcrumb</string>
+    <string>Breadcrumb ☑</string>
    </property>
   </action>
   <action name="actionStc_Preview_account_at_Cpp0x_pl_required">
@@ -483,7 +483,7 @@
     <iconset theme="view-refresh"/>
    </property>
    <property name="text">
-    <string>Stc Preview (account at Cpp0x.pl required)</string>
+    <string>Stc Preview (account at Cpp0x.pl required) ☐</string>
    </property>
   </action>
   <action name="actionReload_file">
@@ -511,7 +511,7 @@
     <iconset theme="format-indent-more"/>
    </property>
    <property name="text">
-    <string>STC Tags buttons</string>
+    <string>STC Tags buttons ☑</string>
    </property>
    <property name="toolTip">
     <string>STC Tags buttons (shortcuts are not working when hidden)</string>
@@ -942,6 +942,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>menuView</sender>
+   <signal>aboutToShow()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onViewMenuAboutToShow()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>154</x>
+     <y>87</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>242</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onSaveAsPressed()</slot>
@@ -966,5 +982,7 @@
   <slot>onBreadcrumbVisibilityChanged(bool)</slot>
   <slot>onShowStcPreviewTriggered()</slot>
   <slot>onReloadFilePressed()</slot>
+  <slot>onHelpMenuAboutToShow()</slot>
+  <slot>onViewMenuAboutToShow()</slot>
  </slots>
 </ui>
