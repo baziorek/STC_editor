@@ -311,7 +311,7 @@
     <iconset theme="QIcon::ThemeIcon::EditFind"/>
    </property>
    <property name="text">
-    <string>Find</string>
+    <string>Find ☐</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
@@ -325,7 +325,7 @@
     <iconset theme="edit-find-replace"/>
    </property>
    <property name="text">
-    <string>Find and replace</string>
+    <string>Find and replace ☐ (not implemented)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
@@ -939,22 +939,6 @@
     <hint type="destinationlabel">
      <x>605</x>
      <y>35</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>menuView</sender>
-   <signal>aboutToShow()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>onViewMenuAboutToShow()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>154</x>
-     <y>87</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>399</x>
-     <y>242</y>
     </hint>
    </hints>
   </connection>
