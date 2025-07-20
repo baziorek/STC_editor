@@ -182,6 +182,7 @@ protected:
     void addPktTagActionsIfApplicable(QMenu *menu);
     void addCsvTagActionsIfApplicable(QMenu *menu);
     void addAnchorTagActionsIfApplicable(QMenu *menu);
+    void addDivTagActionsIfApplicable(QMenu *menu);
     void sortLinesInRange(int startLine, int endLine, bool ascending);
 
 private slots:

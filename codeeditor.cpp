@@ -346,6 +346,7 @@ void CodeEditor::contextMenuEvent(QContextMenuEvent* event)
         addPktTagActionsIfApplicable(menu);
         addCsvTagActionsIfApplicable(menu);
         addAnchorTagActionsIfApplicable(menu);
+        addDivTagActionsIfApplicable(menu);
     }
 
     menu->exec(event->globalPos());
@@ -636,6 +637,79 @@ void CodeEditor::addAnchorTagActionsIfApplicable(QMenu* menu)
             });
             menu->addAction(toggleName);
             // Only handle the first [a href=...] tag in the line
+            return;
+        }
+    }
+}
+
+void CodeEditor::addDivTagActionsIfApplicable(QMenu* menu)
+{
+    using namespace stc::syntax;
+    QTextCursor cursor = textCursor();
+    QString line = cursor.block().text();
+    int offset = cursor.position() - cursor.block().position();
+
+    // Search all [div ...] tags in the current line
+    QRegularExpression divTagRe(R"(\[div(\s+class=\"(tip|uwaga)\")?\])");
+    QRegularExpressionMatchIterator it = divTagRe.globalMatch(line);
+    while (it.hasNext())
+    {
+        QRegularExpressionMatch match = it.next();
+        int tagStart = match.capturedStart(0);
+        int tagEnd = match.capturedEnd(0);
+        if (offset >= tagStart && offset <= tagEnd)
+        {
+            QString divTag = match.captured(0);
+            bool isPlain = !divTag.contains("class=\"");
+            bool isTip = divTag.contains("class=\"tip\"");
+            bool isUwaga = divTag.contains("class=\"uwaga\"");
+
+            // Add a separator before div tag actions
+            menu->addSeparator();
+
+            // Action: [div] (no class)
+            QAction* plainDiv = new QAction(tr("Standard div"), this);
+            plainDiv->setIcon(QIcon::fromTheme("format-justify-fill"));
+            connect(plainDiv, &QAction::triggered, this, [=, this]() {
+                QTextCursor c = textCursor();
+                c.beginEditBlock();
+                QString newTag = "[div]";
+                c.setPosition(cursor.block().position() + tagStart);
+                c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
+                c.insertText(newTag);
+                c.endEditBlock();
+            });
+            menu->addAction(plainDiv);
+
+            // Action: [div class="tip"]
+            QAction* tipDiv = new QAction(tr("Tip (class=\"tip\")"), this);
+            tipDiv->setIcon(QIcon::fromTheme("dialog-information"));
+            connect(tipDiv, &QAction::triggered, this, [=, this]() {
+                QTextCursor c = textCursor();
+                c.beginEditBlock();
+                QString newTag = "[div class=\"tip\"]";
+                c.setPosition(cursor.block().position() + tagStart);
+                c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
+                c.insertText(newTag);
+                c.endEditBlock();
+            });
+            menu->addAction(tipDiv);
+
+            // Action: [div class="uwaga"]
+            QAction* uwagaDiv = new QAction(tr("Warning (class=\"uwaga\")"), this);
+            uwagaDiv->setIcon(QIcon::fromTheme("dialog-warning"));
+            connect(uwagaDiv, &QAction::triggered, this, [=, this]() {
+                QTextCursor c = textCursor();
+                c.beginEditBlock();
+                QString newTag = "[div class=\"uwaga\"]";
+                c.setPosition(cursor.block().position() + tagStart);
+                c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
+                c.insertText(newTag);
+                c.endEditBlock();
+            });
+            menu->addAction(uwagaDiv);
+
+            // Only handle the first [div ...] tag in the line
             return;
         }
     }
