@@ -1392,6 +1392,11 @@ void CodeEditor::analizeEntireDocumentDetectingCodeBlocks()
 
 void CodeEditor::onContentsChange(int position, int charsRemoved, int charsAdded)
 {
+    handleCodeBlockDetectionOnChange(position);
+}
+
+void CodeEditor::handleCodeBlockDetectionOnChange(int position) // emit codeBlocksChanged
+{
     QTextBlock block = document()->findBlock(position);
     if (!block.isValid())
     {

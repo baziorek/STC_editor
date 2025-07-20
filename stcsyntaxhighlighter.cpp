@@ -1,6 +1,7 @@
 #include <QDebug>
 #include <QRegularExpression>
 #include "stcsyntaxhighlighter.h"
+#include "stcsyntaxpatterns.h"
 #include "types/stcTags.h"
 
 namespace
@@ -47,7 +48,7 @@ STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
     QTextCharFormat tagFormat;
     tagFormat.setForeground(Qt::gray);
     tagFormat.setFontPointSize(8);
-    rules.append({ QRegularExpression(R"(\[/?\w+(=[^\]]+)?\])"), tagFormat });
+    rules.append({ stc::syntax::stdDefaultTagRe, tagFormat });
 
     // Nagłówki
     QColor headerColor{"#a33"};
@@ -165,8 +166,9 @@ bool STCSyntaxHighlighter::highlightHeading(const QString &text)
 {
     for (const auto& styled : styledTags)
     {
-        if (styled.tag.startsWith("h")) {
-            QRegularExpression re(QStringLiteral("\\[(%1)\\](.*?)\\[/\\1\\]").arg(styled.tag));
+        if (styled.tag.startsWith("h"))
+        {
+            QRegularExpression re(QStringLiteral("\\[(%1)\\](.*?)\\[/\\1\\]").arg(styled.tag)); // TODO: Probably one regex can catch all headers at once
             auto it = re.globalMatch(text);
             while (it.hasNext()) {
                 auto match = it.next();
@@ -191,9 +193,6 @@ bool STCSyntaxHighlighter::highlightHeading(const QString &text)
 
 bool STCSyntaxHighlighter::highlightDivBlock(const QString &text)
 {
-    static const QRegularExpression divOpenRe(R"___(\[(div)(?:\s+class="(tip|uwaga)")?\]|\[(cytat)\])___");
-    static const QRegularExpression divCloseRe(R"___(\[/div\]|\[/cytat\])___");
-
     static QTextCharFormat tagFmt = [] {
         QTextCharFormat fmt;
         fmt.setForeground(Qt::gray);
@@ -222,7 +221,7 @@ bool STCSyntaxHighlighter::highlightDivBlock(const QString &text)
             else
                 fmt = styledTagsMap.value("div").format;
 
-            QRegularExpressionMatch closeMatch = divCloseRe.match(text);
+            QRegularExpressionMatch closeMatch = stc::syntax::divCloseRe.match(text);
             if (closeMatch.hasMatch()) {
                 int closeStart = closeMatch.capturedStart(0);
 
@@ -242,7 +241,7 @@ bool STCSyntaxHighlighter::highlightDivBlock(const QString &text)
 
     // --- 2. Wyszukiwanie nowych DIV-ów lub cytatów w linii ---
     bool foundAny = false;
-    QRegularExpressionMatchIterator it = divOpenRe.globalMatch(text);
+    QRegularExpressionMatchIterator it = stc::syntax::divOpenRe.globalMatch(text);
     while (it.hasNext()) {
         QRegularExpressionMatch openMatch = it.next();
         int tagStart = openMatch.capturedStart(0);
@@ -271,7 +270,7 @@ bool STCSyntaxHighlighter::highlightDivBlock(const QString &text)
             blockState = DIV_CLASS_CYTAT;
         }
 
-        QRegularExpressionMatch closeMatch = divCloseRe.match(text, tagEnd);
+        QRegularExpressionMatch closeMatch = stc::syntax::divCloseRe.match(text, tagEnd);
         if (closeMatch.hasMatch()) {
             // Zamknięcie w tej samej linii
             int contentStart = tagEnd;
@@ -297,13 +296,6 @@ bool STCSyntaxHighlighter::highlightDivBlock(const QString &text)
 
 bool STCSyntaxHighlighter::highlightPktOrCsv(const QString& text)
 {
-    static const QRegularExpression pktOpenRe(R"(\[pkt(\s+[^\]]*)?\])");
-    static const QRegularExpression pktCloseRe(R"(\[/pkt\])");
-
-    static const QRegularExpression csvOpenRe(R"(\[csv(\s+[^\]]*)?\])");
-    static const QRegularExpression csvCloseRe(R"(\[/csv\])");
-
-    static const QRegularExpression runTagRe(R"(\[run\](.*?)\[/run\])");
     static const QTextCharFormat runTagFmt = [] {
         QTextCharFormat fmt;
         fmt.setForeground(Qt::gray);
@@ -337,13 +329,13 @@ bool STCSyntaxHighlighter::highlightPktOrCsv(const QString& text)
             foundAny = true;
         };
 
-        handleBlock(STATE_PKT, "pkt", pktCloseRe);
-        handleBlock(STATE_CSV, "csv", csvCloseRe);
+        handleBlock(STATE_PKT, "pkt", stc::syntax::pktCloseRe);
+        handleBlock(STATE_CSV, "csv", stc::syntax::csvCloseRe);
 
         // Formatowanie [run] tylko jeśli tryb rozszerzony
         bool extendedMode = text.contains("ext") || text.contains("extended") || text.contains("extended header");
 
-        auto runMatches = runTagRe.globalMatch(text);
+        auto runMatches = stc::syntax::runTagRe.globalMatch(text);
         while (runMatches.hasNext()) {
             auto m = runMatches.next();
             setFormat(m.capturedStart(), 5, runTagFmt); // [run]
@@ -399,8 +391,8 @@ bool STCSyntaxHighlighter::highlightPktOrCsv(const QString& text)
         }
     };
 
-    processTag(pktOpenRe, pktCloseRe, "pkt", STATE_PKT);
-    processTag(csvOpenRe, csvCloseRe, "csv", STATE_CSV);
+    processTag(stc::syntax::pktOpenRe, stc::syntax::pktCloseRe, "pkt", STATE_PKT);
+    processTag(stc::syntax::csvOpenRe, stc::syntax::csvCloseRe, "csv", STATE_CSV);
 
     return foundAny;
 } // TODO: Dodać ignorowanie, gdy tagi nie wewnątrz `[run]`
@@ -438,11 +430,11 @@ void STCSyntaxHighlighter::currentBlockStateWithFlag(int flag, std::source_locat
 
 bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
 {
-    static const QRegularExpression openRe(R"__(\[(cpp|py|code)(?:\s+src="([^"]+)")?\])__");
-    static const QMap<QString, QRegularExpression> closeReMap = {
-        { "cpp",  QRegularExpression(R"(\[/cpp\])") },
-        { "py",   QRegularExpression(R"(\[/py\])") },
-        { "code", QRegularExpression(R"(\[/code\])") }
+    static const QMap<QString, QRegularExpression> closeReMap =
+    {
+        { "cpp",  stc::syntax::cppCloseRe },
+        { "py",   stc::syntax::pythonCloseRe },
+        { "code", stc::syntax::codeCloseRe }
     };
 
     static QTextCharFormat tagFmt = [] {
@@ -456,17 +448,20 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
     bool found = false;
 
     const int prev = previousBlockState();
-    if (prev != STATE_NONE) {
-        struct CodeBlock {
+    if (prev != STATE_NONE)
+    {
+        struct CodeBlock
+        {
             int stateFlag;
             QString styleKey;
             QRegularExpression closeRe;
         };
 
-        const QVector<CodeBlock> blocks = {
-            { STATE_CODE_CPP, "cpp", QRegularExpression(R"(\[/cpp\])") },
-            { STATE_CODE,     "code", QRegularExpression(R"(\[/code\])") },
-            { STATE_CPP,      "py", QRegularExpression(R"(\[/py\])") }
+        const QVector<CodeBlock> blocks =
+        {
+            { STATE_CODE_CPP, "cpp", stc::syntax::cppCloseRe },
+            { STATE_CODE,     "code", stc::syntax::codeCloseRe },
+            { STATE_CPP,      "py", stc::syntax::pythonCloseRe }
         };
 
         for (const auto& blk : blocks) {
@@ -496,8 +491,9 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
         }
     }
 
-    while (offset < text.length()) {
-        QRegularExpressionMatch openMatch = openRe.match(text, offset);
+    while (offset < text.length())
+    {
+        QRegularExpressionMatch openMatch = stc::syntax::codeBlockOpenRe.match(text, offset);
         if (!openMatch.hasMatch())
             break;
 
@@ -511,17 +507,22 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
         int stateFlag;
         QRegularExpression closeRe;
 
-        if (tag == "cpp" || src.contains("cpp") || src.contains("c++")) {
+        if (tag == "cpp" || src.contains("cpp") || src.contains("c++"))
+        {
             styleKey = "cpp";
             fmt = styledTagsMap.value(styleKey).format;
             stateFlag = STATE_CODE_CPP;
             closeRe = closeReMap["cpp"];
-        } else if (tag == "py") {
+        }
+        else if (tag == "py")
+        {
             styleKey = "py";
             fmt = styledTagsMap.value(styleKey).format;
             stateFlag = STATE_CPP;
             closeRe = closeReMap["py"];
-        } else {
+        }
+        else
+        {
             styleKey = "code";
             fmt = styledTagsMap.value(styleKey).format;
             stateFlag = STATE_CODE;

@@ -86,6 +86,7 @@ set(PROJECT_SOURCES
     widgets/DiffReviewDialog.h widgets/DiffReviewDialog.cpp
     utils/diffcalculation.h utils/diffcalculation.cpp
     utils/FileEncodingHandler.h utils/FileEncodingHandler.cpp
+    stcsyntaxpatterns.h stcsyntaxpatterns.cpp
 )
 
 set(TEXT_FILES

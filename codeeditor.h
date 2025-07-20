@@ -149,6 +149,8 @@ protected:
 
     QVector<CodeBlock> parseAllCodeBlocks();
 
+    void handleCodeBlockDetectionOnChange(int position);
+
     /// methods to handle opening links on click:
     bool isCtrlLeftClick(QMouseEvent *event) const;
     bool tryOpenLinkAtPosition(const QString &text, int posInBlock);
