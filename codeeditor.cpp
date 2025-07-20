@@ -23,6 +23,7 @@
 #include "utils/diffcalculation.h"
 #include "types/CodeBlock.h"
 #include "utils/FileEncodingHandler.h"
+#include "stcsyntaxpatterns.h"
 
 
 namespace
@@ -341,11 +342,122 @@ void CodeEditor::contextMenuEvent(QContextMenuEvent* event)
     {
         addTagRemovalActionIfInsideTag(menu);
         addCodeBlockActionsIfApplicable(menu, event->pos());
+        addImgTagActionsIfApplicable(menu);
+        addPktTagActionsIfApplicable(menu);
+        addCsvTagActionsIfApplicable(menu);
     }
 
     menu->exec(event->globalPos());
     delete menu;
 }
+
+void CodeEditor::addImgTagActionsIfApplicable(QMenu* menu)
+{
+    using namespace stc::syntax;
+    QTextCursor cursor = textCursor();
+    QString line = cursor.block().text();
+    int offset = cursor.position() - cursor.block().position();
+
+    // Search all [img ...] tags in the current line
+    QRegularExpressionMatchIterator it = imgRe.globalMatch(line);
+    while (it.hasNext())
+    {
+        QRegularExpressionMatch match = it.next();
+        int tagStart = match.capturedStart(0);
+        int tagEnd = match.capturedEnd(0);
+        if (offset >= tagStart && offset <= tagEnd)
+        {
+            QString imgTag = match.captured(0);
+            bool hasSrc = imgAttributeSrcRe.match(imgTag).hasMatch();
+            bool hasAlt = imgAttributeAltRe.match(imgTag).hasMatch();
+            bool hasOpis = imgAttributeDescRe.match(imgTag).hasMatch();
+            bool hasAutofit = imgAttributeAutofitRe.match(imgTag).hasMatch();
+
+            // Add a separator before image tag actions
+            menu->addSeparator();
+
+            // ALT attribute action
+            QAction* toggleAlt = new QAction(tr("alt attribute"), this);
+            toggleAlt->setCheckable(true);
+            toggleAlt->setChecked(hasAlt);
+            connect(toggleAlt, &QAction::triggered, this, [=, this]() {
+                QTextCursor c = textCursor();
+                c.beginEditBlock();
+                QString newTag = imgTag;
+                if (!hasAlt)
+                {
+                    // Add alt
+                    newTag.insert(newTag.length() - 1, " alt=\"\"");
+                }
+                else
+                {
+                    // Remove alt
+                    newTag.replace(QRegularExpression("\\s*alt=\\\"[^\\\"]*\\\""), "");
+                }
+                c.setPosition(cursor.block().position() + tagStart);
+                c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
+                c.insertText(newTag);
+                c.endEditBlock();
+            });
+            menu->addAction(toggleAlt);
+
+            // OPIS attribute action
+            QAction* toggleOpis = new QAction(tr("opis attribute"), this);
+            toggleOpis->setCheckable(true);
+            toggleOpis->setChecked(hasOpis);
+            connect(toggleOpis, &QAction::triggered, this, [=, this]() {
+                QTextCursor c = textCursor();
+                c.beginEditBlock();
+                QString newTag = imgTag;
+                if (!hasOpis)
+                {
+                    // Add opis
+                    newTag.insert(newTag.length() - 1, " opis=\"\"");
+                }
+                else
+                {
+                    // Remove opis
+                    newTag.replace(QRegularExpression("\\s*opis=\\\"[^\\\"]*\\\""), "");
+                }
+                c.setPosition(cursor.block().position() + tagStart);
+                c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
+                c.insertText(newTag);
+                c.endEditBlock();
+            });
+            menu->addAction(toggleOpis);
+
+            // AUTOFIT attribute action
+            QAction* toggleAutofit = new QAction(tr("autofit attribute"), this);
+            toggleAutofit->setCheckable(true);
+            toggleAutofit->setChecked(hasAutofit);
+            connect(toggleAutofit, &QAction::triggered, this, [=, this]() {
+                QTextCursor c = textCursor();
+                c.beginEditBlock();
+                QString newTag = imgTag;
+                if (!hasAutofit)
+                {
+                    // Add autofit
+                    newTag.insert(newTag.length() - 1, " autofit");
+                }
+                else
+                {
+                    // Remove autofit
+                    newTag.replace(QRegularExpression("\\s*autofit"), "");
+                }
+                c.setPosition(cursor.block().position() + tagStart);
+                c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
+                c.insertText(newTag);
+                c.endEditBlock();
+            });
+            menu->addAction(toggleAutofit);
+
+            // src is required and should not be removed
+            // Only handle the first [img ...] tag in the line
+            return;
+        }
+    }
+}
+
 void CodeEditor::moveCursorToClickPosition(const QPoint& pos)
 {
     QTextCursor clickCursor = cursorForPosition(pos);
