@@ -668,46 +668,55 @@ void CodeEditor::addDivTagActionsIfApplicable(QMenu* menu)
             menu->addSeparator();
 
             // Action: [div] (no class)
-            QAction* plainDiv = new QAction(tr("Standard div"), this);
-            plainDiv->setIcon(QIcon::fromTheme("format-justify-fill"));
-            connect(plainDiv, &QAction::triggered, this, [=, this]() {
-                QTextCursor c = textCursor();
-                c.beginEditBlock();
-                QString newTag = "[div]";
-                c.setPosition(cursor.block().position() + tagStart);
-                c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
-                c.insertText(newTag);
-                c.endEditBlock();
-            });
-            menu->addAction(plainDiv);
+            if (!isPlain)
+            {
+                QAction* plainDiv = new QAction(tr("Convert to [div]"), this);
+                plainDiv->setIcon(QIcon::fromTheme("format-justify-fill"));
+                connect(plainDiv, &QAction::triggered, this, [=, this]() {
+                    QTextCursor c = textCursor();
+                    c.beginEditBlock();
+                    QString newTag = "[div]";
+                    c.setPosition(cursor.block().position() + tagStart);
+                    c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
+                    c.insertText(newTag);
+                    c.endEditBlock();
+                });
+                menu->addAction(plainDiv);
+            }
 
             // Action: [div class="tip"]
-            QAction* tipDiv = new QAction(tr("Tip (class=\"tip\")"), this);
-            tipDiv->setIcon(QIcon::fromTheme("dialog-information"));
-            connect(tipDiv, &QAction::triggered, this, [=, this]() {
-                QTextCursor c = textCursor();
-                c.beginEditBlock();
-                QString newTag = "[div class=\"tip\"]";
-                c.setPosition(cursor.block().position() + tagStart);
-                c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
-                c.insertText(newTag);
-                c.endEditBlock();
-            });
-            menu->addAction(tipDiv);
+            if (! isTip)
+            {
+                QAction* tipDiv = new QAction(tr("Convert to [div class=\"tip\"]"), this);
+                tipDiv->setIcon(QIcon::fromTheme("dialog-information"));
+                connect(tipDiv, &QAction::triggered, this, [=, this]() {
+                    QTextCursor c = textCursor();
+                    c.beginEditBlock();
+                    QString newTag = "[div class=\"tip\"]";
+                    c.setPosition(cursor.block().position() + tagStart);
+                    c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
+                    c.insertText(newTag);
+                    c.endEditBlock();
+                });
+                menu->addAction(tipDiv);
+            }
 
             // Action: [div class="uwaga"]
-            QAction* uwagaDiv = new QAction(tr("Warning (class=\"uwaga\")"), this);
-            uwagaDiv->setIcon(QIcon::fromTheme("dialog-warning"));
-            connect(uwagaDiv, &QAction::triggered, this, [=, this]() {
-                QTextCursor c = textCursor();
-                c.beginEditBlock();
-                QString newTag = "[div class=\"uwaga\"]";
-                c.setPosition(cursor.block().position() + tagStart);
-                c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
-                c.insertText(newTag);
-                c.endEditBlock();
-            });
-            menu->addAction(uwagaDiv);
+            if (! isUwaga)
+            {
+                QAction* uwagaDiv = new QAction(tr("Convert to [div class=\"uwaga\"]"), this);
+                uwagaDiv->setIcon(QIcon::fromTheme("dialog-warning"));
+                connect(uwagaDiv, &QAction::triggered, this, [=, this]() {
+                    QTextCursor c = textCursor();
+                    c.beginEditBlock();
+                    QString newTag = "[div class=\"uwaga\"]";
+                    c.setPosition(cursor.block().position() + tagStart);
+                    c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
+                    c.insertText(newTag);
+                    c.endEditBlock();
+                });
+                menu->addAction(uwagaDiv);
+            }
 
             // Only handle the first [div ...] tag in the line
             return;
