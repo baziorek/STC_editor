@@ -19,14 +19,12 @@ struct TextInsideTags
     QString tag, text;
 };
 
-QRegularExpression& allContextTagsRegex()
+QRegularExpression& headersInlineRegex()
 {
-    // static QRegularExpression re(
-    //     R"(\[(h[1-6]|div|pkt|csv|cpp|py|code)(?:\s+[^\]]+)?\](.*?)\[/\1\])",
-    //     QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption);
     static QRegularExpression re(
-        R"(\[(h[1-6]|div|pkt|csv)(?:\s+[^\]]+)?\](.*?)\[/\1\])", // no code here
+        R"(\[(h[1-6])(?:\s+[^\]]+)?\](.*?)\[/\1\])", // only headers
         QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption);
+
     return re;
 }
 
@@ -158,7 +156,7 @@ void FilteredTagTableWidget::onUpdateContextRequested()
 
     const auto text = textEditor->toPlainText();
 
-    auto taggedTextLinePositions = findTagMatches(allContextTagsRegex(), text);
+    auto taggedTextLinePositions = findTagMatches(headersInlineRegex(), text);
 
     updateContextTable(this, taggedTextLinePositions);
 
@@ -285,7 +283,7 @@ void FilteredTagTableWidget::highlightCurrentTagInContextTable()
         for (int i = 1; i < lineNumber; ++i)
             startOffset = text.indexOf('\n', startOffset) + 1;
 
-        QRegularExpressionMatch match = allContextTagsRegex().match(text, startOffset);
+        QRegularExpressionMatch match = headersInlineRegex().match(text, startOffset);
         if (match.hasMatch())
         {
             const QString tag = match.captured(1).toLower();
