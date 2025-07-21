@@ -347,6 +347,7 @@ void CodeEditor::contextMenuEvent(QContextMenuEvent* event)
         addCsvTagActionsIfApplicable(menu);
         addAnchorTagActionsIfApplicable(menu);
         addDivTagActionsIfApplicable(menu);
+        addHeaderTagActionsIfApplicable(menu, event->pos());
     }
 
     menu->exec(event->globalPos());
@@ -1750,6 +1751,64 @@ bool CodeEditor::isInsideCode(int position) const
 {
     return static_cast<bool>(getCodeTagAtPosition(position));
 }
+
+void CodeEditor::addHeaderTagActionsIfApplicable(QMenu* menu, const QPoint& pos)
+{
+    QTextCursor cursor = cursorForPosition(pos);
+    QString line = cursor.block().text();
+    int offset = cursor.position() - cursor.block().position();
+
+    // Search for opening [hN] tags in the line
+    QRegularExpression openHeaderTagRe(R"(\[(h[1-6])\])");
+    QRegularExpressionMatchIterator it = openHeaderTagRe.globalMatch(line);
+    while (it.hasNext())
+    {
+        QRegularExpressionMatch match = it.next();
+        int tagStart = match.capturedStart(0);
+        int tagEnd = match.capturedEnd(0);
+        QString currentTag = match.captured(1); // e.g. h1
+        if (offset >= tagStart && offset <= tagEnd)
+        {
+            // Search for closing tag in the same line
+            QRegularExpression closeHeaderTagRe(QString(R"(\[/%1\])").arg(currentTag));
+            QRegularExpressionMatch closeMatch = closeHeaderTagRe.match(line, tagEnd);
+            if (closeMatch.hasMatch())
+            {
+                int closeTagStart = closeMatch.capturedStart(0);
+                int closeTagEnd = closeMatch.capturedEnd(0);
+
+                // Add separator
+                menu->addSeparator();
+                // Add conversion actions to other header levels
+                for (int i = 1; i <= 6; ++i)
+                {
+                    QString newTag = QString("h%1").arg(i);
+                    if (newTag == currentTag)
+                        continue;
+                    QString actionText = QString("Convert to [%1]").arg(newTag);
+                    QAction* act = new QAction(actionText, this);
+                    connect(act, &QAction::triggered, this, [=, this]() {
+                        QTextCursor c = textCursor();
+                        c.beginEditBlock();
+                        // Replace opening tag
+                        c.setPosition(cursor.block().position() + tagStart);
+                        c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
+                        c.insertText("[" + newTag + "]");
+                        // Replace closing tag
+                        c.setPosition(cursor.block().position() + closeTagStart);
+                        c.setPosition(cursor.block().position() + closeTagEnd, QTextCursor::KeepAnchor);
+                        c.insertText(QString("[") + "/" + newTag + "]");
+                        c.endEditBlock();
+                    });
+                    menu->addAction(act);
+                }
+                // Handle only the first matching tag in the line
+                return;
+            }
+        }
+    }
+}
+
 std::optional<CodeEditor::CodeBlockInfo> CodeEditor::getCodeTagAtPosition(int position) const
 {
     for (const auto& block : codeBlocks)
