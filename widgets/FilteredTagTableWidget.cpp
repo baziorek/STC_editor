@@ -302,19 +302,17 @@ void FilteredTagTableWidget::highlightCurrentTagInContextTable()
     if (!textEditor || isHidden() || cachedHeaders.isEmpty())
         return;
 
-    const int cursorPos = textEditor->textCursor().position();
+    const int cursorBlock = textEditor->textCursor().block().blockNumber();
     int bestRow = -1;
 
     for (int row = 0; row < cachedHeaders.size(); ++row)
     {
-        const auto& current = cachedHeaders[row];
+        int startLine = cachedHeaders[row].startingTagCursor.block().blockNumber();
+        int endLine = (row + 1 < cachedHeaders.size())
+                          ? cachedHeaders[row + 1].startingTagCursor.block().blockNumber()
+                          : std::numeric_limits<int>::max(); // last header goes to EOF
 
-        int rangeStart = current.startPos;
-        int rangeEnd = (row + 1 < cachedHeaders.size())
-                           ? cachedHeaders[row + 1].startPos
-                           : textEditor->toPlainText().size(); // until end of document
-
-        if (cursorPos >= rangeStart && cursorPos < rangeEnd)
+        if (cursorBlock >= startLine && cursorBlock < endLine)
         {
             bestRow = row;
             break;
