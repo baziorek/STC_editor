@@ -297,6 +297,31 @@ void FilteredTagTableWidget::onHeaderSectionClicked(int logicalIndex)
     tagFilterMenu->exec(globalPos);
 }
 
+/*
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Known Issue:
+ *
+ * In some cases — especially after typing certain special characters (e.g. @!?)
+ * at the end of a line or inserting a new line before a header — the context
+ * detection might temporarily fail and cause the current section to become
+ * unhighlighted.
+ *
+ * This is caused by internal behavior of QPlainTextEdit / QTextDocument:
+ * - The document may create a new QTextBlock or update block boundaries.
+ * - The QTextCursor's position may be momentarily outside the header region
+ *   during the UI update cycle.
+ *
+ * However, if the user continues typing or moves the cursor again,
+ * the context is recalculated correctly.
+ *
+ * This is a known limitation of block-based tracking using QTextCursor
+ * and document layout syncing.
+ *
+ * Potential workaround: use a deferred QTimer::singleShot() to recheck
+ * the cursor position after Qt's internal updates are complete.
+ * For now, the behavior is accepted as-is.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
 void FilteredTagTableWidget::highlightCurrentTagInContextTable()
 {
     if (!textEditor || isHidden() || cachedHeaders.isEmpty())
