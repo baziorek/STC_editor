@@ -652,14 +652,14 @@ bool MainWindow::loadFileContentToEditorDistargingCurrentContent(const QString& 
 {
     if (ui->textEditor->loadFileContentDistargingCurrentContent(fileName))
     {
-        ui->contextTableWidget->clearTags();
-
         setDisabledMenuActionsDependingOnOpenedFile(/*disabled=*/false);
 
         updateWindowTitle(fileName);
 
         ui->actionReload_file->setEnabled(true);
         updateRecentFiles(fileName);
+
+        ui->contextTableWidget->rebuildAllHeaders();
 
         return true;
     }

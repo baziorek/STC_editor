@@ -1,10 +1,11 @@
 #pragma once
 
 #include <QTableWidget>
-#include <QMenu>
-#include <QString>
-#include <QHeaderView>
 #include <QMap>
+#include <QTextCursor>
+
+class QMenu;
+class QRegularExpression;
 
 class CodeEditor;
 
@@ -14,38 +15,42 @@ class FilteredTagTableWidget : public QTableWidget
 
 public:
     explicit FilteredTagTableWidget(QWidget* parent = nullptr);
+    ~FilteredTagTableWidget();
 
-    void insertRow(int row, int lineNumber, QString tagName, QString textInsideTag);
-    void insertText2Cell(int row, int column, const QString& text);
+    void setTextEditor(CodeEditor* newTextEditor);
 
-    void clearTags();
-
-    CodeEditor *getTextEditor() const
-    {
-        return textEditor;
-    }
-    void setTextEditor(CodeEditor *newTextEditor);
+    void rebuildAllHeaders();
 
 signals:
     void goToLineClicked(int lineNumber);
 
 public slots:
-    void onUpdateContextRequested();
-
     void highlightCurrentTagInContextTable();
 
 private slots:
+    void onHeaderSectionClicked(int logicalIndex);
+    void onCellSingleClicked(int row, int column);
     void updateFilterMenu();
     void applyTagFilter();
-    void onCellSingleClicked(int row, int /*column*/);
-    void onHeaderSectionClicked(int logicalIndex);
+    void onTextChanged(int pos, int charsRemoved, int charsAdded);
 
 protected:
+    struct HeaderInfo;
+
+    static QRegularExpression headerRegex();
+
     void showEvent(QShowEvent* event) override;
 
-private:
-    QMenu* tagFilterMenu;
-    QMap<QString, bool> tagVisibility;
+    void refreshHeaderTable();
 
-    CodeEditor* textEditor{};
+    void insertOrUpdateHeader(const HeaderInfo& info);
+    void clearHeaderTable();
+
+private:
+
+    QMenu* tagFilterMenu = {};
+    QMap<QString, bool> tagVisibility;
+    CodeEditor* textEditor = {};
+
+    QList<HeaderInfo> cachedHeaders;
 };
