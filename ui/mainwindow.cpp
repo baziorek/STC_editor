@@ -122,10 +122,8 @@ void MainWindow::connectSignals2Slots()
         ui->contextsTabWidget->setTabText(2, tr("TODOs (") + QString::number(todosTotal) + ")");
     });
 
-    connect(ui->breadcrumbTextBrowser, &BreadcrumbTextBrowser::goToLineAndOffsetRequested, ui->textEditor, &CodeEditor::goToLineAndOffset);
     ui->breadcrumbTextBrowser->setTextEditor(ui->textEditor);
     ui->breadcrumbTextBrowser->setHeaderTable(ui->contextTableWidget);
-    connect(ui->textEditor, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateBreadcrumb);
 }
 
 void MainWindow::onStcTagsButtonPressed(StcTags stcTag)

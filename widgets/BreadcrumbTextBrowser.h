@@ -27,6 +27,7 @@ protected:
     QStack<QPair<QString, int>> collectContextTags(const QTextDocument *doc, int startPos, int cursorPos) const;
 
 private slots:
+    void onCursorPositionChanged();
     void onAnchorClicked(const QUrl& link);
 
 private:

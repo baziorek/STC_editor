@@ -17,9 +17,28 @@ BreadcrumbTextBrowser::BreadcrumbTextBrowser(QWidget* parent)
     connect(this, &QTextBrowser::anchorClicked, this, &BreadcrumbTextBrowser::onAnchorClicked);
 }
 
-void BreadcrumbTextBrowser::setTextEditor(CodeEditor* editor)
+void BreadcrumbTextBrowser::setTextEditor(CodeEditor* newEditor)
 {
-    textEditor = editor;
+    if (textEditor)
+    {
+        disconnect(textEditor, &QPlainTextEdit::cursorPositionChanged, this, &BreadcrumbTextBrowser::onCursorPositionChanged);
+        disconnect(this, &BreadcrumbTextBrowser::goToLineAndOffsetRequested, textEditor, &CodeEditor::goToLineAndOffset);
+    }
+
+    textEditor = newEditor;
+
+    if (textEditor)
+    {
+        connect(textEditor, &QPlainTextEdit::cursorPositionChanged, this, &BreadcrumbTextBrowser::onCursorPositionChanged);
+        connect(this, &BreadcrumbTextBrowser::goToLineAndOffsetRequested, textEditor, &CodeEditor::goToLineAndOffset);
+
+        updateBreadcrumb(textEditor->textCursor());
+    }
+}
+void BreadcrumbTextBrowser::onCursorPositionChanged()
+{
+    if (textEditor)
+        updateBreadcrumb(textEditor->textCursor());
 }
 
 void BreadcrumbTextBrowser::setHeaderTable(FilteredTagTableWidget* table)
