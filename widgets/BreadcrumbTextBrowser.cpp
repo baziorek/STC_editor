@@ -55,19 +55,35 @@ QString BreadcrumbTextBrowser::buildBreadcrumbHtml(const QTextCursor& cursor)
     if (!textEditor || !headerTable)
         return {};
 
-    const int cursorPos = cursor.position();
+    const int pos = cursor.position();
     const QTextDocument* doc = textEditor->document();
 
-    // Przygotowanie do budowania breadcrumb
     QStringList breadcrumbParts;
 
-    // --- 1. Pobieramy nagłówki z cachedHeaders ---
-    QMap<int, QPair<QString, int>> activeHeaders; // level -> (label, position)
-    int startPosForTagScan = 0;
+    // Step 1: Collect headers from FilteredTagTableWidget
+    QMap<int, QPair<QString, int>> headers;
+    int startScanPos = 0;
+    extractHeadersBeforePosition(pos, headers, startScanPos);
 
-    const QList<FilteredTagTableWidget::HeaderInfo>& headers = headerTable->getCachedHeaders();
+    for (int level : headers.keys())
+        breadcrumbParts << tagLink(headers[level].second, headers[level].first);
 
-    for (const auto& header : headers)
+    // Step 2: Parse context tags from last header to cursor position
+    const auto tagStack = collectContextTags(doc, startScanPos, pos);
+    for (const auto& [tag, tagPos] : tagStack)
+        breadcrumbParts << tagLink(tagPos, tag.toUpper());
+
+    // Step 3: Add current code tag if inside
+    if (auto codeInfo = textEditor->getCodeTagAtPosition(pos))
+        breadcrumbParts << tagLink(codeInfo->position, codeInfo->tag.toUpper());
+
+    return breadcrumbParts.join(" &gt; ");
+}
+void BreadcrumbTextBrowser::extractHeadersBeforePosition(int cursorPos, QMap<int, QPair<QString, int>>& headers, int& outStartScanPos) const
+{
+    const auto& cached = headerTable->getCachedHeaders();
+
+    for (const auto& header : cached)
     {
         if (header.startPos >= cursorPos)
             break;
@@ -75,7 +91,7 @@ QString BreadcrumbTextBrowser::buildBreadcrumbHtml(const QTextCursor& cursor)
         if (textEditor->isInsideCode(header.startPos))
             continue;
 
-        const QString tag = header.tagName.toLower(); // h1, h2...
+        const QString tag = header.tagName.toLower();
         if (!tag.startsWith('h'))
             continue;
 
@@ -84,38 +100,35 @@ QString BreadcrumbTextBrowser::buildBreadcrumbHtml(const QTextCursor& cursor)
         if (!ok)
             continue;
 
-        // Usuń wszystkie nagłówki o większym lub równym poziomie
-        auto it = activeHeaders.begin();
-        while (it != activeHeaders.end())
+        auto it = headers.begin();
+        while (it != headers.end())
         {
             if (it.key() >= level)
-                it = activeHeaders.erase(it);
+                it = headers.erase(it);
             else
                 ++it;
         }
 
         const QString label = QString("%1: %2").arg(tag.toUpper(), header.textInside.trimmed());
-        activeHeaders[level] = qMakePair(label, header.startPos);
-        startPosForTagScan = header.endPos;
+        headers[level] = qMakePair(label, header.startPos);
+        outStartScanPos = header.endPos;
     }
+}
 
-    // Dodajemy nagłówki do breadcrumb
-    for (int level : activeHeaders.keys())
-        breadcrumbParts << tagLink(activeHeaders[level].second, activeHeaders[level].first);
-
-    // --- 2. Parsowanie tagów kontekstowych między ostatnim nagłówkiem a kursorem ---
+QStack<QPair<QString, int>> BreadcrumbTextBrowser::collectContextTags(const QTextDocument* doc, int startPos, int cursorPos) const
+{
     static QRegularExpression tagOpen(R"(\[([a-z0-9]+)(?:\s+[^\]]+)?\])", QRegularExpression::CaseInsensitiveOption);
     static QRegularExpression tagClose(R"(\[/([a-z0-9]+)\])", QRegularExpression::CaseInsensitiveOption);
 
     QStack<QPair<QString, int>> tagStack;
     QMap<QString, QStack<int>> openTagPositions;
 
-    QTextBlock block = doc->findBlock(startPosForTagScan);
+    QTextBlock block = doc->findBlock(startPos);
+
     while (block.isValid())
     {
         const QString lineText = block.text();
-        int blockStart = block.position();
-
+        const int blockStart = block.position();
         int limit = block.length();
         if (block.contains(cursorPos))
             limit = cursorPos - blockStart;
@@ -123,16 +136,16 @@ QString BreadcrumbTextBrowser::buildBreadcrumbHtml(const QTextCursor& cursor)
         int index = 0;
         while (index < limit)
         {
-            QRegularExpressionMatch mOpen = tagOpen.match(lineText, index);
-            QRegularExpressionMatch mClose = tagClose.match(lineText, index);
+            auto mOpen = tagOpen.match(lineText, index);
+            auto mClose = tagClose.match(lineText, index);
 
             int oPos = mOpen.hasMatch() ? mOpen.capturedStart() : -1;
             int cPos = mClose.hasMatch() ? mClose.capturedStart() : -1;
 
             if (oPos != -1 && (cPos == -1 || oPos < cPos) && oPos < limit)
             {
-                QString tag = mOpen.captured(1).toLower();
-                int globalPos = blockStart + mOpen.capturedStart();
+                const QString tag = mOpen.captured(1).toLower();
+                const int globalPos = blockStart + mOpen.capturedStart();
 
                 if (!tag.startsWith('h') &&
                     !textEditor->isInsideCode(globalPos) &&
@@ -146,16 +159,14 @@ QString BreadcrumbTextBrowser::buildBreadcrumbHtml(const QTextCursor& cursor)
             }
             else if (cPos != -1 && cPos < limit)
             {
-                QString tag = mClose.captured(1).toLower();
-                int globalClosePos = blockStart + mClose.capturedStart();
+                const QString tag = mClose.captured(1).toLower();
 
                 if (openTagPositions.contains(tag) &&
                     !openTagPositions[tag].isEmpty() &&
                     !textEditor->isInsideCode(openTagPositions[tag].top()))
                 {
-                    int openPos = openTagPositions[tag].pop();
+                    const int openPos = openTagPositions[tag].pop();
 
-                    // Usuń pasujące otwarcie z tagStack
                     for (int i = tagStack.size() - 1; i >= 0; --i)
                     {
                         if (tagStack[i].first == tag && tagStack[i].second == openPos)
@@ -180,14 +191,7 @@ QString BreadcrumbTextBrowser::buildBreadcrumbHtml(const QTextCursor& cursor)
         block = block.next();
     }
 
-    for (const auto& [tag, tagPos] : tagStack)
-        breadcrumbParts << tagLink(tagPos, tag.toUpper());
-
-    // --- 3. Dodaj tag kodu jeśli jesteśmy w środku bloku kodu ---
-    if (auto codeInfo = textEditor->getCodeTagAtPosition(cursorPos))
-        breadcrumbParts << tagLink(codeInfo->position, codeInfo->tag.toUpper());
-
-    return breadcrumbParts.join(" &gt; ");
+    return tagStack;
 }
 
 QString BreadcrumbTextBrowser::tagLink(int pos, const QString& label)

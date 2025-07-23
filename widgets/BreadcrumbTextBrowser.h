@@ -22,6 +22,10 @@ public:
 signals:
     void goToLineAndOffsetRequested(int lineNumber, int positionInLine);
 
+protected:
+    void extractHeadersBeforePosition(int cursorPos, QMap<int, QPair<QString, int>> &headers, int &outStartScanPos) const;
+    QStack<QPair<QString, int>> collectContextTags(const QTextDocument *doc, int startPos, int cursorPos) const;
+
 private slots:
     void onAnchorClicked(const QUrl& link);
 
