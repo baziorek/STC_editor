@@ -46,11 +46,17 @@ protected:
     void insertOrUpdateHeader(const HeaderInfo& info);
     void clearHeaderTable();
 
-private:
+    int findHeaderForCursor(const QTextCursor &cursor) const;
 
+    void highlightRow(int row);
+    void clearHighlightedRow();
+
+private:
     QMenu* tagFilterMenu = {};
     QMap<QString, bool> tagVisibility;
     CodeEditor* textEditor = {};
 
     QList<HeaderInfo> cachedHeaders;
+
+    int highlightedRow = -1;
 };

@@ -27,6 +27,7 @@ struct FilteredTagTableWidget::HeaderInfo
     int endPos;
 };
 
+
 FilteredTagTableWidget::FilteredTagTableWidget(QWidget* parent)
     : QTableWidget(parent),
     tagFilterMenu(new QMenu(this))
@@ -37,6 +38,7 @@ FilteredTagTableWidget::FilteredTagTableWidget(QWidget* parent)
     horizontalHeader()->setSectionResizeMode(COLUMN_TAG, QHeaderView::ResizeToContents);
     horizontalHeader()->setSectionResizeMode(COLUMN_TEXT, QHeaderView::Stretch);
     setSelectionBehavior(QAbstractItemView::SelectRows);
+    setSelectionMode(QAbstractItemView::NoSelection); // ❗️Disable default selection
     setEditTriggers(QAbstractItemView::NoEditTriggers);
     verticalHeader()->setVisible(false);
     setAlternatingRowColors(true);
@@ -217,6 +219,9 @@ void FilteredTagTableWidget::refreshHeaderTable()
     }
 
     applyTagFilter();
+
+    highlightedRow = -1;
+    highlightCurrentTagInContextTable();
 }
 
 
@@ -299,27 +304,37 @@ void FilteredTagTableWidget::onHeaderSectionClicked(int logicalIndex)
 
 /*
  * ─────────────────────────────────────────────────────────────────────────────
- * Known Issue:
+ * Known Issue & Rationale for Custom Highlighting:
  *
- * In some cases — especially after typing certain special characters (e.g. @!?)
- * at the end of a line or inserting a new line before a header — the context
- * detection might temporarily fail and cause the current section to become
- * unhighlighted.
+ * In certain scenarios — such as inserting characters (especially special ones
+ * like @, !, ?, etc.) or newlines near tag boundaries — the built-in Qt
+ * selection system (via selectRow / selectionModel) may fail to visually
+ * update the current context row.
  *
- * This is caused by internal behavior of QPlainTextEdit / QTextDocument:
- * - The document may create a new QTextBlock or update block boundaries.
- * - The QTextCursor's position may be momentarily outside the header region
- *   during the UI update cycle.
+ * This behavior is caused by the way QPlainTextEdit and QTextDocument manage
+ * text blocks and cursor updates:
  *
- * However, if the user continues typing or moves the cursor again,
- * the context is recalculated correctly.
+ *   - When text is edited, especially near QTextBlock boundaries,
+ *     the internal layout engine may temporarily place the cursor at a block
+ *     not yet fully updated.
  *
- * This is a known limitation of block-based tracking using QTextCursor
- * and document layout syncing.
+ *   - Even if our context detection logic returns the correct row, calling
+ *     selectRow(bestRow) will not result in a visible highlight unless the
+ *     table has focus or the selection model deems the selection “active”.
  *
- * Potential workaround: use a deferred QTimer::singleShot() to recheck
- * the cursor position after Qt's internal updates are complete.
- * For now, the behavior is accepted as-is.
+ *   - Additionally, selection may be auto-cleared by Qt focus changes or
+ *     other UI events.
+ *
+ * Therefore, we implement our own visual row highlighting by directly
+ * modifying item background/foreground colors instead of relying on the
+ * built-in selection system.
+ *
+ * This avoids visual flicker and ensures context highlighting always reflects
+ * the current cursor position in the editor — regardless of focus state or
+ * Qt internals.
+ *
+ * Note: standard row selection (selectRow/clearSelection) is still disabled
+ * to prevent duplicate visual indicators.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 void FilteredTagTableWidget::highlightCurrentTagInContextTable()
@@ -327,8 +342,17 @@ void FilteredTagTableWidget::highlightCurrentTagInContextTable()
     if (!textEditor || isHidden() || cachedHeaders.isEmpty())
         return;
 
-    const int cursorBlock = textEditor->textCursor().block().blockNumber();
-    int bestRow = -1;
+    auto bestRow = findHeaderForCursor(textEditor->textCursor());
+    if (bestRow >= 0 && bestRow != highlightedRow)
+    {
+        clearHighlightedRow();
+        highlightRow(bestRow);
+        scrollToItem(item(bestRow, 0), QAbstractItemView::PositionAtCenter);
+    }
+}
+int FilteredTagTableWidget::findHeaderForCursor(const QTextCursor &cursor) const
+{
+    const int cursorBlock = cursor.block().blockNumber();
 
     for (int row = 0; row < cachedHeaders.size(); ++row)
     {
@@ -339,16 +363,46 @@ void FilteredTagTableWidget::highlightCurrentTagInContextTable()
 
         if (cursorBlock >= startLine && cursorBlock < endLine)
         {
-            bestRow = row;
-            break;
+            return row;
+        }
+    }
+    return -1;
+}
+
+void FilteredTagTableWidget::highlightRow(int row)
+{
+    highlightedRow = row;
+    const QColor backgroundColor = palette().highlight().color();
+    const QColor textColor = palette().highlightedText().color();
+
+    for (int col = 0; col < columnCount(); ++col)
+    {
+        QTableWidgetItem* item = this->item(row, col);
+        if (item)
+        {
+            item->setBackground(backgroundColor);
+            item->setForeground(textColor);
+        }
+    }
+}
+
+void FilteredTagTableWidget::clearHighlightedRow()
+{
+    if (highlightedRow < 0 || highlightedRow >= rowCount())
+        return;
+
+    const QColor backgroundColor = palette().base().color();
+    const QColor textColor = palette().text().color();
+
+    for (int col = 0; col < columnCount(); ++col)
+    {
+        QTableWidgetItem* item = this->item(highlightedRow, col);
+        if (item)
+        {
+            item->setBackground(backgroundColor);
+            item->setForeground(textColor);
         }
     }
 
-    clearSelection();
-
-    if (bestRow >= 0)
-    {
-        selectRow(bestRow);
-        scrollToItem(item(bestRow, 0), QAbstractItemView::PositionAtCenter);
-    }
+    highlightedRow = -1;
 }
