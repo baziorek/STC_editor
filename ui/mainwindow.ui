@@ -25,7 +25,32 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QTextBrowser" name="breadcrumbTextBrowser">
+        <widget class="QTextBrowser" name="breadcrumbTextBrowser_old">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>24</height>
+          </size>
+         </property>
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="openLinks">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="BreadcrumbTextBrowser" name="breadcrumbTextBrowser">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -568,6 +593,11 @@
    <class>TodoTrackerTableWidget</class>
    <extends>QTableWidget</extends>
    <header>widgets/TodosTrackerTableWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>BreadcrumbTextBrowser</class>
+   <extends>QTextBrowser</extends>
+   <header>widgets/BreadcrumbTextBrowser.h</header>
   </customwidget>
  </customwidgets>
  <resources>

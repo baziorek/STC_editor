@@ -18,15 +18,6 @@ enum ColumnIndices
 };
 }
 
-struct FilteredTagTableWidget::HeaderInfo
-{
-    QTextCursor startingTagCursor;
-    QString tagName;
-    QString textInside;
-    int startPos;
-    int endPos;
-};
-
 
 FilteredTagTableWidget::FilteredTagTableWidget(QWidget* parent)
     : QTableWidget(parent),

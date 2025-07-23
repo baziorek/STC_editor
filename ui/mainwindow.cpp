@@ -97,6 +97,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->findDockWidget->hide();
     ui->findWidget->setCodeEditor(ui->textEditor);
     ui->textEditor->setFocus();
+    ui->breadcrumbTextBrowser_old->setFrameStyle(QFrame::NoFrame);
     ui->breadcrumbTextBrowser->setFrameStyle(QFrame::NoFrame);
 
     ui->contextTableWidget->setTextEditor(ui->textEditor);
@@ -123,7 +124,7 @@ void MainWindow::connectSignals2Slots()
         ui->contextsTabWidget->setTabText(2, tr("TODOs (") + QString::number(todosTotal) + ")");
     });
 
-    connect(ui->breadcrumbTextBrowser, &QTextBrowser::anchorClicked, this, [this](const QUrl& url) {
+    connect(ui->breadcrumbTextBrowser_old, &QTextBrowser::anchorClicked, this, [this](const QUrl& url) {
         bool ok = true;
         int pos = url.toString().toInt(&ok);
         if (!ok)
@@ -134,7 +135,11 @@ void MainWindow::connectSignals2Slots()
         ui->textEditor->setTextCursor(cursor);
         ui->textEditor->ensureCursorVisible();
         ui->textEditor->setFocus();
-    });
+    }); // old breadcrumb to remove TODO:
+    connect(ui->breadcrumbTextBrowser, &BreadcrumbTextBrowser::goToLineAndOffsetRequested, ui->textEditor, &CodeEditor::goToLineAndOffset);
+    ui->breadcrumbTextBrowser->setTextEditor(ui->textEditor);
+    ui->breadcrumbTextBrowser->setHeaderTable(ui->contextTableWidget);
+    connect(ui->textEditor, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateBreadcrumb);
 }
 
 void MainWindow::onStcTagsButtonPressed(StcTags stcTag)
@@ -721,6 +726,14 @@ void MainWindow::onGoToLineShowChanged(bool visible)
 }
 void MainWindow::onBreadcrumbVisibilityChanged(bool visible)
 {
+    // old:
+    ui->breadcrumbTextBrowser_old->setVisible(visible);
+    if (ui->breadcrumbTextBrowser_old->isVisible())
+    {
+        emit onUpdateBreadcrumb();
+    }
+
+    // new:
     ui->breadcrumbTextBrowser->setVisible(visible);
     if (ui->breadcrumbTextBrowser->isVisible())
     {
@@ -987,16 +1000,22 @@ void MainWindow::onFileContentChanged(const QString &fileName, int changedLines)
 
 void MainWindow::onUpdateBreadcrumb()
 {
-    if (ui->breadcrumbTextBrowser->isHidden())
-        return;
-
     QTextCursor cursor = ui->textEditor->textCursor();
-    int cursorPos = cursor.position();
 
-    QString fullText = ui->textEditor->toPlainText();
-    QString breadcrumbHtml = getClickableBreadcrumbPath(fullText, cursorPos);
+    // Nowy breadcrumb (optymalny)
+    if (!ui->breadcrumbTextBrowser->isHidden())
+    {
+        ui->breadcrumbTextBrowser->updateBreadcrumb(cursor);
+    }
 
-    ui->breadcrumbTextBrowser->setHtml(breadcrumbHtml);
+    // Stary breadcrumb (dla testów, może być usunięty później)
+    if (!ui->breadcrumbTextBrowser_old->isHidden())
+    {
+        int cursorPos = cursor.position();
+        QString fullText = ui->textEditor->toPlainText();
+        QString breadcrumbHtml = getClickableBreadcrumbPath(fullText, cursorPos);
+        ui->breadcrumbTextBrowser_old->setHtml(breadcrumbHtml);
+    }
 }
 
 QString MainWindow::getClickableBreadcrumbPath(const QString& text, int cursorPos)

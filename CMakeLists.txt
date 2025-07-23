@@ -84,6 +84,7 @@ set(PROJECT_SOURCES
     widgets/stcpreviewwidget.h widgets/stcpreviewwidget.cpp
     widgets/DiffViewerWidget.h widgets/DiffViewerWidget.cpp
     widgets/DiffReviewDialog.h widgets/DiffReviewDialog.cpp
+    widgets/BreadcrumbTextBrowser.h widgets/BreadcrumbTextBrowser.cpp
     utils/diffcalculation.h utils/diffcalculation.cpp
     utils/FileEncodingHandler.h utils/FileEncodingHandler.cpp
     stcsyntaxpatterns.h stcsyntaxpatterns.cpp

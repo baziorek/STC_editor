@@ -14,6 +14,15 @@ class FilteredTagTableWidget : public QTableWidget
     Q_OBJECT
 
 public:
+    struct HeaderInfo
+    {
+        QTextCursor startingTagCursor;
+        QString tagName;
+        QString textInside;
+        int startPos;
+        int endPos;
+    };
+
     explicit FilteredTagTableWidget(QWidget* parent = nullptr);
     ~FilteredTagTableWidget();
 
@@ -22,6 +31,11 @@ public:
     void rebuildAllHeaders();
 
     void clear();
+
+    const QList<HeaderInfo>& getCachedHeaders() const
+    {
+        return cachedHeaders;
+    }
 
 signals:
     void goToLineClicked(int lineNumber);
@@ -37,8 +51,6 @@ private slots:
     void onTextChanged(int pos, int charsRemoved, int charsAdded);
 
 protected:
-    struct HeaderInfo;
-
     static QRegularExpression headerRegex();
 
     void showEvent(QShowEvent* event) override;
