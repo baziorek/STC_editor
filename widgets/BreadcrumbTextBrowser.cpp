@@ -55,17 +55,21 @@ QString BreadcrumbTextBrowser::buildBreadcrumbHtml(const QTextCursor& cursor)
     if (!textEditor || !headerTable)
         return {};
 
-    int pos = cursor.position();
+    const int pos = cursor.position();
+    const QTextDocument* doc = textEditor->document();
 
-    const QString text = textEditor->document()->toPlainText();
     static QRegularExpression tagOpen(R"(\[([a-z0-9]+)(?:\s+[^\]]+)?\])", QRegularExpression::CaseInsensitiveOption);
     static QRegularExpression tagClose(R"(\[/([a-z0-9]+)\])", QRegularExpression::CaseInsensitiveOption);
     static QRegularExpression headerRegex(R"(\[(h[1-6])\](.*?)\[/\1\])",
                                           QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption);
 
+    // --- Headers ---
     QMap<int, QPair<QString, int>> headers;
-    QRegularExpressionMatchIterator it = headerRegex.globalMatch(text);
-    while (it.hasNext()) {
+    const QString fullText = doc->toPlainText();
+
+    QRegularExpressionMatchIterator it = headerRegex.globalMatch(fullText);
+    while (it.hasNext())
+    {
         auto match = it.next();
         if (match.capturedStart() >= pos)
             break;
@@ -77,7 +81,8 @@ QString BreadcrumbTextBrowser::buildBreadcrumbHtml(const QTextCursor& cursor)
             continue;
 
         auto it = headers.begin();
-        while (it != headers.end()) {
+        while (it != headers.end())
+        {
             if (it.key() >= level)
                 it = headers.erase(it);
             else
@@ -89,49 +94,86 @@ QString BreadcrumbTextBrowser::buildBreadcrumbHtml(const QTextCursor& cursor)
                                    match.capturedStart() + tagOpenLen);
     }
 
-    // track all outer context tags like [div], [run], etc.
+    // --- Context tags ---
     QStack<QPair<QString, int>> tagStack;
-    QMap<QString, int> openPos;
+    QMap<QString, QStack<int>> openTagPositions;
 
-    int i = 0;
-    while (i < pos)
+    QTextBlock block = doc->begin();
+    while (block.isValid())
     {
-        auto mOpen = tagOpen.match(text, i);
-        auto mClose = tagClose.match(text, i);
+        const QString lineText = block.text();
+        int blockStart = block.position();
 
-        int oPos = mOpen.hasMatch() ? mOpen.capturedStart() : -1;
-        int cPos = mClose.hasMatch() ? mClose.capturedStart() : -1;
-
-        if (oPos != -1 && (cPos == -1 || oPos < cPos) && oPos < pos)
+        int limit = block.length(); // by default process full block
+        if (block.contains(pos))
         {
-            QString tag = mOpen.captured(1).toLower();
-            if (!tag.startsWith("h") && !textEditor->isInsideCode(oPos) && !selfClosingTags.contains(tag))
+            // Only go up to position in block
+            limit = pos - blockStart;
+        }
+
+        int index = 0;
+        while (index < limit)
+        {
+            QRegularExpressionMatch mOpen = tagOpen.match(lineText, index);
+            QRegularExpressionMatch mClose = tagClose.match(lineText, index);
+
+            int oPos = mOpen.hasMatch() ? mOpen.capturedStart() : -1;
+            int cPos = mClose.hasMatch() ? mClose.capturedStart() : -1;
+
+            if (oPos != -1 && (cPos == -1 || oPos < cPos) && oPos < limit)
             {
-                tagStack.push({ tag, mOpen.capturedEnd() });
-                openPos[tag] = oPos;
-            }
+                QString tag = mOpen.captured(1).toLower();
+                int globalPos = blockStart + mOpen.capturedStart();
 
-            i = mOpen.capturedEnd();
-        }
-        else if (cPos != -1 && cPos < pos)
-        {
-            QString tag = mClose.captured(1).toLower();
-            if (openPos.contains(tag) && !textEditor->isInsideCode(openPos[tag]))
-            {
-                int idx = tagStack.size() - 1;
-                while (idx >= 0 && tagStack[idx].first != tag)
-                    --idx;
-                if (idx >= 0)
-                    tagStack.remove(idx);
+                if (! tag.startsWith("h") &&
+                    ! textEditor->isInsideCode(globalPos) &&
+                    ! selfClosingTags.contains(tag))
+                {
+                    tagStack.push({ tag, globalPos });
+                    openTagPositions[tag].push(globalPos);
+                }
+
+                index = mOpen.capturedEnd();
             }
-            i = mClose.capturedEnd();
+            else if (cPos != -1 && cPos < limit)
+            {
+                QString tag = mClose.captured(1).toLower();
+                int globalClosePos = blockStart + mClose.capturedStart();
+
+                if (openTagPositions.contains(tag) &&
+                    !openTagPositions[tag].isEmpty() &&
+                    !textEditor->isInsideCode(openTagPositions[tag].top()))
+                {
+                    int openPos = openTagPositions[tag].pop();
+
+                    // Usuń pasujące otwarcie z tagStack
+                    for (int i = tagStack.size() - 1; i >= 0; --i)
+                    {
+                        if (tagStack[i].first == tag && tagStack[i].second == openPos)
+                        {
+                            tagStack.remove(i);
+                            break;
+                        }
+                    }
+                }
+
+                index = mClose.capturedEnd();
+            }
+            else
+            {
+                break;
+            }
         }
-        else
+
+        if (block.contains(pos))
         {
-            break;
+            break; // reached the cursor block, no need to scan further
         }
+
+        block = block.next();
     }
 
+    // --- Breadcrumb rendering ---
     QStringList parts;
 
     for (int level : headers.keys())
@@ -140,7 +182,8 @@ QString BreadcrumbTextBrowser::buildBreadcrumbHtml(const QTextCursor& cursor)
     for (const auto& [tag, tagPos] : tagStack)
         parts << tagLink(tagPos, tag.toUpper());
 
-    if (auto codeInfo = textEditor->getCodeTagAtPosition(pos)) {
+    if (auto codeInfo = textEditor->getCodeTagAtPosition(pos))
+    {
         parts << tagLink(codeInfo->position, codeInfo->tag.toUpper());
     }
 
