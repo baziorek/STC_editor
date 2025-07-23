@@ -97,8 +97,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->findDockWidget->hide();
     ui->findWidget->setCodeEditor(ui->textEditor);
     ui->textEditor->setFocus();
-    ui->breadcrumbTextBrowser_old->setFrameStyle(QFrame::NoFrame);
-    ui->breadcrumbTextBrowser->setFrameStyle(QFrame::NoFrame);
 
     ui->contextTableWidget->setTextEditor(ui->textEditor);
     ui->codesListTableWidget->setTextEditor(ui->textEditor);
@@ -124,18 +122,6 @@ void MainWindow::connectSignals2Slots()
         ui->contextsTabWidget->setTabText(2, tr("TODOs (") + QString::number(todosTotal) + ")");
     });
 
-    connect(ui->breadcrumbTextBrowser_old, &QTextBrowser::anchorClicked, this, [this](const QUrl& url) {
-        bool ok = true;
-        int pos = url.toString().toInt(&ok);
-        if (!ok)
-            return;
-
-        QTextCursor cursor = ui->textEditor->textCursor();
-        cursor.setPosition(pos);
-        ui->textEditor->setTextCursor(cursor);
-        ui->textEditor->ensureCursorVisible();
-        ui->textEditor->setFocus();
-    }); // old breadcrumb to remove TODO:
     connect(ui->breadcrumbTextBrowser, &BreadcrumbTextBrowser::goToLineAndOffsetRequested, ui->textEditor, &CodeEditor::goToLineAndOffset);
     ui->breadcrumbTextBrowser->setTextEditor(ui->textEditor);
     ui->breadcrumbTextBrowser->setHeaderTable(ui->contextTableWidget);
@@ -726,14 +712,6 @@ void MainWindow::onGoToLineShowChanged(bool visible)
 }
 void MainWindow::onBreadcrumbVisibilityChanged(bool visible)
 {
-    // old:
-    ui->breadcrumbTextBrowser_old->setVisible(visible);
-    if (ui->breadcrumbTextBrowser_old->isVisible())
-    {
-        emit onUpdateBreadcrumb();
-    }
-
-    // new:
     ui->breadcrumbTextBrowser->setVisible(visible);
     if (ui->breadcrumbTextBrowser->isVisible())
     {
@@ -1000,152 +978,11 @@ void MainWindow::onFileContentChanged(const QString &fileName, int changedLines)
 
 void MainWindow::onUpdateBreadcrumb()
 {
-    QTextCursor cursor = ui->textEditor->textCursor();
-
-    // Nowy breadcrumb (optymalny)
     if (!ui->breadcrumbTextBrowser->isHidden())
     {
+        QTextCursor cursor = ui->textEditor->textCursor();
         ui->breadcrumbTextBrowser->updateBreadcrumb(cursor);
     }
-
-    // Stary breadcrumb (dla testów, może być usunięty później)
-    if (!ui->breadcrumbTextBrowser_old->isHidden())
-    {
-        int cursorPos = cursor.position();
-        QString fullText = ui->textEditor->toPlainText();
-        QString breadcrumbHtml = getClickableBreadcrumbPath(fullText, cursorPos);
-        ui->breadcrumbTextBrowser_old->setHtml(breadcrumbHtml);
-    }
-}
-
-QString MainWindow::getClickableBreadcrumbPath(const QString& text, int cursorPos)
-{
-    static const QSet<QString> ignorableTags = { "img", "a" };
-
-    // 1. Processing headers h1-h6
-    QMap<int, QPair<QString, int>> headerLevels;
-    static QRegularExpression headerRegex(R"(\[(h[1-6])\](.*?)\[/\1\])",
-                                          QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption);
-    QRegularExpressionMatchIterator headerIt = headerRegex.globalMatch(text);
-    while (headerIt.hasNext())
-    {
-        QRegularExpressionMatch m = headerIt.next();
-        if (m.capturedStart() >= cursorPos)
-            break;
-
-        QString levelStr = m.captured(1); // h1, h2, ...
-        QString content = m.captured(2).trimmed();
-        int level = levelStr.mid(1).toInt();
-
-        // Skip headers inside code blocks
-        if (ui->textEditor->isInsideCode(m.capturedStart()))
-            continue;
-
-        // Remove headers with same or deeper level
-        auto it = headerLevels.begin();
-        while (it != headerLevels.end())
-        {
-            if (it.key() >= level)
-                it = headerLevels.erase(it);
-            else
-                ++it;
-        }
-        int tagStart = m.capturedStart();
-        int tagOpenLength = QString("[%1]").arg(levelStr).length();
-        int tagInnerPos = tagStart + tagOpenLength;
-        headerLevels[level] = qMakePair(QString("%1: %2").arg(levelStr.toUpper(), content), tagInnerPos);
-    }
-
-    // 2. Processing dynamic tags
-    QStack<QPair<QString, int>> contextStack;
-    QMap<QString, int> openTagPositions; // Stores positions of opening tags
-
-    static QRegularExpression tagOpenRegex(R"(\[([a-z0-9]+)(?:\s+[^\]]+)?\])", QRegularExpression::CaseInsensitiveOption);
-    static QRegularExpression tagCloseRegex(R"(\[/([a-z0-9]+)\])", QRegularExpression::CaseInsensitiveOption);
-
-    int index = 0;
-    while (index < cursorPos)
-    {
-        QRegularExpressionMatch openMatch = tagOpenRegex.match(text, index);
-        QRegularExpressionMatch closeMatch = tagCloseRegex.match(text, index);
-
-        int openPos = openMatch.hasMatch() ? openMatch.capturedStart() : -1;
-        int closePos = closeMatch.hasMatch() ? closeMatch.capturedStart() : -1;
-
-        if (openPos != -1 && (closePos == -1 || openPos < closePos) && openPos < cursorPos)
-        {
-            QString tag = openMatch.captured(1).toLower();
-            if (!ignorableTags.contains(tag) && !tag.startsWith("h"))
-            {
-                if (!ui->textEditor->isInsideCode(openPos))
-                {
-                    contextStack.push({tag, openMatch.capturedEnd()});
-                    openTagPositions[tag] = openPos;
-                }
-            }
-            index = openMatch.capturedEnd();
-        }
-        else if (closePos != -1 && closePos < cursorPos)
-        {
-            QString tag = closeMatch.captured(1).toLower();
-            if (!tag.startsWith("h"))
-            {
-                // Check position of opening tag
-                if (openTagPositions.contains(tag) && !ui->textEditor->isInsideCode(openTagPositions[tag]))
-                {
-                    int i = contextStack.size() - 1;
-                    while (i >= 0 && contextStack[i].first != tag)
-                        --i;
-                    if (i >= 0)
-                        contextStack.remove(i);
-                }
-            }
-            index = closeMatch.capturedEnd();
-        }
-        else
-        {
-            break;
-        }
-    }
-
-    // 3. Building breadcrumb HTML
-    auto createLink = [this](int pos, const QString& text)
-    {
-        QTextCursor cursor(ui->textEditor->document());
-        cursor.setPosition(pos);
-        int lineNumber = cursor.blockNumber() + 1;
-        int column = cursor.positionInBlock() + 1;
-
-        return QString(R"(<a href="%1" title="Line: %2, Column: %3">%4</a>)")
-            .arg(pos)
-            .arg(lineNumber)
-            .arg(column)
-            .arg(text.toHtmlEscaped());
-    };
-
-    QStringList breadcrumb;
-
-    // Add headers
-    const QList<int> sortedHeaderLevels = headerLevels.keys();
-    for (int level : sortedHeaderLevels)
-    {
-        const auto& [text, pos] = headerLevels[level];
-        breadcrumb << createLink(pos, text);
-    }
-
-    // Add context tags
-    for (const auto& [tag, pos] : contextStack)
-    {
-        breadcrumb << createLink(pos, tag.toUpper());
-    }
-
-    // Add code tag if cursor is inside a code block
-    if (auto codeInfo = ui->textEditor->getCodeTagAtPosition(cursorPos))
-    {
-        breadcrumb << createLink(codeInfo->position, codeInfo->tag.toUpper());
-    }
-
-    return breadcrumb.join(" &gt; ");
 }
 
 void MainWindow::onShowStcPreviewTriggered()
