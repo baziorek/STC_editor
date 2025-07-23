@@ -24,6 +24,8 @@ public:
 
     CodeEditor* getTextEditor() const { return textEditor; }
 
+    void clearTodos();
+
 signals:
     void goToLineRequested(int lineNumber);
     void goToLineAndOffsetRequested(int lineNumber, int linePosition);

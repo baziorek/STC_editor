@@ -21,6 +21,8 @@ public:
 
     void rebuildAllHeaders();
 
+    void clear();
+
 signals:
     void goToLineClicked(int lineNumber);
 

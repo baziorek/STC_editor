@@ -201,3 +201,11 @@ void TodoTrackerTableWidget::setupTable()
     verticalHeader()->hide();
     setAlternatingRowColors(true);
 }
+
+void TodoTrackerTableWidget::clearTodos()
+{
+    todoList.clear();
+    setRowCount(0);
+    clearContents();
+    emit todosTotalCountChanged(0);
+}

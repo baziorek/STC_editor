@@ -124,6 +124,13 @@ void FilteredTagTableWidget::rebuildAllHeaders()
     refreshHeaderTable();
 }
 
+void FilteredTagTableWidget::clear()
+{
+    cachedHeaders.clear();
+    clearHeaderTable();
+    highlightedRow = -1;
+}
+
 void FilteredTagTableWidget::clearHeaderTable()
 {
     setRowCount(0);

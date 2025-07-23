@@ -526,6 +526,9 @@ bool MainWindow::closeApplicationReturningIfClosed()
 
 void MainWindow::onNewFilePressed()
 {
+    ui->todosTableWidget->clearTodos();
+    ui->contextTableWidget->clear();
+
     if (operationWhichDiscardsChangesRequestedReturningIfDiscarded(
             tr("Confirm discarding current file content?"), tr("Do You really want to lose currently unsaved changes and create new file")))
     {
@@ -649,6 +652,8 @@ void MainWindow::onReloadFilePressed()
 
 bool MainWindow::loadFileContentToEditorDistargingCurrentContent(const QString& fileName)
 {
+    ui->todosTableWidget->clearTodos();
+
     if (ui->textEditor->loadFileContentDistargingCurrentContent(fileName))
     {
         setDisabledMenuActionsDependingOnOpenedFile(/*disabled=*/false);
