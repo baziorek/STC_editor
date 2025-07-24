@@ -59,7 +59,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="previousButton">
        <property name="text">
         <string>Previous</string>
        </property>
@@ -143,9 +143,43 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>nextButton</sender>
+   <signal>clicked()</signal>
+   <receiver>FindDialog</receiver>
+   <slot>onNextOccurencyPressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>193</x>
+     <y>23</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>216</x>
+     <y>38</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>previousButton</sender>
+   <signal>clicked()</signal>
+   <receiver>FindDialog</receiver>
+   <slot>onPreviousOccurencyPressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>340</x>
+     <y>25</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>385</x>
+     <y>39</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>currentTextChanged(QString)</slot>
   <slot>odCheckboxMatchCasesChanged(bool)</slot>
+  <slot>onNextOccurencyPressed()</slot>
+  <slot>onPreviousOccurencyPressed()</slot>
  </slots>
 </ui>

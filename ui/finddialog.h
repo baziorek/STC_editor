@@ -51,6 +51,10 @@ public slots:
 
     void odCheckboxMatchCasesChanged(bool checked);
 
+private slots:
+    void onNextOccurencyPressed();
+    void onPreviousOccurencyPressed();
+
 private:
     Ui::FindDialog *ui;
 };

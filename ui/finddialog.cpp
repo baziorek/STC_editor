@@ -20,6 +20,7 @@ FindDialog::FindDialog(QWidget *parent)
             this, &FindDialog::onResultItemClicked);
 }
 
+
 void FindDialog::onResultItemClicked(QTreeWidgetItem* item, int column)
 {
     int line = item->data(0, Qt::UserRole).toInt();
@@ -35,6 +36,56 @@ void FindDialog::odCheckboxMatchCasesChanged(bool checked)
     {
         emit currentTextChanged(currentText);
     }
+}
+
+void FindDialog::onNextOccurencyPressed()
+{
+    // Get the number of items in the results tree
+    int total = ui->foundTextsTreeWidget->topLevelItemCount();
+    if (total == 0)
+        return;
+
+    // Find the currently selected item
+    QTreeWidgetItem* current = ui->foundTextsTreeWidget->currentItem();
+    int currentIndex = -1;
+    for (int i = 0; i < total; ++i) {
+        if (ui->foundTextsTreeWidget->topLevelItem(i) == current) {
+            currentIndex = i;
+            break;
+        }
+    }
+    // Move to next item (wrap around)
+    int nextIndex = (currentIndex + 1) % total;
+    QTreeWidgetItem* nextItem = ui->foundTextsTreeWidget->topLevelItem(nextIndex);
+    ui->foundTextsTreeWidget->setCurrentItem(nextItem);
+    ui->foundTextsTreeWidget->scrollToItem(nextItem);
+    // Simulate click to trigger jump
+    onResultItemClicked(nextItem, 0);
+}
+
+void FindDialog::onPreviousOccurencyPressed()
+{
+    // Get the number of items in the results tree
+    int total = ui->foundTextsTreeWidget->topLevelItemCount();
+    if (total == 0)
+        return;
+
+    // Find the currently selected item
+    QTreeWidgetItem* current = ui->foundTextsTreeWidget->currentItem();
+    int currentIndex = -1;
+    for (int i = 0; i < total; ++i) {
+        if (ui->foundTextsTreeWidget->topLevelItem(i) == current) {
+            currentIndex = i;
+            break;
+        }
+    }
+    // Move to previous item (wrap around)
+    int prevIndex = (currentIndex - 1 + total) % total;
+    QTreeWidgetItem* prevItem = ui->foundTextsTreeWidget->topLevelItem(prevIndex);
+    ui->foundTextsTreeWidget->setCurrentItem(prevItem);
+    ui->foundTextsTreeWidget->scrollToItem(prevItem);
+    // Simulate click to trigger jump
+    onResultItemClicked(prevItem, 0);
 }
 
 FindDialog::~FindDialog()
