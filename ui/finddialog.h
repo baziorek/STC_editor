@@ -42,14 +42,19 @@ public:
 signals:
     void jumpToLocationRequested(int line, int offset);
 
-protected:
-    MatchStats showOccurences(const QString& text);
-
 public slots:
     void currentTextChanged(QString newText);
     void onResultItemClicked(QTreeWidgetItem* item, int column);
 
     void odCheckboxMatchCasesChanged(bool checked);
+
+protected:
+    // Event filter to handle Enter and Shift+Enter in the search field
+    bool eventFilter(QObject* obj, QEvent* event) override;
+
+    MatchStats showOccurences(const QString& text);
+
+    void installEventFilterOnSearchInput();
 
 private slots:
     void onNextOccurencyPressed();

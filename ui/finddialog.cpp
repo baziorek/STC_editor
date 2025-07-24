@@ -1,6 +1,7 @@
 #include <QMessageBox>
 #include <QTextBlock>
 #include <QLineEdit>
+#include <QKeyEvent>
 #include "finddialog.h"
 #include "ui_finddialog.h"
 #include "codeeditor.h"
@@ -18,8 +19,17 @@ FindDialog::FindDialog(QWidget *parent)
 
     connect(ui->foundTextsTreeWidget, &QTreeWidget::itemClicked,
             this, &FindDialog::onResultItemClicked);
+
+    installEventFilterOnSearchInput();
 }
 
+void FindDialog::installEventFilterOnSearchInput()
+{
+    if (ui->textSearchField->isEditable())
+    {
+        ui->textSearchField->installEventFilter(this);
+    }
+}
 
 void FindDialog::onResultItemClicked(QTreeWidgetItem* item, int column)
 {
@@ -86,6 +96,33 @@ void FindDialog::onPreviousOccurencyPressed()
     ui->foundTextsTreeWidget->scrollToItem(prevItem);
     // Simulate click to trigger jump
     onResultItemClicked(prevItem, 0);
+}
+
+bool FindDialog::eventFilter(QObject* obj, QEvent* event)
+{
+    // Handle key events for the search field's QComboBox and its QLineEdit
+    if (ui->textSearchField->isEditable())
+    {
+        QLineEdit* edit = ui->textSearchField->lineEdit();
+        if ((obj == ui->textSearchField || obj == edit) && event->type() == QEvent::KeyPress)
+        {
+            QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+            if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter)
+            {
+                if (keyEvent->modifiers() & Qt::ShiftModifier)
+                {
+                    onPreviousOccurencyPressed();
+                    return true;
+                }
+                else
+                {
+                    onNextOccurencyPressed();
+                    return true;
+                }
+            }
+        }
+    }
+    return QWidget::eventFilter(obj, event);
 }
 
 FindDialog::~FindDialog()
