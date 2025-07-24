@@ -70,6 +70,7 @@ Jeśli ktoś chce tego używać do innych celów:
       - Z uwzględnieniem wielkości liter, tylko całe słowa.
       - Bez uwzględniania wielkości liter, tylko całe słowa.
     - ENTER i SHIFT+ENTER odpowiednio przesuwają do kolejnego/poprzedniego wystąpienia z tabeli
+    - Strzałki dół/góra dzialają jak powyższe, ale nie przeskakują z focusem do edytora tekstu
  9. **Skalowanie czcionki**: Powiększanie/pomniejszanie czcionki za pomocą `Ctrl++` i `Ctrl+-` lub `Ctrl+MOUSE_SCROLL`.
 10. **Pasek stanu**: Pokazuje nazwę otwartego pliku, ale też liczbę niezapisanych zmienionych linii, czas ostatniej edycji i zapisu (tylko przy niezapisanych zmianach).
 11. **Oznaczenie aktualnej linii**: Śledzenie aktualnej pozycji kursora klawiatury w ramach linijki
@@ -80,13 +81,6 @@ Jeśli ktoś chce tego używać do innych celów:
 14. **Obsługa różnych kodowań pliku tekstowego**: Nie tylko UTF-8. Jest to dzięki bibliotece [uchardet](https://github.com/BYVoid/uchardet).
 
 ## Planowane funkcjonalności
-
-### Przed pierwszym wydaniem
-
-- **Funkcje**:
-
-
-### Pomysły na przyszłość
 
 1. Podpięcie sztucznej inteligencji np. [Ollama](https://ollama.com)
 2. Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
@@ -119,7 +113,7 @@ Jeśli ktoś chce tego używać do innych celów:
 29. Następna zmiana: przycisk pozwalający skakać po zmianach w dokumencie
 30. Ctrl + V gdy mamy tabelkę
 31. enter na wyszukiwaniu skacze do miejsca wykrycia
-32. SHIFT N: kolejne wykrycie i też trzeba by wymyślić poprzednie
+32. FindWidget - aby aktualizował pozycje w tekście na bieżąco przy dodawaniu/usuwaniu linii.
 33. Dodać check: czy nie zamykam nieotwartego tagu?
 34. Sprawdzenie czy Run nie jest poza csv lub pkt
 35. Ctrl + V gdy mamy obrazek
@@ -148,13 +142,12 @@ Jeśli ktoś chce tego używać do innych celów:
 58. Wyszukaj i zamień: `Ctrl+R` z możliwością wyłączenia poszczególnych wykrytych pozycji.
 59. Optymalizacja wydajności edytora przy szybkim pisaniu.
 60. Zastąpienie listy kontekstu widżetem drzewiastym.
-61. FindWidget - aby aktualizował pozycje w tekście na bieżąco przy dodawaniu/usuwaniu linii.
-62. Sprawdzania:
+61. Sprawdzania:
      - Sprawdzanie, czy znaczniki `[run]` znajdują się wewnątrz `[pkt]`.
      - Weryfikacja, czy wszystkie znaczniki są zamknięte (np. po opuszczeniu linijki sprawdzamy czy są tam zmiany, jak tak, to czy jest tam nowy tag)
      - Weryfikacja odpowiednich atrybutów w tagach (czy w cudzysłowiu, czy tylko dozwole atrubytu)
      - Weryfikacja czy wprowadzono tylko legalne tagi STC
-63. MiniBug: funkcjonalność zmiany wielkości czcionki zakłóca nowe tagi. Jak powiększymy czcionkę i potem dodamy coś np. H1, to on będzie miał czcionkę nawet mniejszą niż reszta, mimo iż to nagłówek
+62. MiniBug: funkcjonalność zmiany wielkości czcionki zakłóca nowe tagi. Jak powiększymy czcionkę i potem dodamy coś np. H1, to on będzie miał czcionkę nawet mniejszą niż reszta, mimo iż to nagłówek
 
 ## Współpraca
 

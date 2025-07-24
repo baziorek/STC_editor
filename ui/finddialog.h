@@ -23,6 +23,7 @@ public:
         int insensitiveWhole = {};
         int sensitive = {};
         int sensitiveWhole = {};
+
         bool isZero() const
         {
             return 0 == insensitive && 0 == insensitiveWhole && 0 == sensitive && 0 == sensitiveWhole;
@@ -49,6 +50,8 @@ public slots:
     void odCheckboxMatchCasesChanged(bool checked);
 
 protected:
+    void installEventFilter2HandleMovingBetweenOccurences();
+
     // Event filter to handle Enter and Shift+Enter in the search field
     bool eventFilter(QObject* obj, QEvent* event) override;
 

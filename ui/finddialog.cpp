@@ -9,21 +9,18 @@
 
 
 FindDialog::FindDialog(QWidget *parent)
-    : QWidget(parent)
-    , ui(new Ui::FindDialog)
+    : QWidget(parent), ui(new Ui::FindDialog)
 {
     ui->setupUi(this);
 
     auto delegate = new HighlightDelegate(this);
     ui->foundTextsTreeWidget->setItemDelegateForColumn(2, delegate);
 
-    connect(ui->foundTextsTreeWidget, &QTreeWidget::itemClicked,
-            this, &FindDialog::onResultItemClicked);
+    connect(ui->foundTextsTreeWidget, &QTreeWidget::itemClicked, this, &FindDialog::onResultItemClicked);
 
-    installEventFilterOnSearchInput();
+    installEventFilter2HandleMovingBetweenOccurences();
 }
-
-void FindDialog::installEventFilterOnSearchInput()
+void FindDialog::installEventFilter2HandleMovingBetweenOccurences()
 {
     if (ui->textSearchField->isEditable())
     {
@@ -58,14 +55,16 @@ void FindDialog::onNextOccurencyPressed()
     // Find the currently selected item
     QTreeWidgetItem* current = ui->foundTextsTreeWidget->currentItem();
     int currentIndex = -1;
-    for (int i = 0; i < total; ++i) {
-        if (ui->foundTextsTreeWidget->topLevelItem(i) == current) {
+    for (int i = 0; i < total; ++i)
+    {
+        if (ui->foundTextsTreeWidget->topLevelItem(i) == current)
+        {
             currentIndex = i;
             break;
         }
     }
     // Move to next item (wrap around)
-    int nextIndex = (currentIndex + 1) % total;
+    const int nextIndex = (currentIndex + 1) % total;
     QTreeWidgetItem* nextItem = ui->foundTextsTreeWidget->topLevelItem(nextIndex);
     ui->foundTextsTreeWidget->setCurrentItem(nextItem);
     ui->foundTextsTreeWidget->scrollToItem(nextItem);
@@ -83,24 +82,27 @@ void FindDialog::onPreviousOccurencyPressed()
     // Find the currently selected item
     QTreeWidgetItem* current = ui->foundTextsTreeWidget->currentItem();
     int currentIndex = -1;
-    for (int i = 0; i < total; ++i) {
-        if (ui->foundTextsTreeWidget->topLevelItem(i) == current) {
+    for (int i = 0; i < total; ++i)
+    {
+        if (ui->foundTextsTreeWidget->topLevelItem(i) == current)
+        {
             currentIndex = i;
             break;
         }
     }
     // Move to previous item (wrap around)
-    int prevIndex = (currentIndex - 1 + total) % total;
+    const int prevIndex = (currentIndex - 1 + total) % total;
     QTreeWidgetItem* prevItem = ui->foundTextsTreeWidget->topLevelItem(prevIndex);
     ui->foundTextsTreeWidget->setCurrentItem(prevItem);
     ui->foundTextsTreeWidget->scrollToItem(prevItem);
+
     // Simulate click to trigger jump
     onResultItemClicked(prevItem, 0);
 }
 
 bool FindDialog::eventFilter(QObject* obj, QEvent* event)
 {
-    // Handle key events for the search field's QComboBox and its QLineEdit
+    // Handle key events for the search field's QLineEdit
     if (ui->textSearchField->isEditable())
     {
         QLineEdit* edit = ui->textSearchField->lineEdit();
@@ -111,14 +113,30 @@ bool FindDialog::eventFilter(QObject* obj, QEvent* event)
             {
                 if (keyEvent->modifiers() & Qt::ShiftModifier)
                 {
+                    // Shift+Enter: previous occurrence
                     onPreviousOccurencyPressed();
                     return true;
                 }
                 else
                 {
+                    // Enter: next occurrence
                     onNextOccurencyPressed();
                     return true;
                 }
+            }
+            else if (keyEvent->key() == Qt::Key_Down)
+            {
+                // Down arrow: next occurrence, keep focus in field
+                onNextOccurencyPressed();
+                ui->textSearchField->setFocus();
+                return true;
+            }
+            else if (keyEvent->key() == Qt::Key_Up)
+            {
+                // Up arrow: previous occurrence, keep focus in field
+                onPreviousOccurencyPressed();
+                ui->textSearchField->setFocus();
+                return true;
             }
         }
     }
