@@ -618,6 +618,9 @@ void MainWindow::onOpenPressed()
     const auto fileName = chooseFileWithDialog(QFileDialog::AcceptOpen).trimmed();
     if (! fileName.isEmpty())
     {
+        ui->todosTableWidget->clearTodos();
+        ui->contextTableWidget->clear();
+
         loadFileContentToEditorDistargingCurrentContent(fileName);
     }
 }

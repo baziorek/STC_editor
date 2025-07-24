@@ -67,6 +67,8 @@ void CodeEditor::newEmptyFile()
     codeBlocks = {};
 
     fileEncodingHandler = std::make_unique<FileEncodingHandler>();
+
+    emit contentReloaded();
 }
 
 CodeEditor::~CodeEditor() = default;
@@ -278,6 +280,8 @@ bool CodeEditor::loadFileContentDistargingCurrentContent(const QString& fileName
         setFileName(fileName);
 
         analizeEntireDocumentDetectingCodeBlocks();
+
+        emit contentReloaded();
 
         return true;
     }
@@ -1029,6 +1033,7 @@ void CodeEditor::restoreStateWhichDoesNotRequireSaving(bool discardChanges)
     if (getFileName().isEmpty())
     {
         clear();
+        emit contentReloaded();
     }
     else
     {

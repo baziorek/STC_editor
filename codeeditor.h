@@ -97,6 +97,8 @@ signals:
 
     void linkTitleFetchFailed(const QString& url, int lineNumber, const QString& reason);
 
+    void contentReloaded();
+
 public slots:
     void fileChanged(const QString &path);
 
