@@ -44,15 +44,16 @@ Jak ktoś chce tego używać na potrzeby pisania na stronę Cpp0x.pl (do czego z
     - Jeśli jest zaznaczony tekst to "podlinkowuje go" przez otoczenie: `[a href="link" name="Zaznaczony wcześniej tekst"]`
 18. **Wklejalne tabelki**: gdy w schowku jest tabelka to jest ona otaczana odpowiednimi tagami `[csv]...[/csv]` a komórki są rozdzielane średnikami.
     - Jeśli wklejony tekst zawiera tagi, to odpowiednie komórki są otaczane przez `[run]`, a typ tabelki się zmienia na `[csv ext]`
-19. **Inteligentne przyciski**: Niektóre przyciski mają duże ułatwienie działania:
+19. **Wklejanie rich-text**: jak wkleimy tekst ze strony lub np. programu Office to HTML jest zamieniany na znaczniki STC (częściowo), m.in. linki, pogrubienia itp.
+20. **Inteligentne przyciski**: Niektóre przyciski mają duże ułatwienie działania:
     - Przycisk `a href` dostosowuje się do zaznaczonego tekstu, jak go nie ma to po prostu wstawia pusty tag, ale jak coś jest zaznaczone to próbuje wykryć tam link i odpowiednio otoczyć tagiem dopasowując zarówno linka jak i nazwę linka
     - Przycisk `img` dostosowuje się do zaznaczonego tekstu, jak go nie ma to po prostu wstawia pusty tag, ale jak coś jest zaznaczone to próbuje wykryć ścieżkę do pliku graficznego i odpowiednio otoczyć tagiem dopasowując zarówno źródło obrazka jak i opis
-20. **Dodawanie/usuwanie atrybutów dla tagów z menu kontekstowego**: Gdy klikniemy prawym przyciskiem myszy na tagu, które ma możliwe różne atrybuty, to pojawia się możliwość wyklikania opcjonalnych atrybutów do dodania/usunięcia.
+21. **Dodawanie/usuwanie atrybutów dla tagów z menu kontekstowego**: Gdy klikniemy prawym przyciskiem myszy na tagu, które ma możliwe różne atrybuty, to pojawia się możliwość wyklikania opcjonalnych atrybutów do dodania/usunięcia.
 
 ## Ogólne funkcje edytora
 Jeśli ktoś chce tego używać do innych celów:
  1. **Operacje na plikach**: Wczytywanie i zapisywanie plików z obsługą kodowania UTF-8, przeładowanie pliku.
- 2. **Ostatnio otwarte pliki**: Zapamiętuje ostatnio używane pliki wraz z ostatnią pozycją w pliku dla szybkiego dostępu.
+ 2. **Ostatnio otwarte pliki**: Zapamiętuje ostatnio używan\e pliki wraz z ostatnią pozycją w pliku dla szybkiego dostępu.
     - Zapamiętana jest również data ostatniego otwarcia pliku w edytorze. 
  3. **Wykrywanie zmian zewnętrznych**: Powiadamia o modyfikacjach pliku z zewnątrz.
  4. **Inteligentne menu kontekstowe dla tekstu**, m.in.:

@@ -173,6 +173,7 @@ protected:
     bool handlePasteWithLinkWrapping();
     void fetchAndInsertTitle(const QString &url, int insertedPos);
     bool handlePasteTable();
+    bool handlePastingRichText();
 
     /// methods to handle contest menu actions:
     void moveCursorToClickPosition(const QPoint &pos);

@@ -96,6 +96,40 @@ QString convertToStcCsv(const QString& text)
     const QString openingTag = needsRunWrapping ? "[csv ext]" : "[csv]";
     return QString("%1\n%2\n[/csv]").arg(openingTag, processedRows.join('\n'));
 }
+
+QString convertHtmlToStcPreservingNewlines(const QString& html)
+{
+    QString text = html;
+
+    // Replacing <br>, </p>, </div> with newline
+    text.replace(QRegularExpression(R"(<br\s*/?>)", QRegularExpression::CaseInsensitiveOption), "\n");
+    text.replace(QRegularExpression(R"(</p>)", QRegularExpression::CaseInsensitiveOption), "\n");
+    text.replace(QRegularExpression(R"(</div>)", QRegularExpression::CaseInsensitiveOption), "\n");
+
+    // Links: <a href="URL">TEXT</a> → [a href="URL"]TEXT
+    text.replace(QRegularExpression(R"__(<a\s+href="([^"]+)"[^>]*>(.*?)</a>)__", QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption),
+                 R"([a href="\1" name="\2"])");
+
+    // Bold
+    text.replace(QRegularExpression(R"(<b[^>]*>(.*?)</b>)", QRegularExpression::DotMatchesEverythingOption), R"([b]\1[/b])");
+
+    // Italic
+    text.replace(QRegularExpression(R"(<i[^>]*>(.*?)</i>)", QRegularExpression::DotMatchesEverythingOption), R"([i]\1[/i])");
+
+    // Underline
+    text.replace(QRegularExpression(R"(<u[^>]*>(.*?)</u>)", QRegularExpression::DotMatchesEverythingOption), R"([u]\1[/u])");
+
+    // Remove other HTML tags
+    text.remove(QRegularExpression(R"(<[^>]+>)"));
+
+    // Replace &nbsp; etc.
+    text.replace("&nbsp;", " ");
+    text.replace("&amp;", "&");
+    text.replace("&lt;", "<");
+    text.replace("&gt;", ">");
+
+    return text.trimmed();
+}
 } // namespace
 
 
@@ -1203,6 +1237,9 @@ void CodeEditor::keyPressEvent(QKeyEvent* event)
         {
             if (!(event->modifiers() & Qt::ShiftModifier))
             {
+                if (handlePastingRichText())
+                    return;
+
                 if (handlePasteTable())
                     return;
 
@@ -1231,6 +1268,20 @@ bool CodeEditor::isControlOnly(QKeyEvent* event) const
 {
     return (event->modifiers() & Qt::ControlModifier) &&
            !(event->modifiers() & ~Qt::ControlModifier);
+}
+
+bool CodeEditor::handlePastingRichText()
+{
+    const QClipboard* clipboard = QGuiApplication::clipboard();
+    const QMimeData* mime = clipboard->mimeData();
+
+    if (mime->hasHtml())
+    {
+        QString stc = convertHtmlToStcPreservingNewlines(mime->html());
+        textCursor().insertText(stc);
+        return true;
+    }
+    return false;
 }
 
 bool CodeEditor::handlePasteWithLinkWrapping()
