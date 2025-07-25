@@ -29,7 +29,75 @@
 namespace
 {
 constexpr int spacesPerTab = 4;
+
+bool isStructuredTable(const QString& text)
+{
+    const QStringList rows = text.split('\n');
+    if (rows.size() < 2)
+        return false;
+
+    QVector<int> tabCounts;
+    for (const QString& row : rows)
+        tabCounts.append(row.count('\t'));
+
+    int multiColumnLines = std::count_if(tabCounts.begin(), tabCounts.end(), [](int count) {
+        return count > 0;
+    });
+
+    if (multiColumnLines < 2)
+        return false;
+
+    // Check consistency
+    QMap<int, int> tabCountFreq;
+    for (int count : tabCounts)
+        tabCountFreq[count]++;
+
+    int mostCommonTabCount = 0;
+    int freq = 0;
+    for (auto it = tabCountFreq.begin(); it != tabCountFreq.end(); ++it)
+    {
+        if (it.value() > freq)
+        {
+            freq = it.value();
+            mostCommonTabCount = it.key();
+        }
+    }
+
+    return (mostCommonTabCount > 0 && freq >= 2);
+}
+QString convertToStcCsv(const QString& text)
+{
+    static const QRegularExpression stcTagRx(R"(\[/?(b|u|i|code|cpp|a|div|run|pkt)[^\]]*\])",
+                                             QRegularExpression::CaseInsensitiveOption);
+
+    const QStringList rows = text.split('\n');
+    QStringList processedRows;
+    bool needsRunWrapping = false;
+
+    for (QString row : rows)
+    {
+        QStringList cells = row.split('\t');
+        QStringList processedCells;
+
+        for (QString cell : cells)
+        {
+            cell = cell.trimmed();
+            if (stcTagRx.match(cell).hasMatch())
+            {
+                needsRunWrapping = true;
+                cell = QString("[run]%1[/run]").arg(cell);
+            }
+            processedCells << cell;
+        }
+
+        processedRows << processedCells.join(';');
+    }
+
+    const QString openingTag = needsRunWrapping ? "[csv ext]" : "[csv]";
+    return QString("%1\n%2\n[/csv]").arg(openingTag, processedRows.join('\n'));
+}
 } // namespace
+
 
 CodeEditor::CodeEditor(QWidget *parent)
     : QPlainTextEdit(parent), networkManager{new QNetworkAccessManager(this)}, lineNumberArea{new LineNumberArea(this)}, fileEncodingHandler{std::make_unique<FileEncodingHandler>()}
@@ -1139,7 +1207,7 @@ void CodeEditor::keyPressEvent(QKeyEvent* event)
                     return;
 
                 if (handlePasteWithLinkWrapping())
-                    return;
+                    return; // link pasted, stop propagation
             }
         }
     }
@@ -1252,43 +1320,13 @@ void CodeEditor::fetchAndInsertTitle(const QString& url, int insertedPos)
 
 bool CodeEditor::handlePasteTable()
 {
-    const QString clipboardText = QGuiApplication::clipboard()->text();
-
-    // does it contains tabulators (to detect table)
-    if (!clipboardText.contains('\t'))
-        return false;
-
-    QStringList rows = clipboardText.split('\n');
-    QStringList processedRows;
-    bool needsRunWrapping = false;
-
-    static const QRegularExpression stcTagRx(R"(\[/?(b|u|i|code|cpp|a|div|run|pkt)[^\]]*\])",
-                                             QRegularExpression::CaseInsensitiveOption);
-
-    for (const QString& row : rows)
+    const QString clipboardText = QGuiApplication::clipboard()->text().trimmed();
+    if (isStructuredTable(clipboardText))
     {
-        QStringList cells = row.split('\t');
-        QStringList processedCells;
-
-        for (QString cell : cells)
-        {
-            cell = cell.trimmed();
-            if (stcTagRx.match(cell).hasMatch())
-            {
-                needsRunWrapping = true;
-                cell = QString("[run]%1[/run]").arg(cell);
-            }
-            processedCells << cell;
-        }
-
-        processedRows << processedCells.join(';');
+        textCursor().insertText(convertToStcCsv(clipboardText));
+        return true;
     }
-
-    const QString openingTag = needsRunWrapping ? "[csv extended]" : "[csv]";
-    const QString finalCsv = QString("%1\n%2\n[/csv]").arg(openingTag, processedRows.join('\n'));
-
-    textCursor().insertText(finalCsv);
-    return true;
+    return false;
 }
 
 void CodeEditor::handleTabIndent()
