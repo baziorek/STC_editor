@@ -4,7 +4,7 @@
 
 # Edytor STC
 
-Prosty edytor tekstu stworzony w Qt, ułatwiający wstawianie znaczników [STC](https://cpp0x.pl/kursy/Kurs-STC/169) używanych na platformie [cpp0x.pl](https://cpp0x.pl/).
+Prosty edytor tekstu stworzony w Qt, ułatwiający wstawianie znaczników [STC](https://cpp0x.pl/kursy/Kurs-STC/169) używanych na platformie [Cpp0x.pl](https://cpp0x.pl/).
 
 ## Opis
 Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników STC na potrzeby tworzenia treści dla [cpp0x.pl](https://cpp0x.pl/). Oferuje prosty interfejs oparty na Qt z polem tekstowym i przyciskami do wstawiania znaczników STC oraz dedykowane funkcje zwiększające produktywność.
@@ -12,7 +12,7 @@ Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników
 ![Zrzut ekranu](screens/applicationSample.png)
 
 ## Dedykowane funkcje
-Jak ktoś chce tego używać na potrzeby pisania na stronę Cpp0x.pl (do czego zachęcam):
+Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://cpp0x.pl/) (do czego zachęcam):
  1. **Kolorowanie składni**: Podświetlanie znaczników STC dla lepszej czytelności.
  2. **Weryfikacja zamknięcia znaczników**: Sprawdza, czy wszystkie znaczniki STC są poprawnie zamknięte.
  3. **Transformacja tekstu**: Zmiana zaznaczonego tekstu na małe litery, wielkie litery, camelCase na snake_case lub odwrotnie.
@@ -51,8 +51,8 @@ Jak ktoś chce tego używać na potrzeby pisania na stronę Cpp0x.pl (do czego z
 21. **Dodawanie/usuwanie atrybutów dla tagów z menu kontekstowego**: Gdy klikniemy prawym przyciskiem myszy na tagu, które ma możliwe różne atrybuty, to pojawia się możliwość wyklikania opcjonalnych atrybutów do dodania/usunięcia.
 
 ## Ogólne funkcje edytora
-Jeśli ktoś chce tego używać do innych celów:
- 1. **Operacje na plikach**: Wczytywanie i zapisywanie plików z obsługą kodowania UTF-8, przeładowanie pliku.
+Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wybrane funkcjonalności, których brakuje mi w zwykłych edytorach:
+ 1. **Operacje na plikach**: Wczytywanie, zapisywanie i przeładowanie pliku.
  2. **Ostatnio otwarte pliki**: Zapamiętuje ostatnio używan\e pliki wraz z ostatnią pozycją w pliku dla szybkiego dostępu.
     - Zapamiętana jest również data ostatniego otwarcia pliku w edytorze. 
  3. **Wykrywanie zmian zewnętrznych**: Powiadamia o modyfikacjach pliku z zewnątrz.
@@ -148,6 +148,7 @@ Jeśli ktoś chce tego używać do innych celów:
 57. Widok sąsiadujący do porównywania plików.
 58. Eksport bloków kodu do osobnych plików.
 59. Konsolidacja obrazów do jednego katalogu z aktualizacją ścieżek w znacznikach STC.
+60. Zapis poszczególnych linii na dysk przy porównywaniu diffa.
 
 ## Współpraca
 
@@ -161,7 +162,7 @@ Bardzo proszę o dokładne informacje jakie to bugi, czyli:
 
 ## Przydatność
 
-Narzędzie to okazało się bardzo pomocne przy tworzeniu artykułów na cpp0x.pl, np. [porównującym python i C++](https://cpp0x.pl/artykuly/Inne-artykuly/Porownanie-C++-i-Python-roznice-w-skladni-i-podejsciu-programistycznym/99). Ułatwia wstawianie znaczników STC i debugowanie niezamkniętych znaczników.
+Narzędzie to okazało się bardzo pomocne przy tworzeniu artykułów na [Cpp0x.pl](https://cpp0x.pl/), np. [porównującym python i C++](https://cpp0x.pl/artykuly/Inne-artykuly/Porownanie-C++-i-Python-roznice-w-skladni-i-podejsciu-programistycznym/99). Ułatwia wstawianie znaczników STC i debugowanie niezamkniętych znaczników.
 
 ## Przydatne linki
 
