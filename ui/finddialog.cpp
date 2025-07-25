@@ -4,7 +4,7 @@
 #include <QKeyEvent>
 #include "finddialog.h"
 #include "ui_finddialog.h"
-#include "codeeditor.h"
+#include "CodeEditor.h"
 #include "highlightdelegate.h"
 
 

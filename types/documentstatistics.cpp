@@ -1,7 +1,7 @@
 #include <QRegularExpression>
 #include <QFileInfo>
 #include "documentstatistics.h"
-#include "codeeditor.h"
+#include "CodeEditor.h"
 
 
 DocumentStatisticsResult DocumentStatistics::analyze(CodeEditor* editor)

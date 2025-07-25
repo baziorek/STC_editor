@@ -4,7 +4,7 @@
 #include <QAction>
 #include <QMenu>
 #include "FilteredTagTableWidget.h"
-#include "codeeditor.h"
+#include "CodeEditor.h"
 
 
 namespace

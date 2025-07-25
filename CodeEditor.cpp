@@ -16,7 +16,7 @@
 #include <QBuffer>
 #include <QClipboard>
 #include <QDir>
-#include "codeeditor.h"
+#include "CodeEditor.h"
 #include "linenumberarea.h"
 #include "stcsyntaxhighlighter.h"
 #include "ui/cppcompilerdialog.h"

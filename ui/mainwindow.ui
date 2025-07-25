@@ -522,7 +522,7 @@
   <customwidget>
    <class>CodeEditor</class>
    <extends>QPlainTextEdit</extends>
-   <header location="global">codeeditor.h</header>
+   <header location="global">CodeEditor.h</header>
   </customwidget>
   <customwidget>
    <class>FindDialog</class>

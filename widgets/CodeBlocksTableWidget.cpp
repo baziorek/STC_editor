@@ -3,7 +3,7 @@
 #include <QTextBlock>
 #include <QToolTip>
 #include "widgets/CodeBlocksTableWidget.h"
-#include "codeeditor.h"
+#include "CodeEditor.h"
 #include "types/CodeBlock.h"
 
 namespace

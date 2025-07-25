@@ -148,6 +148,7 @@ Jeśli ktoś chce tego używać do innych celów:
      - Weryfikacja odpowiednich atrybutów w tagach (czy w cudzysłowiu, czy tylko dozwole atrubytu)
      - Weryfikacja czy wprowadzono tylko legalne tagi STC
 62. MiniBug: funkcjonalność zmiany wielkości czcionki zakłóca nowe tagi. Jak powiększymy czcionkę i potem dodamy coś np. H1, to on będzie miał czcionkę nawet mniejszą niż reszta, mimo iż to nagłówek
+63. Dyktowanie tekstu (biblioteka [Whisper](https://github.com/openai/whisper))
 
 ## Współpraca
 

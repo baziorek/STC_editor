@@ -6,7 +6,7 @@
 #include <QTextBlock>
 #include <QHeaderView>
 #include <QTimer>
-#include "codeeditor.h"
+#include "CodeEditor.h"
 #include "TodosTrackerTableWidget.h"
 
 

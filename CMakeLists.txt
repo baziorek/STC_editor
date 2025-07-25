@@ -62,7 +62,7 @@ include_directories(${PROJECT_SOURCE_DIR}) # to make sure that promoted types ar
 
 set(PROJECT_SOURCES
     main.cpp
-    codeeditor.h codeeditor.cpp
+    CodeEditor.h CodeEditor.cpp
     stcsyntaxhighlighter.h stcsyntaxhighlighter.cpp
     linenumberarea.h linenumberarea.cpp
     ui/mainwindow.h ui/mainwindow.cpp ui/mainwindow.ui

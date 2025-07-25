@@ -3,7 +3,7 @@
 #include <QUrl>
 #include <QTextBlock>
 #include "BreadcrumbTextBrowser.h"
-#include "codeeditor.h"
+#include "CodeEditor.h"
 #include "widgets/FilteredTagTableWidget.h"
 
 

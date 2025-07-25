@@ -7,7 +7,7 @@
 #include <QDateTime>
 #include <QTextBlock>
 #include "DiffReviewDialog.h"
-#include "codeeditor.h"
+#include "CodeEditor.h"
 #include "utils/diffcalculation.h"
 
 
