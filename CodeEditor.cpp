@@ -16,6 +16,7 @@
 #include <QBuffer>
 #include <QClipboard>
 #include <QDir>
+#include <QGuiApplication>
 #include "CodeEditor.h"
 #include "widgets/LineNumberArea.h"
 #include "utils/STCSyntaxHighlighter.h"

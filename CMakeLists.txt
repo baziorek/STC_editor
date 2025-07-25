@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(Cpp0x VERSION 0.2 LANGUAGES CXX)
+project(STC_editor VERSION 0.2 LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -99,6 +99,7 @@ set(TEXT_FILES
     LICENSE
     README.md
     README_ang.md
+    .github/workflows/release.yml
 )
 
 set(PROJECT_FILES ${PROJECT_SOURCES} ${TEXT_FILES})
