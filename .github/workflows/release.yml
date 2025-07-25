@@ -35,6 +35,8 @@ jobs:
             libuchardet-dev \
             libgtest-dev \
             libfuse2 \
+            nsight-compute \
+            libgconf-2-4 \
             wget
 
       - name: Install GCC 13 # required for <format> library
@@ -82,7 +84,7 @@ jobs:
           echo "Found QtWebEngineProcess at: $QTWEBENGINE_BIN"
           cp "$QTWEBENGINE_BIN" build/libexec/
 
-          cp /usr/share/qt6/resources/icudtl.dat build/resources/ || true
+          cp $(dpkg -L  nsight-compute | grep icudtl.dat) build/resources/ || true
           cp -r /usr/share/qt6/translations build/translations || true
 
       - name: Move desktop and icon into build dir
