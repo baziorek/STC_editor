@@ -1135,8 +1135,11 @@ void CodeEditor::keyPressEvent(QKeyEvent* event)
         {
             if (!(event->modifiers() & Qt::ShiftModifier))
             {
+                if (handlePasteTable())
+                    return;
+
                 if (handlePasteWithLinkWrapping())
-                    return; // link pasted, stop propagation
+                    return;
             }
         }
     }
@@ -1247,6 +1250,46 @@ void CodeEditor::fetchAndInsertTitle(const QString& url, int insertedPos)
     });
 }
 
+bool CodeEditor::handlePasteTable()
+{
+    const QString clipboardText = QGuiApplication::clipboard()->text();
+
+    // does it contains tabulators (to detect table)
+    if (!clipboardText.contains('\t'))
+        return false;
+
+    QStringList rows = clipboardText.split('\n');
+    QStringList processedRows;
+    bool needsRunWrapping = false;
+
+    static const QRegularExpression stcTagRx(R"(\[/?(b|u|i|code|cpp|a|div|run|pkt)[^\]]*\])",
+                                             QRegularExpression::CaseInsensitiveOption);
+
+    for (const QString& row : rows)
+    {
+        QStringList cells = row.split('\t');
+        QStringList processedCells;
+
+        for (QString cell : cells)
+        {
+            cell = cell.trimmed();
+            if (stcTagRx.match(cell).hasMatch())
+            {
+                needsRunWrapping = true;
+                cell = QString("[run]%1[/run]").arg(cell);
+            }
+            processedCells << cell;
+        }
+
+        processedRows << processedCells.join(';');
+    }
+
+    const QString openingTag = needsRunWrapping ? "[csv extended]" : "[csv]";
+    const QString finalCsv = QString("%1\n%2\n[/csv]").arg(openingTag, processedRows.join('\n'));
+
+    textCursor().insertText(finalCsv);
+    return true;
+}
 
 void CodeEditor::handleTabIndent()
 {

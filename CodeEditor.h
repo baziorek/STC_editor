@@ -172,6 +172,7 @@ protected:
     void applyToSelectedBlocks(const std::function<void (QTextCursor &)> &callback);
     bool handlePasteWithLinkWrapping();
     void fetchAndInsertTitle(const QString &url, int insertedPos);
+    bool handlePasteTable();
 
     /// methods to handle contest menu actions:
     void moveCursorToClickPosition(const QPoint &pos);

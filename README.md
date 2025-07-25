@@ -42,10 +42,12 @@ Jak ktoś chce tego używać na potrzeby pisania na stronę Cpp0x.pl (do czego z
 17. **Wklejane linki wklejane w odpowiedni sposób**: jak wklejamy przez CTRL+V, a w schowku jest link to otacza linka tagami linka `[a href="link"]`
     - Po chwili zostanie pobrana z linka i dodana jako kolejny atrybut nazwa strony, czyli zamiast `[a href="link"]` będzie `[a href="link" name="Nazwa strony dla linka"]`
     - Jeśli jest zaznaczony tekst to "podlinkowuje go" przez otoczenie: `[a href="link" name="Zaznaczony wcześniej tekst"]`
-18. **Inteligentne przyciski**: Niektóre przyciski mają duże ułatwienie działania:
+18. **Wklejalne tabelki**: gdy w schowku jest tabelka to jest ona otaczana odpowiednimi tagami `[csv]...[/csv]` a komórki są rozdzielane średnikami.
+    - Jeśli wklejony tekst zawiera tagi, to odpowiednie komórki są otaczane przez `[run]`, a typ tabelki się zmienia na `[csv ext]`
+19. **Inteligentne przyciski**: Niektóre przyciski mają duże ułatwienie działania:
     - Przycisk `a href` dostosowuje się do zaznaczonego tekstu, jak go nie ma to po prostu wstawia pusty tag, ale jak coś jest zaznaczone to próbuje wykryć tam link i odpowiednio otoczyć tagiem dopasowując zarówno linka jak i nazwę linka
     - Przycisk `img` dostosowuje się do zaznaczonego tekstu, jak go nie ma to po prostu wstawia pusty tag, ale jak coś jest zaznaczone to próbuje wykryć ścieżkę do pliku graficznego i odpowiednio otoczyć tagiem dopasowując zarówno źródło obrazka jak i opis
-19. **Dodawanie/usuwanie atrybutów dla tagów z menu kontekstowego**: Gdy klikniemy prawym przyciskiem myszy na tagu, które ma możliwe różne atrybuty, to pojawia się możliwość wyklikania opcjonalnych atrybutów do dodania/usunięcia.
+20. **Dodawanie/usuwanie atrybutów dla tagów z menu kontekstowego**: Gdy klikniemy prawym przyciskiem myszy na tagu, które ma możliwe różne atrybuty, to pojawia się możliwość wyklikania opcjonalnych atrybutów do dodania/usunięcia.
 
 ## Ogólne funkcje edytora
 Jeśli ktoś chce tego używać do innych celów:
@@ -97,7 +99,7 @@ Jeśli ktoś chce tego używać do innych celów:
 13. Zamiana warunkowa -np. zamień jeśli już nie jest. Np. jak chcę zamienić `cout` na `std::cout` to zamieni tylko jeśli nie jest to `std::cout`
 14. Akcja: Popraw numeracje dla zaznaczonego tekstu
 15. Sprawdzenie czy link istnieje
-16. Ctrl + V gdy mamy tabelkę
+16. MiniBug: funkcjonalność zmiany wielkości czcionki zakłóca nowe tagi. Jak powiększymy czcionkę i potem dodamy coś np. H1, to on będzie miał czcionkę nawet mniejszą niż reszta, mimo iż to nagłówek
 17. FindWidget - aby aktualizował pozycje w tekście na bieżąco przy dodawaniu/usuwaniu linii.
 18. Dodać check: czy nie zamykam nieotwartego tagu?
 19. Sprawdzenie czy Run nie jest poza csv lub pkt
@@ -139,13 +141,12 @@ Jeśli ktoś chce tego używać do innych celów:
 51. Nagrywanie i odtwarzanie makr.
 52. Obsługa wtyczek, być może z użyciem Lua.
 53. Zamiana prefiksów adresów URL dla obrazów na serwerze.
-54. MiniBug: funkcjonalność zmiany wielkości czcionki zakłóca nowe tagi. Jak powiększymy czcionkę i potem dodamy coś np. H1, to on będzie miał czcionkę nawet mniejszą niż reszta, mimo iż to nagłówek
-55. Dyktowanie tekstu (biblioteka [Whisper](https://github.com/openai/whisper))
-56. Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
-57. Otwieranie wielu plików jednocześnie.
-58. Widok sąsiadujący do porównywania plików.
-59. Eksport bloków kodu do osobnych plików.
-60. Konsolidacja obrazów do jednego katalogu z aktualizacją ścieżek w znacznikach STC.
+54. Dyktowanie tekstu (biblioteka [Whisper](https://github.com/openai/whisper))
+55. Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
+56. Otwieranie wielu plików jednocześnie.
+57. Widok sąsiadujący do porównywania plików.
+58. Eksport bloków kodu do osobnych plików.
+59. Konsolidacja obrazów do jednego katalogu z aktualizacją ścieżek w znacznikach STC.
 
 ## Współpraca
 
