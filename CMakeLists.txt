@@ -64,7 +64,8 @@ set(PROJECT_SOURCES
     main.cpp
     CodeEditor.h CodeEditor.cpp
     stcsyntaxhighlighter.h stcsyntaxhighlighter.cpp
-    linenumberarea.h linenumberarea.cpp
+    stcsyntaxpatterns.h stcsyntaxpatterns.cpp
+
     ui/mainwindow.h ui/mainwindow.cpp ui/mainwindow.ui
     ui/finddialog.h ui/finddialog.ui ui/finddialog.cpp
     ui/errorlist.h ui/errorlist.cpp ui/errorlist.ui
@@ -73,10 +74,14 @@ set(PROJECT_SOURCES
     ui/shortcutsdialog.h ui/shortcutsdialog.cpp
     ui/highlightdelegate.h ui/highlightdelegate.cpp
     ui/cppcompilerdialog.h ui/cppcompilerdialog.cpp
+
     checkers/PairedTagsChecker.h checkers/PairedTagsChecker.cpp
+
     types/stcTags.h types/stcTags.cpp
     types/CodeBlock.h
     types/documentstatistics.h types/documentstatistics.cpp
+
+    widgets/LineNumberArea.h widgets/LineNumberArea.cpp
     widgets/FilteredTagTableWidget.h widgets/FilteredTagTableWidget.cpp
     widgets/CodeBlocksTableWidget.h widgets/CodeBlocksTableWidget.cpp
     widgets/TodosTrackerTableWidget.h widgets/TodosTrackerTableWidget.cpp
@@ -87,7 +92,6 @@ set(PROJECT_SOURCES
     widgets/BreadcrumbTextBrowser.h widgets/BreadcrumbTextBrowser.cpp
     utils/diffcalculation.h utils/diffcalculation.cpp
     utils/FileEncodingHandler.h utils/FileEncodingHandler.cpp
-    stcsyntaxpatterns.h stcsyntaxpatterns.cpp
 )
 
 set(TEXT_FILES

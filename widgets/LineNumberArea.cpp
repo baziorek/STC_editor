@@ -1,6 +1,6 @@
 /// the code of the class is copied from: https://doc.qt.io/qt-6.2/qtwidgets-widgets-codeeditor-example.html
-#include "linenumberarea.h"
-#include "CodeEditor.h"
+#include "LineNumberArea.h"
+#include "../CodeEditor.h"
 
 
 LineNumberArea::LineNumberArea(CodeEditor *editor) : QWidget(editor), codeEditor(editor)

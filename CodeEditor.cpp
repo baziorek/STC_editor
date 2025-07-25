@@ -17,7 +17,7 @@
 #include <QClipboard>
 #include <QDir>
 #include "CodeEditor.h"
-#include "linenumberarea.h"
+#include "widgets/LineNumberArea.h"
 #include "stcsyntaxhighlighter.h"
 #include "ui/cppcompilerdialog.h"
 #include "utils/diffcalculation.h"
