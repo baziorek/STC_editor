@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repo with submodules
@@ -21,31 +21,19 @@ jobs:
           sudo apt install -y \
             qt6-base-dev \
             qt6-tools-dev \
-            qt6-tools-dev-tools \
             qt6-webengine-dev \
             qt6-webengine-dev-tools \
             libqt6webenginecore6-bin \
-            libgl-dev \
-            libglu1-mesa-dev \
-            libxkbcommon-dev \
-            mesa-common-dev \
+            libxkbcommon-x11-0 \
             build-essential \
             cmake \
-            qt6-base-dev-tools \
+            libfuse2 \
+            wget \
+            squashfs-tools \
+            patchelf \
             libuchardet-dev \
             libgtest-dev \
-            libfuse2 \
-            nsight-compute \
-            libgconf-2-4 \
-            wget
-
-      - name: Install GCC 13 # required for <format> library
-        run: |
-          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-          sudo apt update
-          sudo apt install -y gcc-13 g++-13
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100 \
-                                   --slave /usr/bin/g++ g++ /usr/bin/g++-13
+            desktop-file-utils
 
       - name: Prepare icon
         run: |
@@ -61,60 +49,58 @@ jobs:
           Type=Application
           Categories=Utility;TextEditor;" > STC_editor.desktop
 
-      - name: Build application (CMake + Qt6)
+      - name: Build application
         run: |
           mkdir -p build
           cd build
           cmake -DCMAKE_PREFIX_PATH=/usr/lib/qt6 ..
           cmake --build . --parallel
 
-      - name: Manually copy QtWebEngineProcess and resources
+      - name: Build AppDir manually
         run: |
-          mkdir -p build/libexec
-          mkdir -p build/resources
+          mkdir -p AppDir/usr/bin
+          mkdir -p AppDir/usr/libexec
+          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+          mkdir -p AppDir/usr/share/applications
+          mkdir -p AppDir/usr/resources
 
-          echo "Searching for QtWebEngineProcess..."
-          QTWEBENGINE_BIN=$(dpkg -L libqt6webenginecore6-bin | grep QtWebEngineProcess | head -n 1 || true)
+          find / -name icudtl.dat 2>/dev/null
 
-          if [ -z "$QTWEBENGINE_BIN" ]; then
-            echo "ERROR: QtWebEngineProcess not found via dpkg -L"
-            exit 1
-          fi
+          # Binary
+          cp build/STC_editor AppDir/usr/bin/
 
-          echo "Found QtWebEngineProcess at: $QTWEBENGINE_BIN"
-          cp "$QTWEBENGINE_BIN" build/libexec/
+          # Desktop & icon
+          cp STC_editor.desktop AppDir/usr/share/applications/
+          cp resources/icons/stc_editor.png AppDir/usr/share/icons/hicolor/256x256/apps/
 
-          cp $(dpkg -L  nsight-compute | grep icudtl.dat) build/resources/ || true
-          cp -r /usr/share/qt6/translations build/translations || true
+          # QtWebEngine required subprocess
+          cp /usr/lib/qt6/libexec/QtWebEngineProcess AppDir/usr/libexec/
 
-      - name: Move desktop and icon into build dir
+          # Resources for WebEngine (manually check presence)
+          cp /usr/lib/qt6/resources/icudtl.dat AppDir/usr/resources/
+          cp /usr/lib/qt6/resources/snapshot_blob.bin AppDir/usr/resources/
+          cp /usr/lib/qt6/resources/v8_context_snapshot.bin AppDir/usr/resources/ || true
+          cp /usr/lib/qt6/resources/natives_blob.bin AppDir/usr/resources/
+
+          # Qt plugins (very minimal)
+          mkdir -p AppDir/usr/plugins/platforms
+          cp /usr/lib/qt6/plugins/platforms/libqxcb.so AppDir/usr/plugins/platforms/
+
+          # Patch RPATH
+          patchelf --set-rpath '$ORIGIN/../lib:$ORIGIN/../libexec' AppDir/usr/bin/STC_editor || true
+          chmod +x AppDir/usr/bin/STC_editor
+
+      - name: Download appimagetool
         run: |
-          cp STC_editor.desktop build/
-          cp resources/icons/stc_editor.png build/
+          wget https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
 
-      - name: Download linuxdeployqt
+      - name: Build AppImage
         run: |
-          wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
-          chmod +x linuxdeployqt-continuous-x86_64.AppImage
-
-      - name: Run linuxdeployqt
-        run: |
-          export PATH=/usr/lib/qt6/bin:$PATH
-          ./linuxdeployqt-continuous-x86_64.AppImage build/STC_editor.desktop -appimage
-
-      - name: Rename AppImage
-        run: |
-          APPIMAGE=$(ls *.AppImage | head -n 1)
-          mv "$APPIMAGE" STC_editor-x86_64.AppImage
+          ./appimagetool-x86_64.AppImage AppDir STC_editor-x86_64.AppImage
 
       - name: Upload AppImage artifact
         uses: actions/upload-artifact@v4
         with:
           name: STC_editor-AppImage
           path: STC_editor-x86_64.AppImage
-
-# TODO: Add running tests
-# TODO: Add building for windows
-# TODO: Add generating deb
-# TODO: Statusy w Readme czy się buduje czy nie
-# statusy CI w README (build passing badge)
