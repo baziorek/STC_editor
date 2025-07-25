@@ -20,7 +20,7 @@
 #include "widgets/LineNumberArea.h"
 #include "STCSyntaxHighlighter.h"
 #include "ui/cppcompilerdialog.h"
-#include "utils/diffcalculation.h"
+#include "utils/DiffCalculation.h"
 #include "types/CodeBlock.h"
 #include "utils/FileEncodingHandler.h"
 #include "stcsyntaxpatterns.h"

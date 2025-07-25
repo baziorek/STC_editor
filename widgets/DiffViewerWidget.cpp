@@ -3,7 +3,7 @@
 #include <QTextBrowser>
 #include <QLabel>
 #include "DiffViewerWidget.h"
-#include "utils/diffcalculation.h"
+#include "utils/DiffCalculation.h"
 
 
 DiffViewerWidget::DiffViewerWidget(QWidget *parent) : QTableWidget(parent)

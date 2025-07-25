@@ -2,7 +2,7 @@
 #include <QSet>
 #include <QStringList>
 
-#include "diffcalculation.h"
+#include "DiffCalculation.h"
 
 #include "pydifflib-cpp/difflib.hpp" /// it uses https://github.com/dominicprice/pydifflib-cpp
 

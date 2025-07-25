@@ -8,7 +8,7 @@
 #include <QTextBlock>
 #include "DiffReviewDialog.h"
 #include "CodeEditor.h"
-#include "utils/diffcalculation.h"
+#include "utils/DiffCalculation.h"
 
 
 DiffReviewDialog::DiffReviewDialog(CodeEditor* editor, const QString &dialogTitle, const QString &dialogMessage, QWidget* parent)
