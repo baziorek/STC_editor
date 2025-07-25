@@ -1,4 +1,4 @@
-#include "stcsyntaxpatterns.h"
+#include "stcSyntaxPatterns.h"
 
 namespace stc
 {

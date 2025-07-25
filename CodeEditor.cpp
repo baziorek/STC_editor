@@ -23,7 +23,7 @@
 #include "utils/DiffCalculation.h"
 #include "types/CodeBlock.h"
 #include "utils/FileEncodingHandler.h"
-#include "stcsyntaxpatterns.h"
+#include "stcSyntaxPatterns.h"
 
 
 namespace

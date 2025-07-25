@@ -64,7 +64,7 @@ set(PROJECT_SOURCES
     main.cpp
     CodeEditor.h CodeEditor.cpp
     STCSyntaxHighlighter.h STCSyntaxHighlighter.cpp
-    stcsyntaxpatterns.h stcsyntaxpatterns.cpp
+    stcSyntaxPatterns.h stcSyntaxPatterns.cpp
 
     ui/mainwindow.h ui/mainwindow.cpp ui/mainwindow.ui
     ui/finddialog.h ui/finddialog.ui ui/finddialog.cpp
