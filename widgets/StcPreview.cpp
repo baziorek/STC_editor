@@ -5,7 +5,7 @@
 #include <QEnterEvent>
 #include <QToolTip>
 #include <QCursor>
-#include "stcpreviewwidget.h"
+#include "StcPreview.h"
 
 
 namespace

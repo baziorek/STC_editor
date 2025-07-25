@@ -86,7 +86,7 @@ set(PROJECT_SOURCES
     widgets/CodeBlocksTableWidget.h widgets/CodeBlocksTableWidget.cpp
     widgets/TodosTrackerTableWidget.h widgets/TodosTrackerTableWidget.cpp
     widgets/LoginDialog.h widgets/LoginDialog.cpp
-    widgets/stcpreviewwidget.h widgets/stcpreviewwidget.cpp
+    widgets/StcPreview.h widgets/StcPreview.cpp
     widgets/DiffViewerWidget.h widgets/DiffViewerWidget.cpp
     widgets/DiffReviewDialog.h widgets/DiffReviewDialog.cpp
     widgets/BreadcrumbTextBrowser.h widgets/BreadcrumbTextBrowser.cpp

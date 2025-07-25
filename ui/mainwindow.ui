@@ -561,7 +561,7 @@
   <customwidget>
    <class>StcPreviewWidget</class>
    <extends>QWidget</extends>
-   <header>widgets/stcpreviewwidget.h</header>
+   <header>widgets/StcPreview.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
