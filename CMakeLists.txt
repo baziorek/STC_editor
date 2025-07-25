@@ -63,7 +63,6 @@ include_directories(${PROJECT_SOURCE_DIR}) # to make sure that promoted types ar
 set(PROJECT_SOURCES
     main.cpp
     CodeEditor.h CodeEditor.cpp
-    STCSyntaxHighlighter.h STCSyntaxHighlighter.cpp
     stcSyntaxPatterns.h stcSyntaxPatterns.cpp
 
     ui/mainwindow.h ui/mainwindow.cpp ui/mainwindow.ui
@@ -90,8 +89,10 @@ set(PROJECT_SOURCES
     widgets/DiffViewerWidget.h widgets/DiffViewerWidget.cpp
     widgets/DiffReviewDialog.h widgets/DiffReviewDialog.cpp
     widgets/BreadcrumbTextBrowser.h widgets/BreadcrumbTextBrowser.cpp
+
     utils/DiffCalculation.h utils/DiffCalculation.cpp
     utils/FileEncodingHandler.h utils/FileEncodingHandler.cpp
+    utils/STCSyntaxHighlighter.h utils/STCSyntaxHighlighter.cpp
 )
 
 set(TEXT_FILES

@@ -18,7 +18,7 @@
 #include <QDir>
 #include "CodeEditor.h"
 #include "widgets/LineNumberArea.h"
-#include "STCSyntaxHighlighter.h"
+#include "utils/STCSyntaxHighlighter.h"
 #include "ui/cppcompilerdialog.h"
 #include "utils/DiffCalculation.h"
 #include "types/CodeBlock.h"
