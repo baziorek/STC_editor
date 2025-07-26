@@ -39,7 +39,7 @@ jobs:
             libgconf-2-4 \
             wget
 
-      - name: Install GCC 13 # required for <format> library
+      - name: Install GCC 13 required for <format> library
         run: |
           sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
           sudo apt update
@@ -68,31 +68,12 @@ jobs:
           cmake -DCMAKE_PREFIX_PATH=/usr/lib/qt6 ..
           cmake --build . --parallel
 
-      # - name: Manually copy QtWebEngineProcess and resources
-      #   run: |
-      #     mkdir -p build/libexec
-      #     mkdir -p build/resources
-
-      #     echo "Searching for QtWebEngineProcess..."
-      #     QTWEBENGINE_BIN=$(dpkg -L libqt6webenginecore6-bin | grep QtWebEngineProcess | head -n 1 || true)
-
-      #     if [ -z "$QTWEBENGINE_BIN" ]; then
-      #       echo "ERROR: QtWebEngineProcess not found via dpkg -L"
-      #       exit 1
-      #     fi
-
-      #     echo "Found QtWebEngineProcess at: $QTWEBENGINE_BIN"
-      #     cp "$QTWEBENGINE_BIN" build/libexec/
-
-      #     cp $(dpkg -L  nsight-compute | grep icudtl.dat) build/resources/ || true
-      #     cp -r /usr/share/qt6/translations build/translations || true
       - name: Manually copy QtWebEngineProcess and resources
         run: |
           mkdir -p build/libexec
           mkdir -p build/resources
           mkdir -p build/translations
 
-          # cp qt-runtime/libexec/QtWebEngineProcess build/libexec/
           cp qt-runtime/resources/* build/resources/
           cp -r qt-runtime/translations build/
 
@@ -106,7 +87,6 @@ jobs:
 
           echo "Found QtWebEngineProcess at: $QTWEBENGINE_BIN"
           cp "$QTWEBENGINE_BIN" build/libexec/
-
 
       - name: Move desktop and icon into build dir
         run: |

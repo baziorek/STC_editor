@@ -99,7 +99,8 @@ set(TEXT_FILES
     LICENSE
     README.md
     README_ang.md
-    .github/workflows/release.yml
+    .github/workflows/release-ubuntu22.04.yml
+    .github/workflows/README.md
 )
 
 set(PROJECT_FILES ${PROJECT_SOURCES} ${TEXT_FILES})
