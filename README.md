@@ -1,4 +1,5 @@
 [![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/baziorek/STC_editor/tree/master/README_ang.md)
+![Build Status](https://github.com/baziorek/STC_editor/actions/workflows/release-ubuntu22.04.yml/badge.svg)
 
 <a href="https://pl.wikipedia.org/wiki/Totus_Tuus"><img width="10%"  alt="Totus Tuus" src="https://github.com/user-attachments/assets/02c77754-5d69-4688-b99b-496995de4cfe" /></a>
 
@@ -82,6 +83,21 @@ Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wyb
     - Zmiany mają również pokazane różnicę w numerach poszczególnych znaków, wtedy możemy lepiej odróżnić znaki, które "na oko" są takie same.
 13. **Ukrywalne widgety**: wszystko poza edytorem tekstu można ukryć, dzięki temu pewne funkcje są wyłączone i edytowanie działa szybciej.
 14. **Obsługa różnych kodowań pliku tekstowego**: Nie tylko UTF-8. Jest to dzięki bibliotece [uchardet](https://github.com/BYVoid/uchardet).
+
+## 🛠️ Pobieranie (najnowsza wersja zbudowana automatycznie)
+
+Możesz pobrać najnowszą skompilowaną wersję **STC_editor** w formacie AppImage (działa na systemie Linux), z ostatniego poprawnie zakończonego procesu budowania przez GitHub Actions:
+
+👉 [⬇️ Pobierz najnowsze AppImage](https://github.com/baziorek/STC_editor/actions/workflows/release-ubuntu22.04.yml?query=branch%3Amaster)
+
+> Po przejściu pod powyższy link:
+> 1. Kliknij na najnowsze zakończone zadanie (workflow).
+> 2. Przewiń stronę na dół.
+> 3. Pobierz artefakt o nazwie `STC_editor-x86_64.AppImage`.
+
+📦 [⬇️ Pobierz najnowszą wersję release](https://github.com/baziorek/STC_editor/releases/latest)  
+*Aktualnie brak opublikowanych wydań (release). Gdy się pojawią — będą dostępne tutaj.*
+
 
 ## Planowane funkcjonalności
 
