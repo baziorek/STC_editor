@@ -2,6 +2,7 @@
 #include <vector>
 #include <regex>
 #include <format>
+#include <stack>
 #include "PairedTagsChecker.h"
 using namespace std;
 
@@ -63,13 +64,13 @@ std::vector<Tag> extractTags(const std::vector<std::string_view>& lines)
 
     for (int lineNumber = 0; lineNumber < lines.size(); ++lineNumber)
     {
-        std::string_view line = lines[lineNumber];
-        auto searchStart = line.cbegin();
+        std::string lineStr{lines[lineNumber]};
+        auto searchStart = lineStr.cbegin();
 
-        while (searchStart != line.cend())
+        while (searchStart != lineStr.cend())
         {
-            std::cmatch match;
-            if (std::regex_search(searchStart, line.cend(), match, tagRegex))
+            std::smatch match;
+            if (std::regex_search(searchStart, lineStr.cend(), match, tagRegex))
             {
                 Tag tag;
                 tag.tagFull = match[0];
@@ -87,9 +88,10 @@ std::vector<Tag> extractTags(const std::vector<std::string_view>& lines)
                 }
 
                 tag.line = lineNumber + 1;
-                searchStart = match.suffix().first;
-                tag.startingPositionInLine = searchStart - line.cbegin() - tag.tagFull.size();
+                tag.startingPositionInLine = match.position(0);
                 tags.emplace_back(std::move(tag));
+
+                searchStart = match.suffix().first;
             }
             else
             {

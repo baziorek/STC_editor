@@ -3,7 +3,7 @@
 #include <QStringDecoder>
 #include <QStringEncoder>
 #include <stdexcept>
-#include <uchardet/uchardet.h>  // https://github.com/BYVoid/uchardet
+#include <uchardet/uchardet.h>  // https://gitlab.freedesktop.org/uchardet/uchardet
 #include "FileEncodingHandler.h"
 
 struct FileEncodingHandler::Impl

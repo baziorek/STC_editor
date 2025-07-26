@@ -165,6 +165,7 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor** w formacie AppIm
 58. Eksport bloków kodu do osobnych plików.
 59. Konsolidacja obrazów do jednego katalogu z aktualizacją ścieżek w znacznikach STC.
 60. Zapis poszczególnych linii na dysk przy porównywaniu diffa.
+61. Przemianuj otwarty plik
 
 ## Współpraca
 
