@@ -1,0 +1,107 @@
+name: Build STC_editor AppImage (on push to master)
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repo with submodules
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install dependencies (Qt6 + build tools)
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            qt6-base-dev \
+            qt6-tools-dev \
+            qt6-webengine-dev \
+            qt6-webengine-dev-tools \
+            libqt6webenginecore6-bin \
+            libxkbcommon-x11-0 \
+            build-essential \
+            cmake \
+            libfuse2 \
+            wget \
+            squashfs-tools \
+            patchelf \
+            libuchardet-dev \
+            libgtest-dev \
+            desktop-file-utils
+
+      - name: Prepare icon
+        run: |
+          mkdir -p resources/icons
+          cp resources/icon.png resources/icons/stc_editor.png
+
+      - name: Create .desktop file
+        run: |
+          echo "[Desktop Entry]
+          Name=STC Editor
+          Exec=STC_editor
+          Icon=stc_editor
+          Type=Application
+          Categories=Utility;TextEditor;" > STC_editor.desktop
+
+      - name: Build application
+        run: |
+          mkdir -p build
+          cd build
+          cmake -DCMAKE_PREFIX_PATH=/usr/lib/qt6 ..
+          cmake --build . --parallel
+
+      - name: Build AppDir manually
+        run: |
+          mkdir -p AppDir/usr/bin
+          mkdir -p AppDir/usr/libexec
+          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+          mkdir -p AppDir/usr/share/applications
+          mkdir -p AppDir/usr/resources
+
+          find / -name icudtl.dat 2>/dev/null
+
+          # Binary
+          cp build/STC_editor AppDir/usr/bin/
+
+          # Desktop & icon
+          cp STC_editor.desktop AppDir/usr/share/applications/
+          cp resources/icons/stc_editor.png AppDir/usr/share/icons/hicolor/256x256/apps/
+
+          # QtWebEngine required subprocess
+          cp /usr/lib/qt6/libexec/QtWebEngineProcess AppDir/usr/libexec/
+
+          # Resources for WebEngine (manually check presence)
+          # cp /usr/lib/qt6/resources/icudtl.dat AppDir/usr/resources/
+          cp /opt/google/chrome/icudtl.dat AppDir/usr/resources/ # this is hack
+          cp /usr/lib/qt6/resources/snapshot_blob.bin AppDir/usr/resources/
+          cp /usr/lib/qt6/resources/v8_context_snapshot.bin AppDir/usr/resources/ || true
+          cp /usr/lib/qt6/resources/natives_blob.bin AppDir/usr/resources/
+
+          # Qt plugins (very minimal)
+          mkdir -p AppDir/usr/plugins/platforms
+          cp /usr/lib/qt6/plugins/platforms/libqxcb.so AppDir/usr/plugins/platforms/
+
+          # Patch RPATH
+          patchelf --set-rpath '$ORIGIN/../lib:$ORIGIN/../libexec' AppDir/usr/bin/STC_editor || true
+          chmod +x AppDir/usr/bin/STC_editor
+
+      - name: Download appimagetool
+        run: |
+          wget https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
+
+      - name: Build AppImage
+        run: |
+          ./appimagetool-x86_64.AppImage AppDir STC_editor-x86_64.AppImage
+
+      - name: Upload AppImage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: STC_editor-AppImage
+          path: STC_editor-x86_64.AppImage
