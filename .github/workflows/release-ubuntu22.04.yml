@@ -1,4 +1,4 @@
-name: Build STC_editor AppImage fo Linux (on push to master)
+name: Build STC_editor AppImage for Linux (on push to master and release)
 
 on:
   push:
@@ -110,11 +110,47 @@ jobs:
           APPIMAGE=$(ls *.AppImage | head -n 1)
           mv "$APPIMAGE" STC_editor-x86_64.AppImage
 
+      - name: Build .deb package
+        run: |
+          mkdir -p deb/usr/bin
+          mkdir -p deb/DEBIAN
+          mkdir -p deb/usr/share/applications
+          mkdir -p deb/usr/share/icons/hicolor/256x256/apps
+
+          cp build/STC_editor deb/usr/bin/STC_editor
+          chmod +x deb/usr/bin/STC_editor
+
+          cp STC_editor.desktop deb/usr/share/applications/
+          cp resources/icons/stc_editor.png deb/usr/share/icons/hicolor/256x256/apps/stc_editor.png
+
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION=$(echo "${GITHUB_REF_NAME}" | sed 's/^v//')
+          else
+            VERSION="0.0.1+git"
+          fi
+
+          printf "%s\n" "Package: stc-editor" \
+            "Version: ${VERSION}" \
+            "Section: utils" \
+            "Priority: optional" \
+            "Architecture: amd64" \
+            "Maintainer: Baziorek <baziorek@find-me-on-github.pl>" \
+            "Description: STC Editor - edytor znaczników STC na potrzeby cpp0x.pl" \
+            > deb/DEBIAN/control
+
+          dpkg-deb --build deb stc-editor.deb
+
       - name: Upload AppImage artifact
         uses: actions/upload-artifact@v4
         with:
           name: STC_editor-AppImage
           path: STC_editor-x86_64.AppImage
+
+      - name: Upload .deb artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: STC_editor-deb
+          path: stc-editor.deb
 
       - name: Upload AppImage to GitHub Release
         if: github.event_name == 'release'
@@ -122,6 +158,8 @@ jobs:
         with:
           files: STC_editor-x86_64.AppImage
 
-# TODO: Add running tests
-# TODO: Add building for windows
-# TODO: Add generating deb
+      - name: Upload .deb to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: stc-editor.deb

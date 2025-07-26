@@ -82,3 +82,6 @@ All runtime Qt libraries and resources are:
 ---
 
 Feel free to contribute improvements to this setup or migrate to a more modern alternative (e.g., custom AppDir + `appimagetool`) in the future.
+
+# TODO: Add running tests
+# TODO: Add building for windows
