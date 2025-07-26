@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+  release:
+    types: [created]
 
 jobs:
   build:
@@ -114,8 +116,12 @@ jobs:
           name: STC_editor-AppImage
           path: STC_editor-x86_64.AppImage
 
+      - name: Upload AppImage to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: STC_editor-x86_64.AppImage
+
 # TODO: Add running tests
 # TODO: Add building for windows
 # TODO: Add generating deb
-# TODO: Statusy w Readme czy się buduje czy nie
-# statusy CI w README (build passing badge)

@@ -86,7 +86,7 @@ Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wyb
 
 ## 🛠️ Pobieranie (najnowsza wersja zbudowana automatycznie)
 
-Możesz pobrać najnowszą skompilowaną wersję **STC_editor** w formacie AppImage (działa na systemie Linux), z ostatniego poprawnie zakończonego procesu budowania przez GitHub Actions:
+Możesz pobrać najnowszą skompilowaną wersję **STC_editor** w formacie AppImage (działa na systemie Linux), z ostatniego poprawnie zakończonego procesu budowania przez GitHub Actions (wymagane konto na Github- tak oni wymyślili):
 
 👉 [⬇️ Pobierz najnowsze AppImage](https://github.com/baziorek/STC_editor/actions/workflows/release-ubuntu22.04.yml?query=branch%3Amaster)
 
