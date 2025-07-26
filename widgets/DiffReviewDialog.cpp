@@ -102,7 +102,7 @@ void DiffReviewDialog::setupDiffArea(CodeEditor* editor)
     const QStringList newLines = editor->toPlainText().split('\n');
 
     const auto diffLines = DiffCalculation::computeDiff(oldLines, newLines);
-    const auto diffs = computeModifiedLineDiffs(diffLines);
+    const auto diffs = /*DiffCalculation::*/computeModifiedLineDiffs(diffLines);
 
     populateMetadata(oldLines, newLines, editor->getFileName(),
                      editor->getFileModificationTime(),
@@ -194,7 +194,7 @@ void DiffReviewDialog::handleLineRestoration(CodeEditor* editor, int lineIndex, 
 
     const QStringList newLines = editor->toPlainText().split('\n');
     const auto diffLines = DiffCalculation::computeDiff(oldLines, newLines);
-    const auto diffs = computeModifiedLineDiffs(diffLines);
+    const auto diffs = /*DiffCalculation::*/computeModifiedLineDiffs(diffLines);
 
     diffWidget->setDiffData(diffs);
     populateMetadata(oldLines, newLines, editor->getFileName(),

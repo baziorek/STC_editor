@@ -82,7 +82,7 @@ Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wyb
     - Możliwść przywrócenia zmian względem danej linii z dysku.
     - Zmiany mają również pokazane różnicę w numerach poszczególnych znaków, wtedy możemy lepiej odróżnić znaki, które "na oko" są takie same.
 13. **Ukrywalne widgety**: wszystko poza edytorem tekstu można ukryć, dzięki temu pewne funkcje są wyłączone i edytowanie działa szybciej.
-14. **Obsługa różnych kodowań pliku tekstowego**: Nie tylko UTF-8. Jest to dzięki bibliotece [uchardet](https://github.com/BYVoid/uchardet).
+14. **Obsługa różnych kodowań pliku tekstowego**: Nie tylko UTF-8. Jest to dzięki bibliotece [uchardet](https://gitlab.freedesktop.org/uchardet/uchardet).
 
 ## 🛠️ Pobieranie (najnowsza wersja zbudowana automatycznie)
 
@@ -165,6 +165,7 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor** w formacie AppIm
 58. Eksport bloków kodu do osobnych plików.
 59. Konsolidacja obrazów do jednego katalogu z aktualizacją ścieżek w znacznikach STC.
 60. Zapis poszczególnych linii na dysk przy porównywaniu diffa.
+61. Przemianuj otwarty plik
 
 ## Współpraca
 
@@ -188,7 +189,7 @@ Narzędzie to okazało się bardzo pomocne przy tworzeniu artykułów na [Cpp0x.
 ## Używane biblioteki zewnętrzne
 1. [pydifflib-cpp](https://github.com/dominicprice/pydifflib-cpp) - do znajdywania różnic między liniami: które linie dodane, usunięte, zmodyfikowane. Licencja "PSF"
 2. [diff-match-patch-cpp-stl](https://github.com/leutloff/diff-match-patch-cpp-stl/) - do znajdywania różnic między znakami w ramach odpowiadających sobie linijkach. Licencja "Apache 2.0"
-3. [uchardet](https://github.com/BYVoid/uchardet) - biblioteka obsługujące różne rodzaje kodowań plików (nie tylko UTF-8). Licencja "MOZILLA PUBLIC LICENSE"
+3. [uchardet](https://gitlab.freedesktop.org/uchardet/uchardet) - biblioteka obsługujące różne rodzaje kodowań plików (nie tylko UTF-8). Licencja "MOZILLA PUBLIC LICENSE"
 
 ## Ostrzeżenie
 

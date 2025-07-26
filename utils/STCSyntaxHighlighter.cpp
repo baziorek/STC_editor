@@ -35,7 +35,9 @@ enum BlockState // TODO: Why not to use `enum class StcTags: std::uint32_t` inst
 
 constexpr bool PRINT_DEBUG = false; // TODO: Remove when formatting fully works
 #define DEBUG(condition, text) if (PRINT_DEBUG && condition) qDebug() << "\t " << #text << " changes" << __LINE__ << currentBlockState()
+#ifndef _WIN32
 #warning "Chat helped me with the code, but it requires refactoring and corrections"
+#endif
 } // namespace
 
 

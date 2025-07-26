@@ -168,9 +168,10 @@ struct diff_match_patch_traits<char32_t>
     static constexpr char32_t tab = U'\t';
 };
 
-QList<DiffCalculation::LineDiffResult> DiffCalculation::computeModifiedLineDiffs(const std::vector<DiffCalculation::DiffLine>& diffLines)
+namespace DiffCalculation {
+QList<LineDiffResult> computeModifiedLineDiffs(const std::vector<DiffLine>& diffLines)
 {
-    using namespace DiffCalculation;
+    //using namespace DiffCalculation;
     using DMP = diff_match_patch<std::u32string>;
     using Op = DMP::Operation;
 
@@ -237,7 +238,7 @@ QList<DiffCalculation::LineDiffResult> DiffCalculation::computeModifiedLineDiffs
     return results;
 }
 
-QList<DiffCalculation::LineDiffResult> computeAllLineDiffs(const std::vector<DiffCalculation::DiffLine>& diffLines)
+QList<LineDiffResult> computeAllLineDiffs(const std::vector<DiffLine>& diffLines)
 {
     using namespace DiffCalculation;
     using DMP = diff_match_patch<std::u32string>;
@@ -306,3 +307,4 @@ QList<DiffCalculation::LineDiffResult> computeAllLineDiffs(const std::vector<Dif
 
     return results;
 }
+} // namespace DiffCalculation

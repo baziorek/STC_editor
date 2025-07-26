@@ -3,7 +3,16 @@
 #include <QStringDecoder>
 #include <QStringEncoder>
 #include <stdexcept>
-#include <uchardet/uchardet.h>  // https://github.com/BYVoid/uchardet
+
+// https://gitlab.freedesktop.org/uchardet/uchardet
+#if __has_include(<uchardet.h>) // when installing with FetchContent_Declare from CMakeLists.txt
+    #include <uchardet.h>
+#elif __has_include(<uchardet.h>) // when installing with package manager (Linux)
+    #include <uchardet/uchardet.h>
+#else
+    #error "uchardet not found in directories neither <uchardet.h> nor <uchardet/uchardet.h>"
+#endif
+
 #include "FileEncodingHandler.h"
 
 struct FileEncodingHandler::Impl

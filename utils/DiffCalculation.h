@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QSet>
+#include <QList>
 #include <QStringList>
 
 namespace DiffCalculation
@@ -57,6 +58,6 @@ struct LineDiffResult
     }
 };
 
-QList<LineDiffResult> computeModifiedLineDiffs(const std::vector<DiffCalculation::DiffLine>& modifiedLines);
-QList<LineDiffResult> computeAllLineDiffs(const std::vector<DiffCalculation::DiffLine>& diffLines);
+QList<LineDiffResult> computeModifiedLineDiffs(const std::vector<DiffLine>& modifiedLines);
+QList<LineDiffResult> computeAllLineDiffs(const std::vector<DiffLine>& diffLines);
 } // namespace DiffCalculation
