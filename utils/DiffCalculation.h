@@ -4,8 +4,8 @@
 #include <QList>
 #include <QStringList>
 
-namespace DiffCalculation
-{
+// namespace DiffCalculation // problems with linking for Windows
+// {
 enum class DiffType
 {
     Unchanged,
@@ -60,4 +60,4 @@ struct LineDiffResult
 
 QList<LineDiffResult> computeModifiedLineDiffs(const std::vector<DiffLine>& modifiedLines);
 QList<LineDiffResult> computeAllLineDiffs(const std::vector<DiffLine>& diffLines);
-} // namespace DiffCalculation
+// } // namespace DiffCalculation

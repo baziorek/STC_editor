@@ -8,7 +8,7 @@
 
 #include "diff-match-patch-cpp-stl/diff_match_patch.h" /// it uses https://github.com/leutloff/diff-match-patch-cpp-stl/
 
-QSet<int> DiffCalculation::calculateModifiedLines(const QStringList& oldLines, const QStringList& newLines)
+QSet<int> /*DiffCalculation::*/calculateModifiedLines(const QStringList& oldLines, const QStringList& newLines)
 {
     using namespace pydifflib;
 
@@ -35,9 +35,9 @@ QSet<int> DiffCalculation::calculateModifiedLines(const QStringList& oldLines, c
     return modified;
 }
 
-std::vector<DiffCalculation::DiffLine> DiffCalculation::computeDiff(const QStringList &oldLines, const QStringList &newLines)
+std::vector</*DiffCalculation::*/DiffLine> /*DiffCalculation::*/computeDiff(const QStringList &oldLines, const QStringList &newLines)
 {
-    using namespace DiffCalculation;
+    // using namespace DiffCalculation;
     using namespace pydifflib;
 
     std::vector<std::string> a, b;
@@ -168,7 +168,7 @@ struct diff_match_patch_traits<char32_t>
     static constexpr char32_t tab = U'\t';
 };
 
-namespace DiffCalculation {
+// namespace DiffCalculation {
 QList<LineDiffResult> computeModifiedLineDiffs(const std::vector<DiffLine>& diffLines)
 {
     //using namespace DiffCalculation;
@@ -240,7 +240,7 @@ QList<LineDiffResult> computeModifiedLineDiffs(const std::vector<DiffLine>& diff
 
 QList<LineDiffResult> computeAllLineDiffs(const std::vector<DiffLine>& diffLines)
 {
-    using namespace DiffCalculation;
+    // using namespace DiffCalculation;
     using DMP = diff_match_patch<std::u32string>;
     using Op = DMP::Operation;
 
@@ -307,4 +307,4 @@ QList<LineDiffResult> computeAllLineDiffs(const std::vector<DiffLine>& diffLines
 
     return results;
 }
-} // namespace DiffCalculation
+// } // namespace DiffCalculation

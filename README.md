@@ -1,5 +1,6 @@
 [![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/baziorek/STC_editor/tree/master/README_ang.md)
-![Build Status](https://github.com/baziorek/STC_editor/actions/workflows/release-ubuntu22.04.yml/badge.svg)
+![Build Status: Linux](https://github.com/baziorek/STC_editor/actions/workflows/release-ubuntu22.04.yml/badge.svg)
+![Build Status: Windows](https://github.com/baziorek/STC_editor/actions/workflows/release-windows.yml/badge.svg)
 
 <a href="https://pl.wikipedia.org/wiki/Totus_Tuus"><img width="10%"  alt="Totus Tuus" src="https://github.com/user-attachments/assets/02c77754-5d69-4688-b99b-496995de4cfe" /></a>
 
@@ -166,6 +167,7 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor** w formacie AppIm
 59. Konsolidacja obrazów do jednego katalogu z aktualizacją ścieżek w znacznikach STC.
 60. Zapis poszczególnych linii na dysk przy porównywaniu diffa.
 61. Przemianuj otwarty plik
+62. MiniBug: Wklejanie linka nie zawsze powinno być inteligentne np. gdy wklejamy do [img src="tutaj"]
 
 ## Współpraca
 

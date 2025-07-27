@@ -45,10 +45,10 @@ jobs:
           copy build\STC_editor.exe zipdir\
           copy build\*.dll zipdir\
           copy build\*.pak zipdir\
-          copy build\icudtl.dat zipdir\
-          copy build\QtWebEngineProcess.exe zipdir\
-          if exist build\resources\* copy build\resources\* zipdir\
-          if exist build\translations\* copy build\translations\* zipdir\
+          if (Test-Path build\QtWebEngineProcess.exe) { copy build\QtWebEngineProcess.exe zipdir\ }
+          if (Test-Path build\icudtl.dat) { copy build\icudtl.dat zipdir\ }
+          if (Test-Path build\resources\*) { Copy-Item build\resources\* zipdir\ }
+          if (Test-Path build\translations\*) { Copy-Item build\translations\* zipdir\ }
           7z a STC_editor-win64.zip .\zipdir\*
 
       - name: Upload zip as build artifact

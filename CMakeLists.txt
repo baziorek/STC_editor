@@ -24,12 +24,20 @@ if(uchardet_FOUND)
     set(UCHARDET_LIB_NAME uchardet::libuchardet)
 else()
     message(STATUS "uchardet not found – using FetchContent to download")
+    # Wyłącz budowanie CLI i budowanie jako shared
+    set(BUILD_BINARY OFF CACHE BOOL "Do not build uchardet CLI tool" FORCE)
+    # set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build uchardet as static library" FORCE)
     FetchContent_Declare(
         uchardet
         GIT_REPOSITORY https://gitlab.freedesktop.org/uchardet/uchardet.git
         GIT_TAG master
     )
-    FetchContent_MakeAvailable(uchardet)
+    FetchContent_Populate(uchardet)
+    # Patch: zakomentuj add_subdirectory(test) w CMakeLists.txt uchardet
+    file(READ "${uchardet_SOURCE_DIR}/CMakeLists.txt" _uchardet_cmake)
+    string(REPLACE "add_subdirectory(test)" "# add_subdirectory(test)" _uchardet_cmake "${_uchardet_cmake}")
+    file(WRITE "${uchardet_SOURCE_DIR}/CMakeLists.txt" "${_uchardet_cmake}")
+    add_subdirectory(${uchardet_SOURCE_DIR} ${uchardet_BINARY_DIR})
 
     if(TARGET libuchardet)
         add_library(uchardet::libuchardet ALIAS libuchardet)

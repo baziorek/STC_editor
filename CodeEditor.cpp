@@ -1823,7 +1823,7 @@ void CodeEditor::wheelEvent(QWheelEvent* event)
 void CodeEditor::updateDiffWithOriginal()
 {
     const QStringList currentLines = toPlainText().split('\n');
-    const QSet<int> newDiff = DiffCalculation::calculateModifiedLines(originalLines, currentLines);
+    const QSet<int> newDiff = /*DiffCalculation::*/calculateModifiedLines(originalLines, currentLines);
 
     if (newDiff != modifiedLines)
     {
