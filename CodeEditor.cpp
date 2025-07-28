@@ -1238,14 +1238,22 @@ void CodeEditor::keyPressEvent(QKeyEvent* event)
         {
             if (!(event->modifiers() & Qt::ShiftModifier))
             {
-                if (handlePastingRichText())
-                    return;
+                // Check if cursor is inside `[img src="here"]`
+                if (isCursorInsideImgSrcAttribute(textCursor()))
+                {
+                    // if it is - perform default behaviour - default paste
+                }
+                else 
+                {
+                    if (handlePastingRichText())
+                        return;
 
-                if (handlePasteTable())
-                    return;
+                    if (handlePasteTable())
+                        return;
 
-                if (handlePasteWithLinkWrapping())
-                    return; // link pasted, stop propagation
+                    if (handlePasteWithLinkWrapping())
+                        return; // link pasted, stop propagation
+                }
             }
         }
     }
@@ -1607,6 +1615,39 @@ void CodeEditor::mouseMoveEvent(QMouseEvent* event)
     // No match – hide tooltip and call base method
     clearTooltipState();
     QPlainTextEdit::mouseMoveEvent(event);
+}
+
+bool CodeEditor::isCursorInsideImgSrcAttribute(const QTextCursor& cursor) const
+{
+    QTextBlock block = cursor.block();
+    const QString blockText = block.text();
+    int cursorPosInBlock = cursor.position() - block.position();
+
+    // Find tag [img ...]
+    QRegularExpression imgTagRe(R"(\[img[^\]]*\])");
+    QRegularExpressionMatch tagMatch = imgTagRe.match(blockText);
+    if (!tagMatch.hasMatch())
+        return false;
+
+    int tagStart = tagMatch.capturedStart(0);
+    int tagEnd = tagMatch.capturedEnd(0);
+    if (cursorPosInBlock < tagStart || cursorPosInBlock > tagEnd)
+        return false;
+
+    // Find attribute `src="..."`
+    QRegularExpression srcAttrRe(R"(src=\"([^\"]*)\")");
+    auto it = srcAttrRe.globalMatch(blockText);
+    while (it.hasNext()) {
+        QRegularExpressionMatch m = it.next();
+        int valueStart = m.capturedStart(1);
+        int valueEnd = m.capturedEnd(1);
+
+        if (const bool isCursorInsideSrcAttribute = cursorPosInBlock >= valueStart && cursorPosInBlock <= valueEnd)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 std::optional<QString> CodeEditor::extractImagePath(const QString& /*text*/, const QTextCursor& cursor) const

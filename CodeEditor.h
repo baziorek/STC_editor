@@ -171,6 +171,7 @@ protected:
     void handleTabUnindent();
     void applyToSelectedBlocks(const std::function<void (QTextCursor &)> &callback);
     bool handlePasteWithLinkWrapping();
+    bool isCursorInsideImgSrcAttribute(const QTextCursor& cursor) const;
     void fetchAndInsertTitle(const QString &url, int insertedPos);
     bool handlePasteTable();
     bool handlePastingRichText();

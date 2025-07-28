@@ -168,7 +168,7 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 59. Konsolidacja obrazów do jednego katalogu z aktualizacją ścieżek w znacznikach STC.
 60. Zapis poszczególnych linii na dysk przy porównywaniu diffa.
 61. Przemianuj otwarty plik
-62. MiniBug: Wklejanie linka nie zawsze powinno być inteligentne np. gdy wklejamy do [img src="tutaj"]
+62. Może AI mi podzieli CodeEditor aby nie był GodObject
 
 ## Współpraca
 
