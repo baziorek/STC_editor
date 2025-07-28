@@ -96,13 +96,13 @@ void DiffReviewDialog::setupFileInfoHeader(const QString& filePath)
 void DiffReviewDialog::setupDiffArea(CodeEditor* editor)
 {
     diffWidget = new DiffViewerWidget(this);
-    mainLayout->addWidget(diffWidget, 1); // Expanding
+    mainLayout->addWidget(diffWidget, 1); // 1 means Expanding
 
     const QStringList oldLines = editor->getOriginalLines();
     const QStringList newLines = editor->toPlainText().split('\n');
 
-    const auto diffLines = /*DiffCalculation::*/computeDiff(oldLines, newLines);
-    const auto diffs = /*DiffCalculation::*/computeModifiedLineDiffs(diffLines);
+    const auto diffLines = DiffCalculation::computeDiff(oldLines, newLines);
+    const auto diffs = DiffCalculation::computeModifiedLineDiffs(diffLines);
 
     populateMetadata(oldLines, newLines, editor->getFileName(),
                      editor->getFileModificationTime(),
@@ -154,7 +154,7 @@ void DiffReviewDialog::handleLineRestoration(CodeEditor* editor, int lineIndex, 
 
     const auto& diffList = diffWidget->diffData();
     const auto it = std::find_if(diffList.begin(), diffList.end(),
-                                 [lineIndex](const /*DiffCalculation::*/LineDiffResult& d) {
+                                 [lineIndex](const DiffCalculation::LineDiffResult& d) {
                                      return d.newLineIndex == lineIndex || d.oldLineIndex == lineIndex;
                                  });
     if (it == diffList.end())
@@ -193,8 +193,8 @@ void DiffReviewDialog::handleLineRestoration(CodeEditor* editor, int lineIndex, 
     }
 
     const QStringList newLines = editor->toPlainText().split('\n');
-    const auto diffLines = /*DiffCalculation::*/computeDiff(oldLines, newLines);
-    const auto diffs = /*DiffCalculation::*/computeModifiedLineDiffs(diffLines);
+    const auto diffLines = DiffCalculation::computeDiff(oldLines, newLines);
+    const auto diffs = DiffCalculation::computeModifiedLineDiffs(diffLines);
 
     diffWidget->setDiffData(diffs);
     populateMetadata(oldLines, newLines, editor->getFileName(),
@@ -212,7 +212,7 @@ void DiffReviewDialog::populateMetadata(const QStringList& oldLines, const QStri
                                         const QString& filePath,
                                         const QDateTime& fileTime,
                                         const QDateTime& lastEditTime,
-                                        const QList</*DiffCalculation::*/LineDiffResult> &diffs)
+                                        const QList<DiffCalculation::LineDiffResult> &diffs)
 {
     int added = 0, removed = 0, modified = 0;
 

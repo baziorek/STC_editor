@@ -2,10 +2,10 @@
 
 #include <QTableWidget>
 
-// namespace DiffCalculation
-// {
+namespace DiffCalculation
+{
 struct LineDiffResult;
-// }
+}
 
 class DiffViewerWidget : public QTableWidget
 {
@@ -15,9 +15,9 @@ public:
     explicit DiffViewerWidget(QWidget *parent = nullptr);
     ~DiffViewerWidget();
 
-    void setDiffData(const QList</*DiffCalculation::*/LineDiffResult> &diffs);
+    void setDiffData(const QList<DiffCalculation::LineDiffResult> &diffs);
 
-    const QList</*DiffCalculation::*/LineDiffResult>& diffData() const
+    const QList<DiffCalculation::LineDiffResult>& diffData() const
     {
         return currentDiffs;
     }
@@ -28,5 +28,5 @@ signals:
     void jumpToLineInEditor(int lineIndex);
 
 private:
-    QList</*DiffCalculation::*/LineDiffResult> currentDiffs;
+    QList<DiffCalculation::LineDiffResult> currentDiffs;
 };

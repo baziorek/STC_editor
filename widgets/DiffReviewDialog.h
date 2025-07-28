@@ -27,7 +27,7 @@ public:
 protected:
     void populateMetadata(const QStringList& oldLines, const QStringList& newLines, const QString& filePath,
                           const QDateTime& fileTime, const QDateTime& lastEditTime,
-                          const QList</*DiffCalculation::*/LineDiffResult>& diffs);
+                          const QList<DiffCalculation::LineDiffResult>& diffs);
 
     void setupDialogTitleAndLayout(const QString& dialogTitle);
     void addDialogMessage(const QString& message);

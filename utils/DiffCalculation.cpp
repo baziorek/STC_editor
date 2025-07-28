@@ -8,7 +8,42 @@
 
 #include "diff-match-patch-cpp-stl/diff_match_patch.h" /// it uses https://github.com/leutloff/diff-match-patch-cpp-stl/
 
-QSet<int> /*DiffCalculation::*/calculateModifiedLines(const QStringList& oldLines, const QStringList& newLines)
+
+template <>
+struct diff_match_patch_traits<char32_t>
+{
+    static bool is_alnum(char32_t c) { return std::isalnum(static_cast<unsigned int>(c)); }
+    static bool is_digit(char32_t c) { return std::isdigit(static_cast<unsigned int>(c)); }
+    static bool is_space(char32_t c) { return std::isspace(static_cast<unsigned int>(c)); }
+
+    static int to_int(const char32_t* s)
+    {
+        QString str = QString::fromUcs4(reinterpret_cast<const char32_t*>(s));
+        bool ok = false;
+        int val = str.toInt(&ok);
+        return ok ? val : 0;
+    }
+
+    static char32_t to_wchar(char32_t c) { return c; }
+    static char32_t from_wchar(wchar_t c) { return static_cast<char32_t>(c); }
+
+    static const char32_t* cs(const char32_t* s) { return s; }
+
+    static const char32_t* cs(const wchar_t* s)
+    {
+        static thread_local std::u32string buffer;
+        buffer = QString::fromWCharArray(s).toStdU32String();
+        return buffer.c_str();
+    }
+
+    static constexpr char32_t eol = U'\n';
+    static constexpr char32_t tab = U'\t';
+};
+
+
+namespace DiffCalculation
+{
+QSet<int> calculateModifiedLines(const QStringList& oldLines, const QStringList& newLines)
 {
     using namespace pydifflib;
 
@@ -35,9 +70,8 @@ QSet<int> /*DiffCalculation::*/calculateModifiedLines(const QStringList& oldLine
     return modified;
 }
 
-std::vector</*DiffCalculation::*/DiffLine> /*DiffCalculation::*/computeDiff(const QStringList &oldLines, const QStringList &newLines)
+std::vector<DiffLine> computeDiff(const QStringList &oldLines, const QStringList &newLines)
 {
-    // using namespace DiffCalculation;
     using namespace pydifflib;
 
     std::vector<std::string> a, b;
@@ -136,42 +170,8 @@ std::vector</*DiffCalculation::*/DiffLine> /*DiffCalculation::*/computeDiff(cons
     return result;
 }
 
-///////////////////////////////////////////////
-template <>
-struct diff_match_patch_traits<char32_t>
-{
-    static bool is_alnum(char32_t c) { return std::isalnum(static_cast<unsigned int>(c)); }
-    static bool is_digit(char32_t c) { return std::isdigit(static_cast<unsigned int>(c)); }
-    static bool is_space(char32_t c) { return std::isspace(static_cast<unsigned int>(c)); }
-
-    static int to_int(const char32_t* s)
-    {
-        QString str = QString::fromUcs4(reinterpret_cast<const char32_t*>(s));
-        bool ok = false;
-        int val = str.toInt(&ok);
-        return ok ? val : 0;
-    }
-
-    static char32_t to_wchar(char32_t c) { return c; }
-    static char32_t from_wchar(wchar_t c) { return static_cast<char32_t>(c); }
-
-    static const char32_t* cs(const char32_t* s) { return s; }
-
-    static const char32_t* cs(const wchar_t* s)
-    {
-        static thread_local std::u32string buffer;
-        buffer = QString::fromWCharArray(s).toStdU32String();
-        return buffer.c_str();
-    }
-
-    static constexpr char32_t eol = U'\n';
-    static constexpr char32_t tab = U'\t';
-};
-
-// namespace DiffCalculation {
 QList<LineDiffResult> computeModifiedLineDiffs(const std::vector<DiffLine>& diffLines)
 {
-    //using namespace DiffCalculation;
     using DMP = diff_match_patch<std::u32string>;
     using Op = DMP::Operation;
 
@@ -307,4 +307,4 @@ QList<LineDiffResult> computeAllLineDiffs(const std::vector<DiffLine>& diffLines
 
     return results;
 }
-// } // namespace DiffCalculation
+} // namespace DiffCalculation

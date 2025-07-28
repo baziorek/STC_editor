@@ -32,9 +32,9 @@ DiffViewerWidget::DiffViewerWidget(QWidget *parent) : QTableWidget(parent)
 
 DiffViewerWidget::~DiffViewerWidget() = default;
 
-void DiffViewerWidget::setDiffData(const QList</*DiffCalculation::*/LineDiffResult> &diffs)
+void DiffViewerWidget::setDiffData(const QList<DiffCalculation::LineDiffResult> &diffs)
 {
-    // using namespace DiffCalculation;
+    using namespace DiffCalculation;
 
     setRowCount(diffs.size());
 
