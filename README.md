@@ -1,6 +1,8 @@
 [![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/baziorek/STC_editor/tree/master/README_ang.md)
 ![Build Status: Linux](https://github.com/baziorek/STC_editor/actions/workflows/release-ubuntu22.04.yml/badge.svg)
 ![Build Status: Windows](https://github.com/baziorek/STC_editor/actions/workflows/release-windows.yml/badge.svg)
+![Building & running tests](https://github.com/baziorek/STC_editor/actions/workflows/test-linux.yml/badge.svg)
+
 
 <a href="https://pl.wikipedia.org/wiki/Totus_Tuus"><img width="10%"  alt="Totus Tuus" src="https://github.com/user-attachments/assets/02c77754-5d69-4688-b99b-496995de4cfe" /></a>
 

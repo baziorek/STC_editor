@@ -100,6 +100,7 @@ set(TEXT_FILES
     README_ang.md
     .github/workflows/release-ubuntu22.04.yml
     .github/workflows/release-windows.yml
+    .github/workflows/test-linux.yml
     .github/workflows/README.md
 )
 
