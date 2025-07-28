@@ -228,6 +228,39 @@ void MainWindow::toggleTagOnSelectedText(const QString& tag)
         return;
     }
 
+    // 2. Case: Selection is inside tags (e.g. only 'bold' in '[b]bold[/b]')
+    if (!selectedText.isEmpty())
+    {
+        int selStart = cursor.selectionStart();
+        int selEnd = cursor.selectionEnd();
+        QString fullText = ui->textEditor->toPlainText(); // TODO: Can't we avoid merging entire text?
+        // Check for openTag before selection and closeTag after selection
+        int openTagStart = selStart - openTag.length();
+        int closeTagEnd = selEnd + closeTag.length();
+        if (openTagStart >= 0 && closeTagEnd <= fullText.length())
+        {
+            if (fullText.mid(openTagStart, openTag.length()) == openTag &&
+                fullText.mid(selEnd, closeTag.length()) == closeTag)
+            {
+                // Remove closeTag first
+                QTextCursor tmpCursor = ui->textEditor->textCursor();
+                tmpCursor.setPosition(selEnd);
+                tmpCursor.setPosition(selEnd + closeTag.length(), QTextCursor::KeepAnchor);
+                tmpCursor.removeSelectedText();
+                // Remove openTag
+                tmpCursor.setPosition(openTagStart);
+                tmpCursor.setPosition(openTagStart + openTag.length(), QTextCursor::KeepAnchor);
+                tmpCursor.removeSelectedText();
+                // Przywróć zaznaczenie na oryginalny tekst (bez tagów)
+                QTextCursor restoreCursor = ui->textEditor->textCursor();
+                restoreCursor.setPosition(openTagStart);
+                restoreCursor.setPosition(openTagStart + selectedText.length(), QTextCursor::KeepAnchor);
+                ui->textEditor->setTextCursor(restoreCursor);
+                return;
+            }
+        }
+    }
+
     // 3. Default: Surround selection with tags
     QString result = openTag + trimmedText + closeTag;
     result = QString(selectedText.left(leadingSpaces)) + result + QString(selectedText.right(trailingSpaces));

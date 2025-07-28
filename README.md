@@ -46,17 +46,17 @@ Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://c
 17. **Wklejane linki wklejane w odpowiedni sposób**: jak wklejamy przez CTRL+V, a w schowku jest link to otacza linka tagami linka `[a href="link"]`
     - Po chwili zostanie pobrana z linka i dodana jako kolejny atrybut nazwa strony, czyli zamiast `[a href="link"]` będzie `[a href="link" name="Nazwa strony dla linka"]`
     - Jeśli jest zaznaczony tekst to "podlinkowuje go" przez otoczenie: `[a href="link" name="Zaznaczony wcześniej tekst"]`
+    - Jeśli wklejamy linka wewnątrz tagu `[img src=""]` to jest wklejany jako zwykły tekst.
 18. **Wklejalne tabelki**: gdy w schowku jest tabelka to jest ona otaczana odpowiednimi tagami `[csv]...[/csv]` a komórki są rozdzielane średnikami.
     - Jeśli wklejony tekst zawiera tagi, to odpowiednie komórki są otaczane przez `[run]`, a typ tabelki się zmienia na `[csv ext]`
 19. **Wklejanie rich-text**: jak wkleimy tekst ze strony lub np. programu Office to HTML jest zamieniany na znaczniki STC (częściowo), m.in. linki, pogrubienia itp.
-20. **Inteligentne przyciski**: Niektóre przyciski mają duże ułatwienie działania:
+20. **Dodawanie/usuwanie atrybutów dla tagów z menu kontekstowego**: Gdy klikniemy prawym przyciskiem myszy na tagu, które ma możliwe różne atrybuty, to pojawia się możliwość wyklikania opcjonalnych atrybutów do dodania/usunięcia.
+21. **Przyciski do dodawania tagów STC (inteligentne przyciski)**: Obok tekstu są różne przyciski wspierające prawie wszystkie tagi STC. Kliknięcie przycisku powoduje albo wstawienie tagu w pozycji kursora tekstu, albo otoczenie zaznaczonego tekstu tagami.
     - Przycisk `a href` dostosowuje się do zaznaczonego tekstu, jak go nie ma to po prostu wstawia pusty tag, ale jak coś jest zaznaczone to próbuje wykryć tam link i odpowiednio otoczyć tagiem dopasowując zarówno linka jak i nazwę linka
     - Przycisk `img` dostosowuje się do zaznaczonego tekstu, jak go nie ma to po prostu wstawia pusty tag, ale jak coś jest zaznaczone to próbuje wykryć ścieżkę do pliku graficznego i odpowiednio otoczyć tagiem dopasowując zarówno źródło obrazka jak i opis
-21. **Dodawanie/usuwanie atrybutów dla tagów z menu kontekstowego**: Gdy klikniemy prawym przyciskiem myszy na tagu, które ma możliwe różne atrybuty, to pojawia się możliwość wyklikania opcjonalnych atrybutów do dodania/usunięcia.
-22. **Przyciski do dodawania tagów STC**: Obok tekstu są różne przyciski wspierające prawie wszystkie tagi STC. Kliknięcie przycisku powoduje albo wstawienie tagu w pozycji kursora tekstu, albo otoczenie zaznaczonego tekstu tagami.
     - Niektóre tagi mają inteligentne zaznaczenie np. jak mamy zaznaczony link i tekst, a chcemy otoczyć przez `[a href=...]` to link wstawi w miejsce odnośnika a resztę tekstu jako nazwę linka.
     - Podobnie jest z zaznaczeniem tekstu zawierającego ścieżkę do obrazka, a chcemy otoczyć przez `[img src...]` to wtedy nazwa obrazka stanowi jego adres, a reszta zaznaczonego tekstu jego opis.
-    - Gdy mamy zaznaczony tekst wraz z tagami i klikniemy te same tagi to zostaną one usunięte.
+    - Gdy mamy zaznaczony tekst, który jest już otagowany i wywołujemy ponowne tagowanie tego tekstu tymi samymi tagami to jeśli jest zaznaczony tekst z tagami lub wewnatrz tagów to zostaną te tagi usunięte.
 
 ## Ogólne funkcje edytora
 Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wybrane funkcjonalności, których brakuje mi w zwykłych edytorach:
