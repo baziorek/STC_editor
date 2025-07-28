@@ -52,7 +52,7 @@ Yes.
 
 All runtime Qt libraries and resources are:
 
-- Redistributable under the LGPL (or GPL), assuming dynamic linking (which we use)
+- Redistributable under the LGPL, assuming dynamic linking (which we use)
 - Unmodified from official Qt distributions
 - Extracted at runtime into a mount point (`/tmp/.mount...`), which users can inspect, modify, or repackage if needed
 
@@ -82,6 +82,3 @@ All runtime Qt libraries and resources are:
 ---
 
 Feel free to contribute improvements to this setup or migrate to a more modern alternative (e.g., custom AppDir + `appimagetool`) in the future.
-
-# TODO: Add running tests
-# TODO: Add building for windows

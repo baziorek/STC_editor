@@ -53,6 +53,10 @@ Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://c
     - Przycisk `a href` dostosowuje się do zaznaczonego tekstu, jak go nie ma to po prostu wstawia pusty tag, ale jak coś jest zaznaczone to próbuje wykryć tam link i odpowiednio otoczyć tagiem dopasowując zarówno linka jak i nazwę linka
     - Przycisk `img` dostosowuje się do zaznaczonego tekstu, jak go nie ma to po prostu wstawia pusty tag, ale jak coś jest zaznaczone to próbuje wykryć ścieżkę do pliku graficznego i odpowiednio otoczyć tagiem dopasowując zarówno źródło obrazka jak i opis
 21. **Dodawanie/usuwanie atrybutów dla tagów z menu kontekstowego**: Gdy klikniemy prawym przyciskiem myszy na tagu, które ma możliwe różne atrybuty, to pojawia się możliwość wyklikania opcjonalnych atrybutów do dodania/usunięcia.
+22. **Przyciski do dodawania tagów STC**: Obok tekstu są różne przyciski wspierające prawie wszystkie tagi STC. Kliknięcie przycisku powoduje albo wstawienie tagu w pozycji kursora tekstu, albo otoczenie zaznaczonego tekstu tagami.
+    - Niektóre tagi mają inteligentne zaznaczenie np. jak mamy zaznaczony link i tekst, a chcemy otoczyć przez `[a href=...]` to link wstawi w miejsce odnośnika a resztę tekstu jako nazwę linka.
+    - Podobnie jest z zaznaczeniem tekstu zawierającego ścieżkę do obrazka, a chcemy otoczyć przez `[img src...]` to wtedy nazwa obrazka stanowi jego adres, a reszta zaznaczonego tekstu jego opis.
+    - Gdy mamy zaznaczony tekst wraz z tagami i klikniemy te same tagi to zostaną one usunięte.
 
 ## Ogólne funkcje edytora
 Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wybrane funkcjonalności, których brakuje mi w zwykłych edytorach:
@@ -108,9 +112,9 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 1. Wyszukiwanie wielu słów w tej samej linii niezależnie od kolejności.
 2. Wyszukaj i zamień: `Ctrl+R` z możliwością wyłączenia poszczególnych wykrytych pozycji.
 3. Integracja analizatora składni C++ (np. [flex](https://github.com/westes/flex)).
-4. Podpięcie sztucznej inteligencji np. [Ollama](https://ollama.com)
+4. Formatowanie kodu C++ dedykowane
 5. Podświetlanie składni C++ i Pythona za pomocą [QCXXHighlighter](https://github.com/Megaxela/QCodeEditor) (licencja MIT).
-6. Kreator tabel dla znaczników STC.
+6. Przycisk na sformatowanym tekście powinien usunąć dane formatowanie: np. jak klikniemy CTRL+B na pogrubionym to aby nie był pogrubiony
 7. Wyświetlanie statystyk zmian w czasie rzeczywistym (liczba linii, znaków, rozmiar pliku, linia i kolumna).
 8. Historia wprowadzanych zmian (`Ctrl+Z`).
 9. Sprawdzanie pisowni po polsku (np. [nuspell](https://github.com/nuspell/nuspell) lub [spellchecker Qt](https://doc.qt.io/qt-6/qtwebengine-webenginewidgets-spellchecker-example.html)). https://forum.qt.io/topic/158878/check-spelling-in-qlineedit-and-qplaintextedit
@@ -127,9 +131,9 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 20. Ctrl + V gdy mamy obrazek w schowku - wtedy powinno zaproponować umieszczenie obrazka w odpowiednim katalogu
 21. Tłumaczenia aplikacji na wiele języków: QLinguist
 22. Rozważyć użycie tej samej biblioteki do porównywania zarówno linii jak i znaków np. https://github.com/google/diff-match-patch
-23. Formatowanie kodu C++ dedykowane
+23. Podpięcie sztucznej inteligencji np. [Ollama](https://ollama.com)
 24. Przy CTRL + SCROLL wyświetlanie informacji o rozmiarze czcionki (jak QtCreator)
-25. Przycisk na sformatowanym tekście powinien usunąć dane formatowanie: np. jak klikniemy CTRL+B na pogrubionym to aby nie był pogrubiony
+25. Kreator tabel dla znaczników STC.
 26. Wyszukiwanie tekstu może też oznaczyć szukany tekst w dokumencie np. ramką
 27. Śledzenie pozycji między pozycją w dokumencie źródłowym a podglądem HTML
 28. Historia zmian w linii

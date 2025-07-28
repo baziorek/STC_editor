@@ -131,7 +131,31 @@ void MainWindow::onStcTagsButtonPressed(StcTags stcTag)
     switch (stcTag)
     {
     case StcTags::RUN:
-        surroundSelectedTextWithTag(tagsClasses[StcTags::RUN], tagsClasses[StcTags::RUN]);
+        toggleTagOnSelectedText(tagsClasses[StcTags::RUN]);
+        break;
+    case StcTags::BOLD:
+        toggleTagOnSelectedText(tagsClasses[StcTags::BOLD]);
+        break;
+    case StcTags::ITALIC:
+        toggleTagOnSelectedText(tagsClasses[StcTags::ITALIC]);
+        break;
+    case StcTags::UNDERLINED:
+        toggleTagOnSelectedText(tagsClasses[StcTags::UNDERLINED]);
+        break;
+    case StcTags::STRUCK_OUT:
+        toggleTagOnSelectedText(tagsClasses[StcTags::STRUCK_OUT]);
+        break;
+    case StcTags::H1:
+        toggleTagOnSelectedText(tagsClasses[StcTags::H1]);
+        break;
+    case StcTags::H2:
+        toggleTagOnSelectedText(tagsClasses[StcTags::H2]);
+        break;
+    case StcTags::H3:
+        toggleTagOnSelectedText(tagsClasses[StcTags::H3]);
+        break;
+    case StcTags::H4:
+        toggleTagOnSelectedText(tagsClasses[StcTags::H4]);
         break;
     case StcTags::CPP:
         surroundSelectedTextWithTag(tagsClasses[StcTags::CPP], tagsClasses[StcTags::CPP]);
@@ -166,30 +190,6 @@ void MainWindow::onStcTagsButtonPressed(StcTags stcTag)
     case StcTags::CSV:
         this->surroundSelectedTextWithTag(tagsClasses[StcTags::CSV], tagsClasses[StcTags::CSV], " extended header");
         break;
-    case StcTags::BOLD:
-        surroundSelectedTextWithTag(tagsClasses[StcTags::BOLD], tagsClasses[StcTags::BOLD]);
-        break;
-    case StcTags::ITALIC:
-        surroundSelectedTextWithTag(tagsClasses[StcTags::ITALIC], tagsClasses[StcTags::ITALIC]);
-        break;
-    case StcTags::UNDERLINED:
-        surroundSelectedTextWithTag(tagsClasses[StcTags::UNDERLINED], tagsClasses[StcTags::UNDERLINED]);
-        break;
-    case StcTags::STRUCK_OUT:
-        surroundSelectedTextWithTag(tagsClasses[StcTags::STRUCK_OUT], tagsClasses[StcTags::STRUCK_OUT]);
-        break;
-    case StcTags::H1:
-        surroundSelectedTextWithTag(tagsClasses[StcTags::H1], tagsClasses[StcTags::H1]);
-        break;
-    case StcTags::H2:
-        surroundSelectedTextWithTag(tagsClasses[StcTags::H2], tagsClasses[StcTags::H2]);
-        break;
-    case StcTags::H3:
-        surroundSelectedTextWithTag(tagsClasses[StcTags::H3], tagsClasses[StcTags::H3]);
-        break;
-    case StcTags::H4:
-        surroundSelectedTextWithTag(tagsClasses[StcTags::H4], tagsClasses[StcTags::H4]);
-        break;
     case StcTags::SUBSCRIPT:
         surroundSelectedTextWithTag(tagsClasses[StcTags::SUBSCRIPT], tagsClasses[StcTags::SUBSCRIPT]);
         break;
@@ -203,6 +203,35 @@ void MainWindow::onStcTagsButtonPressed(StcTags stcTag)
         qDebug() << __FILE__ << ": " << __LINE__ << ": Unsupported option: " << std::to_underlying(stcTag);
         break;
     }
+}
+void MainWindow::toggleTagOnSelectedText(const QString& tag)
+{
+    auto cursor = ui->textEditor->textCursor();
+    QString selectedText = cursor.selectedText();
+
+    // Handle newlines as QChar::ParagraphSeparator
+    QString openTag = "[" + tag + "]";
+    QString closeTag = "[/" + tag + "]";
+
+    // Remove leading/trailing spaces from selection
+    QString trimmedText = selectedText.trimmed();
+    int leadingSpaces = selectedText.indexOf(trimmedText);
+    int trailingSpaces = selectedText.length() - trimmedText.length() - leadingSpaces;
+
+    // 1. Case: Selection already includes tags -> remove tags
+    if (trimmedText.startsWith(openTag) && trimmedText.endsWith(closeTag))
+    {
+        // Remove tags from selection
+        QString untagged = trimmedText.mid(openTag.length(), trimmedText.length() - openTag.length() - closeTag.length());
+        QString result = QString(selectedText.left(leadingSpaces)) + untagged + QString(selectedText.right(trailingSpaces));
+        cursor.insertText(result);
+        return;
+    }
+
+    // 3. Default: Surround selection with tags
+    QString result = openTag + trimmedText + closeTag;
+    result = QString(selectedText.left(leadingSpaces)) + result + QString(selectedText.right(trailingSpaces));
+    cursor.insertText(result);
 }
 
 void MainWindow::onRecentRecentFilesMenuOpened()

@@ -81,6 +81,7 @@ protected:
     void surroundSelectedTextWithImgTag();
 
     void surroundSelectedTextWithTag(QString divClass, QString text, QString extraAttributes = "", bool closable = true);
+    void toggleTagOnSelectedText(const QString& tag);
 
     void connectShortcuts();
     void connectShortcutsFromCodeWidget();
