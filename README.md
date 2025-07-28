@@ -85,16 +85,17 @@ Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wyb
 13. **Ukrywalne widgety**: wszystko poza edytorem tekstu można ukryć, dzięki temu pewne funkcje są wyłączone i edytowanie działa szybciej.
 14. **Obsługa różnych kodowań pliku tekstowego**: Nie tylko UTF-8. Jest to dzięki bibliotece [uchardet](https://gitlab.freedesktop.org/uchardet/uchardet).
 
-## 🛠️ Pobieranie (najnowsza wersja zbudowana automatycznie)
+## ⬇️ Pobieranie (najnowsza wersja zbudowana automatycznie)
 
-Możesz pobrać najnowszą skompilowaną wersję **STC_editor** w formacie AppImage (działa na systemie Linux), z ostatniego poprawnie zakończonego procesu budowania przez GitHub Actions (wymagane konto na Github- tak oni wymyślili):
+Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego poprawnie zakończonego procesu budowania przez GitHub Actions (wymagane konto na Github - tak oni wymyślili):
 
-👉 [⬇️ Pobierz najnowsze AppImage](https://github.com/baziorek/STC_editor/actions/workflows/release-ubuntu22.04.yml?query=branch%3Amaster)
+👉 [⬇️ Pobierz wersję skompilowaną w formacie AppImage (działa na systemie Linux)](https://github.com/baziorek/STC_editor/actions/workflows/release-ubuntu22.04.yml?query=branch%3Amaster)
+👉 [⬇️ Pobierz wersję skompilowaną na Windowsa](https://github.com/baziorek/STC_editor/actions/workflows/release-windows.yml?query=branch%3Amaster)
 
 > Po przejściu pod powyższy link:
 > 1. Kliknij na najnowsze zakończone zadanie (workflow).
 > 2. Przewiń stronę na dół.
-> 3. Pobierz artefakt o nazwie `STC_editor-x86_64.AppImage`.
+> 3. Pobierz artefakt o nazwie `STC_editor-x86_64.AppImage` lub `STC_editor-win64.zip`
 
 📦 [⬇️ Pobierz najnowszą wersję release](https://github.com/baziorek/STC_editor/releases/latest)  
 *Aktualnie brak opublikowanych wydań (release). Gdy się pojawią — będą dostępne tutaj.*

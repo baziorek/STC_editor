@@ -1,4 +1,4 @@
-name: Build STC_editor for Windows
+name: Build STC_editor for Windows (zip format) [on push to master and release]
 
 on:
   push:

@@ -1,4 +1,4 @@
-name: Build STC_editor AppImage for Linux (on push to master and release)
+name: Build STC_editor for Linux (AppImage format) [on push to master and release]
 
 on:
   push:
