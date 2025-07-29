@@ -924,25 +924,50 @@ void CodeEditor::addMultiLineSelectionActions(QMenu* menu, const QTextCursor& se
 
     QAction* numbered = new QAction(QIcon::fromTheme("format-list-numbered"), "Add numeration: 1., 2., 3. ...", this);
     connect(numbered, &QAction::triggered, this, [=, this]() {
+        QTextCursor c = textCursor();
+        int origStart = c.selectionStart();
+        int origEnd = c.selectionEnd();
+        int prefixTotal = 0;
+        int prefixLen = 0;
         for (int i = startLine, n = 1; i <= endLine; ++i, ++n)
         {
             QTextBlock block = document()->findBlockByNumber(i);
-            QTextCursor c(block);
-            c.movePosition(QTextCursor::StartOfBlock);
-            c.insertText(QString::number(n) + ". ");
+            QTextCursor lineCursor(block);
+            lineCursor.movePosition(QTextCursor::StartOfBlock);
+            QString prefix = QString::number(n) + ". ";
+            lineCursor.insertText(prefix);
+            if (i == startLine) prefixLen = prefix.length();
+            prefixTotal += prefix.length();
         }
+        // Reselect including the added prefixes
+        QTextCursor newCursor = textCursor();
+        newCursor.setPosition(origStart, QTextCursor::MoveAnchor);
+        newCursor.setPosition(origEnd + prefixTotal, QTextCursor::KeepAnchor);
+        setTextCursor(newCursor);
     });
     menu->addAction(numbered);
 
     QAction* bulleted = new QAction(QIcon::fromTheme("format-list-unordered"), "Add bullet points", this);
     connect(bulleted, &QAction::triggered, this, [=, this]() {
+        QTextCursor c = textCursor();
+        int origStart = c.selectionStart();
+        int origEnd = c.selectionEnd();
+        int prefixTotal = 0;
+        int prefixLen = 0;
         for (int i = startLine; i <= endLine; ++i)
         {
             QTextBlock block = document()->findBlockByNumber(i);
-            QTextCursor c(block);
-            c.movePosition(QTextCursor::StartOfBlock);
-            c.insertText("- ");
+            QTextCursor lineCursor(block);
+            lineCursor.movePosition(QTextCursor::StartOfBlock);
+            QString prefix = "- ";
+            lineCursor.insertText(prefix);
+            if (i == startLine) prefixLen = prefix.length();
+            prefixTotal += prefix.length();
         }
+        QTextCursor newCursor = textCursor();
+        newCursor.setPosition(origStart, QTextCursor::MoveAnchor);
+        newCursor.setPosition(origEnd + prefixTotal, QTextCursor::KeepAnchor);
+        setTextCursor(newCursor);
     });
     menu->addAction(bulleted);
 
