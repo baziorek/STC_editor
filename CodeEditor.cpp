@@ -967,6 +967,14 @@ void CodeEditor::addMultiLineSelectionActions(QMenu* menu, const QTextCursor& se
         sortLinesInRange(startLine, endLine, /*ascending=*/false);
     });
     menu->addAction(sortDesc);
+
+    // Add 'Remove numbering' action only if at least one selected line starts with numbering
+    if (selectionHasLineNumbering())
+    {
+        QAction* removeNumberingAction = new QAction(tr("Remove numbering"));
+        connect(removeNumberingAction, &QAction::triggered, this, &CodeEditor::removeLineNumberingFromSelection);
+        menu->addAction(removeNumberingAction);
+    }
 }
 void CodeEditor::sortLinesInRange(int startLine, int endLine, bool ascending)
 {
@@ -1000,6 +1008,62 @@ void CodeEditor::sortLinesInRange(int startLine, int endLine, bool ascending)
         }
     }
 
+    cursor.endEditBlock();
+}
+
+// Checks if any selected line starts with a numbering pattern (e.g. '1. ')
+bool CodeEditor::selectionHasLineNumbering() const
+{
+    QTextCursor cursor = textCursor();
+    int start = cursor.selectionStart();
+    int end = cursor.selectionEnd();
+
+    QTextDocument *doc = document();
+    QTextBlock block = doc->findBlock(start);
+    int lastBlock = doc->findBlock(end).blockNumber();
+
+    QRegularExpression re("^\\s*\\d+\\.\\s+");
+    while (block.isValid() && block.blockNumber() <= lastBlock)
+    {
+        QString text = block.text();
+        if (re.match(text).hasMatch())
+        {
+            return true;
+        }
+        block = block.next();
+    }
+    return false;
+}
+
+// Removes numbering from the left side of each selected line
+void CodeEditor::removeLineNumberingFromSelection()
+{
+    QTextCursor cursor = textCursor();
+    int start = cursor.selectionStart();
+    int end = cursor.selectionEnd();
+
+    QTextDocument *doc = document();
+    QTextBlock block = doc->findBlock(start);
+    int lastBlock = doc->findBlock(end).blockNumber();
+
+    QRegularExpression re("^\\s*\\d+\\.\\s+");
+
+    cursor.beginEditBlock();
+    while (block.isValid() && block.blockNumber() <= lastBlock)
+    {
+        QString text = block.text();
+        QRegularExpressionMatch match = re.match(text);
+        if (match.hasMatch())
+        {
+            int matchLen = match.capturedLength();
+            QTextCursor lineCursor(block);
+            // Move to the end of the matched numbering
+            lineCursor.setPosition(block.position(), QTextCursor::MoveAnchor);
+            lineCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, matchLen);
+            lineCursor.removeSelectedText();
+        }
+        block = block.next();
+    }
     cursor.endEditBlock();
 }
 

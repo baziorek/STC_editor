@@ -192,6 +192,10 @@ protected:
     void addDivTagActionsIfApplicable(QMenu *menu);
     void addHeaderTagActionsIfApplicable(QMenu *menu, const QPoint &pos);
     void sortLinesInRange(int startLine, int endLine, bool ascending);
+    // Checks if any selected line starts with a numbering pattern (e.g. '1. ')
+    bool selectionHasLineNumbering() const;
+    // Removes numbering from the left side of each selected line
+    void removeLineNumberingFromSelection();
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);

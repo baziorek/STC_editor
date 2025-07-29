@@ -65,7 +65,7 @@ Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wyb
     - Zapamiętana jest również data ostatniego otwarcia pliku w edytorze. 
  3. **Wykrywanie zmian zewnętrznych**: Powiadamia o modyfikacjach pliku z zewnątrz.
  4. **Inteligentne menu kontekstowe dla tekstu**, m.in.:
-    - **Numerowanie linii**: Dodawanie numeracji do zaznaczonych linii przez menu kontekstowe (funkcja z menu kontekstowego).
+    - **Numerowanie linii**: Dodawanie numeracji do zaznaczonych linii przez menu kontekstowe (funkcja z menu kontekstowego). Również usuwanie numerów z linii.
     - **Dodawania punktów do każdej linii zaznaczonego tekstu**:
     - **Sortowanie zaznaczonych linijek**: z pominięciem wielkości znaków
     - **Łączenie linii**: Łączenie wielu zaznaczonych linii w jedną, oddzieloną spacjami (funkcja z menu kontekstowego).
