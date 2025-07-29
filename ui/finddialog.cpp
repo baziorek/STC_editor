@@ -159,6 +159,8 @@ void FindDialog::currentTextChanged(QString newText)
     if (newText.isEmpty())
     {
         ui->occurencesLabel->setText("Occurences: (empty text)");
+
+        codeEditor->setSearchHighlights({});
     }
     else
     {
@@ -181,6 +183,10 @@ void FindDialog::currentTextChanged(QString newText)
 
 FindDialog::MatchStats FindDialog::showOccurences(const QString &searchText)
 {
+    lastQuery = searchText;
+    lastCaseSensitive = ui->matchCasesCheckBox->isChecked();
+    lastWholeWord = ui->wholeWordsCheckBox->isChecked();
+
     const bool caseSensitiveRequired = ui->matchCasesCheckBox->isChecked();
     const bool wholeWordRequired = ui->wholeWordsCheckBox->isChecked();
 
@@ -262,9 +268,53 @@ FindDialog::MatchStats FindDialog::showOccurences(const QString &searchText)
     ui->foundTextsTreeWidget->setColumnCount(3);
     ui->foundTextsTreeWidget->setHeaderLabels({ "Line", "Offset", "Context" });
 
+    // Highlight all matches in the editor
+    updateHighlights();
     return stats;
 }
 
+
+void FindDialog::updateHighlights()
+{
+    if (!codeEditor) return;
+    QList<QTextEdit::ExtraSelection> highlights;
+    if (lastQuery.isEmpty()) {
+        codeEditor->setSearchHighlights({});
+        return;
+    }
+    QTextDocument* doc = codeEditor->document();
+    QTextCursor cursor(doc);
+    QTextDocument::FindFlags flags;
+    if (lastCaseSensitive)
+        flags |= QTextDocument::FindCaseSensitively;
+    if (lastWholeWord)
+        flags |= QTextDocument::FindWholeWords;
+    while (!cursor.isNull() && !cursor.atEnd()) {
+        cursor = doc->find(lastQuery, cursor, flags);
+        if (!cursor.isNull()) {
+            QTextEdit::ExtraSelection sel;
+            sel.cursor = cursor;
+            sel.format.setBackground(QColor(255, 255, 0, 80));
+            sel.format.setProperty(QTextFormat::FullWidthSelection, true);
+            highlights.append(sel);
+        }
+    }
+    codeEditor->setSearchHighlights(highlights);
+}
+
+void FindDialog::showEvent(QShowEvent* event)
+{
+    QWidget::showEvent(event);
+    if (!lastQuery.isEmpty())
+        updateHighlights();
+}
+
+void FindDialog::hideEvent(QHideEvent* event)
+{
+    QWidget::hideEvent(event);
+    if (codeEditor)
+        codeEditor->setSearchHighlights({});
+}
 
 void FindDialog::focusInput()
 {

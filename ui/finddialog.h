@@ -50,6 +50,9 @@ public slots:
     void odCheckboxMatchCasesChanged(bool checked);
 
 protected:
+    void showEvent(QShowEvent* event) override;
+    void hideEvent(QHideEvent* event) override;
+
     void installEventFilter2HandleMovingBetweenOccurences();
 
     // Event filter to handle Enter and Shift+Enter in the search field
@@ -59,10 +62,15 @@ protected:
 
     void installEventFilterOnSearchInput();
 
+    void updateHighlights();
+
 private slots:
     void onNextOccurencyPressed();
     void onPreviousOccurencyPressed();
 
 private:
     Ui::FindDialog *ui;
+    QString lastQuery;
+    bool lastCaseSensitive = false;
+    bool lastWholeWord = false;
 };

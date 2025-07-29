@@ -78,6 +78,8 @@ public:
         return lastChangeTime;
     }
 
+    void setSearchHighlights(const QList<QTextEdit::ExtraSelection>& highlights);
+
 signals:
     void shortcutPressed_bold();
     void shortcutPressed_run();
@@ -198,6 +200,8 @@ private slots:
 
 private:
     QWidget *lineNumberArea;
+    QList<QTextEdit::ExtraSelection> persistentSearchHighlights;
+
     QFileSystemWatcher fileWatcher;
     QString lastTooltipImagePath; /// this variable is for image tool tips - to keep them visible longer
 

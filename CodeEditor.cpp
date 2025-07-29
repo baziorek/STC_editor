@@ -1157,7 +1157,7 @@ QTextCursor CodeEditor::cursor4Line(int lineNumber) const
 
 void CodeEditor::highlightCurrentLine()
 {
-    QList<QTextEdit::ExtraSelection> extraSelections;
+    QList<QTextEdit::ExtraSelection> extraSelections = persistentSearchHighlights;
 
     if (!isReadOnly())
     {
@@ -2109,4 +2109,11 @@ bool CodeEditor::tryOpenLinkAtPosition(const QString& text, int posInBlock)
     }
 
     return false;
+}
+
+void CodeEditor::setSearchHighlights(const QList<QTextEdit::ExtraSelection>& highlights)
+{
+    // Store persistent search highlights and update the display
+    persistentSearchHighlights = highlights;
+    highlightCurrentLine(); // This will merge and display highlights
 }
