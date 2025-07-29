@@ -196,6 +196,8 @@ protected:
     bool selectionHasLineNumbering() const;
     // Removes numbering from the left side of each selected line
     void removeLineNumberingFromSelection();
+    // Renumbers lines in the selection that start with numbering, skipping lines without numbering
+    void renumberSelection();
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);

@@ -968,13 +968,54 @@ void CodeEditor::addMultiLineSelectionActions(QMenu* menu, const QTextCursor& se
     });
     menu->addAction(sortDesc);
 
-    // Add 'Remove numbering' action only if at least one selected line starts with numbering
+    // Add 'Remove numbering' and 'Renumber selection' actions only if at least one selected line starts with numbering
     if (selectionHasLineNumbering())
     {
         QAction* removeNumberingAction = new QAction(tr("Remove numbering"));
         connect(removeNumberingAction, &QAction::triggered, this, &CodeEditor::removeLineNumberingFromSelection);
         menu->addAction(removeNumberingAction);
+
+        QAction* renumberAction = new QAction(tr("Renumber selection"));
+        connect(renumberAction, &QAction::triggered, this, &CodeEditor::renumberSelection);
+        menu->addAction(renumberAction);
     }
+}
+
+// Renumbers lines in the selection that start with numbering, skipping lines without numbering
+void CodeEditor::renumberSelection()
+{
+    QTextCursor cursor = textCursor();
+    int start = cursor.selectionStart();
+    int end = cursor.selectionEnd();
+
+    QTextDocument *doc = document();
+    QTextBlock block = doc->findBlock(start);
+    int lastBlock = doc->findBlock(end).blockNumber();
+
+    QRegularExpression re("^\\s*\\d+\\.\\s+");
+    int number = 1;
+
+    cursor.beginEditBlock();
+    while (block.isValid() && block.blockNumber() <= lastBlock)
+    {
+        QString text = block.text();
+        QRegularExpressionMatch match = re.match(text);
+        if (match.hasMatch())
+        {
+            int matchLen = match.capturedLength();
+            QTextCursor lineCursor(block);
+            // Remove old numbering
+            lineCursor.setPosition(block.position(), QTextCursor::MoveAnchor);
+            lineCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, matchLen);
+            lineCursor.removeSelectedText();
+            // Insert new numbering
+            lineCursor.setPosition(block.position(), QTextCursor::MoveAnchor);
+            lineCursor.insertText(QString::number(number) + ". ");
+            number++;
+        }
+        block = block.next();
+    }
+    cursor.endEditBlock();
 }
 void CodeEditor::sortLinesInRange(int startLine, int endLine, bool ascending)
 {
