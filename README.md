@@ -176,6 +176,9 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 59. Eksport bloków kodu do osobnych plików.
 60. Konsolidacja obrazów do jednego katalogu z aktualizacją ścieżek w znacznikach STC.
 61. Przy porównywaniu difa niezapisanych zmian z zawartością pliku (linijka w linijkę): możliwość zapisania na dysk poszczególnych linii.
+62. Gdy zewnętrzne zmiany w pliku to powinno też pokazać diffa.
+63. Gdy wyświetlamy diffa, ale linie są długie to pojawia się scrolling area, a nie powinna.
+63. Wklejanie coś się popsuło - wkleja "dziwne" znaczki
 
 ## Współpraca
 

@@ -996,11 +996,11 @@ void CodeEditor::addMultiLineSelectionActions(QMenu* menu, const QTextCursor& se
     // Add 'Remove numbering' and 'Renumber selection' actions only if at least one selected line starts with numbering
     if (selectionHasLineNumbering())
     {
-        QAction* removeNumberingAction = new QAction(tr("Remove numbering"));
+        QAction* removeNumberingAction = new QAction(QIcon::fromTheme("format-list-numbered-rtl"), tr("Remove numbering"));
         connect(removeNumberingAction, &QAction::triggered, this, &CodeEditor::removeLineNumberingFromSelection);
         menu->addAction(removeNumberingAction);
 
-        QAction* renumberAction = new QAction(tr("Renumber selection"));
+        QAction* renumberAction = new QAction(QIcon::fromTheme("format-list-ordered"), tr("Renumber selection"));
         connect(renumberAction, &QAction::triggered, this, &CodeEditor::renumberSelection);
         menu->addAction(renumberAction);
     }
