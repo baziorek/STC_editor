@@ -82,6 +82,7 @@ Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wyb
       - Bez uwzględniania wielkości liter, tylko całe słowa.
     - ENTER i SHIFT+ENTER odpowiednio przesuwają do kolejnego/poprzedniego wystąpienia z tabeli
     - Strzałki dół/góra dzialają jak powyższe, ale nie przeskakują z focusem do edytora tekstu
+    - Wyszukiwania podświetlają wszystkie wystąpienia w tekście
  9. **Skalowanie czcionki**: Powiększanie/pomniejszanie czcionki za pomocą `Ctrl++` i `Ctrl+-` lub `Ctrl+MOUSE_SCROLL`.
 10. **Pasek stanu**: Pokazuje nazwę otwartego pliku, ale też liczbę niezapisanych zmienionych linii, czas ostatniej edycji i zapisu (tylko przy niezapisanych zmianach).
 11. **Oznaczenie aktualnej linii**: Śledzenie aktualnej pozycji kursora klawiatury w ramach linijki
@@ -114,18 +115,18 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 3. Integracja analizatora składni C++ (np. [flex](https://github.com/westes/flex)).
 4. Formatowanie kodu C++ dedykowane
 5. Podświetlanie składni C++ i Pythona za pomocą [QCXXHighlighter](https://github.com/Megaxela/QCodeEditor) (licencja MIT).
-6. Przycisk na sformatowanym tekście powinien usunąć dane formatowanie: np. jak klikniemy CTRL+B na pogrubionym to aby nie był pogrubiony
+6. Zamiana warunkowa -np. zamień jeśli już nie jest. Np. jak chcę zamienić `cout` na `std::cout` to zamieni tylko jeśli nie jest to `std::cout`
 7. Wyświetlanie statystyk zmian w czasie rzeczywistym (liczba linii, znaków, rozmiar pliku, linia i kolumna).
 8. Historia wprowadzanych zmian (`Ctrl+Z`).
 9. Sprawdzanie pisowni po polsku (np. [nuspell](https://github.com/nuspell/nuspell) lub [spellchecker Qt](https://doc.qt.io/qt-6/qtwebengine-webenginewidgets-spellchecker-example.html)). https://forum.qt.io/topic/158878/check-spelling-in-qlineedit-and-qplaintextedit
 10. Dodać stoper aktywności
 11. Integracja dokumentacji cppreference (jak w `cppman` lub QtCreator).
 12. Dopasowanie rozmiaru numeracji linii do wielkości czcionki.
-13. Zamiana warunkowa -np. zamień jeśli już nie jest. Np. jak chcę zamienić `cout` na `std::cout` to zamieni tylko jeśli nie jest to `std::cout`
+13. FindWidget - aby aktualizował pozycje w tekście na bieżąco przy dodawaniu/usuwaniu linii.
 14. Akcja: Popraw numeracje dla zaznaczonego tekstu
 15. Sprawdzenie czy link istnieje
 16. MiniBug: funkcjonalność zmiany wielkości czcionki zakłóca nowe tagi. Jak powiększymy czcionkę i potem dodamy coś np. H1, to on będzie miał czcionkę nawet mniejszą niż reszta, mimo iż to nagłówek
-17. FindWidget - aby aktualizował pozycje w tekście na bieżąco przy dodawaniu/usuwaniu linii.
+17. Może AI mi podzieli CodeEditor aby nie był GodObject
 18. Dodać check: czy nie zamykam nieotwartego tagu?
 19. Sprawdzenie czy Run nie jest poza csv lub pkt
 20. Ctrl + V gdy mamy obrazek w schowku - wtedy powinno zaproponować umieszczenie obrazka w odpowiednim katalogu
@@ -172,15 +173,14 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 57. Widok sąsiadujący do porównywania plików.
 58. Eksport bloków kodu do osobnych plików.
 59. Konsolidacja obrazów do jednego katalogu z aktualizacją ścieżek w znacznikach STC.
-60. Zapis poszczególnych linii na dysk przy porównywaniu diffa.
+60. Przy porównywaniu difa niezapisanych zmian z zawartością pliku (linijka w linijkę): możliwość zapisania na dysk poszczególnych linii.
 61. Przemianuj otwarty plik
-62. Może AI mi podzieli CodeEditor aby nie był GodObject
 
 ## Współpraca
 
 Zapraszam do współpracy! Propozycje zmian i pull requesty są mile widziane, aby uczynić ten edytor jeszcze bardziej użytecznym.
 
-### Znalezione bugi
+### Znalezione bugi?
 Bardzo proszę o dokładne informacje jakie to bugi, czyli:
 1. W jakiej sytuacji (Sekwencja kroków)
 2. Kod STC, który to spowodował

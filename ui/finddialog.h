@@ -70,7 +70,4 @@ private slots:
 
 private:
     Ui::FindDialog *ui;
-    QString lastQuery;
-    bool lastCaseSensitive = false;
-    bool lastWholeWord = false;
 };

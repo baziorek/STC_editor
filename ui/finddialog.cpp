@@ -183,10 +183,6 @@ void FindDialog::currentTextChanged(QString newText)
 
 FindDialog::MatchStats FindDialog::showOccurences(const QString &searchText)
 {
-    lastQuery = searchText;
-    lastCaseSensitive = ui->matchCasesCheckBox->isChecked();
-    lastWholeWord = ui->wholeWordsCheckBox->isChecked();
-
     const bool caseSensitiveRequired = ui->matchCasesCheckBox->isChecked();
     const bool wholeWordRequired = ui->wholeWordsCheckBox->isChecked();
 
@@ -276,22 +272,27 @@ FindDialog::MatchStats FindDialog::showOccurences(const QString &searchText)
 
 void FindDialog::updateHighlights()
 {
-    if (!codeEditor) return;
+    if (!codeEditor)
+        return;
+
     QList<QTextEdit::ExtraSelection> highlights;
-    if (lastQuery.isEmpty()) {
+    if (ui->textSearchField->currentText().isEmpty())
+    {
         codeEditor->setSearchHighlights({});
         return;
     }
     QTextDocument* doc = codeEditor->document();
     QTextCursor cursor(doc);
     QTextDocument::FindFlags flags;
-    if (lastCaseSensitive)
+    if (ui->matchCasesCheckBox->isChecked())
         flags |= QTextDocument::FindCaseSensitively;
-    if (lastWholeWord)
+    if (ui->wholeWordsCheckBox->isChecked())
         flags |= QTextDocument::FindWholeWords;
-    while (!cursor.isNull() && !cursor.atEnd()) {
-        cursor = doc->find(lastQuery, cursor, flags);
-        if (!cursor.isNull()) {
+    while (!cursor.isNull() && !cursor.atEnd())
+    {
+        cursor = doc->find(ui->textSearchField->currentText(), cursor, flags);
+        if (!cursor.isNull())
+        {
             QTextEdit::ExtraSelection sel;
             sel.cursor = cursor;
             sel.format.setBackground(QColor(255, 255, 0, 80));
@@ -305,7 +306,7 @@ void FindDialog::updateHighlights()
 void FindDialog::showEvent(QShowEvent* event)
 {
     QWidget::showEvent(event);
-    if (!lastQuery.isEmpty())
+    if (! ui->textSearchField->currentText().isEmpty())
         updateHighlights();
 }
 
