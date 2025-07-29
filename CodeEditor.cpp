@@ -1014,14 +1014,16 @@ void CodeEditor::renumberSelection()
     int end = cursor.selectionEnd();
 
     QTextDocument *doc = document();
-    QTextBlock block = doc->findBlock(start);
-    int lastBlock = doc->findBlock(end).blockNumber();
+    QTextBlock firstBlock = doc->findBlock(start);
+    QTextBlock lastBlock = doc->findBlock(end);
+    int lastBlockNumber = lastBlock.blockNumber();
 
     QRegularExpression re("^\\s*\\d+\\.\\s+");
     int number = 1;
 
     cursor.beginEditBlock();
-    while (block.isValid() && block.blockNumber() <= lastBlock)
+    QTextBlock block = firstBlock;
+    while (block.isValid() && block.blockNumber() <= lastBlockNumber)
     {
         QString text = block.text();
         QRegularExpressionMatch match = re.match(text);
@@ -1041,6 +1043,14 @@ void CodeEditor::renumberSelection()
         block = block.next();
     }
     cursor.endEditBlock();
+
+    // Set selected text to select also replaced number in first line
+    QTextCursor newCursor = textCursor();
+    int selectionStart = firstBlock.position();
+    int selectionEnd = lastBlock.position() + lastBlock.length() - 1; // -1 because length() contains end of block chatacter
+    newCursor.setPosition(selectionStart, QTextCursor::MoveAnchor);
+    newCursor.setPosition(selectionEnd, QTextCursor::KeepAnchor);
+    setTextCursor(newCursor);
 }
 void CodeEditor::sortLinesInRange(int startLine, int endLine, bool ascending)
 {
