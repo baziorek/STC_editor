@@ -17,6 +17,7 @@
 #include <QClipboard>
 #include <QDir>
 #include <QGuiApplication>
+#include <QTextDocument>
 #include "CodeEditor.h"
 #include "widgets/LineNumberArea.h"
 #include "utils/STCSyntaxHighlighter.h"
@@ -30,6 +31,28 @@
 namespace
 {
 constexpr int spacesPerTab = 4;
+
+
+class ScopedEditBlock
+{
+public:
+    explicit ScopedEditBlock(QTextCursor& c) : cursor(c)
+    {
+        cursor.beginEditBlock();
+    }
+
+    ~ScopedEditBlock()
+    {
+        cursor.endEditBlock();
+    }
+
+    ScopedEditBlock(const ScopedEditBlock&) = delete;
+    ScopedEditBlock& operator=(const ScopedEditBlock&) = delete;
+
+private:
+    QTextCursor& cursor;
+};
+
 
 bool isStructuredTable(const QString& text)
 {
@@ -492,7 +515,7 @@ void CodeEditor::addImgTagActionsIfApplicable(QMenu* menu)
             toggleAlt->setChecked(hasAlt);
             connect(toggleAlt, &QAction::triggered, this, [=, this]() {
                 QTextCursor c = textCursor();
-                c.beginEditBlock();
+                ScopedEditBlock _(c);
                 QString newTag = imgTag;
                 if (!hasAlt)
                 {
@@ -507,7 +530,6 @@ void CodeEditor::addImgTagActionsIfApplicable(QMenu* menu)
                 c.setPosition(cursor.block().position() + tagStart);
                 c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
                 c.insertText(newTag);
-                c.endEditBlock();
             });
             menu->addAction(toggleAlt);
 
@@ -517,7 +539,7 @@ void CodeEditor::addImgTagActionsIfApplicable(QMenu* menu)
             toggleOpis->setChecked(hasOpis);
             connect(toggleOpis, &QAction::triggered, this, [=, this]() {
                 QTextCursor c = textCursor();
-                c.beginEditBlock();
+                ScopedEditBlock _(c);
                 QString newTag = imgTag;
                 if (!hasOpis)
                 {
@@ -532,7 +554,6 @@ void CodeEditor::addImgTagActionsIfApplicable(QMenu* menu)
                 c.setPosition(cursor.block().position() + tagStart);
                 c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
                 c.insertText(newTag);
-                c.endEditBlock();
             });
             menu->addAction(toggleOpis);
 
@@ -542,7 +563,7 @@ void CodeEditor::addImgTagActionsIfApplicable(QMenu* menu)
             toggleAutofit->setChecked(hasAutofit);
             connect(toggleAutofit, &QAction::triggered, this, [=, this]() {
                 QTextCursor c = textCursor();
-                c.beginEditBlock();
+                ScopedEditBlock _(c);
                 QString newTag = imgTag;
                 if (!hasAutofit)
                 {
@@ -557,7 +578,6 @@ void CodeEditor::addImgTagActionsIfApplicable(QMenu* menu)
                 c.setPosition(cursor.block().position() + tagStart);
                 c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
                 c.insertText(newTag);
-                c.endEditBlock();
             });
             menu->addAction(toggleAutofit);
 
@@ -596,7 +616,7 @@ void CodeEditor::addPktTagActionsIfApplicable(QMenu* menu)
             toggleExt->setChecked(hasExt);
             connect(toggleExt, &QAction::triggered, this, [=, this]() {
                 QTextCursor c = textCursor();
-                c.beginEditBlock();
+                ScopedEditBlock _(c);
                 QString newTag = pktTag;
                 if (!hasExt)
                 {
@@ -611,7 +631,6 @@ void CodeEditor::addPktTagActionsIfApplicable(QMenu* menu)
                 c.setPosition(cursor.block().position() + tagStart);
                 c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
                 c.insertText(newTag);
-                c.endEditBlock();
             });
             menu->addAction(toggleExt);
             // Only handle the first [pkt ...] tag in the line
@@ -649,7 +668,7 @@ void CodeEditor::addCsvTagActionsIfApplicable(QMenu* menu)
             toggleExtended->setChecked(hasExtended);
             connect(toggleExtended, &QAction::triggered, this, [=, this]() {
                 QTextCursor c = textCursor();
-                c.beginEditBlock();
+                ScopedEditBlock _(c);
                 QString newTag = csvTag;
                 if (!hasExtended)
                 {
@@ -664,7 +683,6 @@ void CodeEditor::addCsvTagActionsIfApplicable(QMenu* menu)
                 c.setPosition(cursor.block().position() + tagStart);
                 c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
                 c.insertText(newTag);
-                c.endEditBlock();
             });
             menu->addAction(toggleExtended);
 
@@ -674,7 +692,7 @@ void CodeEditor::addCsvTagActionsIfApplicable(QMenu* menu)
             toggleHeader->setChecked(hasHeader);
             connect(toggleHeader, &QAction::triggered, this, [=, this]() {
                 QTextCursor c = textCursor();
-                c.beginEditBlock();
+                ScopedEditBlock _(c);
                 QString newTag = csvTag;
                 if (!hasHeader)
                 {
@@ -689,7 +707,6 @@ void CodeEditor::addCsvTagActionsIfApplicable(QMenu* menu)
                 c.setPosition(cursor.block().position() + tagStart);
                 c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
                 c.insertText(newTag);
-                c.endEditBlock();
             });
             menu->addAction(toggleHeader);
             // Only handle the first [csv ...] tag in the line
@@ -726,7 +743,7 @@ void CodeEditor::addAnchorTagActionsIfApplicable(QMenu* menu)
             toggleName->setChecked(hasName);
             connect(toggleName, &QAction::triggered, this, [=, this]() {
                 QTextCursor c = textCursor();
-                c.beginEditBlock();
+                ScopedEditBlock _(c);
                 QString newTag = anchorTag;
                 if (!hasName)
                 {
@@ -741,7 +758,6 @@ void CodeEditor::addAnchorTagActionsIfApplicable(QMenu* menu)
                 c.setPosition(cursor.block().position() + tagStart);
                 c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
                 c.insertText(newTag);
-                c.endEditBlock();
             });
             menu->addAction(toggleName);
             // Only handle the first [a href=...] tag in the line
@@ -782,12 +798,11 @@ void CodeEditor::addDivTagActionsIfApplicable(QMenu* menu)
                 plainDiv->setIcon(QIcon::fromTheme("format-justify-fill"));
                 connect(plainDiv, &QAction::triggered, this, [=, this]() {
                     QTextCursor c = textCursor();
-                    c.beginEditBlock();
+                    ScopedEditBlock _(c);
                     QString newTag = "[div]";
                     c.setPosition(cursor.block().position() + tagStart);
                     c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
                     c.insertText(newTag);
-                    c.endEditBlock();
                 });
                 menu->addAction(plainDiv);
             }
@@ -799,12 +814,11 @@ void CodeEditor::addDivTagActionsIfApplicable(QMenu* menu)
                 tipDiv->setIcon(QIcon::fromTheme("dialog-information"));
                 connect(tipDiv, &QAction::triggered, this, [=, this]() {
                     QTextCursor c = textCursor();
-                    c.beginEditBlock();
+                    ScopedEditBlock _(c);
                     QString newTag = "[div class=\"tip\"]";
                     c.setPosition(cursor.block().position() + tagStart);
                     c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
                     c.insertText(newTag);
-                    c.endEditBlock();
                 });
                 menu->addAction(tipDiv);
             }
@@ -816,12 +830,11 @@ void CodeEditor::addDivTagActionsIfApplicable(QMenu* menu)
                 uwagaDiv->setIcon(QIcon::fromTheme("dialog-warning"));
                 connect(uwagaDiv, &QAction::triggered, this, [=, this]() {
                     QTextCursor c = textCursor();
-                    c.beginEditBlock();
+                    ScopedEditBlock _(c);
                     QString newTag = "[div class=\"uwaga\"]";
                     c.setPosition(cursor.block().position() + tagStart);
                     c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
                     c.insertText(newTag);
-                    c.endEditBlock();
                 });
                 menu->addAction(uwagaDiv);
             }
@@ -925,6 +938,7 @@ void CodeEditor::addMultiLineSelectionActions(QMenu* menu, const QTextCursor& se
     QAction* numbered = new QAction(QIcon::fromTheme("format-list-numbered"), "Add numeration: 1., 2., 3. ...", this);
     connect(numbered, &QAction::triggered, this, [=, this]() {
         QTextCursor c = textCursor();
+        ScopedEditBlock _(c);
         int origStart = c.selectionStart();
         int origEnd = c.selectionEnd();
         int prefixTotal = 0;
@@ -950,6 +964,7 @@ void CodeEditor::addMultiLineSelectionActions(QMenu* menu, const QTextCursor& se
     QAction* bulleted = new QAction(QIcon::fromTheme("format-list-unordered"), "Add bullet points", this);
     connect(bulleted, &QAction::triggered, this, [=, this]() {
         QTextCursor c = textCursor();
+        ScopedEditBlock _(c);
         int origStart = c.selectionStart();
         int origEnd = c.selectionEnd();
         int prefixTotal = 0;
@@ -1010,6 +1025,7 @@ void CodeEditor::addMultiLineSelectionActions(QMenu* menu, const QTextCursor& se
 void CodeEditor::renumberSelection()
 {
     QTextCursor cursor = textCursor();
+    ScopedEditBlock _(cursor);
     int start = cursor.selectionStart();
     int end = cursor.selectionEnd();
 
@@ -1021,7 +1037,6 @@ void CodeEditor::renumberSelection()
     QRegularExpression re("^\\s*\\d+\\.\\s+");
     int number = 1;
 
-    cursor.beginEditBlock();
     QTextBlock block = firstBlock;
     while (block.isValid() && block.blockNumber() <= lastBlockNumber)
     {
@@ -1042,7 +1057,6 @@ void CodeEditor::renumberSelection()
         }
         block = block.next();
     }
-    cursor.endEditBlock();
 
     // Set selected text to select also replaced number in first line
     QTextCursor newCursor = textCursor();
@@ -1070,7 +1084,7 @@ void CodeEditor::sortLinesInRange(int startLine, int endLine, bool ascending)
     });
 
     QTextCursor cursor(document()->findBlockByNumber(startLine));
-    cursor.beginEditBlock();
+    ScopedEditBlock _(cursor);
 
     for (int i = startLine; i <= endLine; ++i)
     {
@@ -1083,8 +1097,6 @@ void CodeEditor::sortLinesInRange(int startLine, int endLine, bool ascending)
             lineCursor.insertText(lines[i - startLine]);
         }
     }
-
-    cursor.endEditBlock();
 }
 
 // Checks if any selected line starts with a numbering pattern (e.g. '1. ')
@@ -1115,6 +1127,7 @@ bool CodeEditor::selectionHasLineNumbering() const
 void CodeEditor::removeLineNumberingFromSelection()
 {
     QTextCursor cursor = textCursor();
+    ScopedEditBlock _(cursor);
     int start = cursor.selectionStart();
     int end = cursor.selectionEnd();
 
@@ -1124,7 +1137,6 @@ void CodeEditor::removeLineNumberingFromSelection()
 
     QRegularExpression re("^\\s*\\d+\\.\\s+");
 
-    cursor.beginEditBlock();
     while (block.isValid() && block.blockNumber() <= lastBlock)
     {
         QString text = block.text();
@@ -1140,7 +1152,6 @@ void CodeEditor::removeLineNumberingFromSelection()
         }
         block = block.next();
     }
-    cursor.endEditBlock();
 }
 
 void CodeEditor::addTagRemovalActionIfInsideTag(QMenu* menu)
@@ -1164,6 +1175,7 @@ void CodeEditor::addTagRemovalActionIfInsideTag(QMenu* menu)
                 QAction* remove = new QAction(QIcon::fromTheme("edit-delete"), QString("Remove [%1]").arg(tag), this);
                 connect(remove, &QAction::triggered, this, [=, this]() {
                     QTextCursor c = textCursor();
+                    ScopedEditBlock _(c);
                     int lineOffset = c.position() - c.block().position();
                     QRegularExpressionMatchIterator it2 = re.globalMatch(c.block().text());
                     while (it2.hasNext())
@@ -1227,7 +1239,7 @@ void CodeEditor::addCodeBlockActionsIfApplicable(QMenu* menu, const QPoint& pos)
     }
 }
 
-QString CodeEditor::formatCppWithClang(const QString& code)
+QString CodeEditor::formatCppWithClang(const QString& code) const
 {
     constexpr const char clangFormatConfigDefaultName[] = ".clang-format";
     constexpr const char clangFormatDefaultStyleIfNoConfigFound[] = "-style=LLVM";
@@ -1547,6 +1559,7 @@ void CodeEditor::handleTabIndent()
 void CodeEditor::handleTabUnindent()
 {
     QTextCursor cursor = textCursor();
+    ScopedEditBlock _(cursor);
 
     if (!cursor.hasSelection())
         return;
@@ -1591,7 +1604,7 @@ void CodeEditor::applyToSelectedBlocks(const std::function<void(QTextCursor&)>& 
         cursor.movePosition(QTextCursor::PreviousBlock);
     int lastBlock = cursor.blockNumber();
 
-    cursor.beginEditBlock();
+    ScopedEditBlock _(cursor);
     for (int i = firstBlock; i <= lastBlock; ++i)
     {
         QTextBlock block = document()->findBlockByNumber(i);
@@ -1599,7 +1612,6 @@ void CodeEditor::applyToSelectedBlocks(const std::function<void(QTextCursor&)>& 
         blockCursor.movePosition(QTextCursor::StartOfBlock);
         callback(blockCursor);
     }
-    cursor.endEditBlock();
 }
 
 
@@ -2108,7 +2120,7 @@ void CodeEditor::addHeaderTagActionsIfApplicable(QMenu* menu, const QPoint& pos)
                     QAction* act = new QAction(actionText, this);
                     connect(act, &QAction::triggered, this, [=, this]() {
                         QTextCursor c = textCursor();
-                        c.beginEditBlock();
+                        ScopedEditBlock _(c);
                         // Replace opening tag
                         c.setPosition(cursor.block().position() + tagStart);
                         c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
@@ -2117,7 +2129,6 @@ void CodeEditor::addHeaderTagActionsIfApplicable(QMenu* menu, const QPoint& pos)
                         c.setPosition(cursor.block().position() + closeTagStart);
                         c.setPosition(cursor.block().position() + closeTagEnd, QTextCursor::KeepAnchor);
                         c.insertText(QString("[") + "/" + newTag + "]");
-                        c.endEditBlock();
                     });
                     menu->addAction(act);
                 }

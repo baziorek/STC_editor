@@ -135,7 +135,7 @@ protected:
     void increaseFontSize();
     void decreaseFontSize();
 
-    QString formatCppWithClang(const QString& code);
+    QString formatCppWithClang(const QString& code) const;
 
     bool isContentModified() const
     {
