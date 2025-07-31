@@ -185,6 +185,7 @@ protected:
     void addMultiLineSelectionActions(QMenu *menu, const QTextCursor &selection);
     bool selectionHasLineNumbering(const QTextCursor& selection) const;
     bool selectionHasBullets(const QTextCursor& selection) const;
+    bool selectionHasBrokenNumbering(const QTextCursor& selection) const;
     void addTagRemovalActionIfInsideTag(QMenu *menu);
     void addCodeBlockActionsIfApplicable(QMenu *menu, const QPoint &pos);
     void addImgTagActionsIfApplicable(QMenu *menu);

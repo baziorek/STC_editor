@@ -1033,10 +1033,40 @@ void CodeEditor::addMultiLineSelectionActions(QMenu* menu, const QTextCursor& se
         connect(removeNumberingAction, &QAction::triggered, this, &CodeEditor::removeLineNumberingFromSelection);
         menu->addAction(removeNumberingAction);
 
-        QAction* renumberAction = new QAction(QIcon::fromTheme("format-list-ordered"), tr("Renumber selection"));
-        connect(renumberAction, &QAction::triggered, this, &CodeEditor::renumberSelection);
-        menu->addAction(renumberAction);
+        if (selectionHasBrokenNumbering(selection))
+        {
+            QAction* renumberAction = new QAction(QIcon::fromTheme("format-list-ordered"), tr("Renumber selection"));
+            connect(renumberAction, &QAction::triggered, this, &CodeEditor::renumberSelection);
+            menu->addAction(renumberAction);
+        }
     }
+}
+
+bool CodeEditor::selectionHasBrokenNumbering(const QTextCursor& selection) const
+{
+    QTextDocument *doc = document();
+    int start = selection.selectionStart();
+    int end = selection.selectionEnd();
+    QTextBlock block = doc->findBlock(start);
+    int lastBlock = doc->findBlock(end).blockNumber();
+    QRegularExpression re("^\\s*(\\d+)\\.\\s+");
+    int expected = 1;
+    bool foundAny = false;
+    while (block.isValid() && block.blockNumber() <= lastBlock)
+    {
+        QRegularExpressionMatch match = re.match(block.text());
+        if (match.hasMatch())
+        {
+            foundAny = true;
+            int num = match.captured(1).toInt();
+            if (num != expected)
+                return true; // numeracja zaburzona
+            ++expected;
+        }
+        block = block.next();
+    }
+    // If no numbers - it means numering is not broken
+    return false;
 }
 
 // Renumbers lines in the selection that start with numbering, skipping lines without numbering
