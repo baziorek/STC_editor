@@ -935,56 +935,74 @@ void CodeEditor::addMultiLineSelectionActions(QMenu* menu, const QTextCursor& se
 
     menu->addSeparator();
 
-    QAction* numbered = new QAction(QIcon::fromTheme("format-list-ordered"), "Add numeration: 1., 2., 3. ...", this);
-    connect(numbered, &QAction::triggered, this, [=, this]() {
-        QTextCursor c = textCursor();
-        ScopedEditBlock _(c);
-        int origStart = c.selectionStart();
-        int origEnd = c.selectionEnd();
-        int prefixTotal = 0;
-        int prefixLen = 0;
-        for (int i = startLine, n = 1; i <= endLine; ++i, ++n)
-        {
-            QTextBlock block = document()->findBlockByNumber(i);
-            QTextCursor lineCursor(block);
-            lineCursor.movePosition(QTextCursor::StartOfBlock);
-            QString prefix = QString::number(n) + ". ";
-            lineCursor.insertText(prefix);
-            if (i == startLine) prefixLen = prefix.length();
-            prefixTotal += prefix.length();
-        }
-        // Reselect including the added prefixes
-        QTextCursor newCursor = textCursor();
-        newCursor.setPosition(origStart, QTextCursor::MoveAnchor);
-        newCursor.setPosition(origEnd + prefixTotal, QTextCursor::KeepAnchor);
-        setTextCursor(newCursor);
-    });
-    menu->addAction(numbered);
+    if (!selectionHasLineNumbering(selection))
+    {
+        QAction* numbered = new QAction(QIcon::fromTheme("format-list-ordered"), "Add numeration: 1., 2., 3. ...", this);
+        connect(numbered, &QAction::triggered, this, [=, this]() {
+            QTextCursor c = textCursor();
+            ScopedEditBlock _(c);
+            int origStart = c.selectionStart();
+            int origEnd = c.selectionEnd();
+            int prefixTotal = 0;
+            int prefixLen = 0;
+            for (int i = startLine, n = 1; i <= endLine; ++i, ++n)
+            {
+                QTextBlock block = document()->findBlockByNumber(i);
+                QTextCursor lineCursor(block);
+                lineCursor.movePosition(QTextCursor::StartOfBlock);
+                QString prefix = QString::number(n) + ". ";
+                lineCursor.insertText(prefix);
+                if (i == startLine) prefixLen = prefix.length();
+                prefixTotal += prefix.length();
+            }
+            // Reselect including the added prefixes
+            QTextCursor newCursor = textCursor();
+            newCursor.setPosition(origStart, QTextCursor::MoveAnchor);
+            newCursor.setPosition(origEnd + prefixTotal, QTextCursor::KeepAnchor);
+            setTextCursor(newCursor);
+        });
+        menu->addAction(numbered);
+    }
 
-    QAction* bulleted = new QAction(QIcon::fromTheme("format-list-unordered"), "Add bullet points", this);
-    connect(bulleted, &QAction::triggered, this, [=, this]() {
-        QTextCursor c = textCursor();
-        ScopedEditBlock _(c);
-        int origStart = c.selectionStart();
-        int origEnd = c.selectionEnd();
-        int prefixTotal = 0;
-        int prefixLen = 0;
-        for (int i = startLine; i <= endLine; ++i)
-        {
-            QTextBlock block = document()->findBlockByNumber(i);
-            QTextCursor lineCursor(block);
-            lineCursor.movePosition(QTextCursor::StartOfBlock);
-            QString prefix = "- ";
-            lineCursor.insertText(prefix);
-            if (i == startLine) prefixLen = prefix.length();
-            prefixTotal += prefix.length();
-        }
-        QTextCursor newCursor = textCursor();
-        newCursor.setPosition(origStart, QTextCursor::MoveAnchor);
-        newCursor.setPosition(origEnd + prefixTotal, QTextCursor::KeepAnchor);
-        setTextCursor(newCursor);
-    });
-    menu->addAction(bulleted);
+    if (!selectionHasBullets(selection))
+    {
+        QAction* bulleted = new QAction(QIcon::fromTheme("format-list-unordered"), "Add bullet points", this);
+        connect(bulleted, &QAction::triggered, this, [=, this]() {
+            QTextCursor c = textCursor();
+            ScopedEditBlock _(c);
+            int origStart = c.selectionStart();
+            int origEnd = c.selectionEnd();
+            int prefixTotal = 0;
+            int prefixLen = 0;
+            for (int i = startLine; i <= endLine; ++i)
+            {
+                QTextBlock block = document()->findBlockByNumber(i);
+                QTextCursor lineCursor(block);
+                lineCursor.movePosition(QTextCursor::StartOfBlock);
+                QString prefix = "- ";
+                lineCursor.insertText(prefix);
+                if (i == startLine) prefixLen = prefix.length();
+                prefixTotal += prefix.length();
+            }
+            // Reselect including the added prefixes
+            QTextCursor newCursor = textCursor();
+            newCursor.setPosition(origStart, QTextCursor::MoveAnchor);
+            newCursor.setPosition(origEnd + prefixTotal, QTextCursor::KeepAnchor);
+            setTextCursor(newCursor);
+        });
+        menu->addAction(bulleted);
+    }
+
+    if (selectionHasLineNumbering(selection))
+    {
+        QAction* removeNumberingAction = new QAction(QIcon::fromTheme("edit-clear"), tr("Remove numbering"));
+        connect(removeNumberingAction, &QAction::triggered, this, &CodeEditor::removeLineNumberingFromSelection);
+        menu->addAction(removeNumberingAction);
+
+        QAction* renumberAction = new QAction(QIcon::fromTheme("format-list-ordered"), tr("Renumber selection"));
+        connect(renumberAction, &QAction::triggered, this, &CodeEditor::renumberSelection);
+        menu->addAction(renumberAction);
+    }
 
     QAction* joinLines = new QAction(QIcon::fromTheme("insert-text"), "Join lines with space", this);
     connect(joinLines, &QAction::triggered, this, [this]() {
@@ -1009,7 +1027,7 @@ void CodeEditor::addMultiLineSelectionActions(QMenu* menu, const QTextCursor& se
     menu->addAction(sortDesc);
 
     // Add 'Remove numbering' and 'Renumber selection' actions only if at least one selected line starts with numbering
-    if (selectionHasLineNumbering())
+    if (selectionHasLineNumbering(selection))
     {
         QAction* removeNumberingAction = new QAction(QIcon::fromTheme("edit-clear"), tr("Remove numbering"));
         connect(removeNumberingAction, &QAction::triggered, this, &CodeEditor::removeLineNumberingFromSelection);
@@ -1100,6 +1118,40 @@ void CodeEditor::sortLinesInRange(int startLine, int endLine, bool ascending)
 }
 
 // Checks if any selected line starts with a numbering pattern (e.g. '1. ')
+bool CodeEditor::selectionHasLineNumbering(const QTextCursor& selection) const
+{
+    QTextDocument *doc = document();
+    int start = selection.selectionStart();
+    int end = selection.selectionEnd();
+    QTextBlock block = doc->findBlock(start);
+    int lastBlock = doc->findBlock(end).blockNumber();
+    QRegularExpression re("^\\s*\\d+\\.\\s+");
+    while (block.isValid() && block.blockNumber() <= lastBlock)
+    {
+        if (!re.match(block.text()).hasMatch())
+            return false;
+        block = block.next();
+    }
+    return true;
+}
+
+bool CodeEditor::selectionHasBullets(const QTextCursor& selection) const
+{
+    QTextDocument *doc = document();
+    int start = selection.selectionStart();
+    int end = selection.selectionEnd();
+    QTextBlock block = doc->findBlock(start);
+    int lastBlock = doc->findBlock(end).blockNumber();
+    QRegularExpression re("^\\s*-\\s+");
+    while (block.isValid() && block.blockNumber() <= lastBlock)
+    {
+        if (!re.match(block.text()).hasMatch())
+            return false;
+        block = block.next();
+    }
+    return true;
+}
+
 bool CodeEditor::selectionHasLineNumbering() const
 {
     QTextCursor cursor = textCursor();
