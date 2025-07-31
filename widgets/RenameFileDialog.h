@@ -19,10 +19,10 @@ public:
     QString newFilePath() const;
     QString newFileName() const;
     QString newAbsoluteFilePath() const;
-    bool createDirectoryChecked() const;
 
 public slots:
     void validateAndUpdateUi();
+    void onBrowseDirectoryClicked();
 
 signals:
     void renameCompleted(const QString& newPath);

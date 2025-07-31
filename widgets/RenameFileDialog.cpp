@@ -1,4 +1,5 @@
-#include <QFileInfo>
+#include <QFileDialog>
+#include <QPushButton>
 #include <QDir>
 #include <QLineEdit>
 #include <QCheckBox>
@@ -16,14 +17,16 @@ RenameFileDialog::RenameFileDialog(CodeEditor *textEditor, QWidget *parent)
 {
     ui->setupUi(this);
 
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setText(tr("Rename file"));
+
     const auto oldFilePath = textEditor->getFileName();
 
     QFileInfo fileInfo(oldFilePath);
     // Bold file name, normal path
     QString styled = QString("<span style='color:gray'>%1/</span><b>%2</b>")
                          .arg(fileInfo.dir().absolutePath(), fileInfo.fileName());
-    ui->oldFilePathLabel->setText(styled);
-    ui->oldFilePathLabel->setTextFormat(Qt::RichText);
+    ui->oldFilePathValueLabel->setText(styled);
+    ui->oldFilePathValueLabel->setTextFormat(Qt::RichText);
 
     ui->filePathLineEdit->setText(fileInfo.dir().absolutePath());
     ui->fileNameLineEdit->setText(fileInfo.fileName());
@@ -36,6 +39,7 @@ RenameFileDialog::RenameFileDialog(CodeEditor *textEditor, QWidget *parent)
     connect(ui->createDirCheckBox, &QCheckBox::checkStateChanged, this, &RenameFileDialog::validateAndUpdateUi);
     connect(ui->overwriteCheckBox, &QCheckBox::checkStateChanged, this, &RenameFileDialog::validateAndUpdateUi);
     connect(this, &QDialog::accepted, this, &RenameFileDialog::tryRenameFile);
+    connect(ui->browseDIrectoryPushButton, &QPushButton::clicked, this, &RenameFileDialog::onBrowseDirectoryClicked);
 
     validateAndUpdateUi();
 }
@@ -59,11 +63,6 @@ QString RenameFileDialog::newAbsoluteFilePath() const
 {
     QDir dir(ui->filePathLineEdit->text());
     return dir.filePath(ui->fileNameLineEdit->text());
-}
-
-bool RenameFileDialog::createDirectoryChecked() const
-{
-    return ui->createDirCheckBox->isChecked();
 }
 
 void RenameFileDialog::validateAndUpdateUi()
@@ -116,13 +115,14 @@ void RenameFileDialog::validateAndUpdateUi()
     if (fileExists)
     {
         // Check if the target is the same as the source file
-        bool isSameFile = QFileInfo(absPath).absoluteFilePath() == QFileInfo(getOldAbsoluteFilePath()).absoluteFilePath();
-        if (isSameFile)
+        if (bool isSameFile = QFileInfo(absPath).absoluteFilePath() == QFileInfo(getOldAbsoluteFilePath()).absoluteFilePath())
         {
             ui->targetFileInfoLabel->setText(tr("This is the current file."));
         }
         else
         {
+            ui->overwriteCheckBox->setVisible(true);
+
             QFileInfo fi(absPath);
             QString info = tr("Warning: file exists. Size: %1 B, modified: %2")
                 .arg(fi.size())
@@ -153,17 +153,40 @@ void RenameFileDialog::validateAndUpdateUi()
     }
 }
 
+void RenameFileDialog::onBrowseDirectoryClicked()
+{
+    // Let user choose file or directory
+    QString startDir = ui->filePathLineEdit->text();
+    QString fileName = ui->fileNameLineEdit->text();
+    QString selected = QFileDialog::getSaveFileName(this, tr("Select file or directory for rename"),
+                                                    QDir(startDir).filePath(fileName));
+    if (selected.isEmpty())
+        return;
+
+    QFileInfo fi(selected);
+    if (fi.isDir())
+    {
+        ui->filePathLineEdit->setText(fi.absoluteFilePath());
+        // Keep file name unchanged
+    }
+    else
+    {
+        ui->filePathLineEdit->setText(fi.absolutePath());
+        ui->fileNameLineEdit->setText(fi.fileName());
+    }
+}
+
 void RenameFileDialog::tryRenameFile()
 {
     // Final validation
     validateAndUpdateUi();
     if (ui->buttonBox->button(QDialogButtonBox::Ok) && !ui->buttonBox->button(QDialogButtonBox::Ok)->isEnabled())
     {
-        // Nie pozwól zamknąć dialogu jeśli są błędy
+        // Don't allow to close dialog when errors
         return;
     }
 
-    QString oldPath = ui->oldFilePathLabel->text();
+    QString oldPath = ui->oldFilePathValueLabel->text();
     QString newPath = newAbsoluteFilePath();
     QFileInfo fi(newPath);
     bool createDir = ui->createDirCheckBox->isChecked();
@@ -198,7 +221,7 @@ void RenameFileDialog::tryRenameFile()
     if (! src.rename(newPath))
     {
         ui->fileNameLineEdit->setStyleSheet("border: 2px solid red");
-        ui->fileNameLineEdit->setToolTip(tr("Zmiana nazwy pliku nie powiodła się."));
+        ui->fileNameLineEdit->setToolTip(tr("Rename failed!"));
 
         textEditor->enableWatchingOfFile(textEditor->getFileName());
 
@@ -214,7 +237,7 @@ void RenameFileDialog::tryRenameFile()
 QString RenameFileDialog::getOldAbsoluteFilePath() const
 {
     // The old path is in the label as HTML, extract it:
-    QString html = ui->oldFilePathLabel->text();
+    QString html = ui->oldFilePathValueLabel->text();
     QRegularExpression re("<span style='color:gray'>(.*)/</span><b>(.*)</b>");
     auto match = re.match(html);
     if (match.hasMatch())
