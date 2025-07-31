@@ -935,7 +935,7 @@ void CodeEditor::addMultiLineSelectionActions(QMenu* menu, const QTextCursor& se
 
     menu->addSeparator();
 
-    QAction* numbered = new QAction(QIcon::fromTheme("format-list-numbered"), "Add numeration: 1., 2., 3. ...", this);
+    QAction* numbered = new QAction(QIcon::fromTheme("format-list-ordered"), "Add numeration: 1., 2., 3. ...", this);
     connect(numbered, &QAction::triggered, this, [=, this]() {
         QTextCursor c = textCursor();
         ScopedEditBlock _(c);
@@ -1011,7 +1011,7 @@ void CodeEditor::addMultiLineSelectionActions(QMenu* menu, const QTextCursor& se
     // Add 'Remove numbering' and 'Renumber selection' actions only if at least one selected line starts with numbering
     if (selectionHasLineNumbering())
     {
-        QAction* removeNumberingAction = new QAction(QIcon::fromTheme("format-list-numbered-rtl"), tr("Remove numbering"));
+        QAction* removeNumberingAction = new QAction(QIcon::fromTheme("edit-clear"), tr("Remove numbering"));
         connect(removeNumberingAction, &QAction::triggered, this, &CodeEditor::removeLineNumberingFromSelection);
         menu->addAction(removeNumberingAction);
 
