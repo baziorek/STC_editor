@@ -544,6 +544,9 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset theme="chronometer"/>
+   </property>
    <property name="text">
     <string>Stop watch (uptime and working time) ☐</string>
    </property>

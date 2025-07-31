@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>253</width>
-    <height>205</height>
+    <width>248</width>
+    <height>144</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,6 +18,21 @@
   </property>
   <property name="windowTitle">
    <string>GroupBox</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QGroupBox {
+    font-weight: bold;
+    border: 2px solid #4a90e2;
+    border-radius: 6px;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    top: -7px;
+    background-color: #eef7ff;
+    color: #003366;
+}
+</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>

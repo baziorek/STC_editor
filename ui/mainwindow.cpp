@@ -94,8 +94,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     setDisabledMenuActionsDependingOnOpenedFile(/*disabled=*/true);
 
     ui->stcPreviewDockWidget->hide();
-
     ui->stopwatchGroupBox->hide();
+
     ui->findWidget->hide();
     ui->findDockWidget->hide();
     ui->findWidget->setCodeEditor(ui->textEditor);
