@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>721</width>
-    <height>213</height>
+    <width>818</width>
+    <height>149</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -51,19 +51,6 @@
    <item row="1" column="1">
     <widget class="QLineEdit" name="filePathLineEdit"/>
    </item>
-   <item row="2" column="1">
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Orientation::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
    <item row="1" column="3">
     <widget class="QPushButton" name="pushButton">
      <property name="text">
@@ -75,6 +62,20 @@
     <widget class="QCheckBox" name="createDirCheckBox">
      <property name="text">
       <string>Stwórz katalog, jeśli nie istnieje</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1" colspan="2">
+    <widget class="QCheckBox" name="overwriteCheckBox">
+     <property name="text">
+      <string>Zastąp istniejący plik</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1" colspan="3">
+    <widget class="QLabel" name="targetFileInfoLabel">
+     <property name="text">
+      <string/>
      </property>
     </widget>
    </item>

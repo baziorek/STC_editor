@@ -708,68 +708,19 @@ void MainWindow::onReloadFilePressed()
 void MainWindow::onRenameFilePressed()
 {
     const auto oldFilePath = ui->textEditor->getFileName();
-    RenameFileDialog dialog(oldFilePath, this);
+
+    RenameFileDialog dialog(ui->textEditor, this);
     if (QDialog::Accepted != dialog.exec())
         return;
 
-    const QString newDir = dialog.newFilePath();
-    const QString newFileName = dialog.newFileName();
-    const QString newFilePath = dialog.newAbsoluteFilePath();
-    const bool createDir = dialog.createDirectoryChecked();
+    const auto newFilePath = dialog.newAbsoluteFilePath();
 
-    if (oldFilePath == newFilePath)
-        return;
-
-    QDir dir(newDir);
-    if (!dir.exists())
-    {
-        if (createDir)
-        {
-            if (! dir.mkpath("."))
-            {
-                QMessageBox::warning(this, tr("Tworzenie katalogu nie powiodło się"),
-                                     tr("Nie udało się utworzyć katalogu: %1").arg(newDir));
-                return;
-            }
-        }
-        else
-        {
-            QMessageBox::warning(this, tr("Katalog nie istnieje"),
-                                 tr("Docelowy katalog nie istnieje. Zaznacz opcję tworzenia katalogu lub podaj istniejący katalog."));
-            return;
-        }
-    }
-
-    if (QFileInfo::exists(newFilePath))
-    {
-        QMessageBox::warning(this, tr("Plik już istnieje"),
-                             tr("Plik o podanej nazwie już istnieje: %1").arg(newFilePath));
-        return;
-    }
-
-    ui->textEditor->stopWatchingFiles();
-
-    QFile file(oldFilePath);
-    if (!file.rename(newFilePath))
-    {
-        QMessageBox::warning(this, tr("Zmiana nazwy pliku nie powiodła się"),
-                             tr("Nie udało się zmienić nazwy pliku na: %1").arg(newFilePath));
-        return;
-    }
-
-    // Zaktualizuj ścieżkę pliku w edytorze i obserwację
-    ui->textEditor->setFileName(newFilePath);
-    ui->textEditor->enableWatchingOfFile(newFilePath);
-
-    // Zaktualizuj tytuł okna
     updateWindowTitle(newFilePath);
-
-    // Zaktualizuj listę ostatnich plików
     updateRecentFiles(newFilePath);
 
-    QMessageBox::information(this, tr("Sukces"), tr("Plik został pomyślnie przemianowany."));
+    QMessageBox::information(this, tr("Success"), tr("Successfull rename of file from:\n")
+                             + oldFilePath + "\nto\n" + newFilePath);
 }
-
 
 bool MainWindow::loadFileContentToEditorDistargingCurrentContent(const QString& fileName)
 {
