@@ -288,7 +288,15 @@ void CodeEditor::setFileName(const QString &newFileName)
     {
         enableWatchingOfFile(newFileName);
     }
-    else if (! fileWatcher.files().isEmpty())
+    else
+    {
+        stopWatchingFiles();
+    }
+}
+
+void CodeEditor::stopWatchingFiles()
+{
+    if (! fileWatcher.files().isEmpty())
     {
         fileWatcher.removePaths(fileWatcher.files());
     }

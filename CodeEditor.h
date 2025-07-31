@@ -80,6 +80,8 @@ public:
 
     void setSearchHighlights(const QList<QTextEdit::ExtraSelection>& highlights);
 
+    void stopWatchingFiles();
+
 signals:
     void shortcutPressed_bold();
     void shortcutPressed_run();

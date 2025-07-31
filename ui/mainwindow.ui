@@ -198,6 +198,7 @@
     <addaction name="actionNew"/>
     <addaction name="actionLoad_file"/>
     <addaction name="actionReload_file"/>
+    <addaction name="actionRename_file"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_as"/>
     <addaction name="menuOpen_recent"/>
@@ -515,6 +516,17 @@
    </property>
    <property name="toolTip">
     <string>STC Tags buttons (shortcuts are not working when hidden)</string>
+   </property>
+  </action>
+  <action name="actionRename_file">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="document-save-as"/>
+   </property>
+   <property name="text">
+    <string>Rename file</string>
    </property>
   </action>
  </widget>
@@ -916,22 +928,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>menuFile</sender>
-   <signal>aboutToShow()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>onRecentRecentFilesMenuOpened()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>92</x>
-     <y>162</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>399</x>
-     <y>242</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>actionSTC_Tags_buttons</sender>
    <signal>toggled(bool)</signal>
    <receiver>buttonsEmittingStc</receiver>
@@ -944,6 +940,22 @@
     <hint type="destinationlabel">
      <x>605</x>
      <y>35</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionRename_file</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onRenameFilePressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>242</y>
     </hint>
    </hints>
   </connection>
@@ -973,5 +985,6 @@
   <slot>onReloadFilePressed()</slot>
   <slot>onHelpMenuAboutToShow()</slot>
   <slot>onViewMenuAboutToShow()</slot>
+  <slot>onRenameFilePressed()</slot>
  </slots>
 </ui>

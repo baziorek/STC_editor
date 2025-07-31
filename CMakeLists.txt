@@ -88,6 +88,7 @@ set(PROJECT_SOURCES
     widgets/DiffViewerWidget.h widgets/DiffViewerWidget.cpp
     widgets/DiffReviewDialog.h widgets/DiffReviewDialog.cpp
     widgets/BreadcrumbTextBrowser.h widgets/BreadcrumbTextBrowser.cpp
+    widgets/RenameFileDialog.h widgets/RenameFileDialog.cpp widgets/RenameFileDialog.ui
 
     utils/DiffCalculation.h utils/DiffCalculation.cpp
     utils/FileEncodingHandler.h utils/FileEncodingHandler.cpp

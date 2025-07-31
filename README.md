@@ -60,7 +60,7 @@ Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://c
 
 ## Ogólne funkcje edytora
 Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wybrane funkcjonalności, których brakuje mi w zwykłych edytorach:
- 1. **Operacje na plikach**: Wczytywanie, zapisywanie i przeładowanie pliku.
+ 1. **Operacje na plikach**: Wczytywanie, zapisywanie i przeładowanie pliku. Również zmiana nazwy otwartego pliku.
  2. **Ostatnio otwarte pliki**: Zapamiętuje ostatnio używan\e pliki wraz z ostatnią pozycją w pliku dla szybkiego dostępu.
     - Zapamiętana jest również data ostatniego otwarcia pliku w edytorze. 
  3. **Wykrywanie zmian zewnętrznych**: Powiadamia o modyfikacjach pliku z zewnątrz.
@@ -111,73 +111,77 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 
 ## Planowane funkcjonalności
 
-1. Przemianuj otwarty plik
-2. Sprawdzanie pisowni po polsku (np. [nuspell](https://github.com/nuspell/nuspell) lub [spellchecker Qt](https://doc.qt.io/qt-6/qtwebengine-webenginewidgets-spellchecker-example.html)). https://forum.qt.io/topic/158878/check-spelling-in-qlineedit-and-qplaintextedit
-3. Kurs STC wbudowany w program
-4. Menu kontekstowe HELP
-5. Wyszukiwanie wielu słów w tej samej linii niezależnie od kolejności.
-6. Wyszukaj i zamień: `Ctrl+R` z możliwością wyłączenia poszczególnych wykrytych pozycji.
+## Planowane funkcjonalności
+
+1. Sprawdzanie pisowni po polsku (np. [nuspell](https://github.com/nuspell/nuspell) lub [spellchecker Qt](https://doc.qt.io/qt-6/qtwebengine-webenginewidgets-spellchecker-example.html)). https://forum.qt.io/topic/158878/check-spelling-in-qlineedit-and-qplaintextedit
+2. Kurs STC wbudowany w program
+3. Menu kontekstowe HELP
+4. Wyszukiwanie wielu słów w tej samej linii niezależnie od kolejności.
+5. Wyszukaj i zamień: `Ctrl+R` z możliwością wyłączenia poszczególnych wykrytych pozycji.
+6. Zamiana warunkowa -np. zamień jeśli już nie jest. Np. jak chcę zamienić `cout` na `std::cout` to zamieni tylko jeśli nie jest to `std::cout`
 7. Integracja analizatora składni C++ (np. [flex](https://github.com/westes/flex)).
 8. Formatowanie kodu C++ dedykowane
 9. Podświetlanie składni C++ i Pythona za pomocą [QCXXHighlighter](https://github.com/Megaxela/QCodeEditor) (licencja MIT).
-10. Zamiana warunkowa -np. zamień jeśli już nie jest. Np. jak chcę zamienić `cout` na `std::cout` to zamieni tylko jeśli nie jest to `std::cout`
-11. Wyświetlanie statystyk zmian w czasie rzeczywistym (liczba linii, znaków, rozmiar pliku, linia i kolumna).
-12. Historia wprowadzanych zmian (`Ctrl+Z`).
-13. Dodać stoper aktywności
-14. Integracja dokumentacji cppreference (jak w `cppman` lub QtCreator).
-15. Dopasowanie rozmiaru numeracji linii do wielkości czcionki.
-16. FindWidget - aby aktualizował pozycje w tekście na bieżąco przy dodawaniu/usuwaniu linii.
-17. Sprawdzenie czy link istnieje
-18. MiniBug: funkcjonalność zmiany wielkości czcionki zakłóca nowe tagi. Jak powiększymy czcionkę i potem dodamy coś np. H1, to on będzie miał czcionkę nawet mniejszą niż reszta, mimo iż to nagłówek
-19. Może AI mi podzieli CodeEditor aby nie był GodObject
-20. Dodać check: czy nie zamykam nieotwartego tagu?
-21. Sprawdzenie czy Run nie jest poza csv lub pkt
-22. Ctrl + V gdy mamy obrazek w schowku - wtedy powinno zaproponować umieszczenie obrazka w odpowiednim katalogu
-23. Tłumaczenia aplikacji na wiele języków: QLinguist
-24. Rozważyć użycie tej samej biblioteki do porównywania zarówno linii jak i znaków np. https://github.com/google/diff-match-patch
-25. Podpięcie sztucznej inteligencji np. [Ollama](https://ollama.com)
-26. Przy CTRL + SCROLL wyświetlanie informacji o rozmiarze czcionki (jak QtCreator)
-27. Kreator tabel dla znaczników STC.
-28. Wyszukiwanie tekstu może też oznaczyć szukany tekst w dokumencie np. ramką
-29. Śledzenie pozycji między pozycją w dokumencie źródłowym a podglądem HTML
-30. Historia zmian w linii
-31. Precompiled headers dla codeEditor.h i moduły
-32. IWYU podpiąć pod CMake'a
-33. Zwijanie nagłówków i kodu (jak funkcje w środowiskach programistycznych)
-34. Automatyczne backupy treści
-35. W danej linii da się wpisać dane np.: `QTextBlockUserData` i potem `block.setUserData(data);` - może da się to wykorzystać w optymalizacji
-36. Sprawdzania:
+10. Wyświetlanie statystyk zmian w czasie rzeczywistym (liczba linii, znaków, rozmiar pliku, linia i kolumna).
+11. Historia wprowadzanych zmian (`Ctrl+Z`).
+12. Dodać stoper aktywności: jak długo jest włączony edytor, ile klawiszy naciśnięto, odkąd nie piszą
+13. Integracja dokumentacji cppreference (jak w `cppman` lub QtCreator).
+14. FindWidget - aby aktualizował pozycje w tekście na bieżąco przy dodawaniu/usuwaniu linii.
+15. Szukanie tylko w kodzie
+16. Może AI mi podzieli CodeEditor aby nie był GodObject
+17. Sprawdzenie czy Run nie jest poza csv lub pkt
+18. Ctrl + V gdy mamy obrazek w schowku - wtedy powinno zaproponować umieszczenie obrazka w odpowiednim katalogu
+19. Tłumaczenia aplikacji na wiele języków: QLinguist
+20. Rozważyć użycie tej samej biblioteki do porównywania zarówno linii jak i znaków np. https://github.com/google/diff-match-patch
+21. Podpięcie sztucznej inteligencji np. [Ollama](https://ollama.com)
+22. Przy CTRL + SCROLL wyświetlanie informacji o rozmiarze czcionki (jak QtCreator)
+23. Kreator tabel dla znaczników STC.
+24. PreviewWidget: Śledzenie pozycji między pozycją w dokumencie źródłowym a podglądem HTML
+25. Historia zmian w linii
+26. Precompiled headers dla codeEditor.h i moduły
+27. IWYU podpiąć pod CMake'a
+28. Zwijanie nagłówków i kodu (jak funkcje w środowiskach programistycznych)
+29. Automatyczne backupy treści
+30. W danej linii da się wpisać dane np.: `QTextBlockUserData` i potem `block.setUserData(data);` - może da się to wykorzystać w optymalizacji
+31. Optymalizacja wydajności edytora przy szybkim pisaniu.
+32. Podgląd terminala np. przez https://github.com/lxqt/qtermwidget - tylko czy mi to nie zrobi GPLa?
+33. Zastąpienie listy kontekstu widżetem drzewiastym.
+34. W linijce gradient ostatnio używanych linii z numerami ile temu
+35. Ukrycie tagów, nie licząc otaczających (rich text editor)
+36. Możliwość wyłączenia poszczególnych aspektów kolorowania składni.
+37. Następna/poprzednia zmiana: przycisk pozwalający skakać po zmianach w dokumencie
+38. Sensowne funkcjonalności z innych podobnych edytorów np. [Scribe-Text-Editor](https://github.com/AleksandrHovhannisyan/Scribe-Text-Editor)
+39. Podgląd strony internetowej po najechaniu myszką
+40. Wsparcie dla MD na bazie: https://github.com/Qt-Widgets/notes
+41. Inne widgety np. https://github.com/Qt-Widgets/SlidingStackedWidget-1 z listy: https://github.com/Qt-Widgets/ lub https://qwt.sourceforge.io/index.html
+42. Skanowanie dokumentu w osobnym wątku dla lepszej wydajności.
+43. Nagrywanie i odtwarzanie makr.
+44. Obsługa wtyczek, być może z użyciem Lua.
+45. Zamiana prefiksów adresów URL dla obrazów na serwerze.
+46. Dyktowanie tekstu (biblioteka [Whisper](https://github.com/openai/whisper))
+47. Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
+48. Otwieranie wielu plików jednocześnie.
+49. Widok sąsiadujący do porównywania plików.
+50. Eksport bloków kodu do osobnych plików.
+51. Konsolidacja obrazów do jednego katalogu z aktualizacją ścieżek w znacznikach STC.
+52. Przy porównywaniu difa niezapisanych zmian z zawartością pliku (linijka w linijkę): możliwość zapisania na dysk poszczególnych linii.
+53. Gdy zewnętrzne zmiany w pliku to powinno też pokazać diffa.
+54. Gdy wyświetlamy diffa, ale linie są długie to pojawia się scrolling area, a nie powinna.
+55. Szybsze wyjście z aplikacji - po prostu wyjście, bez przywracania stanu niewymagającego zapisu
+56. Rezultat komendy w edytorze.
+57. Sprawdzania:
      - Sprawdzanie, czy znaczniki `[run]` znajdują się wewnątrz `[pkt]`.
      - Weryfikacja, czy wszystkie znaczniki są zamknięte (np. po opuszczeniu linijki sprawdzamy czy są tam zmiany, jak tak, to czy jest tam nowy tag)
      - Weryfikacja odpowiednich atrybutów w tagach (czy w cudzysłowiu, czy tylko dozwole atrubytu)
      - Weryfikacja czy wprowadzono tylko legalne tagi STC
-37. Optymalizacja wydajności edytora przy szybkim pisaniu.
-38. Szukanie tylko w kodzie
-39. Podgląd terminala np. przez https://github.com/lxqt/qtermwidget - tylko czy mi to nie zrobi GPLa?
-40. Zastąpienie listy kontekstu widżetem drzewiastym.
-41. W linijce gradient ostatnio używanych linii z numerami ile temu
-42. Ukrycie tagów, nie licząc otaczających (rich text editor)
-43. Możliwość wyłączenia poszczególnych aspektów kolorowania składni.
-44. Następna/poprzednia zmiana: przycisk pozwalający skakać po zmianach w dokumencie
-45. Zmiana wielkości czcionki powinna też wpłynąć na czcionkę w ramach numeracji linii
-46. Sensowne funkcjonalności z innych podobnych edytorów np. [Scribe-Text-Editor](https://github.com/AleksandrHovhannisyan/Scribe-Text-Editor)
-47. Podgląd strony internetowej po najechaniu myszką
-48. Wsparcie dla MD na bazie: https://github.com/Qt-Widgets/notes
-49. Inne widgety np. https://github.com/Qt-Widgets/SlidingStackedWidget-1 z listy: https://github.com/Qt-Widgets/ lub https://qwt.sourceforge.io/index.html
-50. Skanowanie dokumentu w osobnym wątku dla lepszej wydajności.
-51. Nagrywanie i odtwarzanie makr.
-52. Obsługa wtyczek, być może z użyciem Lua.
-53. Zamiana prefiksów adresów URL dla obrazów na serwerze.
-54. Dyktowanie tekstu (biblioteka [Whisper](https://github.com/openai/whisper))
-55. Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
-56. Otwieranie wielu plików jednocześnie.
-57. Widok sąsiadujący do porównywania plików.
-58. Eksport bloków kodu do osobnych plików.
-59. Konsolidacja obrazów do jednego katalogu z aktualizacją ścieżek w znacznikach STC.
-60. Przy porównywaniu difa niezapisanych zmian z zawartością pliku (linijka w linijkę): możliwość zapisania na dysk poszczególnych linii.
-61. Gdy zewnętrzne zmiany w pliku to powinno też pokazać diffa.
-62. Gdy wyświetlamy diffa, ale linie są długie to pojawia się scrolling area, a nie powinna.
-63. Wklejanie coś się popsuło - wkleja "dziwne" znaczki
+     - Sprawdzenie czy link istnieje
+     - Dodać check: czy nie zamykam nieotwartego tagu?
+
+## Min Bugi:
+1. Dopasowanie rozmiaru numeracji linii do wielkości czcionki.
+2. MiniBug: funkcjonalność zmiany wielkości czcionki zakłóca nowe tagi. Jak powiększymy czcionkę i potem dodamy coś np. H1, to on będzie miał czcionkę nawet mniejszą niż reszta, mimo iż to nagłówek
+3. Zmiana wielkości czcionki powinna też wpłynąć na czcionkę w ramach numeracji linii
+4. Wklejanie coś się popsuło - wkleja "dziwne" znaczki
 
 ## Współpraca
 

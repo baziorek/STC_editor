@@ -15,6 +15,7 @@
 #include "types/documentstatistics.h"
 #include "widgets/LoginDialog.h"
 #include "widgets/DiffReviewDialog.h"
+#include "widgets/RenameFileDialog.h"
 using namespace std;
 
 namespace
@@ -704,6 +705,72 @@ void MainWindow::onReloadFilePressed()
     ui->textEditor->reloadFromFile(/*discardChanges=*/true);
 }
 
+void MainWindow::onRenameFilePressed()
+{
+    const auto oldFilePath = ui->textEditor->getFileName();
+    RenameFileDialog dialog(oldFilePath, this);
+    if (QDialog::Accepted != dialog.exec())
+        return;
+
+    const QString newDir = dialog.newFilePath();
+    const QString newFileName = dialog.newFileName();
+    const QString newFilePath = dialog.newAbsoluteFilePath();
+    const bool createDir = dialog.createDirectoryChecked();
+
+    if (oldFilePath == newFilePath)
+        return;
+
+    QDir dir(newDir);
+    if (!dir.exists())
+    {
+        if (createDir)
+        {
+            if (! dir.mkpath("."))
+            {
+                QMessageBox::warning(this, tr("Tworzenie katalogu nie powiodło się"),
+                                     tr("Nie udało się utworzyć katalogu: %1").arg(newDir));
+                return;
+            }
+        }
+        else
+        {
+            QMessageBox::warning(this, tr("Katalog nie istnieje"),
+                                 tr("Docelowy katalog nie istnieje. Zaznacz opcję tworzenia katalogu lub podaj istniejący katalog."));
+            return;
+        }
+    }
+
+    if (QFileInfo::exists(newFilePath))
+    {
+        QMessageBox::warning(this, tr("Plik już istnieje"),
+                             tr("Plik o podanej nazwie już istnieje: %1").arg(newFilePath));
+        return;
+    }
+
+    ui->textEditor->stopWatchingFiles();
+
+    QFile file(oldFilePath);
+    if (!file.rename(newFilePath))
+    {
+        QMessageBox::warning(this, tr("Zmiana nazwy pliku nie powiodła się"),
+                             tr("Nie udało się zmienić nazwy pliku na: %1").arg(newFilePath));
+        return;
+    }
+
+    // Zaktualizuj ścieżkę pliku w edytorze i obserwację
+    ui->textEditor->setFileName(newFilePath);
+    ui->textEditor->enableWatchingOfFile(newFilePath);
+
+    // Zaktualizuj tytuł okna
+    updateWindowTitle(newFilePath);
+
+    // Zaktualizuj listę ostatnich plików
+    updateRecentFiles(newFilePath);
+
+    QMessageBox::information(this, tr("Sukces"), tr("Plik został pomyślnie przemianowany."));
+}
+
+
 bool MainWindow::loadFileContentToEditorDistargingCurrentContent(const QString& fileName)
 {
     ui->todosTableWidget->clearTodos();
@@ -950,6 +1017,7 @@ void MainWindow::setDisabledMenuActionsDependingOnOpenedFile(bool disabled)
     ui->actionCopy_absolute_path->setDisabled(disabled);
     ui->actionCopy_basename->setDisabled(disabled);
     ui->actionReload_file->setDisabled(disabled);
+    ui->actionRename_file->setDisabled(disabled);
 }
 
 void MainWindow::loadSettings()

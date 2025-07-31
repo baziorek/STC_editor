@@ -45,6 +45,7 @@ public slots:
     bool onSavePressed();
     void onOpenPressed();
     void onReloadFilePressed();
+    void onRenameFilePressed();
     void onExitFromApplicationMenuPressed();
     void onRecentRecentFilesMenuOpened();
     void onCopyFileAbsoluteNamePressed();
