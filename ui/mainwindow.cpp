@@ -10,6 +10,7 @@
 #include "./ui_mainwindow.h"
 #include "ui/shortcutsdialog.h"
 #include "ui/stctagsbuttons.h"
+#include "ui/WorkAwareStopwatch.h"
 #include "checkers/PairedTagsChecker.h"
 #include "errorlist.h"
 #include "types/documentstatistics.h"
@@ -94,6 +95,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     ui->stcPreviewDockWidget->hide();
 
+    ui->stopwatchGroupBox->hide();
     ui->findWidget->hide();
     ui->findDockWidget->hide();
     ui->findWidget->setCodeEditor(ui->textEditor);
@@ -122,6 +124,7 @@ void MainWindow::connectSignals2Slots()
     connect(ui->todosTableWidget, &TodoTrackerTableWidget::todosTotalCountChanged, [this](int todosTotal) {
         ui->contextsTabWidget->setTabText(2, tr("TODOs (") + QString::number(todosTotal) + ")");
     });
+    connect(ui->textEditor, &QPlainTextEdit::textChanged, ui->stopwatchGroupBox, &WorkAwareStopwatch::notifyWorkActivity);
 
     ui->breadcrumbTextBrowser->setTextEditor(ui->textEditor);
     ui->breadcrumbTextBrowser->setHeaderTable(ui->contextTableWidget);
@@ -800,6 +803,11 @@ void MainWindow::onBreadcrumbVisibilityChanged(bool visible)
     }
 }
 
+void MainWindow::onStopWatchVisibilityChanged(bool visible)
+{
+    ui->stopwatchGroupBox->setVisible(visible);
+}
+
 void MainWindow::onViewMenuAboutToShow()
 {
     /** this functions is because checkboxes are not visible when there are icons close to actions.
@@ -823,6 +831,7 @@ void MainWindow::onViewMenuAboutToShow()
     changeCheckedState(ui->actionSTC_Tags_buttons);
     changeCheckedState(ui->actionShort_conspect);
     changeCheckedState(ui->actionStc_Preview_account_at_Cpp0x_pl_required);
+    changeCheckedState(ui->actionStop_watch_uptime_and_working_time);
 }
 
 void MainWindow::surroundSelectedTextWithTag(QString divClass, QString textBase, QString extraAttributes, bool closable)

@@ -92,6 +92,7 @@ Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wyb
     - Zmiany mają również pokazane różnicę w numerach poszczególnych znaków, wtedy możemy lepiej odróżnić znaki, które "na oko" są takie same.
 13. **Ukrywalne widgety**: wszystko poza edytorem tekstu można ukryć, dzięki temu pewne funkcje są wyłączone i edytowanie działa szybciej.
 14. **Obsługa różnych kodowań pliku tekstowego**: Nie tylko UTF-8. Jest to dzięki bibliotece [uchardet](https://gitlab.freedesktop.org/uchardet/uchardet).
+15. **Stoper pracy**: stoper, który odpala się po uruchomieniu edytora i liczy zarówno czas kiedy edytor jest włączony, jak i czas pracy w edytorze (wykrywa naciśnięcia klawiszy, gdy ich długo nie ma to się zatrzymuje)
 
 ## ⬇️ Pobieranie (najnowsza wersja zbudowana automatycznie)
 
@@ -124,7 +125,7 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 9. Podświetlanie składni C++ i Pythona za pomocą [QCXXHighlighter](https://github.com/Megaxela/QCodeEditor) (licencja MIT).
 10. Wyświetlanie statystyk zmian w czasie rzeczywistym (liczba linii, znaków, rozmiar pliku, linia i kolumna).
 11. Historia wprowadzanych zmian (`Ctrl+Z`).
-12. Dodać stoper aktywności: jak długo jest włączony edytor, ile klawiszy naciśnięto, odkąd nie piszą
+12. Szybsze wyjście z aplikacji - po prostu wyjście, bez przywracania stanu niewymagającego zapisu
 13. Integracja dokumentacji cppreference (jak w `cppman` lub QtCreator).
 14. FindWidget - aby aktualizował pozycje w tekście na bieżąco przy dodawaniu/usuwaniu linii.
 15. Szukanie tylko w kodzie
@@ -167,9 +168,8 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 52. Przy porównywaniu difa niezapisanych zmian z zawartością pliku (linijka w linijkę): możliwość zapisania na dysk poszczególnych linii.
 53. Gdy zewnętrzne zmiany w pliku to powinno też pokazać diffa.
 54. Gdy wyświetlamy diffa, ale linie są długie to pojawia się scrolling area, a nie powinna.
-55. Szybsze wyjście z aplikacji - po prostu wyjście, bez przywracania stanu niewymagającego zapisu
-56. Rezultat komendy w edytorze.
-57. Sprawdzania:
+55. Rezultat komendy w edytorze.
+56. Sprawdzania:
      - Sprawdzanie, czy znaczniki `[run]` znajdują się wewnątrz `[pkt]`.
      - Weryfikacja, czy wszystkie znaczniki są zamknięte (np. po opuszczeniu linijki sprawdzamy czy są tam zmiany, jak tak, to czy jest tam nowy tag)
      - Weryfikacja odpowiednich atrybutów w tagach (czy w cudzysłowiu, czy tylko dozwole atrubytu)

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>485</height>
+    <height>488</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,59 +15,27 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0" rowspan="6">
-     <widget class="QWidget" name="containerForCodeEditorAndBreadcromb" native="true">
+    <item row="4" column="1">
+     <widget class="GoToLineWidget" name="goToLineGroupBox">
       <property name="minimumSize">
        <size>
-        <width>100</width>
-        <height>0</height>
+        <width>0</width>
+        <height>70</height>
        </size>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="BreadcrumbTextBrowser" name="breadcrumbTextBrowser">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>24</height>
-          </size>
-         </property>
-         <property name="verticalScrollBarPolicy">
-          <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
-         </property>
-         <property name="horizontalScrollBarPolicy">
-          <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
-         </property>
-         <property name="openLinks">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="CodeEditor" name="textEditor">
-         <property name="font">
-          <font>
-           <pointsize>14</pointsize>
-          </font>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QPlainText {
-	background-color: rgb(255, 255, 255);
-	color: rgb(0, 0, 0);
-    font-family: monospace;
-}
-
-</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <property name="title">
+       <string>Go to line</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1" rowspan="2">
+     <widget class="StcTagsButtons" name="buttonsEmittingStc">
+      <property name="frameShape">
+       <enum>QFrame::Shape::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Shadow::Raised</enum>
+      </property>
      </widget>
     </item>
     <item row="3" column="1">
@@ -149,26 +117,68 @@
       </widget>
      </widget>
     </item>
-    <item row="0" column="1" rowspan="2">
-     <widget class="StcTagsButtons" name="buttonsEmittingStc">
-      <property name="frameShape">
-       <enum>QFrame::Shape::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Shadow::Raised</enum>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="1">
-     <widget class="GoToLineWidget" name="goToLineGroupBox">
+    <item row="0" column="0" rowspan="6">
+     <widget class="QWidget" name="containerForCodeEditorAndBreadcromb" native="true">
       <property name="minimumSize">
        <size>
-        <width>0</width>
-        <height>70</height>
+        <width>100</width>
+        <height>0</height>
        </size>
       </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="BreadcrumbTextBrowser" name="breadcrumbTextBrowser">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>24</height>
+          </size>
+         </property>
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="openLinks">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="CodeEditor" name="textEditor">
+         <property name="font">
+          <font>
+           <pointsize>14</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPlainText {
+	background-color: rgb(255, 255, 255);
+	color: rgb(0, 0, 0);
+    font-family: monospace;
+}
+
+</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="WorkAwareStopwatch" name="stopwatchGroupBox">
       <property name="title">
-       <string>Go to line</string>
+       <string>Stopwatch (uptime and working  time)</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
       </property>
      </widget>
     </item>
@@ -239,6 +249,7 @@
     <addaction name="actionShort_conspect"/>
     <addaction name="actionGo_to_line"/>
     <addaction name="actionStc_Preview_account_at_Cpp0x_pl_required"/>
+    <addaction name="actionStop_watch_uptime_and_working_time"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -529,6 +540,14 @@
     <string>Rename file</string>
    </property>
   </action>
+  <action name="actionStop_watch_uptime_and_working_time">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Stop watch (uptime and working time) ☐</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -585,6 +604,12 @@
    <class>BreadcrumbTextBrowser</class>
    <extends>QTextBrowser</extends>
    <header>widgets/BreadcrumbTextBrowser.h</header>
+  </customwidget>
+  <customwidget>
+   <class>WorkAwareStopwatch</class>
+   <extends>QGroupBox</extends>
+   <header>ui/WorkAwareStopwatch.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>
@@ -959,6 +984,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionStop_watch_uptime_and_working_time</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onStopWatchVisibilityChanged(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>243</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onSaveAsPressed()</slot>
@@ -986,5 +1027,6 @@
   <slot>onHelpMenuAboutToShow()</slot>
   <slot>onViewMenuAboutToShow()</slot>
   <slot>onRenameFilePressed()</slot>
+  <slot>onStopWatchVisibilityChanged(bool)</slot>
  </slots>
 </ui>

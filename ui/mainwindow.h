@@ -65,6 +65,7 @@ public slots:
     void onContextShowChanged(bool visible);
     void onGoToLineShowChanged(bool visible);
     void onBreadcrumbVisibilityChanged(bool visible);
+    void onStopWatchVisibilityChanged(bool visible);
 
     /// help menu:
     void onStcCoursePressed();

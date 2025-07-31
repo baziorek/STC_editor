@@ -72,6 +72,7 @@ set(PROJECT_SOURCES
     ui/shortcutsdialog.h ui/shortcutsdialog.cpp
     ui/highlightdelegate.h ui/highlightdelegate.cpp
     ui/cppcompilerdialog.h ui/cppcompilerdialog.cpp
+    ui/WorkAwareStopwatch.h ui/WorkAwareStopwatch.cpp ui/WorkAwareStopwatch.ui
 
     checkers/PairedTagsChecker.h checkers/PairedTagsChecker.cpp
 
