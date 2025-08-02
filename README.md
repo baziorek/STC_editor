@@ -13,7 +13,7 @@ Prosty edytor tekstu stworzony w Qt, ułatwiający wstawianie znaczników [STC](
 ## Opis
 Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników STC na potrzeby tworzenia treści dla [cpp0x.pl](https://cpp0x.pl/). Oferuje prosty interfejs oparty na Qt z polem tekstowym i przyciskami do wstawiania znaczników STC oraz dedykowane funkcje zwiększające produktywność.
 
-![Zrzut ekranu](screens/applicationSample.png)
+![Przykładowy screen aplikacji](screens/applicationSample.png)
 
 ## Dedykowane funkcje
 Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://cpp0x.pl/) (do czego zachęcam):
@@ -114,7 +114,7 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 
 ## Planowane funkcjonalności
 
-1. Sprawdzanie pisowni po polsku (np. [nuspell](https://github.com/nuspell/nuspell) lub [spellchecker Qt](https://doc.qt.io/qt-6/qtwebengine-webenginewidgets-spellchecker-example.html)). https://forum.qt.io/topic/158878/check-spelling-in-qlineedit-and-qplaintextedit
+1. Sprawdzanie pisowni po polsku (np. [nuspell](https://github.com/nuspell/nuspell) lub https://forum.qt.io/topic/158878/check-spelling-in-qlineedit-and-qplaintextedit i https://wiki.qt.io/Spell-Checking-with-Hunspell
 2. Kurs STC wbudowany w program
 3. Menu kontekstowe HELP
 4. Wyszukiwanie wielu słów w tej samej linii niezależnie od kolejności.
@@ -206,6 +206,18 @@ Narzędzie to okazało się bardzo pomocne przy tworzeniu artykułów na [Cpp0x.
 1. [pydifflib-cpp](https://github.com/dominicprice/pydifflib-cpp) - do znajdywania różnic między liniami: które linie dodane, usunięte, zmodyfikowane. Licencja "PSF"
 2. [diff-match-patch-cpp-stl](https://github.com/leutloff/diff-match-patch-cpp-stl/) - do znajdywania różnic między znakami w ramach odpowiadających sobie linijkach. Licencja "Apache 2.0"
 3. [uchardet](https://gitlab.freedesktop.org/uchardet/uchardet) - biblioteka obsługujące różne rodzaje kodowań plików (nie tylko UTF-8). Licencja "MOZILLA PUBLIC LICENSE"
+4. [nuspell](https://nuspell.github.io/) - biblioteka do sprawdzania pisowni w różnych językach, korzystająca ze słowników [Hunspell](https://hunspell.github.io/).
+
+### Słowniki (język polski)
+
+Aplikacja wykorzystuje [słowniki](https://github.com/nuspell/nuspell/wiki/Dictionaries-and-Contacts) [Hunspell](https://hunspell.github.io/) ([pl_PL.aff](https://cgit.freedesktop.org/libreoffice/dictionaries/plain/pl_PL/pl_PL.aff), [pl_PL.dic](https://cgit.freedesktop.org/libreoffice/dictionaries/plain/pl_PL/pl_PL.dic)) udostępnione w ramach projektu LibreOffice.
+
+Słowniki te są objęte licencją [Mozilla Public License v2.0 (MPL-2.0)](https://www.mozilla.org/MPL/2.0/).  
+Oryginalne źródła pobrane z [repozytoriów libreoffice](https://cgit.freedesktop.org/libreoffice/dictionaries/tree/pl_PL)
+
+Autorzy i szczegóły licencji znajdują się w plikach:
+- [README_pl.txt](dictionaries/pl/README_pl.txt)
+- [README_en.txt](dictionaries/pl/README_en.txt)
 
 ## Ostrzeżenie
 

@@ -6,6 +6,7 @@
 #include <QVector>
 #include <QString>
 #include <QRegularExpression>
+#include "utils/SpellChecker.h"
 
 /// class inspired with: https://doc.qt.io/qt-6.2/qtwidgets-richtext-syntaxhighlighter-example.html
 class STCSyntaxHighlighter : public QSyntaxHighlighter
@@ -73,4 +74,6 @@ private:
 
     QVector<QPair<int, int>> _codeRangesThisLine;     // position start and length
     QVector<QPair<int, int>> _noFormatRangesThisLine; // position start and length
+
+    SpellChecker spellChecker;
 };

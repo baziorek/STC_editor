@@ -56,6 +56,33 @@ else()
     endif()
 endif()
 
+# ------------------ Nuspell (system or FetchContent) ------------------
+# --- Try to find system Nuspell ---
+find_package(Nuspell QUIET)
+
+# --- If not found, fetch and build it ---
+if(NOT Nuspell_FOUND)
+    message(STATUS "Nuspell not found, fetching and building it from source...")
+
+    FetchContent_Declare(
+        nuspell
+        GIT_REPOSITORY https://github.com/nuspell/nuspell.git
+        GIT_TAG v5.1.6
+    )
+
+    set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+    set(BUILD_DOCS OFF CACHE BOOL "" FORCE)
+    set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
+    set(BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+
+    FetchContent_MakeAvailable(nuspell)
+
+    # Ustaw alias, by mieć zawsze Nuspell::nuspell
+    if(NOT TARGET Nuspell::nuspell)
+        add_library(Nuspell::nuspell ALIAS nuspell)
+    endif()
+endif()
+
 # ------------------ Źródła projektu ------------------
 include_directories(${PROJECT_SOURCE_DIR}) # dla plików .ui
 
@@ -94,6 +121,7 @@ set(PROJECT_SOURCES
     utils/DiffCalculation.h utils/DiffCalculation.cpp
     utils/FileEncodingHandler.h utils/FileEncodingHandler.cpp
     utils/STCSyntaxHighlighter.h utils/STCSyntaxHighlighter.cpp
+    utils/SpellChecker.h utils/SpellChecker.cpp
 )
 
 set(TEXT_FILES
@@ -104,6 +132,10 @@ set(TEXT_FILES
     .github/workflows/release-windows.yml
     .github/workflows/test-linux.yml
     .github/workflows/README.md
+    dictionaries/pl/pl_PL.aff
+    dictionaries/pl/pl_PL.dic
+    dictionaries/pl/README_en.txt
+    dictionaries/pl/README_pl.txt
 )
 
 set(PROJECT_FILES ${PROJECT_SOURCES} ${TEXT_FILES})
@@ -151,6 +183,12 @@ if(TARGET uchardet_headers)
     target_link_libraries(${PROJECT_NAME} PRIVATE uchardet_headers)
 endif()
 
+target_link_libraries(${PROJECT_NAME} PRIVATE Nuspell::nuspell)
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    DICTIONARY_PATH="${CMAKE_CURRENT_SOURCE_DIR}/dictionaries/pl/pl_PL.aff"
+)
+
 # ------------------ Właściwości targetu ------------------
 if(${QT_VERSION} VERSION_LESS 6.1.0)
     set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.Cpp0x)
@@ -170,6 +208,11 @@ install(TARGETS ${PROJECT_NAME}
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+install(FILES
+    ${PROJECT_SOURCE_DIR}/dictionaries/pl/pl_PL.aff
+    ${PROJECT_SOURCE_DIR}/dictionaries/pl/pl_PL.dic
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/STC_editor/dictionaries/pl
 )
 
 if(QT_VERSION_MAJOR EQUAL 6)
@@ -192,5 +235,5 @@ if(NOT WIN32)
     )
 
     target_link_libraries(${PROJECT_NAME}Tests PRIVATE ${GTEST_LIBRARIES} pthread gtest_main)
-    add_test(NAME Cpp0xTests COMMAND ${PROJECT_NAME}Tests)
+    add_test(NAME ${PROJECT_NAME}Tests COMMAND ${PROJECT_NAME}Tests)
 endif()
