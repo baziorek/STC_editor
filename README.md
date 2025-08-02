@@ -129,7 +129,7 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 13. FindWidget - aby aktualizował pozycje w tekście na bieżąco przy dodawaniu/usuwaniu linii.
 14. Szukanie tylko w kodzie
 15. Może AI mi podzieli CodeEditor aby nie był GodObject
-16. Sprawdzenie czy Run nie jest poza csv lub pkt
+16. 
 17. Ctrl + V gdy mamy obrazek w schowku - wtedy powinno zaproponować umieszczenie obrazka w odpowiednim katalogu
 18. Tłumaczenia aplikacji na wiele języków: QLinguist
 19. Rozważyć użycie tej samej biblioteki do porównywania zarówno linii jak i znaków np. https://github.com/google/diff-match-patch
@@ -175,6 +175,7 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
      - Weryfikacja czy wprowadzono tylko legalne tagi STC
      - Sprawdzenie czy link istnieje
      - Dodać check: czy nie zamykam nieotwartego tagu?
+     - Sprawdzenie czy Run nie jest poza csv lub pkt
 
 ## Min Bugi:
 1. Dopasowanie rozmiaru numeracji linii do wielkości czcionki.

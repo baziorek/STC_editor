@@ -56,28 +56,7 @@ else()
     endif()
 endif()
 
-# ------------------ Nuspell (system or FetchContent) ------------------
-if(WIN32)
-    find_package(ICU QUIET COMPONENTS uc i18n data) # dependency for Nuspell
-
-    if(NOT ICU_FOUND)
-        message(STATUS "ICU not found – using FetchContent to download ICU for Windows")
-
-        include(FetchContent)
-        FetchContent_Declare(
-            icu
-            URL https://github.com/unicode-org/icu/releases/download/release-70-1/icu4c-70_1-src.zip
-        )
-        FetchContent_MakeAvailable(icu)
-
-        # Try to find again after downloading
-        find_package(ICU REQUIRED COMPONENTS uc i18n data)
-    endif()
-
-    target_link_libraries(${PROJECT_NAME} PRIVATE ICU::uc ICU::i18n ICU::data)
-endif()
-
-# --- Try to find system Nuspell ---
+# ------------------ Nuspell (VCPKG or FetchContent) ------------------
 find_package(Nuspell QUIET)
 
 # --- If not found, fetch and build it ---
