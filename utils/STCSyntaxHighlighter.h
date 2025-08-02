@@ -24,6 +24,7 @@ protected:
     bool highlightCodeBlock(const QString &text);
     bool highlightTextStyleTags(const QString& text);
     bool highlightTagsWithAttributes(const QString& text);
+    void highlightPlainTextContent(const QString &text);
 
     void addBlockStyle(const QString &tag,
                        QColor foreground = Qt::black,

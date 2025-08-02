@@ -57,6 +57,7 @@ Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://c
     - Niektóre tagi mają inteligentne zaznaczenie np. jak mamy zaznaczony link i tekst, a chcemy otoczyć przez `[a href=...]` to link wstawi w miejsce odnośnika a resztę tekstu jako nazwę linka.
     - Podobnie jest z zaznaczeniem tekstu zawierającego ścieżkę do obrazka, a chcemy otoczyć przez `[img src...]` to wtedy nazwa obrazka stanowi jego adres, a reszta zaznaczonego tekstu jego opis.
     - Gdy mamy zaznaczony tekst, który jest już otagowany i wywołujemy ponowne tagowanie tego tekstu tymi samymi tagami to jeśli jest zaznaczony tekst z tagami lub wewnatrz tagów to zostaną te tagi usunięte.
+22. **Sprawdzanie literówek** (ang. spellcheck): teksty jest sprawdzany ze słownikiem (biblioteka [nuspell](https://nuspell.github.io/)), oraz są podkreślane nieistniejące wyrazy w języku polskim. Oczywiście w ramach tagów STC tekst jest pomijany (chyba, że atrybuty wymagające sprawdzenia, np. opis obrazka).
 
 ## Ogólne funkcje edytora
 Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wybrane funkcjonalności, których brakuje mi w zwykłych edytorach:
@@ -114,7 +115,7 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 
 ## Planowane funkcjonalności
 
-1. Sprawdzanie pisowni po polsku (np. [nuspell](https://github.com/nuspell/nuspell) lub https://forum.qt.io/topic/158878/check-spelling-in-qlineedit-and-qplaintextedit i https://wiki.qt.io/Spell-Checking-with-Hunspell
+1. Menu kontekstowe z podpowiedziamy poprawiającymi literówki.
 2. Kurs STC wbudowany w program
 3. Menu kontekstowe HELP
 4. Wyszukiwanie wielu słów w tej samej linii niezależnie od kolejności.

@@ -159,6 +159,9 @@ void STCSyntaxHighlighter::highlightBlock(const QString &text)
     bool hrefImgChanges = highlightTagsWithAttributes(text);
     DEBUG(hrefImgChanges, "href/img");
 
+    // --- 7. Spellcheck for untagged plain text ---
+    highlightPlainTextContent(text);
+
     bool anyChange = divChanges | headersChanges | pktOrCsvChanges | codeChanges | styleChanges | hrefImgChanges;
     if (!anyChange)
         setCurrentBlockState(prev);
@@ -911,6 +914,61 @@ bool STCSyntaxHighlighter::highlightTagsWithAttributes(const QString& text)
     }
 
     return found;
+}
+
+void STCSyntaxHighlighter::highlightPlainTextContent(const QString& text)
+{
+    const int length = text.length();
+    QVector<QPair<int, int>> excludedRanges = _codeRangesThisLine + _noFormatRangesThisLine;
+
+    // Exclude also tag-like segments: [tag] or [/tag]
+    static const QRegularExpression tagRe(R"(\[\/?\w+.*?\])");
+    QRegularExpressionMatchIterator tagIt = tagRe.globalMatch(text);
+    while (tagIt.hasNext())
+    {
+        auto m = tagIt.next();
+        excludedRanges.append({ m.capturedStart(), m.capturedLength() });
+    }
+
+    // Sort and merge excluded ranges to avoid overlap
+    std::sort(excludedRanges.begin(), excludedRanges.end());
+    QVector<QPair<int, int>> mergedRanges;
+    for (const auto& range : excludedRanges)
+    {
+        if (mergedRanges.isEmpty()) {
+            mergedRanges.append(range);
+        }
+        else
+        {
+            auto& last = mergedRanges.last();
+            int lastEnd = last.first + last.second;
+            if (range.first <= lastEnd)
+            {
+                // Overlapping ranges: extend
+                last.second = std::max(lastEnd, range.first + range.second) - last.first;
+            }
+            else
+            {
+                mergedRanges.append(range);
+            }
+        }
+    }
+
+    // Apply spellchecking between excluded ranges
+    int current = 0;
+    for (const auto& range : mergedRanges)
+    {
+        int start = current;
+        int end = range.first;
+        if (end > start)
+            applySpellcheckToTextRange(text, start, end - start, format(start));
+
+        current = std::max(current, range.first + range.second);
+    }
+
+    // Check remaining tail
+    if (current < length)
+        applySpellcheckToTextRange(text, current, length - current, format(current));
 }
 
 void STCSyntaxHighlighter::addBlockStyle(const QString &tag,
