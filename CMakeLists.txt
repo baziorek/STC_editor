@@ -37,7 +37,7 @@ else()
     file(READ "${uchardet_SOURCE_DIR}/CMakeLists.txt" _uchardet_cmake)
     string(REPLACE "add_subdirectory(test)" "# add_subdirectory(test)" _uchardet_cmake "${_uchardet_cmake}")
     file(WRITE "${uchardet_SOURCE_DIR}/CMakeLists.txt" "${_uchardet_cmake}")
-    add_subdirectory(${uchardet_SOURCE_DIR} ${uchardet_BINARY_DIR})
+    # add_subdirectory(${uchardet_SOURCE_DIR} ${uchardet_BINARY_DIR})
 
     if(TARGET libuchardet)
         add_library(uchardet::libuchardet ALIAS libuchardet)

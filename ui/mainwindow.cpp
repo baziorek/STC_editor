@@ -125,6 +125,7 @@ void MainWindow::connectSignals2Slots()
         ui->contextsTabWidget->setTabText(2, tr("TODOs (") + QString::number(todosTotal) + ")");
     });
     connect(ui->textEditor, &QPlainTextEdit::textChanged, ui->stopwatchGroupBox, &WorkAwareStopwatch::notifyWorkActivity);
+    connect(ui->menuOpen_recent, &QMenu::aboutToShow, this, &MainWindow::onRecentRecentFilesMenuOpened);
 
     ui->breadcrumbTextBrowser->setTextEditor(ui->textEditor);
     ui->breadcrumbTextBrowser->setHeaderTable(ui->contextTableWidget);
