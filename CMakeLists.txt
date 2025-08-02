@@ -32,7 +32,7 @@ else()
         GIT_REPOSITORY https://gitlab.freedesktop.org/uchardet/uchardet.git
         GIT_TAG master
     )
-    FetchContent_Populate(uchardet)
+    FetchContent_MakeAvailable(uchardet)
     # Patch: zakomentuj add_subdirectory(test) w CMakeLists.txt uchardet
     file(READ "${uchardet_SOURCE_DIR}/CMakeLists.txt" _uchardet_cmake)
     string(REPLACE "add_subdirectory(test)" "# add_subdirectory(test)" _uchardet_cmake "${_uchardet_cmake}")
@@ -57,6 +57,26 @@ else()
 endif()
 
 # ------------------ Nuspell (system or FetchContent) ------------------
+if(WIN32)
+    find_package(ICU QUIET COMPONENTS uc i18n data) # dependency for Nuspell
+
+    if(NOT ICU_FOUND)
+        message(STATUS "ICU not found – using FetchContent to download ICU for Windows")
+
+        include(FetchContent)
+        FetchContent_Declare(
+            icu
+            URL https://github.com/unicode-org/icu/releases/download/release-70-1/icu4c-70_1-src.zip
+        )
+        FetchContent_MakeAvailable(icu)
+
+        # Try to find again after downloading
+        find_package(ICU REQUIRED COMPONENTS uc i18n data)
+    endif()
+
+    target_link_libraries(${PROJECT_NAME} PRIVATE ICU::uc ICU::i18n ICU::data)
+endif()
+
 # --- Try to find system Nuspell ---
 find_package(Nuspell QUIET)
 
