@@ -373,7 +373,7 @@ bool STCSyntaxHighlighter::highlightPktOrCsv(const QString& text)
     const int prevState = previousBlockState();
     bool foundAny = false;
 
-    // --- 1. Kontynuacja wieloliniowego bloku pkt/csv ---
+    // --- 1. Continuation of multiline pkt/csv block ---
     if (prevState != STATE_NONE)
     {
         auto handleBlock = [&](int stateFlag, const QString& tagName, const QRegularExpression& closeRe) {
@@ -383,13 +383,18 @@ bool STCSyntaxHighlighter::highlightPktOrCsv(const QString& text)
             QRegularExpressionMatch close = closeRe.match(text);
             QTextCharFormat fmt = styledTagsMap.value(tagName).format;
 
-            if (close.hasMatch()) {
+            if (close.hasMatch())
+            {
                 int closeStart = close.capturedStart();
                 setFormat(0, closeStart, fmt);
+                applySpellcheckToTextRange(text, 0, closeStart, fmt);
                 setFormat(closeStart, close.capturedLength(), runTagFmt);
                 currentBlockStateWithoutFlag(stateFlag);
-            } else {
+            }
+            else
+            {
                 setFormat(0, text.length(), fmt);
+                applySpellcheckToTextRange(text, 0, text.length(), fmt);
                 currentBlockStateWithFlag(stateFlag);
             }
 
@@ -399,16 +404,18 @@ bool STCSyntaxHighlighter::highlightPktOrCsv(const QString& text)
         handleBlock(STATE_PKT, "pkt", stc::syntax::pktCloseRe);
         handleBlock(STATE_CSV, "csv", stc::syntax::csvCloseRe);
 
-        // Formatowanie [run] tylko jeśli tryb rozszerzony
+        // Format [run] only if in extended mode
         bool extendedMode = text.contains("ext") || text.contains("extended") || text.contains("extended header");
 
         auto runMatches = stc::syntax::runTagRe.globalMatch(text);
-        while (runMatches.hasNext()) {
+        while (runMatches.hasNext())
+        {
             auto m = runMatches.next();
             setFormat(m.capturedStart(), 5, runTagFmt); // [run]
             setFormat(m.capturedEnd() - 6, 6, runTagFmt); // [/run]
 
-            if (extendedMode) {
+            if (extendedMode)
+            {
                 _noFormatRangesThisLine.append({ m.capturedStart(1), m.capturedLength(1) });
             }
         }
@@ -417,7 +424,7 @@ bool STCSyntaxHighlighter::highlightPktOrCsv(const QString& text)
             return true;
     }
 
-    // --- 2. Nowe otwarcia w tej samej linii ---
+    // --- 2. New openings on the same line ---
     auto processTag = [&](const QRegularExpression& openRe,
                           const QRegularExpression& closeRe,
                           const QString& tagName,
@@ -426,13 +433,14 @@ bool STCSyntaxHighlighter::highlightPktOrCsv(const QString& text)
         QTextCharFormat fmt = styledTagsMap.value(tagName).format;
 
         QRegularExpressionMatchIterator it = openRe.globalMatch(text);
-        while (it.hasNext()) {
+        while (it.hasNext())
+        {
             QRegularExpressionMatch open = it.next();
             int tagStart = open.capturedStart();
             int tagEnd = open.capturedEnd();
 
-            // Jeśli cały tag (lub jego zawartość) nachodzi na zakres wykluczony — pomijamy
-            int totalEnd = text.length(); // w razie braku zamknięcia
+            // If tag or its content overlaps with excluded area — skip
+            int totalEnd = text.length(); // in case of no closing tag
             QRegularExpressionMatch close = closeRe.match(text, tagEnd);
             if (close.hasMatch())
                 totalEnd = close.capturedEnd();
@@ -442,15 +450,20 @@ bool STCSyntaxHighlighter::highlightPktOrCsv(const QString& text)
 
             setFormat(tagStart, tagEnd - tagStart, runTagFmt);
 
-            if (close.hasMatch()) {
+            if (close.hasMatch())
+            {
                 int contentStart = tagEnd;
                 int contentEnd = close.capturedStart();
                 int contentLen = contentEnd - contentStart;
 
                 setFormat(contentStart, contentLen, fmt);
+                applySpellcheckToTextRange(text, contentStart, contentLen, fmt);
                 setFormat(close.capturedStart(), close.capturedLength(), runTagFmt);
-            } else {
+            }
+            else
+            {
                 setFormat(tagEnd, text.length() - tagEnd, fmt);
+                applySpellcheckToTextRange(text, tagEnd, text.length() - tagEnd, fmt);
                 currentBlockStateWithFlag(stateFlag);
             }
 
@@ -674,7 +687,7 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
         return fmt;
     }();
 
-    // --- 1. Kontynuacja wieloliniowego stylu ---
+    // --- 1. Continuation of a multiline style ---
     if (prev != STATE_NONE)
     {
         for (auto it = tagStates.constBegin(); it != tagStates.constEnd(); ++it)
@@ -692,22 +705,24 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
                 {
                     int closeStart = closeMatch.capturedStart();
 
-                    // Jeśli zamknięcie stylu znajduje się wewnątrz kodu — pomiń cały styl
+                    // If style closing is inside code — skip the entire style
                     if (overlapsWithCode(0, closeStart + closeMatch.capturedLength()))
                         return false;
                     if (overlapsWithNoFormat(0, closeStart + closeMatch.capturedLength()))
                         return false;
 
                     setFormat(0, closeStart, fmt);
+                    applySpellcheckToTextRange(text, 0, closeStart, fmt);
                     setFormat(closeStart, closeMatch.capturedLength(), tagFmt);
                     currentBlockStateWithoutFlag(flag);
                 }
                 else
                 {
-                    // Cała linia stylizowana — tylko jeśli nie pokrywa się z kodem
+                    // Entire line styled — only if not overlapping with code
                     if (!overlapsWithCode(0, text.length()) && !overlapsWithNoFormat(0, text.length()))
                     {
                         setFormat(0, text.length(), fmt);
+                        applySpellcheckToTextRange(text, 0, text.length(), fmt);
                         currentBlockStateWithFlag(flag);
                     }
                 }
@@ -716,7 +731,7 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
         }
     }
 
-    // --- 2. Styl jednolinijkowy (może być wiele w jednej linii) ---
+    // --- 2. Single-line style (can be multiple per line) ---
     int offset = 0;
     bool foundAny = false;
 
@@ -741,7 +756,7 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
             const int contentStart = tagEnd;
             const int contentLen = closeStart - contentStart;
 
-            // IGNORUJ tagi stylizujące wewnątrz kodu
+            // IGNORE styled tags inside code
             if (overlapsWithCode(tagStart, closeEnd - tagStart) || overlapsWithNoFormat(tagStart, closeEnd - tagStart))
             {
                 offset = closeEnd;
@@ -749,7 +764,8 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
             }
 
             setFormat(tagStart, tagEnd - tagStart, tagFmt);           // [b]
-            setFormatKeepingBackground(contentStart, contentLen, fmt);                 // treść
+            setFormatKeepingBackground(contentStart, contentLen, fmt);                 // content
+            applySpellcheckToTextRange(text, contentStart, contentLen, fmt);
             setFormat(closeStart, closeEnd - closeStart, tagFmt);     // [/b]
 
             offset = closeEnd;
@@ -757,17 +773,18 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
         }
         else
         {
-            // Początek wieloliniowego stylu — tylko jeśli nie zaczyna się w kodzie
+            // Start of multiline style — only if not in code
             if (!overlapsWithCode(tagStart, text.length() - tagStart) && !overlapsWithNoFormat(tagStart, text.length() - tagStart))
             {
                 setFormat(tagStart, tagEnd - tagStart, tagFmt);
                 setFormatKeepingBackground(tagEnd, text.length() - tagEnd, fmt);
+                applySpellcheckToTextRange(text, tagEnd, text.length() - tagEnd, fmt);
                 currentBlockStateWithFlag(flag);
                 return true;
             }
             else
             {
-                // Jeśli był w kodzie — pomiń
+                // If inside code — skip
                 offset = tagEnd;
             }
         }
@@ -831,6 +848,7 @@ bool STCSyntaxHighlighter::highlightTagsWithAttributes(const QString& text)
             int nameStart = match.capturedStart(2);
             int nameLen = match.capturedLength(2);
             setFormat(nameStart, nameLen, styledTagsMap.value("a.name").format);
+            applySpellcheckToTextRange(text, nameStart, nameLen, styledTagsMap.value("a.name").format);
         }
 
         found = true;
@@ -877,6 +895,7 @@ bool STCSyntaxHighlighter::highlightTagsWithAttributes(const QString& text)
             int opisStart = start + opisMatch.capturedStart(1);
             int opisLen = opisMatch.capturedLength(1);
             setFormat(opisStart, opisLen, styledTagsMap.value("img.opis").format);
+            applySpellcheckToTextRange(text, opisStart, opisLen, styledTagsMap.value("img.opis").format);
         }
 
         // Find and format 'autofit' keyword
