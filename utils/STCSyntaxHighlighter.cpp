@@ -166,32 +166,42 @@ void STCSyntaxHighlighter::highlightBlock(const QString &text)
 
 bool STCSyntaxHighlighter::highlightHeading(const QString &text)
 {
+    bool found = false;
+
     for (const auto& styled : styledTags)
     {
-        if (styled.tag.startsWith("h"))
+        if (!styled.tag.startsWith("h"))
+            continue;
+
+        QRegularExpression re(QStringLiteral(R"(\[(%1)\](.*?)\[/\1\])").arg(styled.tag));
+        QRegularExpressionMatchIterator it = re.globalMatch(text);
+
+        while (it.hasNext())
         {
-            QRegularExpression re(QStringLiteral("\\[(%1)\\](.*?)\\[/\\1\\]").arg(styled.tag)); // TODO: Probably one regex can catch all headers at once
-            auto it = re.globalMatch(text);
-            while (it.hasNext()) {
-                auto match = it.next();
-                const int start = match.capturedStart(2);
-                const int len = match.capturedLength(2);
+            auto match = it.next();
+            const int fullStart = match.capturedStart(0);
+            const int contentStart = match.capturedStart(2);
+            const int contentLen = match.capturedLength(2);
+            const int fullEnd = match.capturedEnd(0);
 
-                // if (overlapsWithNoFormat(start, len)) // TODO:
-                //     continue;
+            // Format heading content
+            setFormat(contentStart, contentLen, styled.format);
 
-                setFormat(start, len, styled.format);
+            // Format heading tags ([h1], [/h1])
+            QTextCharFormat tagFmt;
+            tagFmt.setForeground(Qt::gray);
+            tagFmt.setFontPointSize(8);
+            setFormat(fullStart, contentStart - fullStart, tagFmt);                              // opening tag
+            setFormat(contentStart + contentLen, fullEnd - (contentStart + contentLen), tagFmt); // closing tag
 
-                QTextCharFormat tagFmt;
-                tagFmt.setForeground(Qt::gray);
-                tagFmt.setFontPointSize(8);
-                setFormat(match.capturedStart(0), start - match.capturedStart(0), tagFmt);
-                setFormat(start + len, match.capturedEnd(0) - (start + len), tagFmt);
-            }
+            // Apply spellcheck to the content
+            applySpellcheckToTextRange(text, contentStart, contentLen, styled.format);
+
+            found = true;
         }
     }
-    return false;
-}
+    return found;
+} // TODO: Why not to find all headers at once, but searching text 6 times?
 
 bool STCSyntaxHighlighter::highlightDivBlock(const QString &text)
 {
@@ -203,8 +213,9 @@ bool STCSyntaxHighlighter::highlightDivBlock(const QString &text)
     }();
 
     const int prevState = previousBlockState();
+    bool foundAny = false;
 
-    // --- 1. Kontynuacja wieloliniowego DIV-a lub cytatu ---
+    // === 1. Handle continuation of multi-line div or quote blocks ===
     if (prevState != STATE_NONE)
     {
         if (prevState & (DIV_CLASS_TIP | DIV_CLASS_UWAGA | DIV_CLASS_PLAIN | DIV_CLASS_CYTAT))
@@ -224,25 +235,34 @@ bool STCSyntaxHighlighter::highlightDivBlock(const QString &text)
                 fmt = styledTagsMap.value("div").format;
 
             QRegularExpressionMatch closeMatch = stc::syntax::divCloseRe.match(text);
-            if (closeMatch.hasMatch()) {
-                int closeStart = closeMatch.capturedStart(0);
+            if (closeMatch.hasMatch())
+            {
+                int closeStart = closeMatch.capturedStart();
+                int contentLen = closeStart;
 
                 // if (overlapsWithNoFormat(closeStart, closingTag.size())) // TODO:
                 //     return false;
 
-                setFormat(0, closeStart, fmt);
+                // Format body
+                setFormat(0, contentLen, fmt);
+
+                // Apply spellcheck on body
+                applySpellcheckToTextRange(text, 0, contentLen, fmt);
+
+                // Format closing tag
                 setFormat(closeStart, closeMatch.capturedLength(0), tagFmt);
                 currentBlockStateWithoutFlag(prevState);
             } else {
                 setFormat(0, text.length(), fmt);
-                setCurrentBlockState(prevState);  // nadal jesteśmy w środku
+                applySpellcheckToTextRange(text, 0, text.length(), fmt);
+                setCurrentBlockState(prevState);
             }
+
             return true;
         }
     }
 
-    // --- 2. Wyszukiwanie nowych DIV-ów lub cytatów w linii ---
-    bool foundAny = false;
+    // === 2. Look for new div/cytat blocks in this line ===
     QRegularExpressionMatchIterator it = stc::syntax::divOpenRe.globalMatch(text);
     while (it.hasNext())
     {
@@ -284,21 +304,28 @@ bool STCSyntaxHighlighter::highlightDivBlock(const QString &text)
         QRegularExpressionMatch closeMatch = stc::syntax::divCloseRe.match(text, tagEnd);
         if (closeMatch.hasMatch())
         {
-            // Zamknięcie w tej samej linii
+            // One-line block
             int contentStart = tagEnd;
             int contentEnd = closeMatch.capturedStart(0);
             int contentLen = contentEnd - contentStart;
 
-            setFormat(tagStart, tagEnd - tagStart, tagFmt);                 // [div] lub [cytat]
-            setFormat(contentStart, contentLen, fmt);                       // zawartość
-            setFormat(closeMatch.capturedStart(0), closeMatch.capturedLength(0), tagFmt);  // [/div] lub [/cytat]
+            // Format opening tag
+            setFormat(tagStart, tagEnd - tagStart, tagFmt);
+
+            // Format and spellcheck body
+            setFormat(contentStart, contentLen, fmt);
+            applySpellcheckToTextRange(text, contentStart, contentLen, fmt);
+
+            // Format closing tag
+            setFormat(closeMatch.capturedStart(0), closeMatch.capturedLength(0), tagFmt);
             currentBlockStateWithFlag(prevState);
         }
         else
         {
-            // Początek wieloliniowego bloku
+            // Multi-line block start
             setFormat(tagStart, tagEnd - tagStart, tagFmt);
             setFormat(tagEnd, text.length() - tagEnd, fmt);
+            applySpellcheckToTextRange(text, tagEnd, text.length() - tagEnd, fmt);
             currentBlockStateWithFlag(blockState);
         }
 
@@ -307,6 +334,32 @@ bool STCSyntaxHighlighter::highlightDivBlock(const QString &text)
 
     return foundAny;
 } // TODO: Divy zagnieżdżone jakoś trzeba obsłużyć
+void STCSyntaxHighlighter::applySpellcheckToTextRange(const QString& text, int start, int length, const QTextCharFormat& baseFormat)
+{
+    static const QRegularExpression wordRe(R"(\b\p{L}+(?:[-']\p{L}+)*\b)");
+
+    const QString innerText = text.mid(start, length);
+    QRegularExpressionMatchIterator it = wordRe.globalMatch(innerText);
+
+    while (it.hasNext())
+    {
+        const QRegularExpressionMatch match = it.next();
+        const QString word = match.captured();
+        const int wordStart = start + match.capturedStart();
+        const int wordLen = match.capturedLength();
+
+        if (overlapsWithCode(wordStart, wordLen) || overlapsWithNoFormat(wordStart, wordLen))
+            continue;
+
+        if (!spellChecker.isCorrect(word))
+        {
+            QTextCharFormat errFmt = baseFormat;
+            errFmt.setUnderlineColor(Qt::red);
+            errFmt.setUnderlineStyle(QTextCharFormat::SpellCheckUnderline);
+            setFormat(wordStart, wordLen, errFmt);
+        }
+    }
+}
 
 bool STCSyntaxHighlighter::highlightPktOrCsv(const QString& text)
 {
