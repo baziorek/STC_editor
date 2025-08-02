@@ -36,8 +36,16 @@ RenameFileDialog::RenameFileDialog(CodeEditor *textEditor, QWidget *parent)
 
     connect(ui->filePathLineEdit, &QLineEdit::textChanged, this, &RenameFileDialog::validateAndUpdateUi);
     connect(ui->fileNameLineEdit, &QLineEdit::textChanged, this, &RenameFileDialog::validateAndUpdateUi);
-    connect(ui->createDirCheckBox, &QCheckBox::checkStateChanged, this, &RenameFileDialog::validateAndUpdateUi);
-    connect(ui->overwriteCheckBox, &QCheckBox::checkStateChanged, this, &RenameFileDialog::validateAndUpdateUi);
+
+    /// signals checkStateChanged and stateChanged works similar, but we don't want to have "deprecated" warning. On the other hand Qt is not newest in github actions
+    #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+        connect(ui->createDirCheckBox, &QCheckBox::checkStateChanged, this, &RenameFileDialog::validateAndUpdateUi);
+        connect(ui->overwriteCheckBox, &QCheckBox::checkStateChanged, this, &RenameFileDialog::validateAndUpdateUi);
+    #else
+        connect(ui->createDirCheckBox, &QCheckBox::stateChanged, this, &RenameFileDialog::validateAndUpdateUi);
+        connect(ui->overwriteCheckBox, &QCheckBox::stateChanged, this, &RenameFileDialog::validateAndUpdateUi);
+    #endif
+
     connect(this, &QDialog::accepted, this, &RenameFileDialog::tryRenameFile);
     connect(ui->browseDIrectoryPushButton, &QPushButton::clicked, this, &RenameFileDialog::onBrowseDirectoryClicked);
 
