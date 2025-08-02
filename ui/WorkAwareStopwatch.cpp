@@ -7,8 +7,11 @@ WorkAwareStopwatch::WorkAwareStopwatch(QWidget *parent)
     , ui(new Ui::WorkAwareStopwatch)
 {
     ui->setupUi(this);
-    ui->uptimeTimeEdit->setTimeZone(QTimeZone::systemTimeZone());
-    ui->workingTimeTimeEdit->setTimeZone(QTimeZone::systemTimeZone());
+
+    #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+        ui->uptimeTimeEdit->setTimeZone(QTimeZone::systemTimeZone());
+        ui->workingTimeTimeEdit->setTimeZone(QTimeZone::systemTimeZone());
+    #endif
 
     connect(&checkIdleTimer, &QTimer::timeout, this, &WorkAwareStopwatch::onUpdate);
     checkIdleTimer.setInterval(idleTresholdInMinutes());
