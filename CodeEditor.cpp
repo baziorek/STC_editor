@@ -468,8 +468,9 @@ void CodeEditor::contextMenuEvent(QContextMenuEvent* event)
     moveCursorToClickPosition(event->pos());
     QMenu* menu = createStandardContextMenu();
 
-    const QTextCursor selection = textCursor();
+    addSpellingSuggestionsIfAvailable(menu, event->pos());
 
+    const QTextCursor selection = textCursor();
     if (selection.hasSelection())
     {
         addCaseConversionActions(menu, selection);
@@ -2227,6 +2228,76 @@ void CodeEditor::addHeaderTagActionsIfApplicable(QMenu* menu, const QPoint& pos)
             }
         }
     }
+}
+
+void CodeEditor::addSpellingSuggestionsIfAvailable(QMenu* menu, const QPoint& pos)
+{
+    auto maybeWord = getMisspelledWordAtPosition(pos);
+    if (!maybeWord)
+        return;
+
+    const QString& word = maybeWord->first;
+    QTextCursor wordCursor = maybeWord->second;
+
+    auto* highlighter = qobject_cast<STCSyntaxHighlighter*>(document()->findChild<QSyntaxHighlighter*>());
+    if (!highlighter)
+        return;
+
+    const QStringList suggestions = highlighter->getSpellChecker().getSuggestions(word);
+    if (suggestions.isEmpty())
+        return;
+
+    QMenu* spellingMenu = menu->addMenu(QString::fromUtf8("📝") + tr("Spelling suggestions"));
+    for (const QString& suggestion : suggestions)
+    {
+        QAction* act = spellingMenu->addAction(suggestion);
+        connect(act, &QAction::triggered, this, [this, wordCursor, suggestion]() mutable {
+            QTextCursor c = textCursor();
+            setTextCursor(wordCursor); // mark wrong word
+            insertPlainText(suggestion);
+            setTextCursor(c); // restore cursor
+        });
+    }
+    spellingMenu->addSeparator();
+}
+std::optional<QPair<QString, QTextCursor>> CodeEditor::getMisspelledWordAtPosition(const QPoint& pos)
+{
+    QTextCursor cursor = cursorForPosition(pos);
+    const QTextBlock block = cursor.block();
+    const QString text = block.text();
+    const int posInBlock = cursor.position() - block.position();
+
+    auto matches = stc::syntax::wordWithPolishCharactersRe.globalMatch(text);
+    while (matches.hasNext())
+    {
+        QRegularExpressionMatch match = matches.next();
+        int start = match.capturedStart();
+        int end = match.capturedEnd();
+
+        if (posInBlock >= start && posInBlock <= end)
+        {
+            const QString word = match.captured();
+            QTextCursor wordCursor = cursor;
+            wordCursor.setPosition(block.position() + start);
+            wordCursor.setPosition(block.position() + end, QTextCursor::KeepAnchor);
+
+            // get spellChecker from highlighter
+            auto* highlighter = qobject_cast<STCSyntaxHighlighter*>(document()->findChild<QSyntaxHighlighter*>());
+            if (!highlighter)
+                return std::nullopt;
+
+            if (!highlighter->getSpellChecker().isCorrect(word))
+            {
+                return QPair<QString, QTextCursor>{ word, wordCursor };
+            }
+            else
+            {
+                return std::nullopt;
+            }
+        }
+    }
+
+    return std::nullopt;
 }
 
 std::optional<CodeEditor::CodeBlockInfo> CodeEditor::getCodeTagAtPosition(int position) const

@@ -203,6 +203,8 @@ protected:
     void removeLineNumberingFromSelection();
     // Renumbers lines in the selection that start with numbering, skipping lines without numbering
     void renumberSelection();
+    std::optional<QPair<QString, QTextCursor>> getMisspelledWordAtPosition(const QPoint &pos);
+    void addSpellingSuggestionsIfAvailable(QMenu* menu, const QPoint& pos);
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);

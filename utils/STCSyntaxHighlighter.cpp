@@ -339,10 +339,8 @@ bool STCSyntaxHighlighter::highlightDivBlock(const QString &text)
 } // TODO: Divy zagnieżdżone jakoś trzeba obsłużyć
 void STCSyntaxHighlighter::applySpellcheckToTextRange(const QString& text, int start, int length, const QTextCharFormat& baseFormat)
 {
-    static const QRegularExpression wordRe(R"(\b\p{L}+(?:[-']\p{L}+)*\b)");
-
     const QString innerText = text.mid(start, length);
-    QRegularExpressionMatchIterator it = wordRe.globalMatch(innerText);
+    QRegularExpressionMatchIterator it = stc::syntax::wordWithPolishCharactersRe.globalMatch(innerText);
 
     while (it.hasNext())
     {

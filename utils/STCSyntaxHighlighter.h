@@ -16,6 +16,11 @@ class STCSyntaxHighlighter : public QSyntaxHighlighter
 public:
     STCSyntaxHighlighter(QTextDocument *parent = nullptr);
 
+    const SpellChecker& getSpellChecker() const
+    {
+        return spellChecker;
+    }
+
 protected:
     void highlightBlock(const QString &text) override;
     bool highlightHeading(const QString &text);

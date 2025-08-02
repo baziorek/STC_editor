@@ -48,5 +48,8 @@ namespace syntax
     const QRegularExpression italicCloseRe(R"(\[/i\])");
     const QRegularExpression underlineCloseRe(R"(\[/u\])");
     const QRegularExpression strikeOutCloseRe(R"(\[/s\])");
+
+    // const QRegularExpression wordWithPolishCharactersRe(R"(\b\p{L}+(?:[-']\p{L}+)*\b)"); - it does not catch polish
+    const QRegularExpression wordWithPolishCharactersRe(R"([A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{2,})");
 } // namespace syntax
 } // namespace stc
