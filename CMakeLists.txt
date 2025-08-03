@@ -157,6 +157,14 @@ else()
     endif()
 endif()
 
+# ------------------ Ikona dla Windows ------------------
+if(WIN32)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        WIN32_EXECUTABLE TRUE
+        RC_COMPILE_DEFINITIONS "ICON_PATH=\"${CMAKE_SOURCE_DIR}/resources/icon.ico\""
+    )
+endif()
+
 # ------------------ Linkowanie bibliotek ------------------
 target_include_directories(${PROJECT_NAME}
     PRIVATE
