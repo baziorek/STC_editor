@@ -125,14 +125,32 @@ QString convertHtmlToStcPreservingNewlines(const QString& html)
 {
     QString text = html;
 
+    // First remove all CSS styles
+    text.remove(QRegularExpression(R"(<style[^>]*>.*?</style>)", QRegularExpression::DotMatchesEverythingOption));
+    text.remove(QRegularExpression(R"(<link[^>]*>)"));
+    text.remove(QRegularExpression(R"(style="[^"]*")"));
+    text.remove(QRegularExpression(R"(class="[^"]*")"));
+
+    // Preserve newlines between headers and their content
+    text.replace(QRegularExpression(R"(<h[1-6][^>]*>\s*(.*?)\s*</h[1-6]>)", QRegularExpression::DotMatchesEverythingOption),
+                 R"(\1\n\n)");
+
     // Replacing <br>, </p>, </div> with newline
     text.replace(QRegularExpression(R"(<br\s*/?>)", QRegularExpression::CaseInsensitiveOption), "\n");
     text.replace(QRegularExpression(R"(</p>)", QRegularExpression::CaseInsensitiveOption), "\n");
     text.replace(QRegularExpression(R"(</div>)", QRegularExpression::CaseInsensitiveOption), "\n");
 
     // Links: <a href="URL">TEXT</a> → [a href="URL"]TEXT
+    // Handle HTML entities in URLs
     text.replace(QRegularExpression(R"__(<a\s+href="([^"]+)"[^>]*>(.*?)</a>)__", QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption),
                  R"([a href="\1" name="\2"])");
+
+    // Decode HTML entities in URLs
+    text.replace(QRegularExpression(R"(&quot;)", QRegularExpression::CaseInsensitiveOption), "\"");
+    text.replace(QRegularExpression(R"(&apos;)", QRegularExpression::CaseInsensitiveOption), "'");
+    text.replace(QRegularExpression(R"(&amp;)", QRegularExpression::CaseInsensitiveOption), "&");
+    text.replace(QRegularExpression(R"(&lt;)", QRegularExpression::CaseInsensitiveOption), "<");
+    text.replace(QRegularExpression(R"(&gt;)", QRegularExpression::CaseInsensitiveOption), ">");
 
     // Bold
     text.replace(QRegularExpression(R"(<b[^>]*>(.*?)</b>)", QRegularExpression::DotMatchesEverythingOption), R"([b]\1[/b])");
@@ -143,14 +161,24 @@ QString convertHtmlToStcPreservingNewlines(const QString& html)
     // Underline
     text.replace(QRegularExpression(R"(<u[^>]*>(.*?)</u>)", QRegularExpression::DotMatchesEverythingOption), R"([u]\1[/u])");
 
-    // Remove other HTML tags
+    // Remove all remaining HTML tags
     text.remove(QRegularExpression(R"(<[^>]+>)"));
 
-    // Replace &nbsp; etc.
+    // Replace HTML entities
     text.replace("&nbsp;", " ");
-    text.replace("&amp;", "&");
-    text.replace("&lt;", "<");
-    text.replace("&gt;", ">");
+
+    // Remove any remaining special characters
+    text.remove(QRegularExpression(R"(\s{3,})"));  // Remove multiple spaces (but keep single spaces)
+    
+    // Normalize newlines - keep only single or double newlines
+    // Replace triple+ newlines with double newline
+    text.replace(QRegularExpression(R"(\n{3,})"), "\n\n");
+    
+    // Remove extra newlines after double newlines
+    text.replace(QRegularExpression(R"(\n\n\s*\n)", QRegularExpression::DotMatchesEverythingOption), "\n\n");
+    
+    // Remove extra spaces around newlines
+    text.replace(QRegularExpression(R"(\s*\n\s*)"), "\n");
 
     return text.trimmed();
 }

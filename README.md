@@ -129,46 +129,45 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 13. FindWidget - aby aktualizował pozycje w tekście na bieżąco przy dodawaniu/usuwaniu linii.
 14. Szukanie tylko w kodzie
 15. Może AI mi podzieli CodeEditor aby nie był GodObject
-16. 
-17. Ctrl + V gdy mamy obrazek w schowku - wtedy powinno zaproponować umieszczenie obrazka w odpowiednim katalogu
-18. Tłumaczenia aplikacji na wiele języków: QLinguist
-19. Rozważyć użycie tej samej biblioteki do porównywania zarówno linii jak i znaków np. https://github.com/google/diff-match-patch
-20. Podpięcie sztucznej inteligencji np. [Ollama](https://ollama.com)
-21. Przy CTRL + SCROLL wyświetlanie informacji o rozmiarze czcionki (jak QtCreator)
-22. Kreator tabel dla znaczników STC.
-23. PreviewWidget: Śledzenie pozycji między pozycją w dokumencie źródłowym a podglądem HTML
-24. Historia zmian w linii
-25. Precompiled headers dla codeEditor.h i moduły
-26. IWYU podpiąć pod CMake'a
-27. Zwijanie nagłówków i kodu (jak funkcje w środowiskach programistycznych)
-28. Automatyczne backupy treści
-29. W danej linii da się wpisać dane np.: `QTextBlockUserData` i potem `block.setUserData(data);` - może da się to wykorzystać w optymalizacji
-30. Optymalizacja wydajności edytora przy szybkim pisaniu.
-31. Podgląd terminala np. przez https://github.com/lxqt/qtermwidget - tylko czy mi to nie zrobi GPLa?
-32. Zastąpienie listy kontekstu widżetem drzewiastym.
-33. W linijce gradient ostatnio używanych linii z numerami ile temu
-34. Ukrycie tagów, nie licząc otaczających (rich text editor)
-35. Możliwość wyłączenia poszczególnych aspektów kolorowania składni.
-36. Następna/poprzednia zmiana: przycisk pozwalający skakać po zmianach w dokumencie
-37. Sensowne funkcjonalności z innych podobnych edytorów np. [Scribe-Text-Editor](https://github.com/AleksandrHovhannisyan/Scribe-Text-Editor)
-38. Podgląd strony internetowej po najechaniu myszką
-39. Wsparcie dla MD na bazie: https://github.com/Qt-Widgets/notes
-40. Inne widgety np. https://github.com/Qt-Widgets/SlidingStackedWidget-1 z listy: https://github.com/Qt-Widgets/ lub https://qwt.sourceforge.io/index.html
-41. Skanowanie dokumentu w osobnym wątku dla lepszej wydajności.
-42. Nagrywanie i odtwarzanie makr.
-43. Obsługa wtyczek, być może z użyciem Lua.
-44. Zamiana prefiksów adresów URL dla obrazów na serwerze.
-45. Dyktowanie tekstu (biblioteka [Whisper](https://github.com/openai/whisper))
-46. Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
-47. Otwieranie wielu plików jednocześnie.
-48. Widok sąsiadujący do porównywania plików.
-49. Eksport bloków kodu do osobnych plików.
-50. Konsolidacja obrazów do jednego katalogu z aktualizacją ścieżek w znacznikach STC.
-51. Przy porównywaniu difa niezapisanych zmian z zawartością pliku (linijka w linijkę): możliwość zapisania na dysk poszczególnych linii.
-52. Gdy zewnętrzne zmiany w pliku to powinno też pokazać diffa.
-53. Gdy wyświetlamy diffa, ale linie są długie to pojawia się scrolling area, a nie powinna.
-54. Rezultat komendy w edytorze.
-55. Sprawdzania:
+16. Ctrl + V gdy mamy obrazek w schowku - wtedy powinno zaproponować umieszczenie obrazka w odpowiednim katalogu
+17. Tłumaczenia aplikacji na wiele języków: QLinguist
+18. Rozważyć użycie tej samej biblioteki do porównywania zarówno linii jak i znaków np. https://github.com/google/diff-match-patch
+19. Podpięcie sztucznej inteligencji np. [Ollama](https://ollama.com)
+20. Przy CTRL + SCROLL wyświetlanie informacji o rozmiarze czcionki (jak QtCreator)
+21. Kreator tabel dla znaczników STC.
+22. PreviewWidget: Śledzenie pozycji między pozycją w dokumencie źródłowym a podglądem HTML
+23. Historia zmian w linii
+24. Precompiled headers dla codeEditor.h i moduły
+25. IWYU podpiąć pod CMake'a
+26. Zwijanie nagłówków i kodu (jak funkcje w środowiskach programistycznych)
+27. Automatyczne backupy treści
+28. W danej linii da się wpisać dane np.: `QTextBlockUserData` i potem `block.setUserData(data);` - może da się to wykorzystać w optymalizacji
+29. Optymalizacja wydajności edytora przy szybkim pisaniu.
+30. Podgląd terminala np. przez https://github.com/lxqt/qtermwidget - tylko czy mi to nie zrobi GPLa?
+31. Zastąpienie listy kontekstu widżetem drzewiastym.
+32. W linijce gradient ostatnio używanych linii z numerami ile temu
+33. Ukrycie tagów, nie licząc otaczających (rich text editor)
+34. Możliwość wyłączenia poszczególnych aspektów kolorowania składni.
+35. Następna/poprzednia zmiana: przycisk pozwalający skakać po zmianach w dokumencie
+36. Sensowne funkcjonalności z innych podobnych edytorów np. [Scribe-Text-Editor](https://github.com/AleksandrHovhannisyan/Scribe-Text-Editor)
+37. Podgląd strony internetowej po najechaniu myszką
+38. Wsparcie dla MD na bazie: https://github.com/Qt-Widgets/notes
+39. Inne widgety np. https://github.com/Qt-Widgets/SlidingStackedWidget-1 z listy: https://github.com/Qt-Widgets/ lub https://qwt.sourceforge.io/index.html
+40. Skanowanie dokumentu w osobnym wątku dla lepszej wydajności.
+41. Nagrywanie i odtwarzanie makr.
+42. Obsługa wtyczek, być może z użyciem Lua.
+43. Zamiana prefiksów adresów URL dla obrazów na serwerze.
+44. Dyktowanie tekstu (biblioteka [Whisper](https://github.com/openai/whisper))
+45. Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
+46. Otwieranie wielu plików jednocześnie.
+47. Widok sąsiadujący do porównywania plików.
+48. Eksport bloków kodu do osobnych plików.
+49. Konsolidacja obrazów do jednego katalogu z aktualizacją ścieżek w znacznikach STC.
+50. Przy porównywaniu difa niezapisanych zmian z zawartością pliku (linijka w linijkę): możliwość zapisania na dysk poszczególnych linii.
+51. Gdy zewnętrzne zmiany w pliku to powinno też pokazać diffa.
+52. Gdy wyświetlamy diffa, ale linie są długie to pojawia się scrolling area, a nie powinna.
+53. Rezultat komendy w edytorze.
+54. Sprawdzania:
      - Sprawdzanie, czy znaczniki `[run]` znajdują się wewnątrz `[pkt]`.
      - Weryfikacja, czy wszystkie znaczniki są zamknięte (np. po opuszczeniu linijki sprawdzamy czy są tam zmiany, jak tak, to czy jest tam nowy tag)
      - Weryfikacja odpowiednich atrybutów w tagach (czy w cudzysłowiu, czy tylko dozwole atrubytu)
@@ -176,12 +175,12 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
      - Sprawdzenie czy link istnieje
      - Dodać check: czy nie zamykam nieotwartego tagu?
      - Sprawdzenie czy Run nie jest poza csv lub pkt
+55. Blokowanie pliku, który się edytuje.
 
 ## Min Bugi:
 1. Dopasowanie rozmiaru numeracji linii do wielkości czcionki.
 2. MiniBug: funkcjonalność zmiany wielkości czcionki zakłóca nowe tagi. Jak powiększymy czcionkę i potem dodamy coś np. H1, to on będzie miał czcionkę nawet mniejszą niż reszta, mimo iż to nagłówek
 3. Zmiana wielkości czcionki powinna też wpłynąć na czcionkę w ramach numeracji linii
-4. Wklejanie coś się popsuło - wkleja "dziwne" znaczki
 
 ## Współpraca
 
