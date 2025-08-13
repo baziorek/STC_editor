@@ -510,7 +510,43 @@ QString CodeEditor::removeCppComments(const QString& code) const
         return code; // Return original code on error
     }
     
-    return QString::fromStdString(output.str());
+    QString result = QString::fromStdString(output.str());
+    return removeExcessiveEmptyLines(result);
+}
+
+QString CodeEditor::removeExcessiveEmptyLines(const QString& code) const
+{
+    QStringList lines = code.split('\n');
+    QStringList result;
+    int emptyLineCount = 0;
+    
+    for (QString line : lines)
+    {
+        // Remove trailing whitespaces
+        int i = line.length() - 1;
+        while (i >= 0 && line[i].isSpace()) {
+            --i;
+        }
+        if (i < line.length() - 1) {
+            line = line.left(i + 1);
+        }
+        
+        if (line.trimmed().isEmpty())
+        {
+            emptyLineCount++;
+            if (emptyLineCount <= 2)
+            {
+                result.append(line);
+            }
+        }
+        else
+        {
+            emptyLineCount = 0;
+            result.append(line);
+        }
+    }
+    
+    return result.join('\n');
 }
 
 void CodeEditor::contextMenuEvent(QContextMenuEvent* event)
@@ -1508,6 +1544,19 @@ void CodeEditor::addCodeBlockActionsIfApplicable(QMenu* menu, const QPoint& pos)
                 }
             });
             menu->addAction(removeComments);
+            
+            QAction* cleanWhitespace = new QAction(QIcon::fromTheme("edit-clear-locationbar-rtl"), "Clean Up Empty Lines", this);
+            connect(cleanWhitespace, &QAction::triggered, this, [=, this]() mutable {
+                QString code = cursor.selectedText().replace(QChar::ParagraphSeparator, '\n');
+                QString cleaned = removeExcessiveEmptyLines(code);
+                if (cleaned != code)
+                {
+                    QString result = cleaned;
+                    result = result.replace('\n', QChar::ParagraphSeparator);
+                    cursor.insertText(result);
+                }
+            });
+            menu->addAction(cleanWhitespace);
         }
     }
 }

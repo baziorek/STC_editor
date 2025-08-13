@@ -31,7 +31,8 @@ Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://c
  7. **Formatowanie kodu C++**: Kliknij prawym przyciskiem wewnątrz `[cpp]...[/cpp]`, aby sformatować kod za pomocą `clang-format` (wymaga zainstalowanego `clang-format`).
     - Jeśli obok pliku tekstowego znajduje się plik z ustawieniami formatowania ".clang-format" to zostanie on użyty, w przeciwny wypadku domyślne użyte zostanie "LLVM".
  8. **Kompilacja kodu C++**: Kliknij prawym przyciskiem wewnątrz `[cpp]...[/cpp]`, aby skompilować kod za pomocą `g++` (wymaga zainstalowanego `g++`).
- 9. **Usuwanie komentarzy C++**: Kliknij prawym przyciskiem wewnątrz `[cpp]...[/cpp]`, aby usunąć wszystkie komentarze z kodu C++ (wykorzystuje bibliotekę [StripCppComments](https://github.com/wtwhite/StripCppComments)).
+ 9. **Usuwanie komentarzy C++**: Kliknij prawym przyciskiem wewnątrz `[cpp]...[/cpp]`, aby usunąć wszystkie komentarze z kodu C++ (wykorzystuje bibliotekę [StripCppComments](https://github.com/wtwhite/StripCppComments)). Dodatkowo funkcja czyści nadmiarowe puste linie, pozostawiając maksymalnie dwie puste linie obok siebie.
+10. **Czyszczenie pustych linii**: Kliknij prawym przyciskiem wewnątrz dowolnego tekstu, aby usunąć nadmiarowe puste linie, pozostawiając maksymalnie dwie puste linie obok siebie. Przydatne do porządkowania tekstu po usunięciu komentarzy lub ogólnego czyszczenia formatowania.
  9. **Statystyki pliku**: Wyświetla statystyki specyficzne dla STC, np. użycie znaczników, obok standardowych metryk edytora.
 10. **Nawigacja okruszkowa**: Dynamicznie aktualizowany pasek adresu pokazujący bieżącą pozycję w strukturze dokumentu STC, z możliwością kliknięcia.
 11. **Śledzenie zmian**: Śledzi zmienione linie za pomocą biblioteki pydifflib-cpp.

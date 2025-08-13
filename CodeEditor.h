@@ -201,6 +201,7 @@ protected:
     void addCodeBlockActionsIfApplicable(QMenu *menu, const QPoint &pos);
     void addImgTagActionsIfApplicable(QMenu *menu);
     QString removeCppComments(const QString& code) const;
+    QString removeExcessiveEmptyLines(const QString& code) const;
     void addPktTagActionsIfApplicable(QMenu *menu);
     void addCsvTagActionsIfApplicable(QMenu *menu);
     void addAnchorTagActionsIfApplicable(QMenu *menu);
