@@ -511,7 +511,14 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     if (Qt::Key_Escape == event->key())
     {
-        closeApplicationReturningIfClosed();
+        if (bool isFindVisible = ui->findDockWidget->isVisible())
+        {
+            ui->findDockWidget->hide();
+        }
+        else
+        {
+            closeApplicationReturningIfClosed();
+        }
     }
     else
     {
