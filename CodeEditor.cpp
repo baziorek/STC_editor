@@ -186,6 +186,17 @@ QString convertHtmlToStcPreservingNewlines(const QString& html)
 
     return text.trimmed();
 }
+
+QString rtrim(const QString& str)
+{
+    auto notSpace = [](QChar c) { return !c.isSpace(); };
+    auto it = std::find_if(str.crbegin(), str.crend(), notSpace);
+    if (it != str.crend()) {
+        return str.left(std::distance(str.cbegin(), it.base()));
+    } else {
+        return QString();
+    }
+}
 } // namespace
 
 
@@ -520,29 +531,21 @@ QString CodeEditor::removeExcessiveEmptyLines(const QString& code) const
     QStringList result;
     int emptyLineCount = 0;
     
-    for (QString line : lines)
+    for (const QString& line : lines)
     {
-        // Remove trailing whitespaces
-        int i = line.length() - 1;
-        while (i >= 0 && line[i].isSpace()) {
-            --i;
-        }
-        if (i < line.length() - 1) {
-            line = line.left(i + 1);
-        }
-        
-        if (line.trimmed().isEmpty())
+        auto trimmedLine = rtrim(line);
+        if (trimmedLine.isEmpty())
         {
             emptyLineCount++;
             if (emptyLineCount <= 2)
             {
-                result.append(line);
+                result.append(std::move(trimmedLine));
             }
         }
         else
         {
             emptyLineCount = 0;
-            result.append(line);
+            result.append(std::move(trimmedLine));
         }
     }
     
