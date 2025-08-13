@@ -176,6 +176,8 @@ protected:
     void applyToSelectedBlocks(const std::function<void (QTextCursor &)> &callback);
     bool handlePasteWithLinkWrapping();
     bool isCursorInsideImgSrcAttribute(const QTextCursor& cursor) const;
+    bool isCursorInsideAHrefAttribute(const QTextCursor& cursor) const;
+    bool isCursorInsideAttribute(const QTextCursor& cursor, const QString& tagName, const QString& attributeName) const;
     void fetchAndInsertTitle(const QString &url, int insertedPos);
     bool handlePasteTable();
     bool handlePastingRichText();

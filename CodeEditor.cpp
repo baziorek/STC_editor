@@ -1486,6 +1486,16 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 
 void CodeEditor::keyPressEvent(QKeyEvent* event)
 {
+    if (event->modifiers() & Qt::ControlModifier
+        && event->modifiers() & Qt::ShiftModifier
+        && event->key() == Qt::Key_V)
+    {
+        // SHIFT+CTRL+V - paste plain text without any special handling
+        const QString plainText = QGuiApplication::clipboard()->text();
+        textCursor().insertText(plainText);
+        return;
+    }
+
     if (isControlOnly(event))
     {
         if (event->key() == Qt::Key_B)  // TODO: This shortcut should be set up in constructor, but it is not working
@@ -1495,25 +1505,24 @@ void CodeEditor::keyPressEvent(QKeyEvent* event)
         }
         if (event->key() == Qt::Key_V)
         {
-            if (!(event->modifiers() & Qt::ShiftModifier))
+            // Check if cursor is inside `[img src="here"]` or `[a href="here"]`
+            if (isCursorInsideImgSrcAttribute(textCursor()) || isCursorInsideAHrefAttribute(textCursor()))
             {
-                // Check if cursor is inside `[img src="here"]`
-                if (isCursorInsideImgSrcAttribute(textCursor()))
-                {
-                    // if it is - perform default behaviour - default paste
-                }
-                else 
-                {
-                    if (handlePastingRichText())
-                        return;
-
-                    if (handlePasteTable())
-                        return;
-
-                    if (handlePasteWithLinkWrapping())
-                        return; // link pasted, stop propagation
-                }
+                // if it is - perform default behaviour - default paste
+                QPlainTextEdit::keyPressEvent(event); // Call default paste behavior
+                return;
             }
+
+            if (handlePastingRichText())
+                return;
+
+            if (handlePasteTable())
+                return;
+
+            if (handlePasteWithLinkWrapping())
+                return; // link pasted, stop propagation
+
+            QPlainTextEdit::keyPressEvent(event); // Default behavior for other cases
         }
     }
 
@@ -1902,6 +1911,43 @@ bool CodeEditor::isCursorInsideImgSrcAttribute(const QTextCursor& cursor) const
         int valueEnd = m.capturedEnd(1);
 
         if (const bool isCursorInsideSrcAttribute = cursorPosInBlock >= valueStart && cursorPosInBlock <= valueEnd)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CodeEditor::isCursorInsideAHrefAttribute(const QTextCursor& cursor) const
+{
+    return isCursorInsideAttribute(cursor, "a", "href");
+}
+
+bool CodeEditor::isCursorInsideAttribute(const QTextCursor& cursor, const QString& tagName, const QString& attributeName) const
+{
+    QTextBlock block = cursor.block();
+    const QString blockText = block.text();
+    int cursorPosInBlock = cursor.position() - block.position();
+
+    // Find tag [tagName ...]
+    QRegularExpression tagRe(QString("\\[%1[^\\]]*\\]").arg(tagName));
+    QRegularExpressionMatch tagMatch = tagRe.match(blockText);
+    if (!tagMatch.hasMatch())
+        return false;
+
+    int tagStart = tagMatch.capturedStart(0);
+    int tagEnd = tagMatch.capturedEnd(0);
+    if (cursorPosInBlock < tagStart || cursorPosInBlock > tagEnd)
+        return false;
+
+    // Find attribute `attributeName="..."`
+    QRegularExpression attrRe(QString("%1=\"([^\"]*)\"").arg(attributeName));
+    QRegularExpressionMatch match = attrRe.match(blockText);
+    if (match.hasMatch())
+    {
+        int valueStart = match.capturedStart(1);
+        int valueEnd = match.capturedEnd(1);
+        if (cursorPosInBlock >= valueStart && cursorPosInBlock <= valueEnd)
         {
             return true;
         }
