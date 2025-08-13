@@ -256,7 +256,7 @@ void MainWindow::toggleTagOnSelectedText(const QString& tag)
                 tmpCursor.setPosition(openTagStart);
                 tmpCursor.setPosition(openTagStart + openTag.length(), QTextCursor::KeepAnchor);
                 tmpCursor.removeSelectedText();
-                // Przywróć zaznaczenie na oryginalny tekst (bez tagów)
+                // Restore original text (without tags)
                 QTextCursor restoreCursor = ui->textEditor->textCursor();
                 restoreCursor.setPosition(openTagStart);
                 restoreCursor.setPosition(openTagStart + selectedText.length(), QTextCursor::KeepAnchor);
@@ -270,6 +270,14 @@ void MainWindow::toggleTagOnSelectedText(const QString& tag)
     QString result = openTag + trimmedText + closeTag;
     result = QString(selectedText.left(leadingSpaces)) + result + QString(selectedText.right(trailingSpaces));
     cursor.insertText(result);
+    
+    // If no text was selected, position cursor between tags
+    if (selectedText.isEmpty()) 
+    {
+        int pos = cursor.position() - closeTag.length();
+        cursor.setPosition(pos);
+        ui->textEditor->setTextCursor(cursor);
+    }
 }
 
 void MainWindow::onRecentRecentFilesMenuOpened()
