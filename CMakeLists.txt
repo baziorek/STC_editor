@@ -172,10 +172,17 @@ target_include_directories(${PROJECT_NAME}
         ${PROJECT_SOURCE_DIR}/libs
 )
 
+add_library(StripCppComments OBJECT
+    ${PROJECT_SOURCE_DIR}/libs/StripCppComments/CommentStripper.cpp
+    ${PROJECT_SOURCE_DIR}/libs/StripCppComments/CommentStripper.h
+)
+target_include_directories(StripCppComments PRIVATE ${PROJECT_SOURCE_DIR}/libs/StripCppComments)
+
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         Qt${QT_VERSION_MAJOR}::Widgets
         Qt${QT_VERSION_MAJOR}::WebEngineWidgets
+        StripCppComments
 )
 
 if(UCHARDET_INCLUDE_DIR)

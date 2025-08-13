@@ -31,7 +31,8 @@ If you want to use this editor for writing content for [cpp0x.pl](https://cpp0x.
 6. **Tag Removal**: Right-click inside tags (e.g., `[b]Bold text[/b]`) to remove the tags, leaving only the content (e.g., `Bold text`).
 7. **C++ Code Formatting**: Right-click inside `[cpp]...[/cpp]` tags to format code using `clang-format` (requires `clang-format` installed). If a `.clang-format` file is present near the text file, it will be used; otherwise, the default "LLVM" style is applied.
 8. **C++ Code Compilation**: Right-click inside `[cpp]...[/cpp]` tags to compile code using `g++` (requires `g++` installed).
-9. **File Statistics**: Displays STC-specific statistics, such as tag usage, alongside standard editor metrics.
+9. **C++ Comment Removal**: Right-click inside `[cpp]...[/cpp]` tags to remove all C++ comments from the code (uses the [StripCppComments library](https://github.com/wtwhite/StripCppComments)).
+10. **File Statistics**: Displays STC-specific statistics, such as tag usage, alongside standard editor metrics.
 10. **Breadcrumb Navigation**: A dynamically updated breadcrumb bar showing the current position in the STC document structure, with clickable navigation.
 11. **Change Tracking**: Tracks modified lines using the [pydifflib-cpp](https://github.com/dominicprice/pydifflib-cpp) library.
 12. **Code Block Listing**: A separate widget that tracks the positions of `[cpp]` and other code blocks in real-time.
@@ -203,6 +204,7 @@ This tool has been invaluable for creating articles on [cpp0x.pl](https://cpp0x.
 2. [diff-match-patch-cpp-stl](https://github.com/leutloff/diff-match-patch-cpp-stl/) - For character-level differences within matching lines. License: Apache 2.0.
 3. [uchardet](https://gitlab.freedesktop.org/uchardet/uchardet) - Supports multiple file encodings (not just UTF-8). License: Mozilla Public License.
 4. [nuspell](https://nuspell.github.io/) - Spellchecking library using [Hunspell](https://hunspell.github.io/) dictionaries.
+5. [StripCppComments](https://github.com/wtwhite/StripCppComments) - For removing C++ comments. License: MIT.
 
 ### Dictionaries (Polish)
 

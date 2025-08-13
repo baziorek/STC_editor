@@ -31,6 +31,7 @@ Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://c
  7. **Formatowanie kodu C++**: Kliknij prawym przyciskiem wewnątrz `[cpp]...[/cpp]`, aby sformatować kod za pomocą `clang-format` (wymaga zainstalowanego `clang-format`).
     - Jeśli obok pliku tekstowego znajduje się plik z ustawieniami formatowania ".clang-format" to zostanie on użyty, w przeciwny wypadku domyślne użyte zostanie "LLVM".
  8. **Kompilacja kodu C++**: Kliknij prawym przyciskiem wewnątrz `[cpp]...[/cpp]`, aby skompilować kod za pomocą `g++` (wymaga zainstalowanego `g++`).
+ 9. **Usuwanie komentarzy C++**: Kliknij prawym przyciskiem wewnątrz `[cpp]...[/cpp]`, aby usunąć wszystkie komentarze z kodu C++ (wykorzystuje bibliotekę [StripCppComments](https://github.com/wtwhite/StripCppComments)).
  9. **Statystyki pliku**: Wyświetla statystyki specyficzne dla STC, np. użycie znaczników, obok standardowych metryk edytora.
 10. **Nawigacja okruszkowa**: Dynamicznie aktualizowany pasek adresu pokazujący bieżącą pozycję w strukturze dokumentu STC, z możliwością kliknięcia.
 11. **Śledzenie zmian**: Śledzi zmienione linie za pomocą biblioteki pydifflib-cpp.
@@ -179,10 +180,11 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
      - Sprawdzenie czy Run nie jest poza csv lub pkt
 55. Blokowanie pliku, który się edytuje.
 
-## Min Bugi:
+## Min Bugi (czyli wcale nie trzebaich poprawiać):
 1. Dopasowanie rozmiaru numeracji linii do wielkości czcionki.
 2. MiniBug: funkcjonalność zmiany wielkości czcionki zakłóca nowe tagi. Jak powiększymy czcionkę i potem dodamy coś np. H1, to on będzie miał czcionkę nawet mniejszą niż reszta, mimo iż to nagłówek
 3. Zmiana wielkości czcionki powinna też wpłynąć na czcionkę w ramach numeracji linii
+4. Usuwanie całych linii z pliku nie zmienia tytułu okna: jak dodajemy linie lub coś zmieniamy to w tytule okna pokazuje ile linii zmieniono, jednakże gdy liniesąusuwaneto nie pokazuje. Trzeba by zmienić sposób wykrywania zmian przez bibliotekę, a następnie zmienić generowany tytuł.
 
 ## Współpraca
 
@@ -204,10 +206,11 @@ Narzędzie to okazało się bardzo pomocne przy tworzeniu artykułów na [Cpp0x.
 - [Źródło użytych ikonek: MDI](https://pictogrammers.com/library/mdi/)
 
 ## Używane biblioteki zewnętrzne
-1. [pydifflib-cpp](https://github.com/dominicprice/pydifflib-cpp) - do znajdywania różnic między liniami: które linie dodane, usunięte, zmodyfikowane. Licencja "PSF"
-2. [diff-match-patch-cpp-stl](https://github.com/leutloff/diff-match-patch-cpp-stl/) - do znajdywania różnic między znakami w ramach odpowiadających sobie linijkach. Licencja "Apache 2.0"
-3. [uchardet](https://gitlab.freedesktop.org/uchardet/uchardet) - biblioteka obsługujące różne rodzaje kodowań plików (nie tylko UTF-8). Licencja "MOZILLA PUBLIC LICENSE"
-4. [nuspell](https://nuspell.github.io/) - biblioteka do sprawdzania pisowni w różnych językach, korzystająca ze słowników [Hunspell](https://hunspell.github.io/).
+1. [pydifflib-cpp](https://github.com/dominicprice/pydifflib-cpp) - Do śledzenia zmian w liniach. Licencja: BSD 3-Clause.
+2. [diff-match-patch-cpp-stl](https://github.com/leutloff/diff-match-patch-cpp-stl/) - Do różnic na poziomie znaków w obrębie linii. Licencja: Apache 2.0.
+3. [uchardet](https://gitlab.freedesktop.org/uchardet/uchardet) - Do wykrywania kodowania plików (nie tylko UTF-8). Licencja: Mozilla Public License.
+4. [nuspell](https://nuspell.github.io/) - Do sprawdzania pisowni, wykorzystuje słowniki [Hunspell](https://hunspell.github.io/).
+5. [StripCppComments](https://github.com/wtwhite/StripCppComments) - Do usuwania komentarzy z kodu C++. Licencja: MIT.
 
 ### Słowniki (język polski)
 

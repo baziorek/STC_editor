@@ -1,4 +1,6 @@
 /// the code of the class is copied from: https://doc.qt.io/qt-6.2/qtwidgets-widgets-codeeditor-example.html
+#include <string>
+#include <sstream>
 #include <QPainter>
 #include <QMenu>
 #include <QMessageBox>
@@ -27,6 +29,7 @@
 #include "types/CodeBlock.h"
 #include "utils/FileEncodingHandler.h"
 #include "stcSyntaxPatterns.h"
+#include "StripCppComments/CommentStripper.h"
 
 
 namespace
@@ -490,6 +493,24 @@ QMultiMap<QString, QKeySequence> CodeEditor::listOfShortcuts() const
     }
 
     return result;
+}
+
+QString CodeEditor::removeCppComments(const QString& code) const
+{
+    std::istringstream input(code.toStdString());
+    std::ostringstream output;
+    
+    try
+    {
+        commentstripper::stripComments(input, output);
+    }
+    catch (const std::exception& e)
+    {
+        qWarning() << "Error stripping comments:" << e.what();
+        return code; // Return original code on error
+    }
+    
+    return QString::fromStdString(output.str());
 }
 
 void CodeEditor::contextMenuEvent(QContextMenuEvent* event)
@@ -1474,6 +1495,19 @@ void CodeEditor::addCodeBlockActionsIfApplicable(QMenu* menu, const QPoint& pos)
                 dlg->exec();
             });
             menu->addAction(compile);
+
+            QAction* removeComments = new QAction(QIcon::fromTheme("edit-clear"), "Remove C++ Comments", this);
+            connect(removeComments, &QAction::triggered, this, [=, this]() mutable {
+                QString code = cursor.selectedText().replace(QChar::ParagraphSeparator, '\n');
+                QString stripped = removeCppComments(code);
+                if (stripped != code)
+                {
+                    QString result = stripped;
+                    result = result.replace('\n', QChar::ParagraphSeparator);
+                    cursor.insertText(result);
+                }
+            });
+            menu->addAction(removeComments);
         }
     }
 }

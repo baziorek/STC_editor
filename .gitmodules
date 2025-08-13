@@ -4,3 +4,6 @@
 [submodule "libs/pydifflib-cpp"]
 	path = libs/pydifflib-cpp
 	url = https://github.com/dominicprice/pydifflib-cpp
+[submodule "libs/StripCppComments"]
+	path = libs/StripCppComments
+	url = https://github.com/wtwhite/StripCppComments.git

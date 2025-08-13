@@ -4,6 +4,7 @@
 #include <QPlainTextEdit>
 #include <QFileSystemWatcher>
 #include <QDateTime>
+#include <QString>
 
 class CodeBlock;
 class FileEncodingHandler;
@@ -199,6 +200,7 @@ protected:
     void addTagRemovalActionIfInsideTag(QMenu *menu);
     void addCodeBlockActionsIfApplicable(QMenu *menu, const QPoint &pos);
     void addImgTagActionsIfApplicable(QMenu *menu);
+    QString removeCppComments(const QString& code) const;
     void addPktTagActionsIfApplicable(QMenu *menu);
     void addCsvTagActionsIfApplicable(QMenu *menu);
     void addAnchorTagActionsIfApplicable(QMenu *menu);
