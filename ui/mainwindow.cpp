@@ -899,8 +899,13 @@ void MainWindow::surroundSelectedTextWithAHrefTag()
 
     if (0 == selectedText.size())
     {
-        const QString modifiedText = QString(beginOfTag) + '"' + attributeName + endOfTag;
+        // Insert empty a tag with cursor positioned inside href attribute
+        const QString modifiedText = QString(beginOfTag) + endOfTag;
         putTextBackToCursorPosition(cursor, "a", selectedText, "", modifiedText);
+        // Position cursor inside href attribute
+        int pos = cursor.position() - strlen(endOfTag);
+        cursor.setPosition(pos);
+        ui->textEditor->setTextCursor(cursor);
         return;
     }
 
@@ -925,8 +930,12 @@ void MainWindow::surroundSelectedTextWithImgTag()
 
     if (selectedText.isEmpty())
     {
-        // No text selected — insert empty img tag
+        // No text selected — insert empty img tag with cursor positioned inside src attribute
         putTextBackToCursorPosition(cursor, "img", selectedText, "", QString(beginOfTag) + endOfTag);
+        // Position cursor inside src attribute
+        int pos = cursor.position() - strlen(endOfTag);
+        cursor.setPosition(pos);
+        ui->textEditor->setTextCursor(cursor);
         return;
     }
 
