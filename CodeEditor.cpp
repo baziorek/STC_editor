@@ -661,8 +661,17 @@ void CodeEditor::addImgTagActionsIfApplicable(QMenu* menu)
                 QString newTag = imgTag;
                 if (!hasAlt)
                 {
-                    // Add alt
+                    // Add alt attribute
                     newTag.insert(newTag.length() - 1, " alt=\"\"");
+                    // Insert the text
+                    c.setPosition(cursor.block().position() + tagStart);
+                    c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
+                    c.insertText(newTag);
+                    // Move cursor inside the quotes (position after the opening quote)
+                    c.setPosition(cursor.block().position() + tagStart + newTag.length() - 2);
+                    c.setPosition(c.position(), QTextCursor::MoveAnchor);
+                    setTextCursor(c);
+                    return;
                 }
                 else
                 {
@@ -685,8 +694,17 @@ void CodeEditor::addImgTagActionsIfApplicable(QMenu* menu)
                 QString newTag = imgTag;
                 if (!hasOpis)
                 {
-                    // Add opis
+                    // Add opis attribute
                     newTag.insert(newTag.length() - 1, " opis=\"\"");
+                    // Insert the text
+                    c.setPosition(cursor.block().position() + tagStart);
+                    c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
+                    c.insertText(newTag);
+                    // Move cursor inside the quotes (position after the opening quote)
+                    c.setPosition(cursor.block().position() + tagStart + newTag.length() - 2);
+                    c.setPosition(c.position(), QTextCursor::MoveAnchor);
+                    setTextCursor(c);
+                    return;
                 }
                 else
                 {
@@ -889,8 +907,17 @@ void CodeEditor::addAnchorTagActionsIfApplicable(QMenu* menu)
                 QString newTag = anchorTag;
                 if (!hasName)
                 {
-                    // Add name=""
+                    // Add name attribute
                     newTag.insert(newTag.length() - 1, " name=\"\"");
+                    // Insert the text
+                    c.setPosition(cursor.block().position() + tagStart);
+                    c.setPosition(cursor.block().position() + tagEnd, QTextCursor::KeepAnchor);
+                    c.insertText(newTag);
+                    // Move cursor inside the quotes (position after the opening quote)
+                    c.setPosition(cursor.block().position() + tagStart + newTag.length() - 2);
+                    c.setPosition(c.position(), QTextCursor::MoveAnchor);
+                    setTextCursor(c);
+                    return;
                 }
                 else
                 {
@@ -906,7 +933,7 @@ void CodeEditor::addAnchorTagActionsIfApplicable(QMenu* menu)
             return;
         }
     }
-}
+} // TODO: The method can also add actions which `addLinkActionsIfApplicable(menu);` is adding. Now both methods are trying to find link
 
 void CodeEditor::addDivTagActionsIfApplicable(QMenu* menu)
 {
