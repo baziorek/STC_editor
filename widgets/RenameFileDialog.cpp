@@ -6,6 +6,7 @@
 #include <QDialogButtonBox>
 #include <QLabel>
 #include <QRegularExpression>
+#include <QFileDialog>
 #include "RenameFileDialog.h"
 #include "CodeEditor.h"
 #include "ui_RenameFileDialog.h"

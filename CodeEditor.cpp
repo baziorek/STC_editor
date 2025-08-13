@@ -972,7 +972,21 @@ void CodeEditor::addMultiLineSelectionActions(QMenu* menu, const QTextCursor& se
 
     menu->addSeparator();
 
-    if (!selectionHasLineNumbering(selection))
+    // Add 'Remove numbering' and 'Renumber selection' actions only if at least one selected line starts with numbering
+    if (selectionHasLineNumbering(selection))
+    {
+        QAction* removeNumberingAction = new QAction(QIcon::fromTheme("edit-clear"), tr("Remove numbering"));
+        connect(removeNumberingAction, &QAction::triggered, this, &CodeEditor::removeLineNumberingFromSelection);
+        menu->addAction(removeNumberingAction);
+
+        if (selectionHasBrokenNumbering(selection))
+        {
+            QAction* renumberAction = new QAction(QIcon::fromTheme("format-list-ordered"), tr("Renumber selection"));
+            connect(renumberAction, &QAction::triggered, this, &CodeEditor::renumberSelection);
+            menu->addAction(renumberAction);
+        }
+    }
+    else //if (!selectionHasLineNumbering(selection))
     {
         QAction* numbered = new QAction(QIcon::fromTheme("format-list-ordered"), "Add numeration: 1., 2., 3. ...", this);
         connect(numbered, &QAction::triggered, this, [=, this]() {
@@ -1030,17 +1044,6 @@ void CodeEditor::addMultiLineSelectionActions(QMenu* menu, const QTextCursor& se
         menu->addAction(bulleted);
     }
 
-    if (selectionHasLineNumbering(selection))
-    {
-        QAction* removeNumberingAction = new QAction(QIcon::fromTheme("edit-clear"), tr("Remove numbering"));
-        connect(removeNumberingAction, &QAction::triggered, this, &CodeEditor::removeLineNumberingFromSelection);
-        menu->addAction(removeNumberingAction);
-
-        QAction* renumberAction = new QAction(QIcon::fromTheme("format-list-ordered"), tr("Renumber selection"));
-        connect(renumberAction, &QAction::triggered, this, &CodeEditor::renumberSelection);
-        menu->addAction(renumberAction);
-    }
-
     QAction* joinLines = new QAction(QIcon::fromTheme("insert-text"), "Join lines with space", this);
     connect(joinLines, &QAction::triggered, this, [this]() {
         auto c = textCursor();
@@ -1062,21 +1065,6 @@ void CodeEditor::addMultiLineSelectionActions(QMenu* menu, const QTextCursor& se
         sortLinesInRange(startLine, endLine, /*ascending=*/false);
     });
     menu->addAction(sortDesc);
-
-    // Add 'Remove numbering' and 'Renumber selection' actions only if at least one selected line starts with numbering
-    if (selectionHasLineNumbering(selection))
-    {
-        QAction* removeNumberingAction = new QAction(QIcon::fromTheme("edit-clear"), tr("Remove numbering"));
-        connect(removeNumberingAction, &QAction::triggered, this, &CodeEditor::removeLineNumberingFromSelection);
-        menu->addAction(removeNumberingAction);
-
-        if (selectionHasBrokenNumbering(selection))
-        {
-            QAction* renumberAction = new QAction(QIcon::fromTheme("format-list-ordered"), tr("Renumber selection"));
-            connect(renumberAction, &QAction::triggered, this, &CodeEditor::renumberSelection);
-            menu->addAction(renumberAction);
-        }
-    }
 }
 
 bool CodeEditor::selectionHasBrokenNumbering(const QTextCursor& selection) const

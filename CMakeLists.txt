@@ -157,7 +157,7 @@ else()
     endif()
 endif()
 
-# ------------------ Ikona dla Windows ------------------
+# ------------------ Application icon for windows ------------------
 if(WIN32)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         WIN32_EXECUTABLE TRUE
