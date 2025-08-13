@@ -24,7 +24,7 @@ if(uchardet_FOUND)
     set(UCHARDET_LIB_NAME uchardet::libuchardet)
 else()
     message(STATUS "uchardet not found – using FetchContent to download")
-    # Wyłącz budowanie CLI i budowanie jako shared
+    # Disable CLI tool building and shared library building
     set(BUILD_BINARY OFF CACHE BOOL "Do not build uchardet CLI tool" FORCE)
     # set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build uchardet as static library" FORCE)
     FetchContent_Declare(
@@ -33,7 +33,7 @@ else()
         GIT_TAG master
     )
     FetchContent_MakeAvailable(uchardet)
-    # Patch: zakomentuj add_subdirectory(test) w CMakeLists.txt uchardet
+    # Patch: comment out add_subdirectory(test) in uchardet's CMakeLists.txt
     file(READ "${uchardet_SOURCE_DIR}/CMakeLists.txt" _uchardet_cmake)
     string(REPLACE "add_subdirectory(test)" "# add_subdirectory(test)" _uchardet_cmake "${_uchardet_cmake}")
     file(WRITE "${uchardet_SOURCE_DIR}/CMakeLists.txt" "${_uchardet_cmake}")
@@ -76,14 +76,14 @@ if(NOT Nuspell_FOUND)
 
     FetchContent_MakeAvailable(nuspell)
 
-    # Ustaw alias, by mieć zawsze Nuspell::nuspell
+    # Set alias to always have Nuspell::nuspell
     if(NOT TARGET Nuspell::nuspell)
         add_library(Nuspell::nuspell ALIAS nuspell)
     endif()
 endif()
 
-# ------------------ Źródła projektu ------------------
-include_directories(${PROJECT_SOURCE_DIR}) # dla plików .ui
+# ------------------ Project Sources ------------------
+include_directories(${PROJECT_SOURCE_DIR}) # for .ui files
 
 set(PROJECT_SOURCES
     main.cpp
@@ -141,7 +141,7 @@ set(PROJECT_FILES ${PROJECT_SOURCES} ${TEXT_FILES})
 
 set(app_icon_resource_linux "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon.png")
 
-# ------------------ Tworzenie targetu ------------------
+# ------------------ Create Target ------------------
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(${PROJECT_NAME}
         MANUAL_FINALIZATION
@@ -165,7 +165,7 @@ if(WIN32)
     )
 endif()
 
-# ------------------ Linkowanie bibliotek ------------------
+# ------------------ Library Linking ------------------
 target_include_directories(${PROJECT_NAME}
     PRIVATE
         ${PROJECT_SOURCE_DIR}
@@ -203,7 +203,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     DICTIONARY_PATH="${CMAKE_CURRENT_SOURCE_DIR}/dictionaries/pl/pl_PL.aff"
 )
 
-# ------------------ Właściwości targetu ------------------
+# ------------------ Target Properties ------------------
 if(${QT_VERSION} VERSION_LESS 6.1.0)
     set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.Cpp0x)
 endif()
@@ -216,7 +216,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     WIN32_EXECUTABLE TRUE
 )
 
-# ------------------ Instalacja ------------------
+# ------------------ Installation ------------------
 include(GNUInstallDirs)
 install(TARGETS ${PROJECT_NAME}
     BUNDLE DESTINATION .
@@ -233,7 +233,7 @@ if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(${PROJECT_NAME})
 endif()
 
-# ------------------ Testy (Linux tylko) ------------------
+# ------------------ Tests (Linux only) ------------------
 if(NOT WIN32)
     enable_testing()
     find_package(GTest REQUIRED)
