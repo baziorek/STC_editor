@@ -98,6 +98,8 @@ protected:
 
     QString chooseFileWithDialog(QFileDialog::AcceptMode acceptMode);
 
+    void setTodosCounterValue(int todosTotal);
+
     /// methods to handle recent files:
     QAction *createRecentFileAction(const QString &filePath, const RecentFileInfo &fileInfo);
     void addEmptyRecentFilesLabel();

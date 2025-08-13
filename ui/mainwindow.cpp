@@ -122,7 +122,7 @@ void MainWindow::connectSignals2Slots()
         this->onFileContentChanged(ui->textEditor->getFileName(), linesNumber);
     });
     connect(ui->todosTableWidget, &TodoTrackerTableWidget::todosTotalCountChanged, [this](int todosTotal) {
-        ui->contextsTabWidget->setTabText(2, tr("TODOs (") + QString::number(todosTotal) + ")");
+        this->setTodosCounterValue(todosTotal);
     });
     connect(ui->textEditor, &QPlainTextEdit::textChanged, ui->stopwatchGroupBox, &WorkAwareStopwatch::notifyWorkActivity);
     connect(ui->menuOpen_recent, &QMenu::aboutToShow, this, &MainWindow::onRecentRecentFilesMenuOpened);
@@ -756,12 +756,19 @@ bool MainWindow::loadFileContentToEditorDistargingCurrentContent(const QString& 
 
         ui->contextTableWidget->rebuildAllHeaders();
 
+        setTodosCounterValue(ui->todosTableWidget->getTodosTotalCount());
+
         return true;
     }
 
     QMessageBox::warning(this, "Error opening file", "File '" + fileName + "' failed to be opened from commandline!");
 
     return false;
+}
+
+void MainWindow::setTodosCounterValue(int todosTotal)
+{
+    ui->contextsTabWidget->setTabText(2, tr("TODOs (") + QString::number(todosTotal) + ")");
 }
 
 void MainWindow::onExitFromApplicationMenuPressed()

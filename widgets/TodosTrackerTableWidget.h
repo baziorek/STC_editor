@@ -26,6 +26,8 @@ public:
 
     void clearTodos();
 
+    auto getTodosTotalCount() const { return todoList.size(); }
+
 signals:
     void goToLineRequested(int lineNumber);
     void goToLineAndOffsetRequested(int lineNumber, int linePosition);
