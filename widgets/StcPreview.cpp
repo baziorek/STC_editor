@@ -207,10 +207,10 @@ void StcPreviewWidget::sendTextRequest(const QString &text)
             (function() {
                 let container = document.getElementById("Preview");
                 if (container) {
-                    container.innerHTML = `%1`;
+                    container.innerHTML = '%1';
                 }
             })();
-        )").arg(escapeHtmlToJsString(html));
+        )").arg(escapeHtmlToJsString(html).replace("$", "\\$"));
 
         webView.page()->runJavaScript(js);
         emit htmlReady(html);
