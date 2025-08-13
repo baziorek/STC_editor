@@ -59,6 +59,8 @@ Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://c
     - Gdy mamy zaznaczony tekst, który jest już otagowany i wywołujemy ponowne tagowanie tego tekstu tymi samymi tagami to jeśli jest zaznaczony tekst z tagami lub wewnatrz tagów to zostaną te tagi usunięte.
 22. **Sprawdzanie literówek** (ang. spellcheck): teksty jest sprawdzany ze słownikiem (biblioteka [nuspell](https://nuspell.github.io/)), oraz są podkreślane nieistniejące wyrazy w języku polskim. Oczywiście w ramach tagów STC tekst jest pomijany (chyba, że atrybuty wymagające sprawdzenia, np. opis obrazka).
     - Menu kontekstowe z podpowiedziamy poprawiającymi literówki.
+23. **Inteligentne menu kontekstowe dla tagów**: Po kliknięciu w tekście prawym przyciskiem myszy na tagu pojawiają się pewne specyficzne, dla danego tagu funkcjonalności:
+    - Po kliknięciu w ramach `[a href=...]` pojawiają się akcje do obsługi linka
 
 ## Ogólne funkcje edytora
 Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wybrane funkcjonalności, których brakuje mi w zwykłych edytorach:

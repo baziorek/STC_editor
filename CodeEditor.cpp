@@ -3,6 +3,7 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QScrollBar>
+#include <QApplication>
 #include <QToolTip>
 #include <QTimer>
 #include <QMimeData>
@@ -507,6 +508,7 @@ void CodeEditor::contextMenuEvent(QContextMenuEvent* event)
     }
     else
     {
+        addLinkActionsIfApplicable(menu);
         addTagRemovalActionIfInsideTag(menu);
         addCodeBlockActionsIfApplicable(menu, event->pos());
         addImgTagActionsIfApplicable(menu);
@@ -519,6 +521,109 @@ void CodeEditor::contextMenuEvent(QContextMenuEvent* event)
 
     menu->exec(event->globalPos());
     delete menu;
+}
+
+void CodeEditor::addLinkActionsIfApplicable(QMenu* menu)
+{
+    const QTextCursor cursor = textCursor();
+    QTextBlock block = cursor.block();
+    const QString blockText = block.text();
+    int cursorPosInBlock = cursor.position() - block.position();
+
+    QRegularExpression linkRe(stc::syntax::anchorRe.pattern());
+    QRegularExpressionMatch match = linkRe.match(blockText);
+    if (! match.hasMatch())
+    {
+        return;
+    }
+
+    QString hrefValue = match.captured(1);
+    bool hasNonEmptyLink = !hrefValue.trimmed().isEmpty();
+
+    // Add "Copy link" action
+    QAction* copyLinkAction = menu->addAction("Copy link", this, &CodeEditor::copyLinkToClipboard);
+    copyLinkAction->setIcon(QIcon::fromTheme("edit-copy"));
+    copyLinkAction->setEnabled(hasNonEmptyLink);
+
+    // Add "Remove link" action
+    QAction* removeLinkAction = menu->addAction("Remove link", this, &CodeEditor::removeLink);
+    removeLinkAction->setIcon(QIcon::fromTheme("edit-clear"));
+    removeLinkAction->setEnabled(hasNonEmptyLink);
+
+    // Add "Select link" action
+    QAction* selectLinkAction = menu->addAction("Select link", this, &CodeEditor::selectLink);
+    selectLinkAction->setIcon(QIcon::fromTheme("edit-select-all"));
+    selectLinkAction->setEnabled(hasNonEmptyLink);
+}
+
+void CodeEditor::copyLinkToClipboard()
+{
+    const QTextCursor cursor = textCursor();
+    QTextBlock block = cursor.block();
+    const QString blockText = block.text();
+    int cursorPosInBlock = cursor.position() - block.position();
+
+    QRegularExpression linkRe(stc::syntax::anchorRe.pattern());
+    QRegularExpressionMatch match = linkRe.match(blockText);
+    if (match.hasMatch())
+    {
+        QString link = match.captured(1);
+        QClipboard* clipboard = QApplication::clipboard();
+        clipboard->setText(link);
+    }
+    else
+    {
+        qDebug() << "Failed to find link tag";
+    }
+}
+
+void CodeEditor::removeLink()
+{
+    const QTextCursor cursor = textCursor();
+    QTextBlock block = cursor.block();
+    const QString blockText = block.text();
+    int cursorPosInBlock = cursor.position() - block.position();
+
+    QRegularExpression linkRe(stc::syntax::anchorRe.pattern());
+    QRegularExpressionMatch match = linkRe.match(blockText);
+    if (match.hasMatch())
+    {
+        int linkStart = match.capturedStart(1);
+        int linkEnd = match.capturedEnd(1);
+
+        QTextCursor editCursor = textCursor();
+        editCursor.beginEditBlock();
+        editCursor.setPosition(block.position() + linkStart);
+        editCursor.setPosition(block.position() + linkEnd, QTextCursor::KeepAnchor);
+        editCursor.removeSelectedText();
+        editCursor.insertText("");
+        editCursor.endEditBlock();
+    }
+    else
+    {
+        qDebug() << "Failed to find link tag";
+    }
+}
+
+void CodeEditor::selectLink()
+{
+    const QTextCursor cursor = textCursor();
+    QTextBlock block = cursor.block();
+    const QString blockText = block.text();
+    int cursorPosInBlock = cursor.position() - block.position();
+
+    QRegularExpression linkRe(stc::syntax::anchorRe.pattern());
+    QRegularExpressionMatch match = linkRe.match(blockText);
+    if (match.hasMatch())
+    {
+        int linkStart = match.capturedStart(1);
+        int linkEnd = match.capturedEnd(1);
+
+        QTextCursor editCursor = textCursor();
+        editCursor.setPosition(block.position() + linkStart);
+        editCursor.setPosition(block.position() + linkEnd, QTextCursor::KeepAnchor);
+        setTextCursor(editCursor);
+    }
 }
 
 void CodeEditor::addImgTagActionsIfApplicable(QMenu* menu)

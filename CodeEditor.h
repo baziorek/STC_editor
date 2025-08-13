@@ -82,6 +82,12 @@ public:
 
     void stopWatchingFiles();
 
+    // Link-related functions
+    void addLinkActionsIfApplicable(QMenu* menu);
+    void copyLinkToClipboard();
+    void removeLink();
+    void selectLink();
+
 signals:
     void shortcutPressed_bold();
     void shortcutPressed_run();
