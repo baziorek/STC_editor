@@ -1,8 +1,12 @@
 #include <QDebug>
 #include <QRegularExpression>
+#include <QLanguage>    // from QCodeEditor
+#include <QSyntaxStyle> // from QCodeEditor
+#include <QFile>
 #include "STCSyntaxHighlighter.h"
 #include "../stcSyntaxPatterns.h"
 #include "../types/stcTags.h"
+
 
 namespace
 {
@@ -31,13 +35,58 @@ enum BlockState // TODO: Why not to use `enum class StcTags: std::uint32_t` inst
     STATE_STYLE_ITALIC    = 0x4000,
     STATE_STYLE_UNDERLINE = 0x8000,
     STATE_STYLE_STRIKE    = 0x10000,
+
+    STATE_CODE_CPP_COMMENT= 0x20000,
 };
 
 constexpr bool PRINT_DEBUG = false; // TODO: Remove when formatting fully works
 #define DEBUG(condition, text) if (PRINT_DEBUG && condition) qDebug() << "\t " << #text << " changes" << __LINE__ << currentBlockState()
-#ifndef _WIN32
-#warning "Chat helped me with the code, but it requires refactoring and corrections"
-#endif
+
+QString format2String(const QTextCharFormat &format)
+{
+    QString str;
+
+    auto colorToStr = [](const QColor &c) {
+        if (!c.isValid()) return QStringLiteral("invalid");
+        return QString("rgb(%1,%2,%3)")
+            .arg(c.red())
+            .arg(c.green())
+            .arg(c.blue());
+    };
+
+    str += "Foreground: " + colorToStr(format.foreground().color()) + "\n";
+    str += "Background: " + colorToStr(format.background().color()) + "\n";
+
+    if (format.fontWeight() == QFont::Bold)
+        str += "Weight: Bold\n";
+    else
+        str += "Weight: " + QString::number(format.fontWeight()) + "\n";
+
+    if (format.fontItalic())
+        str += "Italic: true\n";
+
+    if (format.fontUnderline())
+        str += "Underline: true\n";
+
+    if (format.fontStrikeOut())
+        str += "StrikeOut: true\n";
+
+    QFont f = format.font();
+    if (!f.family().isEmpty())
+        str += "Font: " + f.family() + "\n";
+
+    if (f.pointSizeF() > 0)
+        str += "Size: " + QString::number(f.pointSizeF()) + "\n";
+
+    // underline style & color
+    if (format.underlineStyle() != QTextCharFormat::NoUnderline)
+    {
+        str += "UnderlineStyle: " + QString::number(format.underlineStyle()) + "\n";
+        str += "UnderlineColor: " + colorToStr(format.underlineColor()) + "\n";
+    }
+
+    return str;
+}
 } // namespace
 
 
@@ -67,7 +116,7 @@ STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
 
     // Bloki kodu
     addBlockStyle(tagsClasses[CODE], QColor("yellow"), std::to_underlying(NONE), -1, QColor("black"), "monospace");
-    addBlockStyle(tagsClasses[CPP], QColor("black"), std::to_underlying(NONE), -1, QColor("lightblue"), "monospace");
+    // addBlockStyle(tagsClasses[CPP], QColor("black"), std::to_underlying(NONE), -1, QColor("lightblue"), "monospace"); // TODO: Consider using this when disabled highlighting by library
     addBlockStyle(tagsClasses[PY], QColor("black"), std::to_underlying(NONE), -1, QColor("brown"), "monospace");
 
     // Stylizacja tekstu (b/i/u/s)
@@ -512,11 +561,11 @@ void STCSyntaxHighlighter::currentBlockStateWithFlag(int flag, std::source_locat
 bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
 {
     static const QMap<QString, QRegularExpression> closeReMap =
-    {
-        { "cpp",  stc::syntax::cppCloseRe },
-        { "py",   stc::syntax::pythonCloseRe },
-        { "code", stc::syntax::codeCloseRe }
-    };
+        {
+            { "cpp",  stc::syntax::cppCloseRe },
+            { "py",   stc::syntax::pythonCloseRe },
+            { "code", stc::syntax::codeCloseRe }
+        };
 
     static QTextCharFormat tagFmt = [] {
         QTextCharFormat fmt;
@@ -531,19 +580,13 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
     const int prev = previousBlockState();
     if (prev != STATE_NONE)
     {
-        struct CodeBlock
-        {
-            int stateFlag;
-            QString styleKey;
-            QRegularExpression closeRe;
-        };
-
+        struct CodeBlock { int stateFlag; QString styleKey; QRegularExpression closeRe; };
         const QVector<CodeBlock> blocks =
-        {
-            { STATE_CODE_CPP, "cpp", stc::syntax::cppCloseRe },
-            { STATE_CODE,     "code", stc::syntax::codeCloseRe },
-            { STATE_CPP,      "py", stc::syntax::pythonCloseRe }
-        };
+            {
+                { STATE_CODE_CPP, "cpp",  stc::syntax::cppCloseRe },
+                { STATE_CODE,     "code", stc::syntax::codeCloseRe },
+                { STATE_CPP,      "py",   stc::syntax::pythonCloseRe }
+            };
 
         for (const auto& blk : blocks)
         {
@@ -553,25 +596,28 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
                 QRegularExpressionMatch close = blk.closeRe.match(text);
                 if (close.hasMatch())
                 {
-                    int closeStart = close.capturedStart();
-
-                    // if (overlapsWithNoFormat(closeStart, text.size())) // TODO:
-                    //     continue;
+                    const int closeStart = close.capturedStart();
 
                     setFormat(0, closeStart, fmt);
+                    if (blk.stateFlag == STATE_CODE_CPP)
+                        applyCppHighlighting(text, 0, closeStart); // <— tylko fragment C++
+
                     setFormat(closeStart, close.capturedLength(), tagFmt);
                     _codeRangesThisLine.append({ closeStart, close.capturedLength() });
                     currentBlockStateWithoutFlag(blk.stateFlag);
                     offset = close.capturedEnd();
                     found = true;
-                    continue; // nie break – idź dalej z analizą!
+                    continue;
                 }
                 else
                 {
                     setFormat(0, text.length(), fmt);
+                    if (blk.stateFlag == STATE_CODE_CPP)
+                        applyCppHighlighting(text, 0, text.length()); // <— do końca linii
+
                     currentBlockStateWithFlag(blk.stateFlag);
                     _codeRangesThisLine.append({ 0, text.length() });
-                    return true; // nadal jesteśmy w wieloliniowym bloku
+                    return true;
                 }
             }
         }
@@ -586,7 +632,7 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
         const QString tag = openMatch.captured(1);
         const QString src = openMatch.captured(2).toLower();
         const int tagStart = openMatch.capturedStart();
-        const int tagEnd = openMatch.capturedEnd();
+        const int tagEnd   = openMatch.capturedEnd();
 
         QTextCharFormat fmt;
         QString styleKey;
@@ -619,17 +665,19 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
         if (closeMatch.hasMatch())
         {
             // Kod inline
-            const int closeStart = closeMatch.capturedStart();
+            const int closeStart   = closeMatch.capturedStart();
             const int contentStart = tagEnd;
-            const int contentLen = closeStart - contentStart;
-            const int closeLen = closeMatch.capturedLength();
+            const int contentLen   = closeStart - contentStart;
+            const int closeLen     = closeMatch.capturedLength();
 
             offset = closeMatch.capturedEnd();
-            // if (overlapsWithNoFormat(closeStart, closeLen)) // TODO:
-            //     continue;
 
             setFormat(tagStart, tagEnd - tagStart, tagFmt);
             setFormat(contentStart, contentLen, fmt);
+
+            if (stateFlag == STATE_CODE_CPP)
+                applyCppHighlighting(text, contentStart, closeStart); // <— tylko [cpp]…[/cpp]
+
             _codeRangesThisLine.append({ contentStart, contentLen });
             setFormat(closeStart, closeLen, tagFmt);
 
@@ -640,6 +688,10 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
             // Rozpoczęcie wieloliniowego bloku
             setFormat(tagStart, tagEnd - tagStart, tagFmt);
             setFormat(tagEnd, text.length() - tagEnd, fmt);
+
+            if (stateFlag == STATE_CODE_CPP)
+                applyCppHighlighting(text, tagEnd, text.length()); // <— od tagu do końca linii
+
             _codeRangesThisLine.append({ tagEnd, text.length() - tagEnd });
             currentBlockStateWithFlag(stateFlag);
             return true;
@@ -647,6 +699,142 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
     }
 
     return found;
+}
+/// This function is adapted from https://github.com/ArsMasiuk/QCodeEditor, which was orginally made by https://github.com/Megaxela/QCodeEditor
+void STCSyntaxHighlighter::applyCppHighlighting(const QString &text, int from, int to)
+{
+    from = std::max(from, 0);
+    to = std::min<decltype(to)>(text.length(), to);
+    if (from >= to)
+        return;
+
+    struct CppHighlightRule
+    {
+        QRegularExpression pattern;
+        QString formatName;
+    };
+
+    QSyntaxStyle *style = QSyntaxStyle::defaultStyle();
+
+    const int length = to - from;
+    const QString fragment = text.mid(from, length);
+
+    static QVector<CppHighlightRule> rules;
+    static QRegularExpression includePattern(R"(^\s*#\s*include\s*([<"][^:?"<>\|]+[">]))");
+    static QRegularExpression functionPattern(R"(\b([_a-zA-Z][_a-zA-Z0-9]*\s+)?((?:[_a-zA-Z][_a-zA-Z0-9]*\s*::\s*)*[_a-zA-Z][_a-zA-Z0-9]*)(?=\s*\())");
+    static QRegularExpression defTypePattern(R"(\b([_a-zA-Z][_a-zA-Z0-9]*)\s+[_a-zA-Z][_a-zA-Z0-9]*\s*[;=])");
+    static QRegularExpression commentStartPattern(R"(/\*)");
+    static QRegularExpression commentEndPattern(R"(\*/)");
+
+    if (rules.isEmpty())
+    {
+        Q_INIT_RESOURCE(qcodeeditor_resources);
+        static QFile fl(":/languages/cpp.xml");
+        if (fl.open(QIODevice::ReadOnly))
+        {
+            static QLanguage language(&fl);
+            if (language.isLoaded())
+            {
+                for (auto&& key : language.keys())
+                {
+                    for (auto&& name : language.names(key))
+                    {
+                        rules.append({
+                            QRegularExpression(QString(R"(\b%1\b)").arg(name)),
+                            key
+                        });
+                    }
+                }
+            }
+        }
+        else
+        {
+            throw std::runtime_error("Can not load :/cpp.xml");
+        }
+
+        rules.append({ QRegularExpression(R"("[^\n"]*")"), "String" });
+        rules.append({ QRegularExpression(R"(#[a-zA-Z_]+)"), "Preprocessor" });
+        rules.append({ QRegularExpression(R"(//[^\n]*)"), "Comment" });
+    }
+
+    // include
+    {
+        auto it = includePattern.globalMatch(fragment);
+        while (it.hasNext())
+        {
+            auto m = it.next();
+            setFormat(from + m.capturedStart(), m.capturedLength(), style->getFormat("Preprocessor"));
+            setFormat(from + m.capturedStart(1), m.capturedLength(1), style->getFormat("String"));
+        }
+    }
+
+    // funkcje
+    {
+        auto it = functionPattern.globalMatch(fragment);
+        while (it.hasNext())
+        {
+            auto m = it.next();
+            setFormat(from + m.capturedStart(), m.capturedLength(), style->getFormat("Type"));
+            setFormat(from + m.capturedStart(2), m.capturedLength(2), style->getFormat("Function"));
+        }
+    }
+
+    // definicje typów
+    {
+        auto it = defTypePattern.globalMatch(fragment);
+        while (it.hasNext())
+        {
+            auto m = it.next();
+            setFormat(from + m.capturedStart(1), m.capturedLength(1), style->getFormat("Type"));
+        }
+    }
+
+    // pozostałe reguły
+    for (auto& r : rules)
+    {
+        auto it = r.pattern.globalMatch(fragment);
+        while (it.hasNext())
+        {
+            auto m = it.next();
+            setFormat(from + m.capturedStart(), m.capturedLength(), style->getFormat(r.formatName));
+        }
+    }
+
+    // komentarze blokowe (/* ... */)
+    int startIndex = -1;
+    if (previousBlockState() != STATE_NONE && (previousBlockState() & STATE_CODE_CPP_COMMENT))
+    {
+        startIndex = 0;
+    }
+    else
+    {
+        auto m = commentStartPattern.match(fragment);
+        startIndex = m.hasMatch() ? m.capturedStart() : -1;
+    }
+
+    while (startIndex >= 0)
+    {
+        auto match = commentEndPattern.match(fragment, startIndex);
+        int endIndex = match.capturedStart();
+        int commentLength = 0;
+
+        if (endIndex == -1)
+        {
+            currentBlockStateWithFlag(STATE_CODE_CPP_COMMENT);
+            commentLength = fragment.length() - startIndex;
+        }
+        else
+        {
+            commentLength = endIndex - startIndex + match.capturedLength();
+        }
+
+        setFormat(from + startIndex,
+                  commentLength,
+                  style->getFormat("Comment"));
+
+        auto nextStart = commentStartPattern.match(fragment, startIndex + commentLength);
+        startIndex = nextStart.hasMatch() ? nextStart.capturedStart() : -1;
+    }
 }
 
 bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
@@ -666,20 +854,20 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
     }();
 
     static const QMap<QString, int> tagStates =
-    {
-        { "b", STATE_STYLE_BOLD },
-        { "i", STATE_STYLE_ITALIC },
-        { "u", STATE_STYLE_UNDERLINE },
-        { "s", STATE_STYLE_STRIKE },
-    };
+        {
+         { "b", STATE_STYLE_BOLD },
+         { "i", STATE_STYLE_ITALIC },
+         { "u", STATE_STYLE_UNDERLINE },
+         { "s", STATE_STYLE_STRIKE },
+         };
 
     static const QMap<QString, QRegularExpression> closeRes =
-    {
-        { "b", stc::syntax::boldCloseRe },
-        { "i", stc::syntax::italicCloseRe },
-        { "u", stc::syntax::underlineCloseRe },
-        { "s", stc::syntax::strikeOutCloseRe },
-    };
+        {
+         { "b", stc::syntax::boldCloseRe },
+         { "i", stc::syntax::italicCloseRe },
+         { "u", stc::syntax::underlineCloseRe },
+         { "s", stc::syntax::strikeOutCloseRe },
+         };
 
     static QTextCharFormat tagFmt = [] {
         QTextCharFormat fmt;

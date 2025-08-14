@@ -7,3 +7,6 @@
 [submodule "libs/StripCppComments"]
 	path = libs/StripCppComments
 	url = https://github.com/wtwhite/StripCppComments.git
+[submodule "libs/QCodeEditor"]
+	path = libs/QCodeEditor
+	url = https://github.com/ArsMasiuk/QCodeEditor.git

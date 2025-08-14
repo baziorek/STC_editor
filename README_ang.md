@@ -206,6 +206,8 @@ This tool has been invaluable for creating articles on [cpp0x.pl](https://cpp0x.
 3. [uchardet](https://gitlab.freedesktop.org/uchardet/uchardet) - Supports multiple file encodings (not just UTF-8). License: Mozilla Public License.
 4. [nuspell](https://nuspell.github.io/) - Spellchecking library using [Hunspell](https://hunspell.github.io/) dictionaries.
 5. [StripCppComments](https://github.com/wtwhite/StripCppComments) - For removing C++ comments. License: MIT.
+6. [ArsMasiuk/QCodeEditor](https://github.com/ArsMasiuk/QCodeEditor) (which is fork of [Megaxela/QCodeEditor](https://github.com/Megaxela/QCodeEditor)) - it is text editor in Qt, which has syntax highlighting for C++, python and more. License: MIT.
+
 
 ### Dictionaries (Polish)
 

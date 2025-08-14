@@ -18,6 +18,7 @@ Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników
 ## Dedykowane funkcje
 Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://cpp0x.pl/) (do czego zachęcam):
  1. **Kolorowanie składni**: Podświetlanie znaczników STC dla lepszej czytelności.
+    - Kolorowanie składni C++ w ramach znaczników `[cpp]...[/cpp]`. Jest to zaimplementowane przy wykorzystaniu [QCodeEditor](https://github.com/Megaxela/QCodeEditor) (autorstwa [Megaxela](https://github.com/Megaxela), bazując na [forku ArsMasiuk](https://github.com/ArsMasiuk/QCodeEditor)).
  2. **Weryfikacja zamknięcia znaczników**: Sprawdza, czy wszystkie znaczniki STC są poprawnie zamknięte.
  3. **Transformacja tekstu**: Zmiana zaznaczonego tekstu na małe litery, wielkie litery, camelCase na snake_case lub odwrotnie.
  4. **Podgląd kontekstu dokumentu**:
@@ -180,6 +181,7 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
      - Dodać check: czy nie zamykam nieotwartego tagu?
      - Sprawdzenie czy Run nie jest poza csv lub pkt
 55. Blokowanie pliku, który się edytuje.
+56. A może do szukania błędów (niezamkniętych tagów) zaprzędz analizator składniowy: https://www.antlr.org/ ?
 
 ## Min Bugi (czyli wcale nie trzebaich poprawiać):
 1. Dopasowanie rozmiaru numeracji linii do wielkości czcionki.
@@ -212,6 +214,8 @@ Narzędzie to okazało się bardzo pomocne przy tworzeniu artykułów na [Cpp0x.
 3. [uchardet](https://gitlab.freedesktop.org/uchardet/uchardet) - Do wykrywania kodowania plików (nie tylko UTF-8). Licencja: Mozilla Public License.
 4. [nuspell](https://nuspell.github.io/) - Do sprawdzania pisowni, wykorzystuje słowniki [Hunspell](https://hunspell.github.io/).
 5. [StripCppComments](https://github.com/wtwhite/StripCppComments) - Do usuwania komentarzy z kodu C++. Licencja: MIT.
+6. [ArsMasiuk/QCodeEditor](https://github.com/ArsMasiuk/QCodeEditor) (będący forkiem [Megaxela/QCodeEditor](https://github.com/Megaxela/QCodeEditor)) - edytor tekstowy w Qt, który ma kolorowanie składni dla C++, Python i innych. Licencja MIT.
+
 
 ### Słowniki (język polski)
 

@@ -8,6 +8,7 @@
 #include <QRegularExpression>
 #include "utils/SpellChecker.h"
 
+
 /// class inspired with: https://doc.qt.io/qt-6.2/qtwidgets-richtext-syntaxhighlighter-example.html
 class STCSyntaxHighlighter : public QSyntaxHighlighter
 {
@@ -30,6 +31,8 @@ protected:
     bool highlightTextStyleTags(const QString& text);
     bool highlightTagsWithAttributes(const QString& text);
     void highlightPlainTextContent(const QString &text);
+
+    void applyCppHighlighting(const QString &text, int from, int to);
 
     void addBlockStyle(const QString &tag,
                        QColor foreground = Qt::black,

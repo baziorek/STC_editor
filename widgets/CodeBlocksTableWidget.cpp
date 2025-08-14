@@ -128,6 +128,9 @@ void CodeBlocksTableWidget::addCodeBlockLocationToTable(int row, const CodeBlock
 {
     QTextCursor cursor = block.cursor;
 
+    if (cursor.isNull())
+        return;
+
     int selectionStart = cursor.selectionStart();
     int selectionEnd = cursor.selectionEnd();
 

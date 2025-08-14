@@ -185,6 +185,18 @@ target_link_libraries(${PROJECT_NAME}
         StripCppComments
 )
 
+# ------------------ QCodeEditor ------------------
+add_subdirectory(libs/QCodeEditor)
+
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+        QCodeEditor
+)
+
+# Nadpisujemy standard, jeśli ich CMake ustawia -ansi lub stary standard
+target_compile_features(QCodeEditor PUBLIC cxx_std_23)
+
+
 if(UCHARDET_INCLUDE_DIR)
     target_include_directories(${PROJECT_NAME} PRIVATE "${UCHARDET_INCLUDE_DIR}")
 endif()
