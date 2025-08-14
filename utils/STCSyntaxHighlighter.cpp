@@ -95,31 +95,31 @@ STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
 {
     using enum StcTags;
 
-    // Styl tagów (np. [code], [/div] itd.)
+    // Tag style (e.g., [code], [/div], etc.)
     QTextCharFormat tagFormat;
     tagFormat.setForeground(Qt::gray);
     tagFormat.setFontPointSize(8);
     rules.append({ stc::syntax::stdDefaultTagRe, tagFormat });
 
-    // Nagłówki
+    // Headers
     QColor headerColor{"#a33"};
     addBlockStyle(tagsClasses[H1], headerColor, std::to_underlying(BOLD), 20);
     addBlockStyle(tagsClasses[H2], headerColor, std::to_underlying(BOLD), 17);
     addBlockStyle(tagsClasses[H3], headerColor, std::to_underlying(NONE), 14);
     addBlockStyle(tagsClasses[H4], headerColor, std::to_underlying(NONE), 11);
 
-    // DIV-y
+    // DIVs
     addBlockStyle("tip", Qt::white, std::to_underlying(NONE), -1, QColor("darkgreen"));
     addBlockStyle(tagsClasses[DIV], QColor::Invalid, std::to_underlying(NONE), -1, QColor("brown"));
     addBlockStyle("warning", Qt::white, std::to_underlying(NONE), -1, QColor("red"));
     addBlockStyle(tagsClasses[QUOTE], Qt::black, std::to_underlying(StcTags::NONE), -1, QColor("orange"));
 
-    // Bloki kodu
+    // Code blocks
     addBlockStyle(tagsClasses[CODE], QColor("yellow"), std::to_underlying(NONE), -1, QColor("black"), "monospace");
     // addBlockStyle(tagsClasses[CPP], QColor("black"), std::to_underlying(NONE), -1, QColor("lightblue"), "monospace"); // TODO: Consider using this when disabled highlighting by library
     addBlockStyle(tagsClasses[PY], QColor("black"), std::to_underlying(NONE), -1, QColor("brown"), "monospace");
 
-    // Stylizacja tekstu (b/i/u/s)
+    // Text styling (b/i/u/s)
     addBlockStyle(tagsClasses[BOLD], QColor::Invalid, std::to_underlying(BOLD));
     addBlockStyle(tagsClasses[ITALIC], QColor::Invalid, std::to_underlying(ITALIC));
     addBlockStyle(tagsClasses[UNDERLINED], QColor::Invalid, std::to_underlying(UNDERLINED));
@@ -129,7 +129,7 @@ STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
     addBlockStyle("pkt", QColor("#000"), std::to_underlying(NONE), -1, QColor("#d0f0af"));
     addBlockStyle("csv", QColor("#000"), std::to_underlying(NONE), -1, QColor("#fce4b4"));
 
-    // // Linki (a href=...)
+    // Links (a href=...)
     QTextCharFormat hrefNameFormat;
     hrefNameFormat.setForeground(QColor("blue"));
     hrefNameFormat.setFontUnderline(true);
@@ -140,7 +140,7 @@ STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
     hrefAttrFormat.setFontPointSize(9);
     styledTagsMap.insert("a.href", { "a.href", hrefAttrFormat });
 
-    // Obrazki (img src=...)
+    // Images (img src=...)
     const QColor mint{"#2c7"};
     QTextCharFormat imgSrcFormat;
     imgSrcFormat.setForeground(mint);
@@ -164,7 +164,7 @@ STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
     imgAltFormat.setFontPointSize(10);
     styledTagsMap.insert("img.autofit", {"img.autofit", autofitFormat});
 
-    // Styl ogólny tagu [img ...] lub [a ...]
+    // General style for [img ...] or [a ...] tags
     QTextCharFormat tagFmt;
     tagFmt.setForeground(Qt::gray);
     tagFmt.setFontPointSize(8);
@@ -173,21 +173,21 @@ STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
 
 void STCSyntaxHighlighter::highlightBlock(const QString &text)
 {
-    _codeRangesThisLine.clear();     // czyszczenie przed każdą linią
-    _noFormatRangesThisLine.clear(); // czyszczenie przed każdą linią
+    _codeRangesThisLine.clear();     // clear before each line
+    _noFormatRangesThisLine.clear(); // clear before each line
 
-    const int prev = previousBlockState();  // zapisz zanim nadpiszesz
+    const int prev = previousBlockState();  // save before overwriting
     DEBUG(true, "----------") << prev << text;
 
-    // --- 1. DIV (najbardziej zewnętrzny) ---
+    // --- 1. DIV (outermost) ---
     bool divChanges = highlightDivBlock(text);
     DEBUG(divChanges, "div");
 
-    // --- 2. Nagłówki ---
+    // --- 2. Headers ---
     bool headersChanges = highlightHeading(text);
     DEBUG(divChanges, "hN");
 
-    // // --- 3. pkt / csv (mogą zawierać inne tagi) ---
+    // // --- 3. pkt / csv (may contain other tags) ---
     bool pktOrCsvChanges = highlightPktOrCsv(text);
     if (pktOrCsvChanges)
     {
@@ -196,7 +196,7 @@ void STCSyntaxHighlighter::highlightBlock(const QString &text)
         DEBUG(divChanges, "div");
     }
 
-    // // --- 4. Bloki kodu ---
+    // // --- 4. Code blocks ---
     bool codeChanges = highlightCodeBlock(text);
     DEBUG(codeChanges, "code");
 
@@ -385,7 +385,7 @@ bool STCSyntaxHighlighter::highlightDivBlock(const QString &text)
     }
 
     return foundAny;
-} // TODO: Divy zagnieżdżone jakoś trzeba obsłużyć
+} // TODO: Nested divs need to be handled somehow
 void STCSyntaxHighlighter::applySpellcheckToTextRange(const QString& text, int start, int length, const QTextCharFormat& baseFormat)
 {
     const QString innerText = text.mid(start, length);

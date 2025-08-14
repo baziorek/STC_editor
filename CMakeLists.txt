@@ -193,7 +193,7 @@ target_link_libraries(${PROJECT_NAME}
         QCodeEditor
 )
 
-# Nadpisujemy standard, jeśli ich CMake ustawia -ansi lub stary standard
+# Override the standard if their CMake sets -ansi or an old standard
 target_compile_features(QCodeEditor PUBLIC cxx_std_23)
 
 

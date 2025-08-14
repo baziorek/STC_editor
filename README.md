@@ -125,8 +125,8 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 4. Wyszukaj i zamień: `Ctrl+R` z możliwością wyłączenia poszczególnych wykrytych pozycji.
 5. Zamiana warunkowa -np. zamień jeśli już nie jest. Np. jak chcę zamienić `cout` na `std::cout` to zamieni tylko jeśli nie jest to `std::cout`
 6. Integracja analizatora składni C++ (np. [flex](https://github.com/westes/flex)).
-7. Formatowanie kodu C++ dedykowane
-8. Podświetlanie składni C++ i Pythona za pomocą [QCXXHighlighter](https://github.com/Megaxela/QCodeEditor) (licencja MIT).
+7. Podświetlanie składni Pythona za pomocą [QCXXHighlighter](https://github.com/Megaxela/QCodeEditor) (licencja MIT).
+8. Obsługa różnych kolorowań składni (różne typy plików, bazujące na QCodeEditor).
 9. Wyświetlanie statystyk zmian w czasie rzeczywistym (liczba linii, znaków, rozmiar pliku, linia i kolumna).
 10. Historia wprowadzanych zmian (`Ctrl+Z`).
 11. Szybsze wyjście z aplikacji - po prostu wyjście, bez przywracania stanu niewymagającego zapisu
@@ -142,7 +142,7 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 21. Kreator tabel dla znaczników STC.
 22. PreviewWidget: Śledzenie pozycji między pozycją w dokumencie źródłowym a podglądem HTML
 23. Historia zmian w linii
-24. Precompiled headers dla codeEditor.h i moduły
+24. Precompiled headers dla CodeEditor.h i moduły
 25. IWYU podpiąć pod CMake'a
 26. Zwijanie nagłówków i kodu (jak funkcje w środowiskach programistycznych)
 27. Automatyczne backupy treści
