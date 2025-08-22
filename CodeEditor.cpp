@@ -1741,6 +1741,7 @@ void CodeEditor::keyPressEvent(QKeyEvent* event)
                 return; // link pasted, stop propagation
 
             QPlainTextEdit::keyPressEvent(event); // Default behavior for other cases
+            return;
         }
     }
 
