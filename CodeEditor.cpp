@@ -135,56 +135,72 @@ QString convertHtmlToStcPreservingNewlines(const QString& html)
     text.remove(QRegularExpression(R"(style="[^"]*")"));
     text.remove(QRegularExpression(R"(class="[^"]*")"));
 
-    // Preserve newlines between headers and their content
-    text.replace(QRegularExpression(R"(<h[1-6][^>]*>\s*(.*?)\s*</h[1-6]>)", QRegularExpression::DotMatchesEverythingOption),
-                 R"(\1\n\n)");
+    // Handle code blocks first to preserve their content
+    QRegularExpression preRe(R"(<pre[^>]*>(.*?)</pre>)", QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption);
+    QRegularExpression codeRe(R"(<code[^>]*>(.*?)</code>)", QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption);
 
-    // Replacing <br>, </p>, </div> with newline
-    text.replace(QRegularExpression(R"(<br\s*/?>)", QRegularExpression::CaseInsensitiveOption), "\n");
-    text.replace(QRegularExpression(R"(</p>)", QRegularExpression::CaseInsensitiveOption), "\n");
-    text.replace(QRegularExpression(R"(</div>)", QRegularExpression::CaseInsensitiveOption), "\n");
+    // Convert HTML headers to STC format
+    text.replace(QRegularExpression(R"(<h([1-6])[^>]*>\s*(.*?)\s*<\/h\1>)", QRegularExpression::DotMatchesEverythingOption),
+                 R"([h\1]\2[/h\1]\n\n)");
 
-    // Links: <a href="URL">TEXT</a> → [a href="URL"]TEXT
-    // Handle HTML entities in URLs
+    // Handle line breaks
+    text.replace(QRegularExpression(R"(<br\s*/?>\s*)", QRegularExpression::CaseInsensitiveOption), "\n");
+    text.replace(QRegularExpression(R"(</p>\s*)", QRegularExpression::CaseInsensitiveOption), "\n");
+    text.replace(QRegularExpression(R"(</div>\s*)", QRegularExpression::CaseInsensitiveOption), "\n");
+    text.replace(QRegularExpression(R"(<p[^>]*>\s*)", QRegularExpression::CaseInsensitiveOption), "");
+    text.replace(QRegularExpression(R"(<div[^>]*>\s*)", QRegularExpression::CaseInsensitiveOption), "");
+
+    // Handle lists
+    text.replace(QRegularExpression(R"(<li[^>]*>(.*?)</li>)", QRegularExpression::DotMatchesEverythingOption), "• \1\n");
+    text.replace(QRegularExpression(R"(<[ou]l[^>]*>\s*)", QRegularExpression::CaseInsensitiveOption), "");
+    text.replace(QRegularExpression(R"(</[ou]l>\s*)", QRegularExpression::CaseInsensitiveOption), "\n");
+
+    // Handle links
     text.replace(QRegularExpression(R"__(<a\s+href="([^"]+)"[^>]*>(.*?)</a>)__", QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption),
-                 R"([a href="\1" name="\2"])");
+                 R"([a href="\1"]\2[/a])");
 
-    // Decode HTML entities in URLs
-    text.replace(QRegularExpression(R"(&quot;)", QRegularExpression::CaseInsensitiveOption), "\"");
-    text.replace(QRegularExpression(R"(&apos;)", QRegularExpression::CaseInsensitiveOption), "'");
-    text.replace(QRegularExpression(R"(&amp;)", QRegularExpression::CaseInsensitiveOption), "&");
-    text.replace(QRegularExpression(R"(&lt;)", QRegularExpression::CaseInsensitiveOption), "<");
-    text.replace(QRegularExpression(R"(&gt;)", QRegularExpression::CaseInsensitiveOption), ">");
-
-    // Bold
+    // Handle formatting
     text.replace(QRegularExpression(R"(<b[^>]*>(.*?)</b>)", QRegularExpression::DotMatchesEverythingOption), R"([b]\1[/b])");
-
-    // Italic
+    text.replace(QRegularExpression(R"(<strong[^>]*>(.*?)</strong>)", QRegularExpression::DotMatchesEverythingOption), R"([b]\1[/b])");
     text.replace(QRegularExpression(R"(<i[^>]*>(.*?)</i>)", QRegularExpression::DotMatchesEverythingOption), R"([i]\1[/i])");
-
-    // Underline
+    text.replace(QRegularExpression(R"(<em[^>]*>(.*?)</em>)", QRegularExpression::DotMatchesEverythingOption), R"([i]\1[/i])");
     text.replace(QRegularExpression(R"(<u[^>]*>(.*?)</u>)", QRegularExpression::DotMatchesEverythingOption), R"([u]\1[/u])");
+
+    // Handle HTML entities
+    text.replace("&nbsp;", " ");
+    text.replace("&quot;", "\"");
+    text.replace("&apos;", "'");
+    text.replace("&amp;", "&");
+    text.replace("&lt;", "<");
+    text.replace("&gt;", ">");
 
     // Remove all remaining HTML tags
     text.remove(QRegularExpression(R"(<[^>]+>)"));
 
-    // Replace HTML entities
-    text.replace("&nbsp;", " ");
-
-    // Remove any remaining special characters
-    text.remove(QRegularExpression(R"(\s{3,})"));  // Remove multiple spaces (but keep single spaces)
+    // Normalize whitespace
+    // Replace multiple spaces with a single space, but preserve newlines
+    text.replace(QRegularExpression(R"([^\S\n]+)"), " ");
     
-    // Normalize newlines - keep only single or double newlines
-    // Replace triple+ newlines with double newline
+    // Normalize newlines - replace 3+ newlines with 2
     text.replace(QRegularExpression(R"(\n{3,})"), "\n\n");
     
-    // Remove extra newlines after double newlines
-    text.replace(QRegularExpression(R"(\n\n\s*\n)", QRegularExpression::DotMatchesEverythingOption), "\n\n");
-    
-    // Remove extra spaces around newlines
-    text.replace(QRegularExpression(R"(\s*\n\s*)"), "\n");
+    // Process lines - trim empty lines but preserve indentation in non-empty lines
+    QStringList lines = text.split('\n');
+    for (int i = 0; i < lines.size(); ++i) {
+        if (lines[i].trimmed().isEmpty()) {
+            lines[i] = "";  // Empty line
+        }
+    }
+    // Remove completely empty lines at the beginning and end
+    while (!lines.isEmpty() && lines.first().isEmpty()) {
+        lines.removeFirst();
+    }
+    while (!lines.isEmpty() && lines.last().isEmpty()) {
+        lines.removeLast();
+    }
+    text = lines.join("\n");
 
-    return text.trimmed();
+    return text;
 }
 
 QString rtrim(const QString& str)
