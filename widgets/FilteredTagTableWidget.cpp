@@ -164,46 +164,112 @@ void FilteredTagTableWidget::insertOrUpdateHeader(const HeaderInfo& info)
     }
 }
 
-void FilteredTagTableWidget::onTextChanged(int pos, int /*charsRemoved*/, int /*charsAdded*/)
+void FilteredTagTableWidget::onTextChanged(int pos, int charsRemoved, int charsAdded)
 {
-    QTextBlock changedBlock = textEditor->document()->findBlock(pos);
-    if (!changedBlock.isValid())
+    // If we don't have a text editor or document is empty, clear the headers
+    if (!textEditor || !textEditor->document() || textEditor->document()->blockCount() == 0)
+    {
+        clear();
+        return;
+    }
+
+    // Get the block where the change occurred
+    QTextCursor cursor(textEditor->document());
+    cursor.setPosition(pos);
+    QTextBlock changedBlock = cursor.block();
+
+    // If there's no actual change, do nothing
+    if (charsRemoved == 0 && charsAdded == 0)
         return;
 
-    const int changedLine = changedBlock.blockNumber();
+    // Calculate the position offset caused by this change
+    const int offset = charsAdded - charsRemoved;
 
-    // Reanalyse header presence in this block
-    QTextCursor cursor(changedBlock);
-    QString blockText = changedBlock.text();
-    QRegularExpressionMatch match = headerRegex().match(blockText);
-
-    // Remove any old header in that line
-    cachedHeaders.erase(std::remove_if(cachedHeaders.begin(), cachedHeaders.end(),
-                                       [changedLine](const HeaderInfo& h) {
-                                           return h.startingTagCursor.block().blockNumber() == changedLine;
-                                       }), cachedHeaders.end());
-
-    if (match.hasMatch())
+    // Update positions of existing headers that come after the change
+    for (auto& header : cachedHeaders)
     {
-        const int absolutePos = changedBlock.position() + match.capturedStart();
-        if (!textEditor->isInsideCode(absolutePos))
+        // If header is after the change, update its position
+        if (header.startPos >= pos + charsRemoved)
         {
-            HeaderInfo info {
-                .startingTagCursor = cursor,
-                .tagName = match.captured(1),
-                .textInside = match.captured(2),
-                .startPos = absolutePos,
-                .endPos = static_cast<int>(absolutePos + match.capturedLength())
-            };
-            cachedHeaders.append(info);
+            header.startPos += offset;
+            header.endPos += offset;
+            header.startingTagCursor.setPosition(header.startPos);
+        }
+        // If change is inside this header, mark it for re-analysis
+        else if (header.startPos <= pos && header.endPos >= pos + charsRemoved)
+        {
+            // Mark for re-analysis
+            header.startPos = -1;
         }
     }
 
-    // Sort after potential update
-    std::sort(cachedHeaders.begin(), cachedHeaders.end(), [](const HeaderInfo& a, const HeaderInfo& b) {
-        return a.startingTagCursor.block().blockNumber() < b.startingTagCursor.block().blockNumber();
-    });
+    // Remove headers that need re-analysis
+    cachedHeaders.erase(
+        std::remove_if(cachedHeaders.begin(), cachedHeaders.end(),
+                       [](const HeaderInfo& h) { return h.startPos == -1; }),
+        cachedHeaders.end());
 
+    // Find the range of blocks that might have been affected by this change
+    QTextBlock block = textEditor->document()->findBlock(pos);
+    QTextBlock endBlock = textEditor->document()->findBlock(pos + charsAdded);
+
+    // Go back to the first block that might have been affected
+    while (block.isValid() && block != endBlock)
+    {
+        block = block.previous();
+        if (!block.isValid())
+            break;
+    }
+    if (!block.isValid())
+        block = textEditor->document()->begin();
+
+    // Process all affected blocks
+    while (block.isValid() && block != endBlock.next())
+    {
+        const QString blockText = block.text();
+        QRegularExpressionMatchIterator it = headerRegex().globalMatch(blockText);
+
+        // Remove all headers from this block (we'll re-add the current ones)
+        cachedHeaders.erase(
+            std::remove_if(cachedHeaders.begin(), cachedHeaders.end(),
+                           [block](const HeaderInfo& h) {
+                               return h.startingTagCursor.block() == block;
+                           }),
+            cachedHeaders.end());
+
+        // Add current headers from this block
+        while (it.hasNext())
+        {
+            QRegularExpressionMatch match = it.next();
+            const int start = block.position() + match.capturedStart();
+
+            if (!textEditor->isInsideCode(start))
+            {
+                QTextCursor cursor(block);
+                cursor.setPosition(start);
+
+                HeaderInfo info{
+                    .startingTagCursor = cursor,
+                    .tagName = match.captured(1),
+                    .textInside = match.captured(2).trimmed(),
+                    .startPos = start,
+                    .endPos = static_cast<int>(start + match.capturedLength())
+                };
+
+                cachedHeaders.append(info);
+            }
+        }
+
+        block = block.next();
+    }
+
+    // Keep headers sorted by position
+    std::sort(cachedHeaders.begin(), cachedHeaders.end(),
+              [](const HeaderInfo& a, const HeaderInfo& b) {
+                  return a.startPos < b.startPos;
+              });
+
+    // Update the view
     refreshHeaderTable();
 }
 
