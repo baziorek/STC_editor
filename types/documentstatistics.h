@@ -8,8 +8,13 @@ class CodeEditor;
 struct DocumentStatisticsResult
 {
     QString fileName;
+    QString filePath;
     QDateTime created;
     QDateTime modified;
+    qint64 fileSizeBytes = 0;
+    bool isReadable = false;
+    bool isWritable = false;
+    bool isExecutable = false;
 
     int lineCount = 0;
     int charCount = 0;
