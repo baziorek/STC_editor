@@ -2,11 +2,16 @@
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QMessageBox>
+#include <QCheckBox>
+#include <QDebug>
 #include <QPushButton>
+#include <QMenu>
+#include <QAction>
+#include <QRegularExpression>
+#include <QBoxLayout>
 #include <QTableWidget>
 #include <QTableWidgetItem>
 #include <QVBoxLayout>
-
 #include "StcTablesCreator.h"
 #include "ui_StcTablesCreator.h"
 
@@ -20,26 +25,38 @@ StcTablesCreator::StcTablesCreator(const QString& tableContent, QWidget *parent)
     ui->setupUi(this);
     setWindowTitle(tr("Table Editor"));
     
-    // Set up the table
+    // Set up the table with default size and stretch columns
+    ui->tableWidget->setColumnCount(2);
+    ui->tableWidget->setRowCount(2);
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     
     // Connect buttons
     connect(ui->addColumnButton, &QPushButton::clicked, this, &StcTablesCreator::onAddColumnRight);
     connect(ui->addRowButton, &QPushButton::clicked, this, &StcTablesCreator::onAddRowBelow);
     
-    // Add OK/Cancel buttons
+    // Initialize checkboxes
+    ui->headerCheckBox->setChecked(m_hasHeader);
+    ui->extendedCheckBox->setChecked(m_isExtended);
+    
+    // Connect checkboxes to update flags
+    connect(ui->headerCheckBox, &QCheckBox::toggled, this, [this](bool checked) {
+        m_hasHeader = checked;
+    });
+    
+    connect(ui->extendedCheckBox, &QCheckBox::toggled, this, [this](bool checked) {
+        m_isExtended = checked;
+    });
+    
+    // Set up OK/Cancel buttons
     QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
     connect(buttonBox, &QDialogButtonBox::accepted, this, &StcTablesCreator::onAccepted);
     connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
     
-    QVBoxLayout *mainLayout = qobject_cast<QVBoxLayout*>(layout());
-    if (mainLayout)
-    {
-        mainLayout->addWidget(buttonBox);
-    }
+    // Add buttons to layout
+    ui->gridLayout->addWidget(buttonBox, 2, 0, 1, 2);
     
-    // Parse and set up the table content if provided
-    if (! tableContent.isEmpty())
+    // Set up the table with content if provided
+    if (!tableContent.isEmpty())
     {
         setupTable(tableContent);
     }
@@ -48,6 +65,24 @@ StcTablesCreator::StcTablesCreator(const QString& tableContent, QWidget *parent)
 StcTablesCreator::~StcTablesCreator()
 {
     delete ui;
+}
+
+void StcTablesCreator::setHeaderEnabled(bool enabled)
+{
+    m_hasHeader = enabled;
+    if (ui && ui->headerCheckBox)
+    {
+        ui->headerCheckBox->setChecked(enabled);
+    }
+}
+
+void StcTablesCreator::setExtendedEnabled(bool enabled)
+{
+    m_isExtended = enabled;
+    if (ui && ui->extendedCheckBox)
+    {
+        ui->extendedCheckBox->setChecked(enabled);
+    }
 }
 
 QString StcTablesCreator::getTableContent() const
@@ -90,6 +125,20 @@ void StcTablesCreator::setupTable(const QString& content)
     {
         qDebug() << "Empty content, nothing to display";
         return;
+    }
+    
+    // Parse CSV tag attributes if present
+    static QRegularExpression csvTagRe(R"(\[csv(?:\s+([^\]]+))?\])");
+    QRegularExpressionMatch match = csvTagRe.match(content);
+    if (match.hasMatch())
+    {
+        QString attributes = match.captured(1);
+        m_hasHeader = attributes.contains("header");
+        m_isExtended = attributes.contains("extended");
+        
+        // Update checkboxes
+        ui->headerCheckBox->setChecked(m_hasHeader);
+        ui->extendedCheckBox->setChecked(m_isExtended);
     }
 
     // First, normalize all possible line endings to Unix style (\n)
@@ -321,13 +370,22 @@ void StcTablesCreator::setupTable(const QString& content)
 
     // Resize columns to fit content
     ui->tableWidget->resizeColumnsToContents();
-    qDebug() << "Table setup complete";
 }
 
 QString StcTablesCreator::generateTableContent() const
 {
-    QStringList lines;
-    
+    // Build CSV attributes
+    QStringList attributes;
+    if (m_hasHeader) attributes << "header";
+    if (m_isExtended) attributes << "extended";
+
+    QString result = "[csv";
+    if (!attributes.isEmpty())
+    {
+        result += " " + attributes.join(" ");
+    }
+    result += "]\n";
+
     // Add header if present
     if (m_hasHeader)
     {
@@ -337,20 +395,32 @@ QString StcTablesCreator::generateTableContent() const
             QTableWidgetItem *header = ui->tableWidget->horizontalHeaderItem(col);
             headers.append(header ? header->text() : QString());
         }
-        lines.append(headers.join(';'));
+        result += headers.join(";") + "\n";
     }
-    
-    // Add data rows
+
+    // Add table content
     for (int row = 0; row < ui->tableWidget->rowCount(); ++row)
     {
-        QStringList cells;
+        QStringList rowData;
         for (int col = 0; col < ui->tableWidget->columnCount(); ++col)
         {
             QTableWidgetItem *item = ui->tableWidget->item(row, col);
-            cells.append(item ? item->text() : QString());
+            QString cellContent = item ? item->text() : QString();
+
+            // If extended mode is off, escape special characters
+            if (!m_isExtended)
+            {
+                cellContent.replace(";", "\;");
+            }
+
+            rowData.append(cellContent);
         }
-        lines.append(cells.join(';'));
+        result += rowData.join(";");
+        if (row < ui->tableWidget->rowCount() - 1) {
+            result += "\n";
+        }
     }
-    
-    return lines.join('\n');
+
+    result += "\n[/csv]";
+    return result;
 }

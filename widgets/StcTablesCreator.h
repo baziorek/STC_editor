@@ -2,12 +2,8 @@
 
 #include <QDialog>
 
-// Forward declarations
-class QTableWidget;
-class QTableWidgetItem;
-
 namespace Ui {
-class StcTablesCreator;
+    class StcTablesCreator;
 }
 
 class StcTablesCreator : public QDialog
@@ -19,6 +15,14 @@ public:
     ~StcTablesCreator() override;
 
     QString getTableContent() const;
+    
+    // Property getters
+    bool hasHeader() const { return m_hasHeader; }
+    bool isExtended() const { return m_isExtended; }
+    
+    // Property setters
+    void setHeaderEnabled(bool enabled);
+    void setExtendedEnabled(bool enabled);
 
 private slots:
     void onAddColumnRight();
