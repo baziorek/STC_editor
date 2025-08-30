@@ -116,6 +116,7 @@ set(PROJECT_SOURCES
     widgets/DiffReviewDialog.h widgets/DiffReviewDialog.cpp
     widgets/BreadcrumbTextBrowser.h widgets/BreadcrumbTextBrowser.cpp
     widgets/RenameFileDialog.h widgets/RenameFileDialog.cpp widgets/RenameFileDialog.ui
+    widgets/StcTablesCreator.h widgets/StcTablesCreator.cpp widgets/StcTablesCreator.ui
 
     utils/DiffCalculation.h utils/DiffCalculation.cpp
     utils/FileEncodingHandler.h utils/FileEncodingHandler.cpp

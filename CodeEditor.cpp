@@ -31,7 +31,7 @@
 #include "stcSyntaxPatterns.h"
 #include "StripCppComments/CommentStripper.h"
 #include "widgets/StcTablesCreator.h"
-
+#include <QIcon>
 
 namespace
 {
@@ -876,6 +876,76 @@ void CodeEditor::addPktTagActionsIfApplicable(QMenu* menu)
     }
 }
 
+void CodeEditor::editTableAtPosition(int csvStartPos, const QString& csvTag, int tagStart, int tagEnd)
+{
+    QTextCursor cursor = textCursor();
+    int csvEndTagPos = -1;
+
+    // Find the matching [/csv] tag
+    QTextDocument* doc = document();
+    QTextCursor findCursor(doc);
+    findCursor.setPosition(csvStartPos + csvTag.length());
+
+    // Search forward for [/csv] across multiple lines
+    bool foundEndTag = false;
+    while (!findCursor.atEnd())
+    {
+        // Move to the beginning of the current line
+        findCursor.movePosition(QTextCursor::StartOfLine);
+
+        // Search for [/csv] in this line
+        QRegularExpression endTagRe("\\[/csv\\]");
+        QString line = findCursor.block().text();
+        QRegularExpressionMatch match = endTagRe.match(line);
+
+        if (match.hasMatch())
+        {
+            // Found the end tag
+            int posInBlock = match.capturedStart();
+            findCursor.movePosition(QTextCursor::StartOfLine);
+            findCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::MoveAnchor, posInBlock);
+            csvEndTagPos = findCursor.position();
+            foundEndTag = true;
+            break;
+        }
+
+        // Move to the next line
+        if (!findCursor.movePosition(QTextCursor::NextBlock))
+        {
+            break; // No more lines
+        }
+    }
+
+    if (!foundEndTag)
+    {
+        QMessageBox::warning(this, tr("Error"), tr("Could not find matching [/csv] tag"));
+        return;
+    }
+
+    // Extract the table content (between [csv...] and [/csv])
+    cursor.setPosition(csvStartPos + csvTag.length());
+    cursor.setPosition(csvEndTagPos, QTextCursor::KeepAnchor);
+    QString tableContent = cursor.selectedText().trimmed();
+
+    // Create and show the table editor dialog
+    StcTablesCreator* editor = new StcTablesCreator(tableContent, this);
+    editor->setAttribute(Qt::WA_DeleteOnClose);
+
+    // If the user accepts the dialog, update the table content
+    if (editor->exec() == QDialog::Accepted)
+    {
+        QString newTableContent = editor->getTableContent();
+        if (newTableContent != tableContent)
+        {
+            // Replace the old table content with the new one
+            cursor.beginEditBlock();
+            cursor.removeSelectedText();
+            cursor.insertText("\n" + newTableContent + "\n");
+            cursor.endEditBlock();
+        }
+    }
+}
+
 void CodeEditor::addCsvTagActionsIfApplicable(QMenu* menu)
 {
     using namespace stc::syntax;
@@ -948,83 +1018,19 @@ void CodeEditor::addCsvTagActionsIfApplicable(QMenu* menu)
             menu->addAction(toggleHeader);
 
             // Edit table action
-            QAction* editTableAction = new QAction(tr("Edit table"), this);
-            connect(editTableAction, &QAction::triggered, this, [=, this]() {
-                QTextCursor cursor = textCursor();
+            QAction* editTableAction = new QAction(
+                QIcon::fromTheme("x-office-spreadsheet"),  // Use a spreadsheet icon
+                tr("Edit table"),
+                this
+            );
+            editTableAction->setStatusTip(tr("Edit the table in a spreadsheet-like editor"));
 
-                // Store the position of the start of the [csv...] tag
-                int csvStartPos = cursor.block().position() + tagStart;
-                int csvEndTagPos = -1;
+            // Store the position of the start of the [csv...] tag
+            int csvStartPos = textCursor().block().position() + tagStart;
 
-                // Find the matching [/csv] tag
-                QTextDocument* doc = document();
-                QTextCursor findCursor(doc);
-                findCursor.setPosition(csvStartPos + csvTag.length());
-
-                // Search forward for [/csv] across multiple lines
-                bool foundEndTag = false;
-                while (! findCursor.atEnd())
-                {
-                    // Move to the beginning of the current line
-                    findCursor.movePosition(QTextCursor::StartOfLine);
-
-                    // Search for [/csv] in this line
-                    QRegularExpression endTagRe("\\[/csv\\]");
-                    QString line = findCursor.block().text();
-                    QRegularExpressionMatch match = endTagRe.match(line);
-
-                    if (match.hasMatch())
-                    {
-                        // Found the end tag
-                        int posInBlock = match.capturedStart();
-                        findCursor.movePosition(QTextCursor::StartOfLine);
-                        findCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::MoveAnchor, posInBlock);
-                        csvEndTagPos = findCursor.position();
-                        foundEndTag = true;
-                        break;
-                    }
-
-                    // Move to the next line
-                    if (! findCursor.movePosition(QTextCursor::NextBlock))
-                    {
-                        break; // No more lines
-                    }
-                }
-
-                if (! foundEndTag)
-                {
-                    QMessageBox::warning(this, tr("Error"), tr("Could not find matching [/csv] tag"));
-                    return;
-                }
-
-                if (csvEndTagPos == -1)
-                {
-                    QMessageBox::warning(this, tr("Error"), tr("Could not find matching [/csv] tag"));
-                    return;
-                }
-
-                // Extract the table content (between [csv...] and [/csv])
-                cursor.setPosition(csvStartPos + csvTag.length());
-                cursor.setPosition(csvEndTagPos, QTextCursor::KeepAnchor);
-                QString tableContent = cursor.selectedText().trimmed();
-
-                // Create and show the table editor dialog
-                StcTablesCreator* editor = new StcTablesCreator(tableContent, this);
-                editor->setAttribute(Qt::WA_DeleteOnClose);
-
-                // If the user accepts the dialog, update the table content
-                if (editor->exec() == QDialog::Accepted)
-                {
-                    QString newTableContent = editor->getTableContent();
-                    if (newTableContent != tableContent)
-                    {
-                        // Replace the old table content with the new one
-                        cursor.beginEditBlock();
-                        cursor.removeSelectedText();
-                        cursor.insertText("\n" + newTableContent + "\n");
-                        cursor.endEditBlock();
-                    }
-                }
+            // Connect to the new method
+            connect(editTableAction, &QAction::triggered, this, [this, csvStartPos, csvTag, tagStart, tagEnd]() {
+                editTableAtPosition(csvStartPos, csvTag, tagStart, tagEnd);
             });
             menu->addAction(editTableAction);
 

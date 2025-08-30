@@ -216,6 +216,7 @@ protected:
     void renumberSelection();
     std::optional<QPair<QString, QTextCursor>> getMisspelledWordAtPosition(const QPoint &pos);
     void addSpellingSuggestionsIfAvailable(QMenu* menu, const QPoint& pos);
+    void editTableAtPosition(int csvStartPos, const QString& csvTag, int tagStart, int tagEnd);
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
