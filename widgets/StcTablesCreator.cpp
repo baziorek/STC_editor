@@ -120,9 +120,9 @@ StcTablesCreator::StcTablesCreator(const QString& tableContent, QWidget *parent)
 
 StcTablesCreator::~StcTablesCreator()
 {
+    delete ui;
     delete m_rowMenu;
     delete m_columnMenu;
-    delete ui;
 }
 
 void StcTablesCreator::setHeaderEnabled(bool enabled)
@@ -554,6 +554,11 @@ void StcTablesCreator::setupTable(const QString& content)
 
 QString StcTablesCreator::generateTableContent() const
 {
+    return m_generatedContent;
+}
+
+QString StcTablesCreator::generateTableContentImpl() const
+{
     // Build CSV attributes
     QStringList attributes;
     if (m_hasHeader) attributes << "header";
@@ -596,4 +601,13 @@ QString StcTablesCreator::generateTableContent() const
 
     result += "\n[/csv]";
     return result;
+}
+
+void StcTablesCreator::accept()
+{
+    // Store the generated content before accepting
+    m_generatedContent = generateTableContentImpl();
+    
+    // Call the base class accept() to close the dialog
+    QDialog::accept();
 }

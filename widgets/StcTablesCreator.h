@@ -39,12 +39,14 @@ private slots:
     void insertColumnRight();
 
 protected:
+    void accept() override;
     void setupTable(const QString& content);
     void insertRowAt(int row);
+    QString generateTableContentImpl() const;
 
 private:
     Ui::StcTablesCreator *ui;
-
+    QString m_generatedContent;
     bool m_hasHeader;
     bool m_isExtended;
     
