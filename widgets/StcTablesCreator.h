@@ -28,12 +28,37 @@ private slots:
     void onAddColumnRight();
     void onAddRowBelow();
     void onAccepted();
+    void showRowContextMenu(const QPoint &pos);
+    void showRowHeaderContextMenu(const QPoint &pos);
+    void showColumnContextMenu(const QPoint &pos);
+    void deleteSelectedRows();
+    void insertRowAbove();
+    void insertRowBelow();
+    void deleteSelectedColumns();
+    void insertColumnLeft();
+    void insertColumnRight();
 
-private:
+protected:
     void setupTable(const QString& content);
     QString generateTableContent() const;
+    void insertRowAt(int row);
 
+private:
     Ui::StcTablesCreator *ui;
     bool m_hasHeader;
     bool m_isExtended;
+    
+    // Context menu actions
+    QMenu *m_rowMenu = nullptr;
+    QMenu *m_columnMenu = nullptr;
+    QAction *m_deleteRowAction = nullptr;
+    QAction *m_insertRowAboveAction = nullptr;
+    QAction *m_insertRowBelowAction = nullptr;
+    QAction *m_deleteColumnAction = nullptr;
+    QAction *m_insertColumnLeftAction = nullptr;
+    QAction *m_insertColumnRightAction = nullptr;
+    
+    // Current context menu position
+    int m_contextMenuRow = -1;
+    int m_contextMenuColumn = -1;
 };
