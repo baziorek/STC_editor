@@ -42,18 +42,15 @@ StcTablesCreator::StcTablesCreator(const QString& tableContent, QWidget *parent)
     
     // Enable context menu for the table and vertical header
     ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->tableWidget, &QTableWidget::customContextMenuRequested, 
-            this, &StcTablesCreator::showRowContextMenu);
+    connect(ui->tableWidget, &QTableWidget::customContextMenuRequested, this, &StcTablesCreator::showRowContextMenu);
     
     // Enable context menu for the horizontal header
     ui->tableWidget->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->tableWidget->horizontalHeader(), &QHeaderView::customContextMenuRequested,
-            this, &StcTablesCreator::showColumnContextMenu);
+    connect(ui->tableWidget->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &StcTablesCreator::showColumnContextMenu);
             
     // Enable context menu for the vertical header
     ui->tableWidget->verticalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->tableWidget->verticalHeader(), &QHeaderView::customContextMenuRequested,
-            this, &StcTablesCreator::showRowHeaderContextMenu);
+    connect(ui->tableWidget->verticalHeader(), &QHeaderView::customContextMenuRequested, this, &StcTablesCreator::showRowHeaderContextMenu);
     
     // Create row context menu and actions
     m_rowMenu = new QMenu(this);
@@ -90,16 +87,8 @@ StcTablesCreator::StcTablesCreator(const QString& tableContent, QWidget *parent)
     m_contextMenuColumn = -1;
     
     // Connect buttons
-    connect(ui->addColumnButton, &QPushButton::clicked, this, [this]() {
-        int col = ui->tableWidget->columnCount();
-        ui->tableWidget->insertColumn(col);
-        ui->tableWidget->horizontalHeader()->setSectionResizeMode(col, QHeaderView::Stretch);
-    });
-    
-    connect(ui->addRowButton, &QPushButton::clicked, this, [this]() {
-        int row = ui->tableWidget->rowCount();
-        ui->tableWidget->insertRow(row);
-    });
+    connect(ui->addColumnButton, &QPushButton::clicked, this, &StcTablesCreator::onAddColumnRight);
+    connect(ui->addRowButton,    &QPushButton::clicked, this, &StcTablesCreator::onAddRowBelow);
     
     // Initialize checkboxes
     ui->headerCheckBox->setChecked(m_hasHeader);
@@ -116,14 +105,14 @@ StcTablesCreator::StcTablesCreator(const QString& tableContent, QWidget *parent)
     
     // Set up OK/Cancel buttons
     QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
-    connect(buttonBox, &QDialogButtonBox::accepted, this, &StcTablesCreator::onAccepted);
+    connect(buttonBox, &QDialogButtonBox::accepted, this, &StcTablesCreator::accept);
     connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
     
     // Add buttons to layout
     ui->gridLayout->addWidget(buttonBox, 2, 0, 1, 2);
     
     // Set up the table with content if provided
-    if (!tableContent.isEmpty())
+    if (! tableContent.isEmpty())
     {
         setupTable(tableContent);
     }
@@ -154,11 +143,6 @@ void StcTablesCreator::setExtendedEnabled(bool enabled)
     }
 }
 
-QString StcTablesCreator::getTableContent() const
-{
-    return generateTableContent();
-}
-
 void StcTablesCreator::onAddColumnRight()
 {
     int colCount = ui->tableWidget->columnCount();
@@ -176,12 +160,6 @@ void StcTablesCreator::insertRowAt(int row)
     ui->tableWidget->insertRow(row);
     // Select the new row
     ui->tableWidget->selectRow(row);
-}
-
-void StcTablesCreator::onAccepted()
-{
-    // Any additional validation can be added here
-    accept();
 }
 
 void StcTablesCreator::showRowContextMenu(const QPoint &pos)

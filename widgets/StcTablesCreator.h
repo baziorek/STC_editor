@@ -2,7 +2,8 @@
 
 #include <QDialog>
 
-namespace Ui {
+namespace Ui
+{
     class StcTablesCreator;
 }
 
@@ -14,7 +15,7 @@ public:
     explicit StcTablesCreator(const QString& tableContent = QString(), QWidget *parent = nullptr);
     ~StcTablesCreator() override;
 
-    QString getTableContent() const;
+    QString generateTableContent() const;
     
     // Property getters
     bool hasHeader() const { return m_hasHeader; }
@@ -27,7 +28,6 @@ public:
 private slots:
     void onAddColumnRight();
     void onAddRowBelow();
-    void onAccepted();
     void showRowContextMenu(const QPoint &pos);
     void showRowHeaderContextMenu(const QPoint &pos);
     void showColumnContextMenu(const QPoint &pos);
@@ -40,11 +40,11 @@ private slots:
 
 protected:
     void setupTable(const QString& content);
-    QString generateTableContent() const;
     void insertRowAt(int row);
 
 private:
     Ui::StcTablesCreator *ui;
+
     bool m_hasHeader;
     bool m_isExtended;
     
