@@ -54,9 +54,9 @@ StcTablesCreator::StcTablesCreator(const QString& tableContent, QWidget *parent)
     
     // Create row context menu and actions
     m_rowMenu = new QMenu(this);
-    m_deleteRowAction = new QAction(tr("Delete Row"), this);
-    m_insertRowAboveAction = new QAction(tr("Insert Row Above"), this);
-    m_insertRowBelowAction = new QAction(tr("Insert Row Below"), this);
+    m_deleteRowAction = new QAction(QIcon::fromTheme("edit-delete"), tr("Delete Row"), this);
+    m_insertRowAboveAction = new QAction(QIcon::fromTheme("list-add"), tr("Insert Row Above"), this);
+    m_insertRowBelowAction = new QAction(QIcon::fromTheme("list-add"), tr("Insert Row Below"), this);
     
     connect(m_deleteRowAction, &QAction::triggered, this, &StcTablesCreator::deleteSelectedRows);
     connect(m_insertRowAboveAction, &QAction::triggered, this, &StcTablesCreator::insertRowAbove);
@@ -69,9 +69,9 @@ StcTablesCreator::StcTablesCreator(const QString& tableContent, QWidget *parent)
     
     // Create column context menu and actions
     m_columnMenu = new QMenu(this);
-    m_deleteColumnAction = new QAction(tr("Delete Column"), this);
-    m_insertColumnLeftAction = new QAction(tr("Insert Column Left"), this);
-    m_insertColumnRightAction = new QAction(tr("Insert Column Right"), this);
+    m_deleteColumnAction = new QAction(QIcon::fromTheme("edit-delete"), tr("Delete Column"), this);
+    m_insertColumnLeftAction = new QAction(QIcon::fromTheme("list-add"), tr("Insert Column Left"), this);
+    m_insertColumnRightAction = new QAction(QIcon::fromTheme("list-add"), tr("Insert Column Right"), this);
     
     connect(m_deleteColumnAction, &QAction::triggered, this, &StcTablesCreator::deleteSelectedColumns);
     connect(m_insertColumnLeftAction, &QAction::triggered, this, &StcTablesCreator::insertColumnLeft);
@@ -85,6 +85,10 @@ StcTablesCreator::StcTablesCreator(const QString& tableContent, QWidget *parent)
     // Initialize context menu positions
     m_contextMenuRow = -1;
     m_contextMenuColumn = -1;
+    
+    // Set icons for buttons
+    ui->addColumnButton->setIcon(QIcon::fromTheme("list-add"));
+    ui->addRowButton->setIcon(QIcon::fromTheme("list-add"));
     
     // Connect buttons
     connect(ui->addColumnButton, &QPushButton::clicked, this, &StcTablesCreator::onAddColumnRight);

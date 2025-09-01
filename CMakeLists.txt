@@ -197,7 +197,7 @@ target_link_libraries(${PROJECT_NAME}
 # Override the standard if their CMake sets -ansi or an old standard
 target_compile_features(QCodeEditor PUBLIC cxx_std_23)
 
-
+# ------------------ uchardet ------------------
 if(UCHARDET_INCLUDE_DIR)
     target_include_directories(${PROJECT_NAME} PRIVATE "${UCHARDET_INCLUDE_DIR}")
 endif()

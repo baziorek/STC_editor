@@ -39,7 +39,10 @@
       <string>Add column</string>
      </property>
      <property name="text">
-      <string>Add Column</string>
+      <string>+ Column</string>
+     </property>
+     <property name="icon">
+      <iconset theme="list-add"/>
      </property>
     </widget>
    </item>
@@ -56,7 +59,10 @@
       <string>Add row</string>
      </property>
      <property name="text">
-      <string>Add Row</string>
+      <string>+ Row</string>
+     </property>
+     <property name="icon">
+      <iconset theme="list-add"/>
      </property>
     </widget>
    </item>
