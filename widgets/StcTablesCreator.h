@@ -34,6 +34,7 @@ private slots:
     void showRowContextMenu(const QPoint &pos);
     void showRowHeaderContextMenu(const QPoint &pos);
     void showColumnContextMenu(const QPoint &pos);
+    void showCellContextMenu(const QPoint &pos);
     void deleteSelectedRows();
     void insertRowAbove();
     void insertRowBelow();
@@ -44,6 +45,10 @@ private slots:
 
     // Drag & Drop functionality
     void onItemChanged(QTableWidgetItem* item);
+
+    // Cell clipboard operations
+    void copyCellContent();
+    void pasteCellContent();
 
 protected:
     void accept() override;
@@ -64,6 +69,7 @@ private:
     void setupButtons();
     void setupCheckBoxes();
     void connectSignalsAndSlots();
+    void performPaste(const QString& content);
 
     // Table setup helper methods
     void clearTableWidget();
@@ -87,6 +93,12 @@ private:
     void finishCustomDrag(const QPoint& dropPosition);
     void performCellSwap(int targetRow, int targetColumn);
     void resetDragState();
+
+    // Cell clipboard helper methods
+    void showPasteConfirmationDialog(const QString& currentContent, const QString& clipboardContent);
+
+    // Context menu setup
+    void createCellContextMenu();
 
 private:
     Ui::StcTablesCreator *ui;
@@ -114,4 +126,14 @@ private:
     int m_dragSourceRow = -1;
     int m_dragSourceColumn = -1;
     QString m_draggedContent;
+
+    // Cell context menu and clipboard
+    QMenu *m_cellMenu = nullptr;
+    QAction *m_copyCellAction = nullptr;
+    QAction *m_pasteCellAction = nullptr;
+
+    // Current context menu position for cells
+    int m_contextCellRow = -1;
+    int m_contextCellColumn = -1;
+
 };

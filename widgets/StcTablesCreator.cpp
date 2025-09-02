@@ -9,6 +9,8 @@
 #include <QDrag>
 #include <QMimeData>
 #include <QPainter>
+#include <QClipboard>
+#include <QTimer>
 #include "StcTablesCreator.h"
 #include "ui_StcTablesCreator.h"
 
@@ -50,7 +52,7 @@ void StcTablesCreator::setupTableWidget()
     // Set automatic row height adjustment to accommodate wrapped text
     ui->tableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-    // Enable custom context menus
+    // Enable custom context menus for ALL parts of the table
     ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tableWidget->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tableWidget->verticalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -270,6 +272,7 @@ void StcTablesCreator::setupContextMenus()
 {
     createRowContextMenu();
     createColumnContextMenu();
+    createCellContextMenu();
 
     // Initialize context menu position tracking
     m_contextMenuRow = -1;
@@ -352,6 +355,201 @@ void StcTablesCreator::connectSignalsAndSlots()
     // Connect dialog buttons
     connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &StcTablesCreator::accept);
     connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
+
+    connect(ui->tableWidget, &QTableWidget::customContextMenuRequested, this, &StcTablesCreator::showCellContextMenu);
+}
+
+void StcTablesCreator::createCellContextMenu()
+{
+    m_cellMenu = new QMenu(this);
+
+    // Copy cell action
+    m_copyCellAction = new QAction(tr("Kopiuj komórkę"), this);
+    m_copyCellAction->setIcon(QIcon(":/icons/copy")); // Jeśli masz ikonę
+    connect(m_copyCellAction, &QAction::triggered, this, &StcTablesCreator::copyCellContent);
+    m_cellMenu->addAction(m_copyCellAction);
+
+    // Paste cell action
+    m_pasteCellAction = new QAction(tr("Wklej do komórki"), this);
+    m_pasteCellAction->setIcon(QIcon(":/icons/paste")); // Jeśli masz ikonę
+    connect(m_pasteCellAction, &QAction::triggered, this, &StcTablesCreator::pasteCellContent);
+    m_cellMenu->addAction(m_pasteCellAction);
+
+    m_cellMenu->addSeparator();
+
+    // Add existing row/column actions to cell menu for convenience
+    m_cellMenu->addAction(m_insertRowAboveAction);
+    m_cellMenu->addAction(m_insertRowBelowAction);
+    m_cellMenu->addAction(m_deleteRowAction);
+    m_cellMenu->addSeparator();
+    m_cellMenu->addAction(m_insertColumnLeftAction);
+    m_cellMenu->addAction(m_insertColumnRightAction);
+    m_cellMenu->addAction(m_deleteColumnAction);
+}
+
+void StcTablesCreator::showCellContextMenu(const QPoint &pos)
+{
+    QTableWidgetItem* item = ui->tableWidget->itemAt(pos);
+    if (!item) {
+        // If clicked on empty space, still allow context menu but create item
+        QModelIndex index = ui->tableWidget->indexAt(pos);
+        if (index.isValid()) {
+            m_contextCellRow = index.row();
+            m_contextCellColumn = index.column();
+        } else {
+            return; // Clicked outside table
+        }
+    } else {
+        m_contextCellRow = item->row();
+        m_contextCellColumn = item->column();
+    }
+
+    // Update context menu row/column for existing actions
+    m_contextMenuRow = m_contextCellRow;
+    m_contextMenuColumn = m_contextCellColumn;
+
+    // Update paste action availability based on clipboard content
+    QClipboard* clipboard = QApplication::clipboard();
+    bool hasClipboardText = !clipboard->text().isEmpty();
+    m_pasteCellAction->setEnabled(hasClipboardText);
+
+    // Show context menu
+    m_cellMenu->exec(ui->tableWidget->mapToGlobal(pos));
+}
+
+void StcTablesCreator::copyCellContent()
+{
+    if (m_contextCellRow == -1 || m_contextCellColumn == -1) {
+        return;
+    }
+
+    // Get cell content
+    QTableWidgetItem* item = ui->tableWidget->item(m_contextCellRow, m_contextCellColumn);
+    QString cellContent = item ? item->text() : QString();
+
+    // Copy to clipboard
+    QClipboard* clipboard = QApplication::clipboard();
+    clipboard->setText(cellContent);
+
+    qDebug() << "Copied cell content to clipboard:" << cellContent
+             << "from cell (" << m_contextCellRow << "," << m_contextCellColumn << ")";
+
+    // Optional: Show brief feedback
+    if (item)
+    {
+        QColor originalColor = item->background().color();
+        item->setBackground(QColor(173, 216, 230)); // Light blue
+
+        QTimer::singleShot(300, [=, this]() {
+            if (auto* currentItem = ui->tableWidget->item(m_contextCellRow, m_contextCellColumn))
+            {
+                currentItem->setBackground(originalColor.isValid() ? originalColor : QColor());
+            }
+        });
+    }
+}
+
+void StcTablesCreator::pasteCellContent()
+{
+    if (m_contextCellRow == -1 || m_contextCellColumn == -1) {
+        return;
+    }
+
+    // Get clipboard content
+    QClipboard* clipboard = QApplication::clipboard();
+    QString clipboardContent = clipboard->text();
+
+    if (clipboardContent.isEmpty()) {
+        QMessageBox::information(this, tr("Informacja"),
+                                tr("Schowek jest pusty lub nie zawiera tekstu."));
+        return;
+    }
+
+    // Get current cell content
+    QTableWidgetItem* item = ui->tableWidget->item(m_contextCellRow, m_contextCellColumn);
+    QString currentContent = item ? item->text().trimmed() : QString();
+
+    // If cell is not empty, show confirmation dialog
+    if (!currentContent.isEmpty()) {
+        showPasteConfirmationDialog(currentContent, clipboardContent);
+    } else {
+        // Cell is empty, paste directly
+        performPaste(clipboardContent);
+    }
+}
+
+void StcTablesCreator::showPasteConfirmationDialog(const QString& currentContent, const QString& clipboardContent)
+{
+    QMessageBox msgBox(this);
+    msgBox.setWindowTitle(tr("Potwierdź wklejenie"));
+    msgBox.setIcon(QMessageBox::Question);
+
+    // Create detailed message
+    QString message = tr("Komórka w pozycji (%1, %2) nie jest pusta.\n\n")
+                      .arg(m_contextCellRow + 1).arg(m_contextCellColumn + 1);
+
+    message += tr("Aktualna zawartość:\n\"%1\"\n\n").arg(currentContent);
+    message += tr("Zawartość schowka:\n\"%1\"\n\n").arg(clipboardContent);
+    message += tr("Co chcesz zrobić?");
+
+    msgBox.setText(message);
+
+    // Create custom buttons
+    QPushButton* replaceButton = msgBox.addButton(tr("Zastąp"), QMessageBox::AcceptRole);
+    QPushButton* appendButton = msgBox.addButton(tr("Dołącz na końcu"), QMessageBox::AcceptRole);
+    QPushButton* prependButton = msgBox.addButton(tr("Dołącz na początku"), QMessageBox::AcceptRole);
+    QPushButton* cancelButton = msgBox.addButton(tr("Anuluj"), QMessageBox::RejectRole);
+
+    msgBox.setDefaultButton(replaceButton);
+    msgBox.setEscapeButton(cancelButton);
+
+    msgBox.exec();
+
+    QAbstractButton* clickedButton = msgBox.clickedButton();
+
+    if (clickedButton == replaceButton) {
+        performPaste(clipboardContent);
+    } else if (clickedButton == appendButton) {
+        performPaste(currentContent + clipboardContent);
+    } else if (clickedButton == prependButton) {
+        performPaste(clipboardContent + currentContent);
+    }
+    // If cancel or closed, do nothing
+}
+
+void StcTablesCreator::performPaste(const QString& content)
+{
+    // Get or create the target item
+    QTableWidgetItem* item = ui->tableWidget->item(m_contextCellRow, m_contextCellColumn);
+    if (!item) {
+        item = new QTableWidgetItem();
+        ui->tableWidget->setItem(m_contextCellRow, m_contextCellColumn, item);
+    }
+
+    // Temporarily disconnect itemChanged signal
+    disconnect(ui->tableWidget, &QTableWidget::itemChanged,
+               this, &StcTablesCreator::onItemChanged);
+
+    // Set the content
+    item->setText(content);
+
+    // Reconnect the signal
+    connect(ui->tableWidget, &QTableWidget::itemChanged,
+            this, &StcTablesCreator::onItemChanged);
+
+    // Visual feedback
+    QColor originalColor = item->background().color();
+    item->setBackground(QColor(144, 238, 144)); // Light green
+
+    QTimer::singleShot(500, [=, this]() {
+        if (auto* currentItem = ui->tableWidget->item(m_contextCellRow, m_contextCellColumn))
+        {
+            currentItem->setBackground(originalColor.isValid() ? originalColor : QColor());
+        }
+    });
+
+    qDebug() << "Pasted content to cell (" << m_contextCellRow << "," << m_contextCellColumn << "):"
+             << content;
 }
 
 StcTablesCreator::~StcTablesCreator()
@@ -841,7 +1039,8 @@ QString StcTablesCreator::generateTableContentImpl() const
             rowData.append(cellContent);
         }
         result += rowData.join(";");
-        if (row < ui->tableWidget->rowCount() - 1) {
+        if (row < ui->tableWidget->rowCount() - 1)
+        {
             result += "\n";
         }
     }
