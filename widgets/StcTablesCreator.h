@@ -45,11 +45,21 @@ protected:
     QString generateTableContentImpl() const;
 
 private:
+    void initializeUI();
+    void setupTableWidget();
+    void setupContextMenus();
+    void createRowContextMenu();
+    void createColumnContextMenu();
+    void setupButtons();
+    void setupCheckBoxes();
+    void connectSignalsAndSlots();
+
+private:
     Ui::StcTablesCreator *ui;
     QString m_generatedContent;
-    bool m_hasHeader;
-    bool m_isExtended;
-    
+    bool m_hasHeader = false;
+    bool m_isExtended = false;
+
     // Context menu actions
     QMenu *m_rowMenu = nullptr;
     QMenu *m_columnMenu = nullptr;
@@ -59,7 +69,7 @@ private:
     QAction *m_deleteColumnAction = nullptr;
     QAction *m_insertColumnLeftAction = nullptr;
     QAction *m_insertColumnRightAction = nullptr;
-    
+
     // Current context menu position
     int m_contextMenuRow = -1;
     int m_contextMenuColumn = -1;

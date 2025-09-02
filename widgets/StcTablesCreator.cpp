@@ -17,109 +17,128 @@
 
 
 StcTablesCreator::StcTablesCreator(const QString& tableContent, QWidget *parent)
-    : QDialog(parent)
-    , ui(new Ui::StcTablesCreator)
-    , m_hasHeader(false)
-    , m_isExtended(false)
-    , m_rowMenu(nullptr)
-    , m_columnMenu(nullptr)
-    , m_deleteRowAction(nullptr)
-    , m_insertRowAboveAction(nullptr)
-    , m_insertRowBelowAction(nullptr)
-    , m_deleteColumnAction(nullptr)
-    , m_insertColumnLeftAction(nullptr)
-    , m_insertColumnRightAction(nullptr)
-    , m_contextMenuRow(-1)
-    , m_contextMenuColumn(-1)
+    : QDialog(parent), ui(new Ui::StcTablesCreator)
+{
+    initializeUI();
+
+    // Load content if provided
+    if (!tableContent.isEmpty())
+    {
+        setupTable(tableContent);
+    }
+}
+
+void StcTablesCreator::initializeUI()
 {
     ui->setupUi(this);
     setWindowTitle(tr("Table Editor"));
-    
-    // Set up the table with default size and stretch columns
+
+    setupTableWidget();
+    setupContextMenus();
+    setupButtons();
+    setupCheckBoxes();
+    connectSignalsAndSlots();
+}
+
+void StcTablesCreator::setupTableWidget()
+{
+    // Configure table with default dimensions and column stretching
     ui->tableWidget->setColumnCount(2);
     ui->tableWidget->setRowCount(2);
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    
-    // Enable context menu for the table and vertical header
+
+    // Enable custom context menus
     ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->tableWidget, &QTableWidget::customContextMenuRequested, this, &StcTablesCreator::showRowContextMenu);
-    
-    // Enable context menu for the horizontal header
     ui->tableWidget->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->tableWidget->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &StcTablesCreator::showColumnContextMenu);
-            
-    // Enable context menu for the vertical header
     ui->tableWidget->verticalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->tableWidget->verticalHeader(), &QHeaderView::customContextMenuRequested, this, &StcTablesCreator::showRowHeaderContextMenu);
-    
-    // Create row context menu and actions
+}
+
+void StcTablesCreator::setupContextMenus()
+{
+    createRowContextMenu();
+    createColumnContextMenu();
+
+    // Initialize context menu position tracking
+    m_contextMenuRow = -1;
+    m_contextMenuColumn = -1;
+}
+
+void StcTablesCreator::createRowContextMenu()
+{
+    // Create row context menu with actions
     m_rowMenu = new QMenu(this);
+
+    // Create row actions with appropriate icons and text
     m_deleteRowAction = new QAction(QIcon::fromTheme("edit-delete"), tr("Delete Row"), this);
     m_insertRowAboveAction = new QAction(QIcon::fromTheme("list-add"), tr("Insert Row Above"), this);
     m_insertRowBelowAction = new QAction(QIcon::fromTheme("list-add"), tr("Insert Row Below"), this);
-    
-    connect(m_deleteRowAction, &QAction::triggered, this, &StcTablesCreator::deleteSelectedRows);
-    connect(m_insertRowAboveAction, &QAction::triggered, this, &StcTablesCreator::insertRowAbove);
-    connect(m_insertRowBelowAction, &QAction::triggered, this, &StcTablesCreator::insertRowBelow);
-    
+
+    // Add actions to menu with logical grouping
     m_rowMenu->addAction(m_insertRowAboveAction);
     m_rowMenu->addAction(m_insertRowBelowAction);
     m_rowMenu->addSeparator();
     m_rowMenu->addAction(m_deleteRowAction);
-    
-    // Create column context menu and actions
+}
+
+void StcTablesCreator::createColumnContextMenu()
+{
+    // Create column context menu with actions
     m_columnMenu = new QMenu(this);
+
+    // Create column actions with appropriate icons and text
     m_deleteColumnAction = new QAction(QIcon::fromTheme("edit-delete"), tr("Delete Column"), this);
     m_insertColumnLeftAction = new QAction(QIcon::fromTheme("list-add"), tr("Insert Column Left"), this);
     m_insertColumnRightAction = new QAction(QIcon::fromTheme("list-add"), tr("Insert Column Right"), this);
-    
-    connect(m_deleteColumnAction, &QAction::triggered, this, &StcTablesCreator::deleteSelectedColumns);
-    connect(m_insertColumnLeftAction, &QAction::triggered, this, &StcTablesCreator::insertColumnLeft);
-    connect(m_insertColumnRightAction, &QAction::triggered, this, &StcTablesCreator::insertColumnRight);
-    
+
+    // Add actions to menu with logical grouping
     m_columnMenu->addAction(m_insertColumnLeftAction);
     m_columnMenu->addAction(m_insertColumnRightAction);
     m_columnMenu->addSeparator();
     m_columnMenu->addAction(m_deleteColumnAction);
-    
-    // Initialize context menu positions
-    m_contextMenuRow = -1;
-    m_contextMenuColumn = -1;
-    
-    // Set icons for buttons
+}
+
+void StcTablesCreator::setupButtons()
+{
+    // Set icons for main action buttons
     ui->addColumnButton->setIcon(QIcon::fromTheme("list-add"));
     ui->addRowButton->setIcon(QIcon::fromTheme("list-add"));
-    
-    // Connect buttons
-    connect(ui->addColumnButton, &QPushButton::clicked, this, &StcTablesCreator::onAddColumnRight);
-    connect(ui->addRowButton,    &QPushButton::clicked, this, &StcTablesCreator::onAddRowBelow);
-    
-    // Initialize checkboxes
+}
+
+void StcTablesCreator::setupCheckBoxes()
+{
+    // Initialize checkbox states based on member variables
     ui->headerCheckBox->setChecked(m_hasHeader);
     ui->extendedCheckBox->setChecked(m_isExtended);
-    
-    // Connect checkboxes to update flags
-    connect(ui->headerCheckBox, &QCheckBox::toggled, this, [this](bool checked) {
-        m_hasHeader = checked;
-    });
-    
-    connect(ui->extendedCheckBox, &QCheckBox::toggled, this, [this](bool checked) {
-        m_isExtended = checked;
-    });
-    
-    // Set up OK/Cancel buttons
-    QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
-    connect(buttonBox, &QDialogButtonBox::accepted, this, &StcTablesCreator::accept);
-    connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
-    
-    // Add buttons to layout
-    ui->gridLayout->addWidget(buttonBox, 2, 0, 1, 2);
-    
-    // Set up the table with content if provided
-    if (! tableContent.isEmpty())
-    {
-        setupTable(tableContent);
-    }
+}
+
+void StcTablesCreator::connectSignalsAndSlots()
+{
+    // Connect table widget context menus
+    connect(ui->tableWidget, &QTableWidget::customContextMenuRequested, this, &StcTablesCreator::showRowContextMenu);
+    connect(ui->tableWidget->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &StcTablesCreator::showColumnContextMenu);
+    connect(ui->tableWidget->verticalHeader(), &QHeaderView::customContextMenuRequested, this, &StcTablesCreator::showRowHeaderContextMenu);
+
+    // Connect row context menu actions
+    connect(m_deleteRowAction, &QAction::triggered, this, &StcTablesCreator::deleteSelectedRows);
+    connect(m_insertRowAboveAction, &QAction::triggered, this, &StcTablesCreator::insertRowAbove);
+    connect(m_insertRowBelowAction, &QAction::triggered, this, &StcTablesCreator::insertRowBelow);
+
+    // Connect column context menu actions
+    connect(m_deleteColumnAction, &QAction::triggered, this, &StcTablesCreator::deleteSelectedColumns);
+    connect(m_insertColumnLeftAction, &QAction::triggered, this, &StcTablesCreator::insertColumnLeft);
+    connect(m_insertColumnRightAction, &QAction::triggered, this, &StcTablesCreator::insertColumnRight);
+
+    // Connect main action buttons
+    connect(ui->addColumnButton, &QPushButton::clicked, this, &StcTablesCreator::onAddColumnRight);
+    connect(ui->addRowButton, &QPushButton::clicked, this, &StcTablesCreator::onAddRowBelow);
+
+    // Connect checkboxes with lambda functions for state updates
+    connect(ui->headerCheckBox, &QCheckBox::toggled, this, [this](bool checked) { m_hasHeader = checked; });
+    connect(ui->extendedCheckBox, &QCheckBox::toggled, this, [this](bool checked) { m_isExtended = checked; });
+
+    // Connect dialog buttons
+    connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &StcTablesCreator::accept);
+    connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
 }
 
 StcTablesCreator::~StcTablesCreator()
@@ -171,10 +190,10 @@ void StcTablesCreator::showRowContextMenu(const QPoint &pos)
     QTableWidgetItem *item = ui->tableWidget->itemAt(pos);
     if (!item)
         return;
-    
+
     m_contextMenuRow = item->row();
     m_contextMenuColumn = item->column();
-    
+
     // Show the context menu at the cursor position
     m_rowMenu->exec(ui->tableWidget->viewport()->mapToGlobal(pos));
 }
@@ -185,10 +204,10 @@ void StcTablesCreator::showRowHeaderContextMenu(const QPoint &pos)
     int row = ui->tableWidget->verticalHeader()->logicalIndexAt(pos);
     if (row < 0)
         return;
-    
+
     m_contextMenuRow = row;
     m_contextMenuColumn = -1;
-    
+
     // Show the context menu at the cursor position
     m_rowMenu->exec(ui->tableWidget->verticalHeader()->viewport()->mapToGlobal(pos));
 }
@@ -198,9 +217,9 @@ void StcTablesCreator::showColumnContextMenu(const QPoint &pos)
     int column = ui->tableWidget->horizontalHeader()->logicalIndexAt(pos);
     if (column < 0)
         return;
-    
+
     m_contextMenuColumn = column;
-    
+
     // Show the context menu at the cursor position
     m_columnMenu->exec(ui->tableWidget->horizontalHeader()->viewport()->mapToGlobal(pos));
 }
@@ -209,10 +228,10 @@ void StcTablesCreator::deleteSelectedRows()
 {
     if (m_contextMenuRow < 0)
         return;
-    
+
     // Remove the selected rows
     ui->tableWidget->removeRow(m_contextMenuRow);
-    
+
     // Reset context menu position
     m_contextMenuRow = -1;
 }
@@ -221,13 +240,13 @@ void StcTablesCreator::insertRowAbove()
 {
     if (m_contextMenuRow < 0)
         return;
-    
+
     // Insert a new row above the selected row
     ui->tableWidget->insertRow(m_contextMenuRow);
-    
+
     // Select the new row
     ui->tableWidget->selectRow(m_contextMenuRow);
-    
+
     // Reset context menu position
     m_contextMenuRow = -1;
 }
@@ -236,14 +255,14 @@ void StcTablesCreator::insertRowBelow()
 {
     if (m_contextMenuRow < 0)
         return;
-    
+
     // Insert a new row below the selected row
     int newRow = m_contextMenuRow + 1;
     ui->tableWidget->insertRow(newRow);
-    
+
     // Select the new row
     ui->tableWidget->selectRow(newRow);
-    
+
     // Reset context menu position
     m_contextMenuRow = -1;
 }
@@ -252,10 +271,10 @@ void StcTablesCreator::deleteSelectedColumns()
 {
     if (m_contextMenuColumn < 0)
         return;
-    
+
     // Remove the selected column
     ui->tableWidget->removeColumn(m_contextMenuColumn);
-    
+
     // Reset context menu position
     m_contextMenuColumn = -1;
 }
@@ -264,14 +283,14 @@ void StcTablesCreator::insertColumnLeft()
 {
     if (m_contextMenuColumn < 0)
         return;
-    
+
     // Insert a new column to the left of the selected column
     ui->tableWidget->insertColumn(m_contextMenuColumn);
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(m_contextMenuColumn, QHeaderView::Stretch);
-    
+
     // Select the new column
     ui->tableWidget->selectColumn(m_contextMenuColumn);
-    
+
     // Reset context menu position
     m_contextMenuColumn = -1;
 }
@@ -280,15 +299,15 @@ void StcTablesCreator::insertColumnRight()
 {
     if (m_contextMenuColumn < 0)
         return;
-    
+
     // Insert a new column to the right of the selected column
     int newCol = m_contextMenuColumn + 1;
     ui->tableWidget->insertColumn(newCol);
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(newCol, QHeaderView::Stretch);
-    
+
     // Select the new column
     ui->tableWidget->selectColumn(newCol);
-    
+
     // Reset context menu position
     m_contextMenuColumn = -1;
 }
@@ -310,7 +329,7 @@ void StcTablesCreator::setupTable(const QString& content)
         qDebug() << "Empty content, nothing to display";
         return;
     }
-    
+
     // Parse CSV tag attributes if present
     static QRegularExpression csvTagRe(R"(\[csv(?:\s+([^\]]+))?\])");
     QRegularExpressionMatch match = csvTagRe.match(content);
@@ -319,7 +338,7 @@ void StcTablesCreator::setupTable(const QString& content)
         QString attributes = match.captured(1);
         m_hasHeader = attributes.contains("header");
         m_isExtended = attributes.contains("extended");
-        
+
         // Update checkboxes
         ui->headerCheckBox->setChecked(m_hasHeader);
         ui->extendedCheckBox->setChecked(m_isExtended);
@@ -332,16 +351,16 @@ void StcTablesCreator::setupTable(const QString& content)
            .replace('\r', '\n')       // Old Mac
            .replace(QChar(0x2028), '\n')  // Line Separator
            .replace(QChar(0x2029), '\n'); // Paragraph Separator
-    
+
     // Split into lines while handling [run]...[/run] blocks
     QStringList lines;
     QString currentLine;
     bool inRunBlock = false;
-    
+
     for (int i = 0; i < normalized.length(); ++i)
     {
         QChar c = normalized[i];
-        
+
         // Check for [run] or [/run] tags
         if (normalized.mid(i, 5) == "[run]")
         {
@@ -357,7 +376,7 @@ void StcTablesCreator::setupTable(const QString& content)
             i += 5; // Skip the rest of the tag
             continue;
         }
-        
+
         // Handle newline only when not in a run block
         if (!inRunBlock && c == '\n')
         {
@@ -369,13 +388,13 @@ void StcTablesCreator::setupTable(const QString& content)
             currentLine += c;
         }
     }
-    
+
     // Add the last line if not empty
     if (!currentLine.isEmpty() || lines.isEmpty())
     {
         lines.append(currentLine);
     }
-    
+
     // Trim all lines and remove any empty lines at the end
     for (int i = 0; i < lines.size(); ++i)
     {
@@ -401,7 +420,7 @@ void StcTablesCreator::setupTable(const QString& content)
     // Check for header based on the first line not starting with ';'
     bool hasHeader = !lines.isEmpty() && !lines.first().trimmed().startsWith(';');
     m_hasHeader = hasHeader;
-    
+
     // Make a copy of all lines for processing
     QStringList dataLines = lines;
 
@@ -412,11 +431,11 @@ void StcTablesCreator::setupTable(const QString& content)
         int columns = 1; // At least one column
         bool inQuotes = false;
         bool inTag = false;
-        
+
         for (int i = 0; i < line.length(); ++i)
         {
             QChar c = line[i];
-            
+
             if (c == '[')
             {
                 inTag = true;
@@ -434,7 +453,7 @@ void StcTablesCreator::setupTable(const QString& content)
                 columns++;
             }
         }
-        
+
         if (columns > maxColumns)
         {
             maxColumns = columns;
@@ -459,35 +478,35 @@ void StcTablesCreator::setupTable(const QString& content)
         QString currentHeader;
         bool inQuotes = false;
         bool inTag = false;
-        
+
         const QString& headerLine = lines.first();
         for (int i = 0; i < headerLine.length(); ++i)
         {
             QChar c = headerLine[i];
-            
+
             if (c == '[')
                 inTag = true;
             else if (c == ']')
                 inTag = false;
-            
+
             if (c == ';' && !inQuotes && !inTag)
             {
                 headers.append(currentHeader.trimmed());
                 currentHeader.clear();
                 continue;
             }
-            
+
             if (c == '"')
                 inQuotes = !inQuotes;
             currentHeader += c;
         }
-        
+
         // Add the last header
         if (!currentHeader.isEmpty() || !headers.isEmpty())
         {
             headers.append(currentHeader.trimmed());
         }
-        
+
         // Set header items
         for (int col = 0; col < headers.size() && col < maxColumns; ++col)
         {
@@ -507,7 +526,7 @@ void StcTablesCreator::setupTable(const QString& content)
         for (int i = 0; i < line.length(); ++i)
         {
             QChar c = line[i];
-            
+
             // Handle tag start/end
             if (c == '[')
             {
@@ -537,7 +556,7 @@ void StcTablesCreator::setupTable(const QString& content)
                 currentCell += c;
             }
         }
-        
+
         // Add the last cell
         if (!currentCell.isEmpty() || !cells.isEmpty())
         {
@@ -611,7 +630,7 @@ void StcTablesCreator::accept()
 {
     // Store the generated content before accepting
     m_generatedContent = generateTableContentImpl();
-    
+
     // Call the base class accept() to close the dialog
     QDialog::accept();
 }

@@ -14,6 +14,13 @@
    <string>Table Editor</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="3">
+    <widget class="QCheckBox" name="headerCheckBox">
+     <property name="text">
+      <string>with header</string>
+     </property>
+    </widget>
+   </item>
    <item row="1" column="0" colspan="5">
     <widget class="QTableWidget" name="tableWidget">
      <property name="editTriggers">
@@ -33,19 +40,6 @@
      </attribute>
     </widget>
    </item>
-   <item row="0" column="2">
-    <widget class="QPushButton" name="addColumnButton">
-     <property name="toolTip">
-      <string>Add column</string>
-     </property>
-     <property name="text">
-      <string>+ Column</string>
-     </property>
-     <property name="icon">
-      <iconset theme="list-add"/>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="4">
     <widget class="QCheckBox" name="extendedCheckBox">
      <property name="text">
@@ -53,7 +47,7 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="1">
+   <item row="2" column="0">
     <widget class="QPushButton" name="addRowButton">
      <property name="toolTip">
       <string>Add row</string>
@@ -66,10 +60,23 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="3">
-    <widget class="QCheckBox" name="headerCheckBox">
+   <item row="2" column="2" colspan="3">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QPushButton" name="addColumnButton">
+     <property name="toolTip">
+      <string>Add column</string>
+     </property>
      <property name="text">
-      <string>with header</string>
+      <string>+ Column</string>
+     </property>
+     <property name="icon">
+      <iconset theme="list-add"/>
      </property>
     </widget>
    </item>
