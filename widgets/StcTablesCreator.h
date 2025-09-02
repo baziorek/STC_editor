@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include <QDialog>
@@ -45,6 +46,7 @@ protected:
     QString generateTableContentImpl() const;
 
 private:
+    // UI initialization methods
     void initializeUI();
     void setupTableWidget();
     void setupContextMenus();
@@ -53,6 +55,23 @@ private:
     void setupButtons();
     void setupCheckBoxes();
     void connectSignalsAndSlots();
+    
+    // Table setup helper methods
+    void clearTableWidget();
+    void parseCsvAttributes(const QString& content);
+    QString normalizeLineEndings(const QString& content);
+    QStringList splitContentIntoLines(const QString& normalizedContent);
+    QStringList processAndTrimLines(const QStringList& rawLines);
+    bool detectHeaderFromFirstLine(const QStringList& lines);
+    int calculateMaxColumnCount(const QStringList& lines);
+    void configureTableDimensions(int maxColumns, int rowCount);
+    void setupTableHeaders(const QStringList& lines, int maxColumns);
+    void populateTableWithData(const QStringList& dataLines, int maxColumns);
+    void finalizeTableAppearance();
+    
+    // CSV parsing helper methods
+    QStringList parseLineIntoCells(const QString& line);
+    int countColumnsInLine(const QString& line);
 
 private:
     Ui::StcTablesCreator *ui;

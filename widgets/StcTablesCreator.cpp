@@ -314,63 +314,92 @@ void StcTablesCreator::insertColumnRight()
 
 void StcTablesCreator::setupTable(const QString& content)
 {
-    qDebug() << "-----------------";
-    qDebug() << "Original content:" << content << "::" << content.count('\n')
-             << "Line separators:" << content.count(QChar(0x2028))
-             << "Paragraph separators:" << content.count(QChar(0x2029));
+    clearTableWidget();
 
-    // Clear the table
-    ui->tableWidget->clear();
-    ui->tableWidget->setRowCount(0);
-    ui->tableWidget->setColumnCount(0);
-
-    if (content.trimmed().isEmpty())
-    {
+    if (content.trimmed().isEmpty()) {
         qDebug() << "Empty content, nothing to display";
         return;
     }
 
-    // Parse CSV tag attributes if present
+    // Parse CSV attributes and normalize content
+    parseCsvAttributes(content);
+    QString normalized = normalizeLineEndings(content);
+    QStringList rawLines = splitContentIntoLines(normalized);
+    QStringList processedLines = processAndTrimLines(rawLines);
+
+    if (processedLines.isEmpty()) {
+        qDebug() << "No valid lines found after processing";
+        return;
+    }
+
+    // Analyze content structure
+    bool hasHeader = detectHeaderFromFirstLine(processedLines);
+    m_hasHeader = hasHeader;
+    int maxColumns = calculateMaxColumnCount(processedLines);
+
+    if (maxColumns == 0) {
+        qDebug() << "No columns detected";
+        return;
+    }
+
+    // Configure and populate table
+    configureTableDimensions(maxColumns, processedLines.size());
+    setupTableHeaders(processedLines, maxColumns);
+    populateTableWithData(processedLines, maxColumns);
+    finalizeTableAppearance();
+}
+
+void StcTablesCreator::clearTableWidget()
+{
+    ui->tableWidget->clear();
+    ui->tableWidget->setRowCount(0);
+    ui->tableWidget->setColumnCount(0);
+}
+
+void StcTablesCreator::parseCsvAttributes(const QString& content)
+{
     static QRegularExpression csvTagRe(R"(\[csv(?:\s+([^\]]+))?\])");
     QRegularExpressionMatch match = csvTagRe.match(content);
-    if (match.hasMatch())
-    {
+
+    if (match.hasMatch()) {
         QString attributes = match.captured(1);
         m_hasHeader = attributes.contains("header");
         m_isExtended = attributes.contains("extended");
 
-        // Update checkboxes
+        // Update UI checkboxes to reflect parsed attributes
         ui->headerCheckBox->setChecked(m_hasHeader);
         ui->extendedCheckBox->setChecked(m_isExtended);
     }
+}
 
-    // First, normalize all possible line endings to Unix style (\n)
+QString StcTablesCreator::normalizeLineEndings(const QString& content)
+{
     QString normalized = content;
     // Replace all possible line endings with Unix style
     normalized.replace("\r\n", "\n")  // Windows
-           .replace('\r', '\n')       // Old Mac
-           .replace(QChar(0x2028), '\n')  // Line Separator
-           .replace(QChar(0x2029), '\n'); // Paragraph Separator
+               .replace('\r', '\n')       // Old Mac
+               .replace(QChar(0x2028), '\n')  // Line Separator
+               .replace(QChar(0x2029), '\n'); // Paragraph Separator
+    return normalized;
+}
 
-    // Split into lines while handling [run]...[/run] blocks
+QStringList StcTablesCreator::splitContentIntoLines(const QString& normalizedContent)
+{
     QStringList lines;
     QString currentLine;
     bool inRunBlock = false;
 
-    for (int i = 0; i < normalized.length(); ++i)
-    {
-        QChar c = normalized[i];
+    for (int i = 0; i < normalizedContent.length(); ++i) {
+        QChar c = normalizedContent[i];
 
-        // Check for [run] or [/run] tags
-        if (normalized.mid(i, 5) == "[run]")
-        {
+        // Check for [run] or [/run] tags to preserve content within run blocks
+        if (normalizedContent.mid(i, 5) == "[run]") {
             inRunBlock = true;
             currentLine += "[run]";
             i += 4; // Skip the rest of the tag
             continue;
         }
-        else if (normalized.mid(i, 6) == "[/run]")
-        {
+        else if (normalizedContent.mid(i, 6) == "[/run]") {
             inRunBlock = false;
             currentLine += "[/run]";
             i += 5; // Skip the rest of the tag
@@ -378,202 +407,431 @@ void StcTablesCreator::setupTable(const QString& content)
         }
 
         // Handle newline only when not in a run block
-        if (!inRunBlock && c == '\n')
-        {
+        if (!inRunBlock && c == '\n') {
             lines.append(currentLine);
             currentLine.clear();
         }
-        else
-        {
+        else {
             currentLine += c;
         }
     }
 
-    // Add the last line if not empty
-    if (!currentLine.isEmpty() || lines.isEmpty())
-    {
+    // Add the last line if not empty or if we have no lines at all
+    if (!currentLine.isEmpty() || lines.isEmpty()) {
         lines.append(currentLine);
     }
 
-    // Trim all lines and remove any empty lines at the end
-    for (int i = 0; i < lines.size(); ++i)
-    {
-        lines[i] = lines[i].trimmed();
-    }
-    while (!lines.isEmpty() && lines.last().isEmpty())
-    {
-        lines.removeLast();
+    return lines;
+}
+
+QStringList StcTablesCreator::processAndTrimLines(const QStringList& rawLines)
+{
+    QStringList processedLines = rawLines;
+
+    // Trim all lines
+    for (int i = 0; i < processedLines.size(); ++i) {
+        processedLines[i] = processedLines[i].trimmed();
     }
 
-    qDebug() << "Processed lines (" << lines.size() << "):";
-    for (int i = 0; i < lines.size(); ++i)
-    {
-        qDebug() << "[" << i << "]" << lines[i];
+    // Remove any empty lines at the end
+    while (!processedLines.isEmpty() && processedLines.last().isEmpty()) {
+        processedLines.removeLast();
     }
 
-    if (lines.isEmpty())
-    {
-        qDebug() << "No valid lines found after processing";
-        return;
-    }
+    return processedLines;
+}
 
+bool StcTablesCreator::detectHeaderFromFirstLine(const QStringList& lines)
+{
     // Check for header based on the first line not starting with ';'
-    bool hasHeader = !lines.isEmpty() && !lines.first().trimmed().startsWith(';');
-    m_hasHeader = hasHeader;
+    return !lines.isEmpty() && !lines.first().trimmed().startsWith(';');
+}
 
-    // Make a copy of all lines for processing
-    QStringList dataLines = lines;
-
-    // Determine number of columns (maximum number of cells in any row)
+int StcTablesCreator::calculateMaxColumnCount(const QStringList& lines)
+{
     int maxColumns = 0;
-    for (const QString& line : lines)
-    {
-        int columns = 1; // At least one column
-        bool inQuotes = false;
-        bool inTag = false;
 
-        for (int i = 0; i < line.length(); ++i)
-        {
-            QChar c = line[i];
-
-            if (c == '[')
-            {
-                inTag = true;
-            }
-            else if (c == ']')
-            {
-                inTag = false;
-            }
-            else if (c == '"')
-            {
-                inQuotes = !inQuotes;
-            }
-            else if (c == ';' && !inQuotes && !inTag)
-            {
-                columns++;
-            }
-        }
-
-        if (columns > maxColumns)
-        {
+    for (const QString& line : lines) {
+        int columns = countColumnsInLine(line);
+        if (columns > maxColumns) {
             maxColumns = columns;
         }
     }
 
     qDebug() << "Detected columns:" << maxColumns;
-    if (maxColumns == 0)
-    {
-        qDebug() << "No columns detected";
+    return maxColumns;
+}
+
+int StcTablesCreator::countColumnsInLine(const QString& line)
+{
+    int columns = 1; // At least one column
+    bool inQuotes = false;
+    bool inTag = false;
+
+    for (int i = 0; i < line.length(); ++i) {
+        QChar c = line[i];
+
+        if (c == '[') {
+            inTag = true;
+        }
+        else if (c == ']') {
+            inTag = false;
+        }
+        else if (c == '"') {
+            inQuotes = !inQuotes;
+        }
+        else if (c == ';' && !inQuotes && !inTag) {
+            columns++;
+        }
+    }
+
+    return columns;
+}
+
+void StcTablesCreator::configureTableDimensions(int maxColumns, int rowCount)
+{
+    ui->tableWidget->setColumnCount(maxColumns);
+    ui->tableWidget->setRowCount(rowCount);
+}
+
+void StcTablesCreator::setupTableHeaders(const QStringList& lines, int maxColumns)
+{
+    if (!m_hasHeader || lines.isEmpty()) {
         return;
     }
 
-    // Set up the table with the correct number of columns and rows
-    ui->tableWidget->setColumnCount(maxColumns);
-    ui->tableWidget->setRowCount(dataLines.size());
+    QStringList headers = parseLineIntoCells(lines.first());
 
-    // Set header if present
-    if (hasHeader && !lines.isEmpty())
-    {
-        QStringList headers;
-        QString currentHeader;
-        bool inQuotes = false;
-        bool inTag = false;
-
-        const QString& headerLine = lines.first();
-        for (int i = 0; i < headerLine.length(); ++i)
-        {
-            QChar c = headerLine[i];
-
-            if (c == '[')
-                inTag = true;
-            else if (c == ']')
-                inTag = false;
-
-            if (c == ';' && !inQuotes && !inTag)
-            {
-                headers.append(currentHeader.trimmed());
-                currentHeader.clear();
-                continue;
-            }
-
-            if (c == '"')
-                inQuotes = !inQuotes;
-            currentHeader += c;
-        }
-
-        // Add the last header
-        if (!currentHeader.isEmpty() || !headers.isEmpty())
-        {
-            headers.append(currentHeader.trimmed());
-        }
-
-        // Set header items
-        for (int col = 0; col < headers.size() && col < maxColumns; ++col)
-        {
-            ui->tableWidget->setHorizontalHeaderItem(col, new QTableWidgetItem(headers[col]));
-        }
+    // Set header items for each column
+    for (int col = 0; col < headers.size() && col < maxColumns; ++col) {
+        ui->tableWidget->setHorizontalHeaderItem(col, new QTableWidgetItem(headers[col]));
     }
+}
 
-    // Parse each line and fill the table
-    for (int row = 0; row < dataLines.size(); ++row)
-    {
+void StcTablesCreator::populateTableWithData(const QStringList& dataLines, int maxColumns)
+{
+    for (int row = 0; row < dataLines.size(); ++row) {
         const QString& line = dataLines[row];
-        QStringList cells;
-        QString currentCell;
-        bool inQuotes = false;
-        bool inTag = false;
+        QStringList cells = parseLineIntoCells(line);
 
-        for (int i = 0; i < line.length(); ++i)
-        {
-            QChar c = line[i];
-
-            // Handle tag start/end
-            if (c == '[')
-            {
-                inTag = true;
-                currentCell += c;
-            }
-            else if (c == ']')
-            {
-                inTag = false;
-                currentCell += c;
-            }
-            // Handle quoted text
-            else if (c == '"')
-            {
-                inQuotes = !inQuotes;
-                currentCell += c;
-            }
-            // Handle cell separator (only if not in quotes and not in a tag)
-            else if (c == ';' && !inQuotes && !inTag)
-            {
-                cells.append(currentCell.trimmed());
-                currentCell.clear();
-            }
-            // Regular character
-            else
-            {
-                currentCell += c;
-            }
-        }
-
-        // Add the last cell
-        if (!currentCell.isEmpty() || !cells.isEmpty())
-        {
-            cells.append(currentCell.trimmed());
-        }
-
-        // Fill the row with cells
-        for (int col = 0; col < cells.size() && col < maxColumns; ++col)
-        {
+        // Fill the row with parsed cell data
+        for (int col = 0; col < cells.size() && col < maxColumns; ++col) {
             QTableWidgetItem* item = new QTableWidgetItem(cells[col]);
             ui->tableWidget->setItem(row, col, item);
         }
     }
+}
 
-    // Resize columns to fit content
+QStringList StcTablesCreator::parseLineIntoCells(const QString& line)
+{
+    QStringList cells;
+    QString currentCell;
+    bool inQuotes = false;
+    bool inTag = false;
+
+    for (int i = 0; i < line.length(); ++i) {
+        QChar c = line[i];
+
+        // Handle tag start/end
+        if (c == '[') {
+            inTag = true;
+            currentCell += c;
+        }
+        else if (c == ']') {
+            inTag = false;
+            currentCell += c;
+        }
+        // Handle quoted text
+        else if (c == '"') {
+            inQuotes = !inQuotes;
+            currentCell += c;
+        }
+        // Handle cell separator (only if not in quotes and not in a tag)
+        else if (c == ';' && !inQuotes && !inTag) {
+            cells.append(currentCell.trimmed());
+            currentCell.clear();
+        }
+        // Regular character
+        else {
+            currentCell += c;
+        }
+    }
+
+    // Add the last cell
+    if (!currentCell.isEmpty() || !cells.isEmpty()) {
+        cells.append(currentCell.trimmed());
+    }
+
+    return cells;
+}
+
+void StcTablesCreator::finalizeTableAppearance()
+{
+    // Resize columns to fit content optimally
     ui->tableWidget->resizeColumnsToContents();
 }
+// void StcTablesCreator::setupTable(const QString& content)
+// {
+//     qDebug() << "-----------------";
+//     qDebug() << "Original content:" << content << "::" << content.count('\n')
+//              << "Line separators:" << content.count(QChar(0x2028))
+//              << "Paragraph separators:" << content.count(QChar(0x2029));
+//
+//     // Clear the table
+//     ui->tableWidget->clear();
+//     ui->tableWidget->setRowCount(0);
+//     ui->tableWidget->setColumnCount(0);
+//
+//     if (content.trimmed().isEmpty())
+//     {
+//         qDebug() << "Empty content, nothing to display";
+//         return;
+//     }
+//
+//     // Parse CSV tag attributes if present
+//     static QRegularExpression csvTagRe(R"(\[csv(?:\s+([^\]]+))?\])");
+//     QRegularExpressionMatch match = csvTagRe.match(content);
+//     if (match.hasMatch())
+//     {
+//         QString attributes = match.captured(1);
+//         m_hasHeader = attributes.contains("header");
+//         m_isExtended = attributes.contains("extended");
+//
+//         // Update checkboxes
+//         ui->headerCheckBox->setChecked(m_hasHeader);
+//         ui->extendedCheckBox->setChecked(m_isExtended);
+//     }
+//
+//     // First, normalize all possible line endings to Unix style (\n)
+//     QString normalized = content;
+//     // Replace all possible line endings with Unix style
+//     normalized.replace("\r\n", "\n")  // Windows
+//            .replace('\r', '\n')       // Old Mac
+//            .replace(QChar(0x2028), '\n')  // Line Separator
+//            .replace(QChar(0x2029), '\n'); // Paragraph Separator
+//
+//     // Split into lines while handling [run]...[/run] blocks
+//     QStringList lines;
+//     QString currentLine;
+//     bool inRunBlock = false;
+//
+//     for (int i = 0; i < normalized.length(); ++i)
+//     {
+//         QChar c = normalized[i];
+//
+//         // Check for [run] or [/run] tags
+//         if (normalized.mid(i, 5) == "[run]")
+//         {
+//             inRunBlock = true;
+//             currentLine += "[run]";
+//             i += 4; // Skip the rest of the tag
+//             continue;
+//         }
+//         else if (normalized.mid(i, 6) == "[/run]")
+//         {
+//             inRunBlock = false;
+//             currentLine += "[/run]";
+//             i += 5; // Skip the rest of the tag
+//             continue;
+//         }
+//
+//         // Handle newline only when not in a run block
+//         if (!inRunBlock && c == '\n')
+//         {
+//             lines.append(currentLine);
+//             currentLine.clear();
+//         }
+//         else
+//         {
+//             currentLine += c;
+//         }
+//     }
+//
+//     // Add the last line if not empty
+//     if (!currentLine.isEmpty() || lines.isEmpty())
+//     {
+//         lines.append(currentLine);
+//     }
+//
+//     // Trim all lines and remove any empty lines at the end
+//     for (int i = 0; i < lines.size(); ++i)
+//     {
+//         lines[i] = lines[i].trimmed();
+//     }
+//     while (!lines.isEmpty() && lines.last().isEmpty())
+//     {
+//         lines.removeLast();
+//     }
+//
+//     qDebug() << "Processed lines (" << lines.size() << "):";
+//     for (int i = 0; i < lines.size(); ++i)
+//     {
+//         qDebug() << "[" << i << "]" << lines[i];
+//     }
+//
+//     if (lines.isEmpty())
+//     {
+//         qDebug() << "No valid lines found after processing";
+//         return;
+//     }
+//
+//     // Check for header based on the first line not starting with ';'
+//     bool hasHeader = !lines.isEmpty() && !lines.first().trimmed().startsWith(';');
+//     m_hasHeader = hasHeader;
+//
+//     // Make a copy of all lines for processing
+//     QStringList dataLines = lines;
+//
+//     // Determine number of columns (maximum number of cells in any row)
+//     int maxColumns = 0;
+//     for (const QString& line : lines)
+//     {
+//         int columns = 1; // At least one column
+//         bool inQuotes = false;
+//         bool inTag = false;
+//
+//         for (int i = 0; i < line.length(); ++i)
+//         {
+//             QChar c = line[i];
+//
+//             if (c == '[')
+//             {
+//                 inTag = true;
+//             }
+//             else if (c == ']')
+//             {
+//                 inTag = false;
+//             }
+//             else if (c == '"')
+//             {
+//                 inQuotes = !inQuotes;
+//             }
+//             else if (c == ';' && !inQuotes && !inTag)
+//             {
+//                 columns++;
+//             }
+//         }
+//
+//         if (columns > maxColumns)
+//         {
+//             maxColumns = columns;
+//         }
+//     }
+//
+//     qDebug() << "Detected columns:" << maxColumns;
+//     if (maxColumns == 0)
+//     {
+//         qDebug() << "No columns detected";
+//         return;
+//     }
+//
+//     // Set up the table with the correct number of columns and rows
+//     ui->tableWidget->setColumnCount(maxColumns);
+//     ui->tableWidget->setRowCount(dataLines.size());
+//
+//     // Set header if present
+//     if (hasHeader && !lines.isEmpty())
+//     {
+//         QStringList headers;
+//         QString currentHeader;
+//         bool inQuotes = false;
+//         bool inTag = false;
+//
+//         const QString& headerLine = lines.first();
+//         for (int i = 0; i < headerLine.length(); ++i)
+//         {
+//             QChar c = headerLine[i];
+//
+//             if (c == '[')
+//                 inTag = true;
+//             else if (c == ']')
+//                 inTag = false;
+//
+//             if (c == ';' && !inQuotes && !inTag)
+//             {
+//                 headers.append(currentHeader.trimmed());
+//                 currentHeader.clear();
+//                 continue;
+//             }
+//
+//             if (c == '"')
+//                 inQuotes = !inQuotes;
+//             currentHeader += c;
+//         }
+//
+//         // Add the last header
+//         if (!currentHeader.isEmpty() || !headers.isEmpty())
+//         {
+//             headers.append(currentHeader.trimmed());
+//         }
+//
+//         // Set header items
+//         for (int col = 0; col < headers.size() && col < maxColumns; ++col)
+//         {
+//             ui->tableWidget->setHorizontalHeaderItem(col, new QTableWidgetItem(headers[col]));
+//         }
+//     }
+//
+//     // Parse each line and fill the table
+//     for (int row = 0; row < dataLines.size(); ++row)
+//     {
+//         const QString& line = dataLines[row];
+//         QStringList cells;
+//         QString currentCell;
+//         bool inQuotes = false;
+//         bool inTag = false;
+//
+//         for (int i = 0; i < line.length(); ++i)
+//         {
+//             QChar c = line[i];
+//
+//             // Handle tag start/end
+//             if (c == '[')
+//             {
+//                 inTag = true;
+//                 currentCell += c;
+//             }
+//             else if (c == ']')
+//             {
+//                 inTag = false;
+//                 currentCell += c;
+//             }
+//             // Handle quoted text
+//             else if (c == '"')
+//             {
+//                 inQuotes = !inQuotes;
+//                 currentCell += c;
+//             }
+//             // Handle cell separator (only if not in quotes and not in a tag)
+//             else if (c == ';' && !inQuotes && !inTag)
+//             {
+//                 cells.append(currentCell.trimmed());
+//                 currentCell.clear();
+//             }
+//             // Regular character
+//             else
+//             {
+//                 currentCell += c;
+//             }
+//         }
+//
+//         // Add the last cell
+//         if (!currentCell.isEmpty() || !cells.isEmpty())
+//         {
+//             cells.append(currentCell.trimmed());
+//         }
+//
+//         // Fill the row with cells
+//         for (int col = 0; col < cells.size() && col < maxColumns; ++col)
+//         {
+//             QTableWidgetItem* item = new QTableWidgetItem(cells[col]);
+//             ui->tableWidget->setItem(row, col, item);
+//         }
+//     }
+//
+//     // Resize columns to fit content
+//     ui->tableWidget->resizeColumnsToContents();
+// }
 
 QString StcTablesCreator::generateTableContent() const
 {
