@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+class QTableWidgetItem;
+
 namespace Ui
 {
     class StcTablesCreator;
@@ -40,11 +42,17 @@ private slots:
     void insertColumnRight();
     void onHeaderDoubleClicked(int logicalIndex);
 
+    // Drag & Drop functionality
+    void onItemChanged(QTableWidgetItem* item);
+
 protected:
     void accept() override;
     void setupTable(const QString& content);
     void insertRowAt(int row);
     QString generateTableContentImpl() const;
+
+    // Event filters for drag & drop
+    bool eventFilter(QObject* obj, QEvent* event) override;
 
 private:
     // UI initialization methods
@@ -56,7 +64,7 @@ private:
     void setupButtons();
     void setupCheckBoxes();
     void connectSignalsAndSlots();
-    
+
     // Table setup helper methods
     void clearTableWidget();
     void parseCsvAttributes(const QString& content);
@@ -69,10 +77,16 @@ private:
     void setupTableHeaders(const QStringList& lines, int maxColumns);
     void populateTableWithData(const QStringList& dataLines, int maxColumns);
     void finalizeTableAppearance();
-    
+
     // CSV parsing helper methods
     QStringList parseLineIntoCells(const QString& line);
     int countColumnsInLine(const QString& line);
+
+    void setupDragAndDrop();
+    void startCustomDrag();
+    void finishCustomDrag(const QPoint& dropPosition);
+    void performCellSwap(int targetRow, int targetColumn);
+    void resetDragState();
 
 private:
     Ui::StcTablesCreator *ui;
@@ -93,4 +107,11 @@ private:
     // Current context menu position
     int m_contextMenuRow = -1;
     int m_contextMenuColumn = -1;
+
+    // Drag & Drop state
+    bool m_isDragging = false;
+    QPoint m_dragStartPosition;
+    int m_dragSourceRow = -1;
+    int m_dragSourceColumn = -1;
+    QString m_draggedContent;
 };

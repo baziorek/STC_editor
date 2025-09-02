@@ -1,18 +1,14 @@
 #include <QDialogButtonBox>
-#include <QHBoxLayout>
-#include <QHeaderView>
 #include <QMessageBox>
-#include <QCheckBox>
 #include <QDebug>
-#include <QPushButton>
 #include <QMenu>
 #include <QAction>
-#include <QRegularExpression>
 #include <QBoxLayout>
-#include <QTableWidget>
-#include <QTableWidgetItem>
-#include <QVBoxLayout>
 #include <QInputDialog>
+#include <QMouseEvent>
+#include <QDrag>
+#include <QMimeData>
+#include <QPainter>
 #include "StcTablesCreator.h"
 #include "ui_StcTablesCreator.h"
 
@@ -61,36 +57,199 @@ void StcTablesCreator::setupTableWidget()
 
     // Connect header double-click to edit functionality
     connect(ui->tableWidget->horizontalHeader(), &QHeaderView::sectionDoubleClicked, this, &StcTablesCreator::onHeaderDoubleClicked);
+
+    // Setup drag and drop functionality
+    setupDragAndDrop();
+}
+
+void StcTablesCreator::setupDragAndDrop()
+{
+    // disable build-in drag&drop
+    ui->tableWidget->setDragDropMode(QAbstractItemView::NoDragDrop);
+    ui->tableWidget->setDragDropOverwriteMode(false);
+
+    // Install event filter to handle mouse events manually
+    ui->tableWidget->installEventFilter(this);
+    ui->tableWidget->viewport()->installEventFilter(this);
+
+    // Connect item selection changes
+    connect(ui->tableWidget, &QTableWidget::itemChanged, this, &StcTablesCreator::onItemChanged);
+}
+
+bool StcTablesCreator::eventFilter(QObject* obj, QEvent* event)
+{
+    if (obj == ui->tableWidget || obj == ui->tableWidget->viewport())
+    {
+        if (event->type() == QEvent::MouseButtonPress)
+        {
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+            if (mouseEvent->button() == Qt::LeftButton)
+            {
+                m_dragStartPosition = mouseEvent->pos();
+
+                // Find which item was clicked and store its content
+                QTableWidgetItem* item = ui->tableWidget->itemAt(m_dragStartPosition);
+                if (item)
+                {
+                    m_dragSourceRow = item->row();
+                    m_dragSourceColumn = item->column();
+                    m_draggedContent = item->text();
+                    m_isDragging = false;
+
+                    qDebug() << "Mouse press - stored content:" << m_draggedContent
+                             << "from cell (" << m_dragSourceRow << "," << m_dragSourceColumn << ")";
+                }
+                return false; // Let Qt handle the normal click
+            }
+        }
+        else if (event->type() == QEvent::MouseMove)
+        {
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+            if ((mouseEvent->buttons() & Qt::LeftButton) && !m_isDragging &&
+                m_dragSourceRow != -1 && m_dragSourceColumn != -1)
+            {
+
+                int distance = (mouseEvent->pos() - m_dragStartPosition).manhattanLength();
+                if (distance >= QApplication::startDragDistance())
+                {
+                    startCustomDrag();
+                    m_isDragging = true;
+                    return true; // Block further processing
+                }
+            }
+        }
+        else if (event->type() == QEvent::MouseButtonRelease)
+        {
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+            if (mouseEvent->button() == Qt::LeftButton && m_isDragging) {
+                finishCustomDrag(mouseEvent->pos());
+                return true; // Block further processing
+            }
+        }
+    }
+
+    return QDialog::eventFilter(obj, event);
+}
+
+void StcTablesCreator::startCustomDrag()
+{
+    qDebug() << "Starting custom drag with content:" << m_draggedContent
+             << "from cell (" << m_dragSourceRow << "," << m_dragSourceColumn << ")";
+
+    // Change cursor to indicate dragging
+    ui->tableWidget->setCursor(Qt::ClosedHandCursor);
+}
+
+void StcTablesCreator::finishCustomDrag(const QPoint& dropPosition)
+{
+    qDebug() << "Finishing custom drag at position:" << dropPosition;
+
+    // Restore cursor
+    ui->tableWidget->setCursor(Qt::ArrowCursor);
+
+    // Find target item
+    QTableWidgetItem* targetItem = ui->tableWidget->itemAt(dropPosition);
+    if (!targetItem)
+    {
+        qDebug() << "No target item found at drop position";
+        resetDragState();
+        return;
+    }
+
+    int targetRow = targetItem->row();
+    int targetColumn = targetItem->column();
+
+    // Don't swap with the same cell
+    if (targetRow == m_dragSourceRow && targetColumn == m_dragSourceColumn)
+    {
+        qDebug() << "Dropped on the same cell - no action needed";
+        resetDragState();
+        return;
+    }
+
+    // Perform the swap using our manually stored content
+    performCellSwap(targetRow, targetColumn);
+
+    resetDragState();
+}
+
+void StcTablesCreator::performCellSwap(int targetRow, int targetColumn)
+{
+    // Get target content BEFORE any modifications
+    QTableWidgetItem* targetItem = ui->tableWidget->item(targetRow, targetColumn);
+    QString targetContent = targetItem ? targetItem->text() : QString();
+
+    // Store source content (we already have it, but let's be explicit)
+    QString sourceContent = m_draggedContent;
+
+    qDebug() << "Performing swap:"
+             << QString("Source (%1,%2): '%3'").arg(m_dragSourceRow).arg(m_dragSourceColumn).arg(sourceContent)
+             << QString("Target (%1,%2): '%3'").arg(targetRow).arg(targetColumn).arg(targetContent);
+
+    // Get or create source item
+    QTableWidgetItem* sourceItem = ui->tableWidget->item(m_dragSourceRow, m_dragSourceColumn);
+    if (!sourceItem)
+    {
+        sourceItem = new QTableWidgetItem();
+        ui->tableWidget->setItem(m_dragSourceRow, m_dragSourceColumn, sourceItem);
+    }
+
+    // Create target item if it doesn't exist
+    if (!targetItem)
+    {
+        targetItem = new QTableWidgetItem();
+        ui->tableWidget->setItem(targetRow, targetColumn, targetItem);
+    }
+
+    // Temporarily disconnect itemChanged signal
+    disconnect(ui->tableWidget, &QTableWidget::itemChanged, this, &StcTablesCreator::onItemChanged);
+
+    // Perform the actual swap
+    sourceItem->setText(targetContent);  // Put target content in source position
+    targetItem->setText(sourceContent);  // Put source content in target position
+
+    // Reconnect the signal
+    connect(ui->tableWidget, &QTableWidget::itemChanged, this, &StcTablesCreator::onItemChanged);
+
+    qDebug() << "Swap completed successfully";
+}
+
+void StcTablesCreator::resetDragState()
+{
+    m_isDragging = false;
+    m_dragSourceRow = -1;
+    m_dragSourceColumn = -1;
+    m_draggedContent.clear();
+    m_dragStartPosition = QPoint();
+}
+
+void StcTablesCreator::onItemChanged(QTableWidgetItem* item)
+{
+    // This slot can be used for additional processing when items change
+    // For now, we just ensure the change is registered
+    Q_UNUSED(item)
 }
 
 void StcTablesCreator::onHeaderDoubleClicked(int logicalIndex)
-{
-    bool ok;
-    QString currentText;
-
+{    
     // Get current header text
     QTableWidgetItem* headerItem = ui->tableWidget->horizontalHeaderItem(logicalIndex);
-    if (headerItem)
-    {
-        currentText = headerItem->text();
-    }
-    else
-    {
-        currentText = QString("Kolumna %1").arg(logicalIndex + 1);
-    }
+    QString currentText = headerItem ?
+        headerItem->text() : QString("Kolumna %1").arg(logicalIndex + 1);
 
+    bool ok;
     // Show input dialog to edit header text
     QString newText = QInputDialog::getText(this,
-                                            tr("Edycja nagłówka kolumny"),
-                                            tr("Wprowadź nowy tekst nagłówka:"),
-                                            QLineEdit::Normal,
-                                            currentText,
-                                            &ok);
+                                          tr("Edycja nagłówka kolumny"),
+                                          tr("Wprowadź nowy tekst nagłówka:"),
+                                          QLineEdit::Normal,
+                                          currentText,
+                                          &ok);
 
-    if (ok && !newText.isEmpty())
+    if (ok && !newText.trimmed().isEmpty())
     {
         // Create new header item if it doesn't exist
-        if (! headerItem)
+        if (!headerItem)
         {
             headerItem = new QTableWidgetItem(newText);
             ui->tableWidget->setHorizontalHeaderItem(logicalIndex, headerItem);
@@ -99,6 +258,11 @@ void StcTablesCreator::onHeaderDoubleClicked(int logicalIndex)
         {
             headerItem->setText(newText);
         }
+    }
+    else if (ok)
+    {
+        // Show warning for empty header
+        QMessageBox::warning(this, tr("Błąd"), tr("Nagłówek nie może być pusty!"));
     }
 }
 
