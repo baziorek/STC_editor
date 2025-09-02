@@ -38,6 +38,7 @@ private slots:
     void deleteSelectedColumns();
     void insertColumnLeft();
     void insertColumnRight();
+    void onHeaderDoubleClicked(int logicalIndex);
 
 protected:
     void accept() override;

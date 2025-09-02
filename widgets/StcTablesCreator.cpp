@@ -12,6 +12,7 @@
 #include <QTableWidget>
 #include <QTableWidgetItem>
 #include <QVBoxLayout>
+#include <QInputDialog>
 #include "StcTablesCreator.h"
 #include "ui_StcTablesCreator.h"
 
@@ -57,6 +58,48 @@ void StcTablesCreator::setupTableWidget()
     ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tableWidget->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tableWidget->verticalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    // Connect header double-click to edit functionality
+    connect(ui->tableWidget->horizontalHeader(), &QHeaderView::sectionDoubleClicked, this, &StcTablesCreator::onHeaderDoubleClicked);
+}
+
+void StcTablesCreator::onHeaderDoubleClicked(int logicalIndex)
+{
+    bool ok;
+    QString currentText;
+
+    // Get current header text
+    QTableWidgetItem* headerItem = ui->tableWidget->horizontalHeaderItem(logicalIndex);
+    if (headerItem)
+    {
+        currentText = headerItem->text();
+    }
+    else
+    {
+        currentText = QString("Kolumna %1").arg(logicalIndex + 1);
+    }
+
+    // Show input dialog to edit header text
+    QString newText = QInputDialog::getText(this,
+                                            tr("Edycja nagłówka kolumny"),
+                                            tr("Wprowadź nowy tekst nagłówka:"),
+                                            QLineEdit::Normal,
+                                            currentText,
+                                            &ok);
+
+    if (ok && !newText.isEmpty())
+    {
+        // Create new header item if it doesn't exist
+        if (! headerItem)
+        {
+            headerItem = new QTableWidgetItem(newText);
+            ui->tableWidget->setHorizontalHeaderItem(logicalIndex, headerItem);
+        }
+        else
+        {
+            headerItem->setText(newText);
+        }
+    }
 }
 
 void StcTablesCreator::setupContextMenus()

@@ -64,6 +64,7 @@ Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://c
     - Menu kontekstowe z podpowiedziamy poprawiającymi literówki.
 23. **Inteligentne menu kontekstowe dla tagów**: Po kliknięciu w tekście prawym przyciskiem myszy na tagu pojawiają się pewne specyficzne, dla danego tagu funkcjonalności:
     - Po kliknięciu w ramach `[a href=...]` pojawiają się akcje do obsługi linka
+24. **Wizualny edytor tabel STC**: Po kliknięciu PPM na `[csv...]` pojawia się opcja edycji tabeli. Dzięki temu pojawia się wizualne okno, w którym możemy edytować tabelę.
 
 ## Ogólne funkcje edytora
 Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wybrane funkcjonalności, których brakuje mi w zwykłych edytorach:
