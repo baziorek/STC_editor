@@ -47,6 +47,12 @@ void StcTablesCreator::setupTableWidget()
     ui->tableWidget->setRowCount(2);
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
+    // Enable word wrapping in table cells
+    ui->tableWidget->setWordWrap(true);
+
+    // Set automatic row height adjustment to accommodate wrapped text
+    ui->tableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
     // Enable custom context menus
     ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tableWidget->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
