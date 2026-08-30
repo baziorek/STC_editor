@@ -32,12 +32,46 @@ else()
         GIT_REPOSITORY https://gitlab.freedesktop.org/uchardet/uchardet.git
         GIT_TAG master
     )
-    FetchContent_MakeAvailable(uchardet)
-    # Patch: comment out add_subdirectory(test) in uchardet's CMakeLists.txt
-    file(READ "${uchardet_SOURCE_DIR}/CMakeLists.txt" _uchardet_cmake)
-    string(REPLACE "add_subdirectory(test)" "# add_subdirectory(test)" _uchardet_cmake "${_uchardet_cmake}")
-    file(WRITE "${uchardet_SOURCE_DIR}/CMakeLists.txt" "${_uchardet_cmake}")
-    # add_subdirectory(${uchardet_SOURCE_DIR} ${uchardet_BINARY_DIR})
+    # NOTE: FetchContent_MakeAvailable() calls add_subdirectory() internally,
+    # so any patch applied *after* it runs too late to matter - the original
+    # file has already been parsed. Populate (fetch source only, no
+    # configure) -> patch -> THEN add_subdirectory ourselves, so whatever we
+    # patch actually takes effect. FetchContent_Populate() is deprecated on
+    # CMake >= 3.30 (prints a harmless dev warning) but still fully
+    # functional; it remains the correct way to patch a dependency's source
+    # before it is configured.
+    #
+    # The actual reason this matters: uchardet's own top-level CMakeLists.txt
+    # contains this, completely unconditionally (not gated on BUILD_TESTING
+    # or anything test-related - its own test/ subdirectory is already
+    # commented out upstream):
+    #     if (CMAKE_BUILD_TYPE MATCHES Debug)
+    #         add_compile_options("-fsanitize=address")
+    #         add_link_options("-fsanitize=address")
+    #     endif (CMAKE_BUILD_TYPE MATCHES Debug)
+    # add_compile_options()/add_link_options() are directory-scoped: they
+    # apply to uchardet's own directory tree (src/, where BOTH the shared
+    # "libuchardet" and static "libuchardet_static" targets are defined) but
+    # never propagate up to us. So in ANY Debug build, both uchardet variants
+    # silently become ASan-instrumented while the rest of the project isn't -
+    # the shared libuchardet.so ends up with a hard runtime dependency on
+    # libasan.so.8 baked into its own ELF metadata, which triggers the
+    # classic "ASan runtime does not come first in initial library list"
+    # crash at startup, since nothing preloads it first. Confirmed directly
+    # against the fetched source, not guessed.
+    # Fix: build uchardet's own subtree as if it were a Release build,
+    # regardless of what the top-level CMAKE_BUILD_TYPE is, so its ASan
+    # branch never triggers. This only affects uchardet's own optimization
+    # level/debug info, not ours - perfectly fine for a vendored dependency.
+    FetchContent_GetProperties(uchardet)
+    if(NOT uchardet_POPULATED)
+        FetchContent_Populate(uchardet)
+        set(BUILD_TESTING OFF CACHE BOOL "Disable uchardet's own test suite" FORCE)
+        set(_stc_saved_build_type "${CMAKE_BUILD_TYPE}")
+        set(CMAKE_BUILD_TYPE "Release")
+        add_subdirectory(${uchardet_SOURCE_DIR} ${uchardet_BINARY_DIR})
+        set(CMAKE_BUILD_TYPE "${_stc_saved_build_type}")
+    endif()
 
     if(TARGET libuchardet)
         add_library(uchardet::libuchardet ALIAS libuchardet)
@@ -186,6 +220,60 @@ target_link_libraries(${PROJECT_NAME}
         StripCppComments
 )
 
+# ------------------ QCodeEditor: patch upstream sources in place ------------------
+# libs/QCodeEditor is a git submodule pointing at a third-party upstream
+# (ArsMasiuk/QCodeEditor) that we don't maintain, so instead of forking it we
+# patch its known-broken bits here at configure time, mirroring the approach
+# already used above for uchardet's CMakeLists.txt. Patches are idempotent
+# (string(REPLACE) is a no-op, and the file is only rewritten, if the old text
+# is no longer present - e.g. already patched, or fixed upstream).
+set(QCE_INTERNAL_DIR "${PROJECT_SOURCE_DIR}/libs/QCodeEditor/src/internal")
+
+# QXmlStreamReader::name() / QXmlStreamAttributes::value() return QStringView.
+# Comparing a QStringView directly against a string literal is ambiguous under
+# Qt 6.4 (multiple candidate implicit QChar conversions) and fails to compile.
+# Fix: compare against QString via .toString() instead.
+set(QCE_SYNTAXSTYLE_CPP "${QCE_INTERNAL_DIR}/QSyntaxStyle.cpp")
+if(EXISTS "${QCE_SYNTAXSTYLE_CPP}")
+    file(READ "${QCE_SYNTAXSTYLE_CPP}" _qce_content)
+    set(_qce_original "${_qce_content}")
+    string(REPLACE "reader.name() == \"style-scheme\""
+                    "reader.name().toString() == \"style-scheme\""
+                    _qce_content "${_qce_content}")
+    string(REPLACE "reader.name() == \"style\")"
+                    "reader.name().toString() == \"style\")"
+                    _qce_content "${_qce_content}")
+    string(REPLACE "attributes.value(\"bold\") == \"true\")"
+                    "attributes.value(\"bold\").toString() == \"true\")"
+                    _qce_content "${_qce_content}")
+    string(REPLACE "attributes.value(\"italic\") == \"true\")"
+                    "attributes.value(\"italic\").toString() == \"true\")"
+                    _qce_content "${_qce_content}")
+    string(REPLACE "auto underline = attributes.value(\"underlineStyle\");"
+                    "auto underline = attributes.value(\"underlineStyle\").toString();"
+                    _qce_content "${_qce_content}")
+    if(NOT _qce_content STREQUAL _qce_original)
+        message(STATUS "Patching QCodeEditor/QSyntaxStyle.cpp (ambiguous QStringView comparisons)")
+        file(WRITE "${QCE_SYNTAXSTYLE_CPP}" "${_qce_content}")
+    endif()
+endif()
+
+set(QCE_LANGUAGE_CPP "${QCE_INTERNAL_DIR}/QLanguage.cpp")
+if(EXISTS "${QCE_LANGUAGE_CPP}")
+    file(READ "${QCE_LANGUAGE_CPP}" _qcl_content)
+    set(_qcl_original "${_qcl_content}")
+    string(REPLACE "reader.name() == \"section\""
+                    "reader.name().toString() == \"section\""
+                    _qcl_content "${_qcl_content}")
+    string(REPLACE "reader.name() == \"name\")"
+                    "reader.name().toString() == \"name\")"
+                    _qcl_content "${_qcl_content}")
+    if(NOT _qcl_content STREQUAL _qcl_original)
+        message(STATUS "Patching QCodeEditor/QLanguage.cpp (ambiguous QStringView comparisons)")
+        file(WRITE "${QCE_LANGUAGE_CPP}" "${_qcl_content}")
+    endif()
+endif()
+
 # ------------------ QCodeEditor ------------------
 add_subdirectory(libs/QCodeEditor)
 
@@ -196,6 +284,19 @@ target_link_libraries(${PROJECT_NAME}
 
 # Override the standard if their CMake sets -ansi or an old standard
 target_compile_features(QCodeEditor PUBLIC cxx_std_23)
+
+# libs/QCodeEditor's own CMakeLists.txt unconditionally adds "-ansi" to its
+# PRIVATE compile options. For GCC/Clang, "-ansi" is equivalent to
+# "-std=c++98", and since compiler flags are resolved left-to-right, it is
+# emitted *after* our "-std=gnu++23" on the command line and silently wins,
+# putting the whole library back into C++98 mode (breaking nullptr, override,
+# std::true_type, etc. inside Qt's generated moc code). Strip it out so the
+# C++23 requirement above actually takes effect.
+get_target_property(QCODEEDITOR_COMPILE_OPTIONS QCodeEditor COMPILE_OPTIONS)
+if(QCODEEDITOR_COMPILE_OPTIONS)
+    list(REMOVE_ITEM QCODEEDITOR_COMPILE_OPTIONS "-ansi")
+    set_target_properties(QCodeEditor PROPERTIES COMPILE_OPTIONS "${QCODEEDITOR_COMPILE_OPTIONS}")
+endif()
 
 # ------------------ uchardet ------------------
 if(UCHARDET_INCLUDE_DIR)
@@ -263,4 +364,22 @@ if(NOT WIN32)
 
     target_link_libraries(${PROJECT_NAME}Tests PRIVATE ${GTEST_LIBRARIES} pthread gtest_main)
     add_test(NAME ${PROJECT_NAME}Tests COMMAND ${PROJECT_NAME}Tests)
+endif()
+
+# ------------------ AddressSanitizer: static runtime (avoid LD_PRELOAD ordering issues) ------------------
+# When ASan is enabled - e.g. via Qt Creator's Projects > Build Settings > "Sanitizers"
+# panel, or manually with -DCMAKE_CXX_FLAGS=-fsanitize=address - the dynamic ASan
+# runtime (libasan.so) has to be the very first shared library the dynamic linker
+# loads, or the binary aborts at startup with:
+#   "ASan runtime does not come first in initial library list; you should either
+#    link runtime to your application or manually preload it with LD_PRELOAD."
+# Statically linking the runtime into the executable sidesteps that requirement
+# entirely, so this is applied automatically whenever ASan is detected, regardless
+# of whether it was turned on via CMAKE_CXX_FLAGS or CMAKE_C_FLAGS.
+if(CMAKE_CXX_FLAGS MATCHES "-fsanitize=address" OR CMAKE_C_FLAGS MATCHES "-fsanitize=address")
+    message(STATUS "AddressSanitizer detected - linking its runtime statically (-static-libasan)")
+    target_link_options(${PROJECT_NAME} PRIVATE -static-libasan)
+    if(TARGET ${PROJECT_NAME}Tests)
+        target_link_options(${PROJECT_NAME}Tests PRIVATE -static-libasan)
+    endif()
 endif()
