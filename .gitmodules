@@ -10,3 +10,4 @@
 [submodule "libs/QCodeEditor"]
 	path = libs/QCodeEditor
 	url = https://github.com/ArsMasiuk/QCodeEditor.git
+	ignore = all

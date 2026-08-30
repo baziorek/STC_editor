@@ -71,6 +71,15 @@ else()
         set(CMAKE_BUILD_TYPE "Release")
         add_subdirectory(${uchardet_SOURCE_DIR} ${uchardet_BINARY_DIR})
         set(CMAKE_BUILD_TYPE "${_stc_saved_build_type}")
+        # BUILD_TESTING=OFF above isn't reliably honored by uchardet's own
+        # CMakeLists.txt across revisions of its floating "master" branch (it
+        # has re-added its test/ subdirectory unconditionally before), so
+        # belt-and-braces: whatever target it ends up defining for its own
+        # test binary, just exclude it from the default build target instead
+        # of relying on upstream's own gating logic.
+        if(TARGET uchardet-tests)
+            set_target_properties(uchardet-tests PROPERTIES EXCLUDE_FROM_ALL TRUE)
+        endif()
     endif()
 
     if(TARGET libuchardet)
