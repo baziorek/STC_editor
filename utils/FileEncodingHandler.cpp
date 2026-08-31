@@ -52,7 +52,17 @@ QString FileEncodingHandler::loadFile(const QString& filePath)
     }
 
     uchardet_data_end(detector);
+    // uchardet_get_charset() is deprecated in favor of a candidate-based API
+    // (uchardet_get_n_candidates()/uchardet_get_encoding()), but that API is
+    // only available in uchardet >= 0.1.0 - the version most distros package
+    // (e.g. Ubuntu/Kubuntu ship 0.0.8) doesn't have it at all. Silencing the
+    // warning is the only option that works against every uchardet we might
+    // link against; switching APIs isn't a safe option here.
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
+QT_WARNING_DISABLE_CLANG("-Wdeprecated-declarations")
     const char* charset = uchardet_get_charset(detector);
+QT_WARNING_POP
 
     // If detection failed, fallback to UTF-8
     if (!charset || strlen(charset) == 0)
@@ -133,7 +143,13 @@ bool FileEncodingHandler::isProbablyTextFile(const QString& filePath, int maxByt
 
     QString detectedCharset;
     if (result == 0)
+    {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
+QT_WARNING_DISABLE_CLANG("-Wdeprecated-declarations")
         detectedCharset = QString::fromUtf8(uchardet_get_charset(detector)).trimmed();
+QT_WARNING_POP
+    }
 
     uchardet_delete(detector);
 

@@ -489,7 +489,10 @@ bool CodeEditor::loadFileContentDistargingCurrentContent(const QString& fileName
 bool CodeEditor::saveEntireContent2File(const QString &fileName)
 {
     QFile outputFile(fileName);
-    outputFile.open(QIODeviceBase::WriteOnly);
+    if (!outputFile.open(QIODeviceBase::WriteOnly))
+    {
+        return false;
+    }
     setFileName(fileName);
 
     auto savedNumberOfBytes = outputFile.write(toPlainText().toUtf8());

@@ -67,19 +67,42 @@ else()
     if(NOT uchardet_POPULATED)
         FetchContent_Populate(uchardet)
         set(BUILD_TESTING OFF CACHE BOOL "Disable uchardet's own test suite" FORCE)
+        # uchardet's own test/ subdirectory registers ~150 of its own CTest
+        # cases unconditionally (enable_testing() + add_subdirectory(test) in
+        # its root CMakeLists.txt aren't actually gated on BUILD_TESTING).
+        # With the test binary excluded from the default build below, those
+        # would show up as spurious "Not Run" entries and a non-zero exit
+        # code from a plain `ctest` invocation. Comment out that
+        # add_subdirectory(test) call before it's ever parsed - this only
+        # works because we Populate (fetch source only) before configuring
+        # the subtree ourselves further down, unlike FetchContent_MakeAvailable
+        # which would have already processed the original file by this point.
+        file(READ "${uchardet_SOURCE_DIR}/CMakeLists.txt" _uchardet_cmake)
+        string(REPLACE "add_subdirectory(test)" "# add_subdirectory(test)" _uchardet_cmake "${_uchardet_cmake}")
+        file(WRITE "${uchardet_SOURCE_DIR}/CMakeLists.txt" "${_uchardet_cmake}")
         set(_stc_saved_build_type "${CMAKE_BUILD_TYPE}")
         set(CMAKE_BUILD_TYPE "Release")
         add_subdirectory(${uchardet_SOURCE_DIR} ${uchardet_BINARY_DIR})
         set(CMAKE_BUILD_TYPE "${_stc_saved_build_type}")
-        # BUILD_TESTING=OFF above isn't reliably honored by uchardet's own
-        # CMakeLists.txt across revisions of its floating "master" branch (it
-        # has re-added its test/ subdirectory unconditionally before), so
-        # belt-and-braces: whatever target it ends up defining for its own
-        # test binary, just exclude it from the default build target instead
-        # of relying on upstream's own gating logic.
+        # Belt-and-braces: if some future revision moves that add_subdirectory
+        # call elsewhere (it has happened before), whatever target ends up
+        # defined for uchardet's own test binary still won't build by default.
         if(TARGET uchardet-tests)
             set_target_properties(uchardet-tests PROPERTIES EXCLUDE_FROM_ALL TRUE)
         endif()
+        # nsMBCSGroupProber.cpp's HandleData() trips GCC's -Wmaybe-uninitialized
+        # on the local "st" variable - every code path actually assigns it
+        # before use, this is GCC being unable to prove that through the
+        # nested loop/branch structure. It's third-party, upstream code we
+        # don't maintain (and re-fetched fresh from a floating branch on
+        # every clean build, so patching the source itself wouldn't stick
+        # reliably) - just silence this specific warning class for
+        # uchardet's own targets instead.
+        foreach(_uchardet_tgt libuchardet libuchardet_static)
+            if(TARGET ${_uchardet_tgt})
+                target_compile_options(${_uchardet_tgt} PRIVATE -Wno-maybe-uninitialized)
+            endif()
+        endforeach()
     endif()
 
     if(TARGET libuchardet)
@@ -284,6 +307,10 @@ if(EXISTS "${QCE_LANGUAGE_CPP}")
 endif()
 
 # ------------------ QCodeEditor ------------------
+# The vendored example/demo app isn't part of STC_editor itself and its
+# MainWindow.cpp uses the deprecated QCheckBox::stateChanged(int) signal,
+# producing warnings on every build for no benefit to us - skip building it.
+set(BUILD_EXAMPLE OFF CACHE BOOL "Skip QCodeEditor's demo app" FORCE)
 add_subdirectory(libs/QCodeEditor)
 
 target_link_libraries(${PROJECT_NAME}
