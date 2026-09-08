@@ -199,6 +199,7 @@ protected:
     bool selectionHasBrokenNumbering(const QTextCursor& selection) const;
     void addTagRemovalActionIfInsideTag(QMenu *menu);
     void addCodeBlockActionsIfApplicable(QMenu *menu, const QPoint &pos);
+    void addCppReferenceSearchActionIfApplicable(QMenu *menu, const QTextCursor& clickCursor);
     void addImgTagActionsIfApplicable(QMenu *menu);
     QString removeCppComments(const QString& code) const;
     QString removeExcessiveEmptyLines(const QString& code) const;

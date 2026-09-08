@@ -31,6 +31,7 @@
 #include "stcSyntaxPatterns.h"
 #include "StripCppComments/CommentStripper.h"
 #include "widgets/StcTablesCreator.h"
+#include "widgets/CppReferenceDialog.h"
 #include <QIcon>
 
 namespace
@@ -574,10 +575,12 @@ QString CodeEditor::removeExcessiveEmptyLines(const QString& code) const
 
 void CodeEditor::contextMenuEvent(QContextMenuEvent* event)
 {
+    const QTextCursor clickCursor = cursorForPosition(event->pos());
     moveCursorToClickPosition(event->pos());
     QMenu* menu = createStandardContextMenu();
 
     addSpellingSuggestionsIfAvailable(menu, event->pos());
+    addCppReferenceSearchActionIfApplicable(menu, clickCursor);
 
     const QTextCursor selection = textCursor();
     if (selection.hasSelection())
@@ -601,6 +604,37 @@ void CodeEditor::contextMenuEvent(QContextMenuEvent* event)
 
     menu->exec(event->globalPos());
     delete menu;
+}
+
+void CodeEditor::addCppReferenceSearchActionIfApplicable(QMenu* menu, const QTextCursor& clickCursor)
+{
+    const auto codeBlock = selectEnclosingCodeBlock(clickCursor.position());
+    if (!codeBlock || codeBlock->tag != "cpp")
+        return;
+
+    const int codeStart = codeBlock->cursor.selectionStart();
+    const int codeEnd = codeBlock->cursor.selectionEnd();
+    if (clickCursor.position() < codeStart || clickCursor.position() > codeEnd)
+        return;
+
+    QTextCursor wordCursor = clickCursor;
+    wordCursor.select(QTextCursor::WordUnderCursor);
+    const QString word = wordCursor.selectedText();
+    static const QRegularExpression cppIdentifier(R"(^[A-Za-z_][A-Za-z0-9_]*$)");
+    if (!cppIdentifier.match(word).hasMatch() ||
+        wordCursor.selectionStart() < codeStart || wordCursor.selectionEnd() > codeEnd)
+        return;
+
+    menu->addSeparator();
+    QAction* searchDocumentation = new QAction(
+        QIcon::fromTheme("help-contents"), tr("Search C++ documentation for \"%1\"").arg(word), this);
+    connect(searchDocumentation, &QAction::triggered, this, [this, word]() {
+        auto* dialog = new CppReferenceDialog(word, window());
+        dialog->show();
+        dialog->raise();
+        dialog->activateWindow();
+    });
+    menu->addAction(searchDocumentation);
 }
 
 void CodeEditor::addLinkActionsIfApplicable(QMenu* menu)

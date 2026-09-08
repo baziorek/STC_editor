@@ -173,6 +173,7 @@ set(PROJECT_SOURCES
     types/documentstatistics.h types/documentstatistics.cpp
 
     widgets/LineNumberArea.h widgets/LineNumberArea.cpp
+    widgets/CppReferenceDialog.h widgets/CppReferenceDialog.cpp
     widgets/FilteredTagTableWidget.h widgets/FilteredTagTableWidget.cpp
     widgets/CodeBlocksTableWidget.h widgets/CodeBlocksTableWidget.cpp
     widgets/TodosTrackerTableWidget.h widgets/TodosTrackerTableWidget.cpp

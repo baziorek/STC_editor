@@ -66,6 +66,7 @@ Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://c
     - Po kliknięciu w ramach `[a href=...]` pojawiają się akcje do obsługi linka
 24. **Wizualny edytor tabel STC**: Po kliknięciu PPM na `[csv...]` pojawia się opcja edycji tabeli. Dzięki temu pojawia się wizualne okno, w którym możemy edytować tabelę.
     - Jest również możliwość drag&drop między komórkami powodująca ich zamianę
+25. **Wyszukiwanie na [Cppreference](cppreference.com) po słowach kluczowych z kodu C++**: jak w ramach tagów `[cpp]...[/cpp]` klikniemy PPM na słowie to w menu kontekstowym pojawia się opcja wyszukiwania, po jej naciśnięciu pojawia się nam okno z cppreference dla danego hasła.
 
 ## Ogólne funkcje edytora
 Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wybrane funkcjonalności, których brakuje mi w zwykłych edytorach:
@@ -126,6 +127,8 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 1. Kurs STC wbudowany w program
 2. Menu kontekstowe HELP
 3. Wyszukiwanie wielu słów w tej samej linii niezależnie od kolejności.
+4. Przywracanie sesji
+5. Niewidoczny tekst gdy aktywna linia w trybie nie-ciemnym.
 6. Integracja analizatora składni C++ (np. [flex](https://github.com/westes/flex)).
 7. Podświetlanie składni Pythona za pomocą [QCXXHighlighter](https://github.com/Megaxela/QCodeEditor) (licencja MIT).
 8. Obsługa różnych kolorowań składni (różne typy plików, bazujące na QCodeEditor).
@@ -189,7 +192,7 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 1. Dopasowanie rozmiaru numeracji linii do wielkości czcionki.
 2. MiniBug: funkcjonalność zmiany wielkości czcionki zakłóca nowe tagi. Jak powiększymy czcionkę i potem dodamy coś np. H1, to on będzie miał czcionkę nawet mniejszą niż reszta, mimo iż to nagłówek
 3. Zmiana wielkości czcionki powinna też wpłynąć na czcionkę w ramach numeracji linii
-4. Usuwanie całych linii z pliku nie zmienia tytułu okna: jak dodajemy linie lub coś zmieniamy to w tytule okna pokazuje ile linii zmieniono, jednakże gdy liniesąusuwaneto nie pokazuje. Trzeba by zmienić sposób wykrywania zmian przez bibliotekę, a następnie zmienić generowany tytuł.
+4. Usuwanie całych linii z pliku nie zmienia tytułu okna: jak dodajemy linie lub coś zmieniamy to w tytule okna pokazuje ile linii zmieniono, jednakże gdy linie są usuwaneto nie pokazuje. Trzeba by zmienić sposób wykrywania zmian przez bibliotekę, a następnie zmienić generowany tytuł.
 
 ## Współpraca
 
