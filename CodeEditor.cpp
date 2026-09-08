@@ -21,6 +21,8 @@
 #include <QDir>
 #include <QGuiApplication>
 #include <QTextDocument>
+#include <QUrlQuery>
+#include <QHash>
 #include "CodeEditor.h"
 #include "widgets/LineNumberArea.h"
 #include "utils/STCSyntaxHighlighter.h"
@@ -31,7 +33,7 @@
 #include "stcSyntaxPatterns.h"
 #include "StripCppComments/CommentStripper.h"
 #include "widgets/StcTablesCreator.h"
-#include "widgets/CppReferenceDialog.h"
+#include "widgets/DocumentationBrowserDialog.h"
 #include <QIcon>
 
 namespace
@@ -214,6 +216,83 @@ QString rtrim(const QString& str)
     } else {
         return QString();
     }
+}
+
+struct StcTagDocumentation
+{
+    QString lessonTitle;
+    QUrl url;
+};
+
+QUrl cppReferenceSearchUrl(const QString& symbol)
+{
+    QUrl url("https://duckduckgo.com/");
+    QUrlQuery query;
+    query.addQueryItem("q", QString("site:cppreference.com \"%1\" C++").arg(symbol));
+    url.setQuery(query);
+    return url;
+}
+
+void openDocumentationWindow(QWidget* owner, const QUrl& url, const QString& title)
+{
+    auto* dialog = new DocumentationBrowserDialog(url, title, owner->window());
+    dialog->show();
+    dialog->raise();
+    dialog->activateWindow();
+}
+
+const QHash<QString, StcTagDocumentation>& stcDocumentationByTag()
+{
+    static const QHash<QString, StcTagDocumentation> documentation = {
+        { "h1",      { "Znaczniki z HTML'a", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Podstawy/Znaczniki-z-HTML-039-a/170") } },
+        { "h2",      { "Znaczniki z HTML'a", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Podstawy/Znaczniki-z-HTML-039-a/170") } },
+        { "h3",      { "Znaczniki z HTML'a", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Podstawy/Znaczniki-z-HTML-039-a/170") } },
+        { "h4",      { "Znaczniki z HTML'a", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Podstawy/Znaczniki-z-HTML-039-a/170") } },
+        { "h5",      { "Znaczniki z HTML'a", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Podstawy/Znaczniki-z-HTML-039-a/170") } },
+        { "h6",      { "Znaczniki z HTML'a", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Podstawy/Znaczniki-z-HTML-039-a/170") } },
+        { "b",       { "Znaczniki z HTML'a", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Podstawy/Znaczniki-z-HTML-039-a/170") } },
+        { "i",       { "Znaczniki z HTML'a", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Podstawy/Znaczniki-z-HTML-039-a/170") } },
+        { "u",       { "Znaczniki z HTML'a", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Podstawy/Znaczniki-z-HTML-039-a/170") } },
+        { "s",       { "Znaczniki z HTML'a", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Podstawy/Znaczniki-z-HTML-039-a/170") } },
+        { "tt",      { "Znaczniki z HTML'a", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Podstawy/Znaczniki-z-HTML-039-a/170") } },
+        { "sup",     { "Znaczniki z HTML'a", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Podstawy/Znaczniki-z-HTML-039-a/170") } },
+        { "sub",     { "Znaczniki z HTML'a", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Podstawy/Znaczniki-z-HTML-039-a/170") } },
+        { "a",       { "Tworzenie odsyłaczy do stron", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Podstawy/Tworzenie-odsylaczy-do-stron/219") } },
+        { "div",     { "Umieszczanie tekstu w ramce", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Podstawy/Umieszczanie-tekstu-w-ramce/177") } },
+        { "pkt",     { "Tworzenie wypunktowania", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Podstawy/Tworzenie-wypunktowania/176") } },
+        { "run",     { "Tworzenie wypunktowania", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Podstawy/Tworzenie-wypunktowania/176") } },
+        { "code",    { "Wstawianie kodu źródłowego", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Podstawy/Wstawianie-kodu-zrodlowego/220") } },
+        { "log",     { "Wstawianie kodu źródłowego", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Podstawy/Wstawianie-kodu-zrodlowego/220") } },
+        { "py",      { "Wstawianie kodu źródłowego", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Podstawy/Wstawianie-kodu-zrodlowego/220") } },
+        { "cpp",     { "Kolorowanie składni języka C++", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Kolorowanie-skladni/Kolorowanie-skladni-jezyka-C++/221") } },
+        { "cytat",   { "Wstawianie cytatów", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Podstawy/Wstawianie-cytatow/174") } },
+        { "img",     { "Wstawianie obrazków", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Podstawy/Wstawianie-obrazkow/250") } },
+        { "csv",     { "Wstawianie tabeli symetrycznej", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Zaawansowane/Wstawianie-tabeli-symetrycznej/173") } },
+        { "doc",     { "Odsyłacze wewnętrzne", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Zaawansowane/Odsylacze-wewnetrzne/172") } },
+        { "tut",     { "Odsyłacze wewnętrzne", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Zaawansowane/Odsylacze-wewnetrzne/172") } },
+        { "art",     { "Odsyłacze wewnętrzne", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Zaawansowane/Odsylacze-wewnetrzne/172") } },
+        { "topic",   { "Odsyłacze wewnętrzne", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Zaawansowane/Odsylacze-wewnetrzne/172") } },
+        { "doc_rel", { "Tworzenie wykazu dokumentów", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Zaawansowane/Tworzenie-wykazu-dokumentow/214") } },
+        { "tut_rel", { "Tworzenie wykazu dokumentów", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Zaawansowane/Tworzenie-wykazu-dokumentow/214") } },
+        { "art_rel", { "Tworzenie wykazu dokumentów", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Zaawansowane/Tworzenie-wykazu-dokumentow/214") } },
+        { "google",  { "Wyszukiwanie za pomocą Google", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Zaawansowane/Wyszukiwanie-za-pomoca-google/217") } },
+        { "g",       { "Wyszukiwanie za pomocą Google", QUrl("https://cpp0x.pl/kursy/Kurs-STC/Zaawansowane/Wyszukiwanie-za-pomoca-google/217") } }
+    };
+    return documentation;
+}
+
+std::optional<StcTagDocumentation> documentationForStcTag(const QString& tagName, const QString& tagText)
+{
+    if (tagName == "code" && tagText.contains(
+            QRegularExpression(R"(\bsrc\s*=\s*[\"']?c\+\+)", QRegularExpression::CaseInsensitiveOption)))
+    {
+        return stcDocumentationByTag().value("cpp");
+    }
+
+    const auto it = stcDocumentationByTag().constFind(tagName);
+    if (it == stcDocumentationByTag().cend())
+        return std::nullopt;
+    return it.value();
 }
 } // namespace
 
@@ -581,6 +660,7 @@ void CodeEditor::contextMenuEvent(QContextMenuEvent* event)
 
     addSpellingSuggestionsIfAvailable(menu, event->pos());
     addCppReferenceSearchActionIfApplicable(menu, clickCursor);
+    addStcDocumentationActionIfApplicable(menu, clickCursor);
 
     const QTextCursor selection = textCursor();
     if (selection.hasSelection())
@@ -629,12 +709,46 @@ void CodeEditor::addCppReferenceSearchActionIfApplicable(QMenu* menu, const QTex
     QAction* searchDocumentation = new QAction(
         QIcon::fromTheme("help-contents"), tr("Search C++ documentation for \"%1\"").arg(word), this);
     connect(searchDocumentation, &QAction::triggered, this, [this, word]() {
-        auto* dialog = new CppReferenceDialog(word, window());
-        dialog->show();
-        dialog->raise();
-        dialog->activateWindow();
+        openDocumentationWindow(this, cppReferenceSearchUrl(word), tr("C++ documentation: %1").arg(word));
     });
     menu->addAction(searchDocumentation);
+}
+
+void CodeEditor::addStcDocumentationActionIfApplicable(QMenu* menu, const QTextCursor& clickCursor)
+{
+    const QTextBlock block = clickCursor.block();
+    const QString blockText = block.text();
+    const int offsetInBlock = clickCursor.position() - block.position();
+    static const QRegularExpression stcTagExpression(
+        R"(\[\s*/?\s*([A-Za-z][A-Za-z0-9_]*)(?:\s+[^\]\r\n]*)?\])",
+        QRegularExpression::CaseInsensitiveOption);
+
+    QRegularExpressionMatchIterator matches = stcTagExpression.globalMatch(blockText);
+    while (matches.hasNext())
+    {
+        const QRegularExpressionMatch match = matches.next();
+        if (match.capturedStart() > 0 && blockText[match.capturedStart() - 1] == '\\')
+            continue; // An escaped tag is regular text, not STC syntax.
+
+        if (offsetInBlock < match.capturedStart() || offsetInBlock >= match.capturedEnd())
+            continue;
+
+        const QString tagName = match.captured(1).toLower();
+        const auto documentation = documentationForStcTag(tagName, match.captured(0));
+        if (!documentation)
+            return;
+
+        menu->addSeparator();
+        QAction* openLesson = new QAction(
+            QIcon::fromTheme("help-contents"),
+            tr("Open STC lesson: %1").arg(documentation->lessonTitle), this);
+        connect(openLesson, &QAction::triggered, this, [this, documentation]() {
+            openDocumentationWindow(this, documentation->url,
+                                    tr("STC course: %1").arg(documentation->lessonTitle));
+        });
+        menu->addAction(openLesson);
+        return;
+    }
 }
 
 void CodeEditor::addLinkActionsIfApplicable(QMenu* menu)

@@ -67,6 +67,7 @@ Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://c
 24. **Wizualny edytor tabel STC**: Po kliknięciu PPM na `[csv...]` pojawia się opcja edycji tabeli. Dzięki temu pojawia się wizualne okno, w którym możemy edytować tabelę.
     - Jest również możliwość drag&drop między komórkami powodująca ich zamianę
 25. **Wyszukiwanie na [Cppreference](cppreference.com) po słowach kluczowych z kodu C++**: jak w ramach tagów `[cpp]...[/cpp]` klikniemy PPM na słowie to w menu kontekstowym pojawia się opcja wyszukiwania, po jej naciśnięciu pojawia się nam okno z cppreference dla danego hasła.
+26. **Otwieranie opisu tagów STC**: jak klikniemy PPM na dowolnym tagu otwierającym STC to pojawia się opcja w menu kontekstowym, której wybranie powoduje otwarcie podstrony [kursu STC](https://cpp0x.pl/kursy/Kurs-STC/169) zawierającej ten tag.
 
 ## Ogólne funkcje edytora
 Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wybrane funkcjonalności, których brakuje mi w zwykłych edytorach:
@@ -124,11 +125,12 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 
 ## Planowane funkcjonalności
 
-1. Kurs STC wbudowany w program
-2. Menu kontekstowe HELP
+
+1. Bug: nie widać + w oknie renderowania HTMLa z podglądu STC
+2. MiniBug: Niewidoczny tekst gdy aktywna linia w trybie nie-ciemnym.
 3. Wyszukiwanie wielu słów w tej samej linii niezależnie od kolejności.
 4. Przywracanie sesji
-5. Niewidoczny tekst gdy aktywna linia w trybie nie-ciemnym.
+5. Dodać zapamiętywanie loginu i hasła, ewentualnie cookie-from-browser aby nie podawać za każdym razem loginu i hasła.
 6. Integracja analizatora składni C++ (np. [flex](https://github.com/westes/flex)).
 7. Podświetlanie składni Pythona za pomocą [QCXXHighlighter](https://github.com/Megaxela/QCodeEditor) (licencja MIT).
 8. Obsługa różnych kolorowań składni (różne typy plików, bazujące na QCodeEditor).
