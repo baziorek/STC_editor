@@ -419,50 +419,42 @@ void MainWindow::onFileStatsRequested()
     QMessageBox::information(this, "File statistics", result.toQString());
 }
 
-void MainWindow::onFindTriggered(bool)
+void MainWindow::onFindTriggered(bool checked)
 {
-    QWidget* focusWidget = QApplication::focusWidget();
-
-    bool isFindVisible = ui->findDockWidget->isVisible();
-    bool focusInEditor = (focusWidget == ui->textEditor);
-    bool focusInFind = ui->findWidget->isAncestorOf(focusWidget);
-
-    if (focusInEditor)
+    if (checked)
     {
-        // Show the find widget and focus the input field
-        if (!isFindVisible)
-            ui->findDockWidget->setVisible(true);
-
+        ui->findWidget->setReplaceMode(false);
+        ui->findDockWidget->setVisible(true);
         ui->findWidget->setVisible(true);
         ui->findWidget->focusInput();
     }
-    else if (focusInFind)
+    else
     {
-        // Hide the find widget and return focus to the editor
         ui->findDockWidget->setVisible(false);
         ui->textEditor->setFocus();
     }
+
+    QSignalBlocker blocker(ui->actionFind_replace);
+    ui->actionFind_replace->setChecked(false);
+}
+
+void MainWindow::onFindReplaceTriggered(bool checked)
+{
+    if (checked)
+    {
+        ui->findWidget->setReplaceMode(true);
+        ui->findDockWidget->setVisible(true);
+        ui->findWidget->setVisible(true);
+        ui->findWidget->focusInput(true);
+    }
     else
     {
-        // Fallback case: toggle visibility and set focus accordingly
-        ui->findDockWidget->setVisible(!isFindVisible);
-
-        if (!isFindVisible)
-            ui->findWidget->focusInput();
-        else
-            ui->textEditor->setFocus();
+        ui->findDockWidget->setVisible(false);
+        ui->textEditor->setFocus();
     }
 
-    // Update the action's checked state without retriggering the slot
     QSignalBlocker blocker(ui->actionFind);
-    ui->actionFind->setChecked(ui->findDockWidget->isVisible());
-
-    /// checkbox as unicode
-    auto [text2Change, newText] = make_pair(u8"☑", u8"☐");
-    if (ui->actionFind->isChecked())
-        std::tie(text2Change, newText) = make_pair(u8"☐", u8"☑");
-    auto newActionText = ui->actionFind->text().replace(text2Change, newText);
-    ui->actionFind->setText(newActionText);
+    ui->actionFind->setChecked(false);
 }
 
 [[deprecated("Instead of them mnemoniks from Qt are being used")]] void MainWindow::connectShortcutsFromCodeWidget()
@@ -522,6 +514,10 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
         if (bool isFindVisible = ui->findDockWidget->isVisible())
         {
             ui->findDockWidget->hide();
+            QSignalBlocker findBlocker(ui->actionFind);
+            QSignalBlocker replaceBlocker(ui->actionFind_replace);
+            ui->actionFind->setChecked(false);
+            ui->actionFind_replace->setChecked(false);
         }
         else
         {

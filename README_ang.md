@@ -85,6 +85,8 @@ The editor is also suitable for general document editing. Here are some standout
     - `Enter` and `Shift+Enter` navigate to the next/previous match.
     - Up/down arrows navigate matches without shifting focus to the text editor.
     - All matches are highlighted in the text.
+    - `Ctrl+R` enables replacement mode, where every match has a checkbox so only selected locations are changed.
+    - **Skip already replaced** excludes matches that are already part of the replacement text, e.g. `cout` within `std::cout`.
 9. **Font Scaling**: Increase/decrease font size with `Ctrl++`, `Ctrl+-`, or `Ctrl+Mouse Scroll`.
 10. **Status Bar**: Shows the open file's name, number of unsaved changed lines, last edit time, and last save time (visible only with unsaved changes).
 11. **Current Line Highlighting**: Tracks the cursor's position within the current line.
@@ -113,8 +115,6 @@ You can download the latest compiled version of **STC_editor** from the most rec
 1. Built-in STC course within the application.
 2. Context menu HELP section.
 3. Multi-word search on the same line, regardless of order.
-4. Search and Replace: `Ctrl+R` with the ability to skip specific matches.
-5. Conditional Replace: Replace only if the text doesn't already match (e.g., replace `cout` with `std::cout` only if not already `std::cout`).
 6. Integration of a C++ syntax analyzer (e.g., [flex](https://github.com/westes/flex)).
 7. Dedicated C++ code formatting.
 8. C++ and Python syntax highlighting using [QCXXHighlighter](https://github.com/Megaxela/QCodeEditor) (MIT license).

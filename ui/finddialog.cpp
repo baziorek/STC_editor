@@ -1,7 +1,11 @@
 #include <QMessageBox>
 #include <QTextBlock>
+#include <QTextDocument>
+#include <QTextCursor>
 #include <QLineEdit>
 #include <QKeyEvent>
+#include <QTreeWidget>
+#include <algorithm>
 #include "finddialog.h"
 #include "ui_finddialog.h"
 #include "CodeEditor.h"
@@ -17,8 +21,15 @@ FindDialog::FindDialog(QWidget *parent)
     ui->foundTextsTreeWidget->setItemDelegateForColumn(2, delegate);
 
     connect(ui->foundTextsTreeWidget, &QTreeWidget::itemClicked, this, &FindDialog::onResultItemClicked);
+    connect(ui->foundTextsTreeWidget, &QTreeWidget::itemChanged, this, &FindDialog::onResultItemChanged);
+    connect(ui->replaceTextField, &QComboBox::currentTextChanged, this, &FindDialog::onReplacementCriteriaChanged);
+    connect(ui->skipAlreadyReplacedCheckBox, &QCheckBox::toggled, this, &FindDialog::onReplacementCriteriaChanged);
+    connect(ui->selectAllMatchesButton, &QPushButton::clicked, this, &FindDialog::onSelectAllMatchesPressed);
+    connect(ui->deselectAllMatchesButton, &QPushButton::clicked, this, &FindDialog::onDeselectAllMatchesPressed);
+    connect(ui->replaceSelectedMatchesButton, &QPushButton::clicked, this, &FindDialog::onReplaceSelectedMatchesPressed);
 
     installEventFilter2HandleMovingBetweenOccurences();
+    setReplaceMode(false);
 }
 void FindDialog::installEventFilter2HandleMovingBetweenOccurences()
 {
@@ -36,6 +47,21 @@ void FindDialog::onResultItemClicked(QTreeWidgetItem* item, int column)
     emit jumpToLocationRequested(line, offset);
 }
 
+void FindDialog::setReplaceMode(bool enabled)
+{
+    replaceMode = enabled;
+    ui->replaceOptionsWidget->setVisible(enabled);
+
+    const QString searchText = ui->textSearchField->currentText();
+    if (!searchText.isEmpty())
+        currentTextChanged(searchText);
+}
+
+bool FindDialog::isReplaceMode() const
+{
+    return replaceMode;
+}
+
 void FindDialog::odCheckboxMatchCasesChanged(bool checked)
 {
     auto currentText = ui->textSearchField->currentText();
@@ -43,6 +69,21 @@ void FindDialog::odCheckboxMatchCasesChanged(bool checked)
     {
         emit currentTextChanged(currentText);
     }
+}
+
+void FindDialog::onReplacementCriteriaChanged()
+{
+    if (!isReplaceMode())
+        return;
+
+    // The replacement text only changes the candidate list when conditional
+    // replacement is enabled. Otherwise retain the user's checked matches.
+    if (sender() == ui->replaceTextField && !ui->skipAlreadyReplacedCheckBox->isChecked())
+        return;
+
+    const QString searchText = ui->textSearchField->currentText();
+    if (!searchText.isEmpty())
+        currentTextChanged(searchText);
 }
 
 void FindDialog::onNextOccurencyPressed()
@@ -158,7 +199,10 @@ void FindDialog::currentTextChanged(QString newText)
 
     if (newText.isEmpty())
     {
-        ui->occurencesLabel->setText("Occurences: (empty text)");
+        ui->occurencesLabel->setText("Occurrences: (empty text)");
+
+        ui->foundTextsTreeWidget->clear();
+        updateReplacementControls();
 
         codeEditor->setSearchHighlights({});
     }
@@ -168,16 +212,22 @@ void FindDialog::currentTextChanged(QString newText)
         QString occurencesCountAsText;
         if (stats.isZero())
         {
-            occurencesCountAsText = QString("Occurences: 0");
+            occurencesCountAsText = QString("Occurrences: 0");
         }
         else
         {
-            occurencesCountAsText = QString("Occurences: %1 (%2)/%3 (%4)")
+            occurencesCountAsText = QString("Occurrences: %1 (%2)/%3 (%4)")
             .arg(stats.sensitive).arg(stats.sensitiveWhole)
                 .arg(stats.insensitive).arg(stats.insensitiveWhole);
         }
 
+        if (isReplaceMode())
+        {
+            occurencesCountAsText += tr(" | Replace candidates: %1")
+                .arg(ui->foundTextsTreeWidget->topLevelItemCount());
+        }
         ui->occurencesLabel->setText(occurencesCountAsText);
+        updateReplacementControls();
     }
 }
 
@@ -196,6 +246,7 @@ FindDialog::MatchStats FindDialog::showOccurences(const QString &searchText)
         delegate->setSearchTerm(searchText);
 
     QTextDocument* doc = codeEditor->document();
+    const QString documentText = doc->toPlainText();
     QTextCursor cursor(doc);
     MatchStats stats;
 
@@ -241,6 +292,10 @@ FindDialog::MatchStats FindDialog::showOccurences(const QString &searchText)
             (wholeWordRequired && !isWholeWord))
             continue;
 
+        if (isReplaceMode() && ui->skipAlreadyReplacedCheckBox->isChecked() &&
+            isMatchAlreadyReplacement(documentText, startInDoc, endInDoc - startInDoc))
+            continue;
+
         int lineNumber = cursor.blockNumber() + 1;
         int contextHalf = (maxContextLength - searchText.length()) / 2;
         auto startContext = std::max<qsizetype>(0, startInBlock - contextHalf);
@@ -257,16 +312,53 @@ FindDialog::MatchStats FindDialog::showOccurences(const QString &searchText)
         item->setText(1, QString::number(startInBlock));
         item->setData(0, Qt::UserRole, lineNumber);
         item->setData(1, Qt::UserRole, startInBlock);
+        item->setData(0, Qt::UserRole + 2, startInDoc);
+        item->setData(0, Qt::UserRole + 3, endInDoc - startInDoc);
+        item->setData(0, Qt::UserRole + 4, foundText);
         item->setData(2, Qt::DisplayRole, visibleText);
+        if (isReplaceMode())
+        {
+            item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+            item->setCheckState(0, Qt::Checked);
+        }
         ui->foundTextsTreeWidget->addTopLevelItem(item);
     }
 
     ui->foundTextsTreeWidget->setColumnCount(3);
     ui->foundTextsTreeWidget->setHeaderLabels({ "Line", "Offset", "Context" });
 
-    // Highlight all matches in the editor
+    // Highlight all matches in the editor.
     updateHighlights();
     return stats;
+}
+
+bool FindDialog::isMatchAlreadyReplacement(const QString& documentText, int matchStart, int matchLength) const
+{
+    const QString replacementText = ui->replaceTextField->currentText();
+    if (replacementText.isEmpty() || replacementText.length() < matchLength)
+        return false;
+
+    // A replacement already in the document has to contain the entire match.
+    // For example, the match "cout" at position 4 is contained by
+    // "std::cout" starting at position 0, so it must be skipped.
+    const qsizetype firstReplacementStart = std::max<qsizetype>(
+        0, static_cast<qsizetype>(matchStart) + matchLength - replacementText.length());
+    const qsizetype lastReplacementStart = std::min<qsizetype>(
+        matchStart, documentText.length() - replacementText.length());
+    if (firstReplacementStart > lastReplacementStart)
+        return false;
+
+    const Qt::CaseSensitivity caseSensitivity = ui->matchCasesCheckBox->isChecked()
+        ? Qt::CaseSensitive
+        : Qt::CaseInsensitive;
+    for (qsizetype replacementStart = firstReplacementStart;
+         replacementStart <= lastReplacementStart; ++replacementStart)
+    {
+        if (documentText.mid(replacementStart, replacementText.length())
+                .compare(replacementText, caseSensitivity) == 0)
+            return true;
+    }
+    return false;
 }
 
 
@@ -317,15 +409,121 @@ void FindDialog::hideEvent(QHideEvent* event)
         codeEditor->setSearchHighlights({});
 }
 
-void FindDialog::focusInput()
+void FindDialog::focusInput(bool preferReplacementField)
 {
-    ui->textSearchField->setFocus();
+    QComboBox* field = ui->textSearchField;
+    if (preferReplacementField && isReplaceMode() && !ui->textSearchField->currentText().isEmpty())
+        field = ui->replaceTextField;
 
-    if (ui->textSearchField->isEditable())
+    field->setFocus();
+
+    if (field->isEditable())
     {
-        if (QLineEdit* edit = ui->textSearchField->lineEdit())
+        if (QLineEdit* edit = field->lineEdit())
         {
             edit->selectAll();
         }
     }
+}
+
+void FindDialog::onSelectAllMatchesPressed()
+{
+    for (int index = 0; index < ui->foundTextsTreeWidget->topLevelItemCount(); ++index)
+        ui->foundTextsTreeWidget->topLevelItem(index)->setCheckState(0, Qt::Checked);
+    updateReplacementControls();
+}
+
+void FindDialog::onDeselectAllMatchesPressed()
+{
+    for (int index = 0; index < ui->foundTextsTreeWidget->topLevelItemCount(); ++index)
+        ui->foundTextsTreeWidget->topLevelItem(index)->setCheckState(0, Qt::Unchecked);
+    updateReplacementControls();
+}
+
+void FindDialog::onResultItemChanged(QTreeWidgetItem* item, int column)
+{
+    if (column == 0 && isReplaceMode())
+        updateReplacementControls();
+}
+
+void FindDialog::updateReplacementControls()
+{
+    if (!isReplaceMode())
+        return;
+
+    int selectedMatches = 0;
+    for (int index = 0; index < ui->foundTextsTreeWidget->topLevelItemCount(); ++index)
+    {
+        if (ui->foundTextsTreeWidget->topLevelItem(index)->checkState(0) == Qt::Checked)
+            ++selectedMatches;
+    }
+
+    ui->replaceSelectedMatchesButton->setEnabled(selectedMatches > 0 && !ui->textSearchField->currentText().isEmpty());
+    ui->replaceSelectedMatchesButton->setText(tr("Replace selected (%1)").arg(selectedMatches));
+}
+
+void FindDialog::onReplaceSelectedMatchesPressed()
+{
+    if (!codeEditor)
+        return;
+
+    struct SelectedMatch
+    {
+        int start;
+        int length;
+        QString expectedText;
+    };
+
+    QList<SelectedMatch> selectedMatches;
+    for (int index = 0; index < ui->foundTextsTreeWidget->topLevelItemCount(); ++index)
+    {
+        QTreeWidgetItem* item = ui->foundTextsTreeWidget->topLevelItem(index);
+        if (item->checkState(0) == Qt::Checked)
+        {
+            selectedMatches.append({
+                item->data(0, Qt::UserRole + 2).toInt(),
+                item->data(0, Qt::UserRole + 3).toInt(),
+                item->data(0, Qt::UserRole + 4).toString()
+            });
+        }
+    }
+
+    std::sort(selectedMatches.begin(), selectedMatches.end(), [](const SelectedMatch& left, const SelectedMatch& right) {
+        return left.start > right.start;
+    });
+
+    QTextDocument* document = codeEditor->document();
+    QTextCursor cursor(document);
+    cursor.beginEditBlock();
+    int replacements = 0;
+    for (const SelectedMatch& match : selectedMatches)
+    {
+        if (match.start < 0 || match.length < 0 ||
+            match.start + match.length > document->characterCount() - 1)
+            continue;
+
+        cursor.setPosition(match.start);
+        cursor.setPosition(match.start + match.length, QTextCursor::KeepAnchor);
+
+        // Results can become stale when the document was edited after searching.
+        // Do not overwrite text that is no longer the result the user selected.
+        const Qt::CaseSensitivity caseSensitivity = ui->matchCasesCheckBox->isChecked()
+            ? Qt::CaseSensitive
+            : Qt::CaseInsensitive;
+        if (cursor.selectedText().compare(match.expectedText, caseSensitivity) != 0)
+            continue;
+
+        cursor.insertText(ui->replaceTextField->currentText());
+        ++replacements;
+    }
+    cursor.endEditBlock();
+
+    if (replacements > 0)
+    {
+        const QString replacementText = ui->replaceTextField->currentText();
+        if (!replacementText.isEmpty() && ui->replaceTextField->findText(replacementText) < 0)
+            ui->replaceTextField->addItem(replacementText);
+    }
+
+    currentTextChanged(ui->textSearchField->currentText());
 }

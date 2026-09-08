@@ -56,6 +56,7 @@ public slots:
 
     /// edit menu:
     void onFindTriggered(bool checked);
+    void onFindReplaceTriggered(bool checked);
 
     /// check menu:
     void onCheckTagsPressed();

@@ -323,7 +323,7 @@
     <iconset theme="QIcon::ThemeIcon::EditFind"/>
    </property>
    <property name="text">
-    <string>Find ☐</string>
+    <string>Find</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
@@ -337,7 +337,7 @@
     <iconset theme="edit-find-replace"/>
    </property>
    <property name="text">
-    <string>Find and replace ☐ (not implemented)</string>
+    <string>Find and replace</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
@@ -844,6 +844,22 @@
    </hints>
   </connection>
   <connection>
+   <sender>actionFind_replace</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onFindReplaceTriggered(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>242</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
    <sender>actionFile_statistics</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
@@ -1021,6 +1037,7 @@
   <slot>onOpenParentDirectoryPressed()</slot>
   <slot>onShowAvailableShortcutsPressed()</slot>
   <slot>onFindTriggered(bool)</slot>
+  <slot>onFindReplaceTriggered(bool)</slot>
   <slot>onFileStatsRequested()</slot>
   <slot>onContextShowChanged(bool)</slot>
   <slot>onGoToLineShowChanged(bool)</slot>

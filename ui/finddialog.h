@@ -15,6 +15,7 @@ class FindDialog : public QWidget
     Q_OBJECT
 
     CodeEditor* codeEditor{};
+    bool replaceMode{};
 
 public:
     struct MatchStats
@@ -38,7 +39,9 @@ public:
         this->codeEditor = codeEditor;
     }
 
-    void focusInput();
+    void setReplaceMode(bool enabled);
+    bool isReplaceMode() const;
+    void focusInput(bool preferReplacementField = false);
 
 signals:
     void jumpToLocationRequested(int line, int offset);
@@ -60,13 +63,18 @@ protected:
 
     MatchStats showOccurences(const QString& text);
 
-    void installEventFilterOnSearchInput();
-
     void updateHighlights();
+    bool isMatchAlreadyReplacement(const QString& documentText, int matchStart, int matchLength) const;
+    void updateReplacementControls();
 
 private slots:
     void onNextOccurencyPressed();
     void onPreviousOccurencyPressed();
+    void onReplacementCriteriaChanged();
+    void onSelectAllMatchesPressed();
+    void onDeselectAllMatchesPressed();
+    void onReplaceSelectedMatchesPressed();
+    void onResultItemChanged(QTreeWidgetItem* item, int column);
 
 private:
     Ui::FindDialog *ui;

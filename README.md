@@ -93,6 +93,8 @@ Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wyb
     - ENTER i SHIFT+ENTER odpowiednio przesuwają do kolejnego/poprzedniego wystąpienia z tabeli
     - Strzałki dół/góra dzialają jak powyższe, ale nie przeskakują z focusem do edytora tekstu
     - Wyszukiwania podświetlają wszystkie wystąpienia w tekście
+    - `Ctrl+R` włącza tryb zamiany: każde znalezione miejsce ma checkbox, dzięki czemu można wybrać dokładnie te wystąpienia, które mają zostać zmienione.
+    - Opcja **Skip already replaced** pomija wyniki będące już częścią tekstu zastępującego, np. nie zamieni `cout` wewnątrz `std::cout`.
  9. **Skalowanie czcionki**: Powiększanie/pomniejszanie czcionki za pomocą `Ctrl++` i `Ctrl+-` lub `Ctrl+MOUSE_SCROLL`.
 10. **Pasek stanu**: Pokazuje nazwę otwartego pliku, ale też liczbę niezapisanych zmienionych linii, czas ostatniej edycji i zapisu (tylko przy niezapisanych zmianach).
 11. **Oznaczenie aktualnej linii**: Śledzenie aktualnej pozycji kursora klawiatury w ramach linijki
@@ -124,8 +126,6 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 1. Kurs STC wbudowany w program
 2. Menu kontekstowe HELP
 3. Wyszukiwanie wielu słów w tej samej linii niezależnie od kolejności.
-4. Wyszukaj i zamień: `Ctrl+R` z możliwością wyłączenia poszczególnych wykrytych pozycji.
-5. Zamiana warunkowa -np. zamień jeśli już nie jest. Np. jak chcę zamienić `cout` na `std::cout` to zamieni tylko jeśli nie jest to `std::cout`
 6. Integracja analizatora składni C++ (np. [flex](https://github.com/westes/flex)).
 7. Podświetlanie składni Pythona za pomocą [QCXXHighlighter](https://github.com/Megaxela/QCodeEditor) (licencja MIT).
 8. Obsługa różnych kolorowań składni (różne typy plików, bazujące na QCodeEditor).
