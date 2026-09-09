@@ -19,6 +19,7 @@ public:
     struct RecentFileInfo
     {
         int cursorPosition;
+        int scrollPosition = 0;
         QDateTime lastOpened;
     };
 
@@ -72,6 +73,7 @@ public slots:
     void onStcCoursePressed();
     void onCpp0xPl_pressed();
     void onRepository_pressed();
+    void onResumeSessionToggled(bool checked);
 
 protected:
     void setDisabledMenuActionsDependingOnOpenedFile(bool disabled=true);
@@ -87,6 +89,7 @@ protected:
     void toggleTagOnSelectedText(const QString& tag);
 
     void connectShortcuts();
+    void restoreLastSession();
     void connectShortcutsFromCodeWidget();
     bool closeApplicationReturningIfClosed();
     bool operationWhichDiscardsChangesRequestedReturningIfDiscarded(const QString &dialogTitle, const QString &dialogMessage);

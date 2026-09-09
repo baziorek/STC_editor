@@ -6,6 +6,7 @@
 #include <QDesktopServices>
 #include <QClipboard>
 #include <QStack>
+#include <QScrollBar>
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "ui/shortcutsdialog.h"
@@ -29,6 +30,10 @@ namespace GeometryNames
     constexpr const char SETTINGS_WINDOW_STATE[] = "windowState";
     constexpr const char LAST_DIRECTORY[] = "lastDirectory";
     constexpr const char RECENT_FILES_LIST[] = "recentFiles";
+    constexpr const char RESUME_SESSION[] = "startup/resumeSession";
+    constexpr const char LOGIN_USERNAME[] = "login/username";
+    constexpr const char LOGIN_PASSWORD[] = "login/password";
+    constexpr const char LOGIN_REMEMBER[] = "login/remember";
 };
 
 std::pair<QString, QString> extractLink(const QString& text)
@@ -108,6 +113,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connectSignals2Slots();
     connectShortcutsFromCodeWidget();
     connectShortcuts();
+
+    // Restore last session if the setting is enabled
+    restoreLastSession();
 }
 
 void MainWindow::connectSignals2Slots()
@@ -1031,6 +1039,7 @@ void MainWindow::loadSettings()
         RecentFileInfo info;
         QVariantMap fileInfo = it.value().toMap();
         info.cursorPosition = fileInfo["position"].toInt();
+        info.scrollPosition = fileInfo["scrollPosition"].toInt();
         info.lastOpened = fileInfo["lastOpened"].toDateTime();
         if (!info.lastOpened.isValid())  // if no datetime
         {
@@ -1038,6 +1047,9 @@ void MainWindow::loadSettings()
         }
         recentFilesWithPositions.insert(it.key(), info);
     }
+
+    bool resumeSession = settings.value(GeometryNames::RESUME_SESSION, true).toBool();
+    ui->actionResumeSession->setChecked(resumeSession);
 }
 
 void MainWindow::saveSettings()
@@ -1057,6 +1069,7 @@ void MainWindow::saveSettings()
     {
         QVariantMap fileInfo;
         fileInfo["position"] = it.value().cursorPosition;
+        fileInfo["scrollPosition"] = it.value().scrollPosition;
         fileInfo["lastOpened"] = it.value().lastOpened;
         recentFilesMap.insert(it.key(), fileInfo);
     }
@@ -1064,21 +1077,61 @@ void MainWindow::saveSettings()
     {
         settings.setValue(GeometryNames::RECENT_FILES_LIST, recentFilesMap);
     }
+
+    settings.setValue(GeometryNames::RESUME_SESSION, ui->actionResumeSession->isChecked());
 }
 
 void MainWindow::updateRecentFiles(const QString& path)
 {
     int cursorPos = ui->textEditor->textCursor().position();
+    int scrollPos = ui->textEditor->verticalScrollBar()->value();
 
     recentFilesWithPositions.remove(path);
     RecentFileInfo info;
     info.cursorPosition = cursorPos;
+    info.scrollPosition = scrollPos;
     info.lastOpened = QDateTime::currentDateTime();
     recentFilesWithPositions.insert(path, info);
 
     while (recentFilesWithPositions.size() > maxElementsInListOfLastElements)
     {
         recentFilesWithPositions.erase(--recentFilesWithPositions.end());
+    }
+}
+
+void MainWindow::onResumeSessionToggled(bool checked)
+{
+    QSettings settings;
+    settings.setValue(GeometryNames::RESUME_SESSION, checked);
+}
+
+void MainWindow::restoreLastSession()
+{
+    QSettings settings;
+    if (!settings.value(GeometryNames::RESUME_SESSION, true).toBool())
+        return;
+
+    if (recentFilesWithPositions.isEmpty())
+        return;
+
+    // Find the most recently opened file that still exists
+    const auto sorted = getSortedExistingRecentFiles(recentFilesWithPositions);
+    if (sorted.isEmpty())
+        return;
+
+    const auto &[filePath, info] = sorted.first();
+
+    if (loadFileContentToEditorDistargingCurrentContent(filePath))
+    {
+        QTextCursor cursor = ui->textEditor->textCursor();
+        cursor.setPosition(info.cursorPosition);
+        ui->textEditor->setTextCursor(cursor);
+        ui->textEditor->ensureCursorVisible();
+
+        if (info.scrollPosition > 0)
+        {
+            ui->textEditor->verticalScrollBar()->setValue(info.scrollPosition);
+        }
     }
 }
 
@@ -1119,8 +1172,34 @@ void MainWindow::onShowStcPreviewTriggered()
     }
 
     LoginDialog dlg(this);
+
+    // Pre-fill saved credentials if available
+    QSettings settings;
+    QString savedUser = settings.value(GeometryNames::LOGIN_USERNAME).toString();
+    QString savedPass = settings.value(GeometryNames::LOGIN_PASSWORD).toString();
+    bool savedRemember = settings.value(GeometryNames::LOGIN_REMEMBER, false).toBool();
+    if (!savedUser.isEmpty())
+    {
+        dlg.setCredentials(savedUser, savedPass);
+        dlg.setRememberChecked(savedRemember);
+    }
+
     if (dlg.exec() != QDialog::Accepted)
         return;
+
+    // Save credentials if "Remember login" is checked
+    if (dlg.isRememberChecked())
+    {
+        settings.setValue(GeometryNames::LOGIN_USERNAME, dlg.username());
+        settings.setValue(GeometryNames::LOGIN_PASSWORD, dlg.password());
+        settings.setValue(GeometryNames::LOGIN_REMEMBER, true);
+    }
+    else
+    {
+        settings.remove(GeometryNames::LOGIN_USERNAME);
+        settings.remove(GeometryNames::LOGIN_PASSWORD);
+        settings.remove(GeometryNames::LOGIN_REMEMBER);
+    }
 
     ui->stcPreviewWidget->login(dlg.username(), dlg.password());
 

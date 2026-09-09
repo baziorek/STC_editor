@@ -217,6 +217,7 @@
     <addaction name="actionCopy_absolute_path"/>
     <addaction name="actionOpen_parent_directory"/>
     <addaction name="actionFile_statistics"/>
+    <addaction name="actionResumeSession"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -549,6 +550,17 @@
    </property>
    <property name="text">
     <string>Stop watch (uptime and working time) ☐</string>
+   </property>
+  </action>
+  <action name="actionResumeSession">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Resume last session on startup</string>
    </property>
   </action>
  </widget>
@@ -1019,6 +1031,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionResumeSession</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onResumeSessionToggled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>243</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onSaveAsPressed()</slot>
@@ -1048,5 +1076,6 @@
   <slot>onViewMenuAboutToShow()</slot>
   <slot>onRenameFilePressed()</slot>
   <slot>onStopWatchVisibilityChanged(bool)</slot>
+  <slot>onResumeSessionToggled(bool)</slot>
  </slots>
 </ui>

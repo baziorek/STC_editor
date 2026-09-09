@@ -125,11 +125,10 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 
 ## Planowane funkcjonalności
 
-
-1. Bug: nie widać + w oknie renderowania HTMLa z podglądu STC
+1. Bug: po uruchomieniu artykułu nie znajduje TODOsów
 2. MiniBug: Niewidoczny tekst gdy aktywna linia w trybie nie-ciemnym.
 3. Wyszukiwanie wielu słów w tej samej linii niezależnie od kolejności.
-4. Przywracanie sesji
+4. Pobieranie aktualizacji przez https://cpp0x.pl/xml/
 5. Dodać zapamiętywanie loginu i hasła, ewentualnie cookie-from-browser aby nie podawać za każdym razem loginu i hasła.
 6. Integracja analizatora składni C++ (np. [flex](https://github.com/westes/flex)).
 7. Podświetlanie składni Pythona za pomocą [QCXXHighlighter](https://github.com/Megaxela/QCodeEditor) (licencja MIT).

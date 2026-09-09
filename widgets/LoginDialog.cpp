@@ -1,5 +1,6 @@
 #include <QVBoxLayout>
 #include <QLineEdit>
+#include <QCheckBox>
 #include <QLabel>
 #include <QDialogButtonBox>
 #include "LoginDialog.h"
@@ -22,6 +23,9 @@ LoginDialog::LoginDialog(QWidget *parent) : QDialog(parent)
     passEdit->setEchoMode(QLineEdit::Password);
     layout->addWidget(passEdit);
 
+    rememberCheck = new QCheckBox("Remember login", this);
+    layout->addWidget(rememberCheck);
+
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
     layout->addWidget(buttons);
 
@@ -36,4 +40,17 @@ QString LoginDialog::username() const
 QString LoginDialog::password() const
 {
     return passEdit->text();
+}
+bool LoginDialog::isRememberChecked() const
+{
+    return rememberCheck->isChecked();
+}
+void LoginDialog::setCredentials(const QString &username, const QString &password)
+{
+    userEdit->setText(username);
+    passEdit->setText(password);
+}
+void LoginDialog::setRememberChecked(bool remember)
+{
+    rememberCheck->setChecked(remember);
 }
