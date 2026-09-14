@@ -34,6 +34,7 @@ namespace GeometryNames
     constexpr const char LOGIN_USERNAME[] = "login/username";
     constexpr const char LOGIN_PASSWORD[] = "login/password";
     constexpr const char LOGIN_REMEMBER[] = "login/remember";
+    constexpr const char LOGIN_AUTO_LOGIN[] = "login/autoLogin";
 };
 
 std::pair<QString, QString> extractLink(const QString& text)
@@ -1172,37 +1173,50 @@ void MainWindow::onShowStcPreviewTriggered()
         return;
     }
 
-    LoginDialog dlg(this);
-
-    // Pre-fill saved credentials if available
     QSettings settings;
     QString savedUser = settings.value(GeometryNames::LOGIN_USERNAME).toString();
     QString savedPass = settings.value(GeometryNames::LOGIN_PASSWORD).toString();
     bool savedRemember = settings.value(GeometryNames::LOGIN_REMEMBER, false).toBool();
-    if (!savedUser.isEmpty())
-    {
-        dlg.setCredentials(savedUser, savedPass);
-        dlg.setRememberChecked(savedRemember);
-    }
+    bool savedAutoLogin = settings.value(GeometryNames::LOGIN_AUTO_LOGIN, false).toBool();
 
-    if (dlg.exec() != QDialog::Accepted)
-        return;
-
-    // Save credentials if "Remember login" is checked
-    if (dlg.isRememberChecked())
+    // Auto-login if enabled and credentials are saved
+    if (savedAutoLogin && savedRemember && !savedUser.isEmpty())
     {
-        settings.setValue(GeometryNames::LOGIN_USERNAME, dlg.username());
-        settings.setValue(GeometryNames::LOGIN_PASSWORD, dlg.password());
-        settings.setValue(GeometryNames::LOGIN_REMEMBER, true);
+        ui->stcPreviewWidget->login(savedUser, savedPass);
     }
     else
     {
-        settings.remove(GeometryNames::LOGIN_USERNAME);
-        settings.remove(GeometryNames::LOGIN_PASSWORD);
-        settings.remove(GeometryNames::LOGIN_REMEMBER);
-    }
+        LoginDialog dlg(this);
 
-    ui->stcPreviewWidget->login(dlg.username(), dlg.password());
+        // Pre-fill saved credentials if available
+        if (!savedUser.isEmpty())
+        {
+            dlg.setCredentials(savedUser, savedPass);
+            dlg.setRememberChecked(savedRemember);
+            dlg.setAutoLoginChecked(savedAutoLogin);
+        }
+
+        if (dlg.exec() != QDialog::Accepted)
+            return;
+
+        // Save credentials if "Remember login" is checked
+        if (dlg.isRememberChecked())
+        {
+            settings.setValue(GeometryNames::LOGIN_USERNAME, dlg.username());
+            settings.setValue(GeometryNames::LOGIN_PASSWORD, dlg.password());
+            settings.setValue(GeometryNames::LOGIN_REMEMBER, true);
+            settings.setValue(GeometryNames::LOGIN_AUTO_LOGIN, dlg.isAutoLoginChecked());
+        }
+        else
+        {
+            settings.remove(GeometryNames::LOGIN_USERNAME);
+            settings.remove(GeometryNames::LOGIN_PASSWORD);
+            settings.remove(GeometryNames::LOGIN_REMEMBER);
+            settings.remove(GeometryNames::LOGIN_AUTO_LOGIN);
+        }
+
+        ui->stcPreviewWidget->login(dlg.username(), dlg.password());
+    }
 
     connect(ui->textEditor, &CodeEditor::textChanged, [this]() {
         if (ui->stcPreviewWidget->isVisible())

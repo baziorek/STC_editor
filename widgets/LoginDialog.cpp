@@ -26,6 +26,12 @@ LoginDialog::LoginDialog(QWidget *parent) : QDialog(parent)
     rememberCheck = new QCheckBox("Remember login", this);
     layout->addWidget(rememberCheck);
 
+    autoLoginCheck = new QCheckBox("Auto login", this);
+    autoLoginCheck->setEnabled(false);
+    layout->addWidget(autoLoginCheck);
+
+    connect(rememberCheck, &QCheckBox::toggled, this, &LoginDialog::onRememberToggled);
+
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
     layout->addWidget(buttons);
 
@@ -45,6 +51,10 @@ bool LoginDialog::isRememberChecked() const
 {
     return rememberCheck->isChecked();
 }
+bool LoginDialog::isAutoLoginChecked() const
+{
+    return autoLoginCheck->isChecked();
+}
 void LoginDialog::setCredentials(const QString &username, const QString &password)
 {
     userEdit->setText(username);
@@ -53,4 +63,16 @@ void LoginDialog::setCredentials(const QString &username, const QString &passwor
 void LoginDialog::setRememberChecked(bool remember)
 {
     rememberCheck->setChecked(remember);
+}
+void LoginDialog::setAutoLoginChecked(bool autoLogin)
+{
+    autoLoginCheck->setChecked(autoLogin);
+}
+void LoginDialog::onRememberToggled(bool checked)
+{
+    autoLoginCheck->setEnabled(checked);
+    if (!checked)
+    {
+        autoLoginCheck->setChecked(false);
+    }
 }
