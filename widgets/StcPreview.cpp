@@ -178,18 +178,18 @@ void StcPreviewWidget::scheduleTextUpdate()
 
 void StcPreviewWidget::sendTextRequest(const QString &text)
 {
-    QUrlQuery postData;
-    // URL-encode the '+' character (%2B) so it doesn't get decoded as a space
-    // by the server's form-urlencoded parser
-    QString encodedStc = text;
-    encodedStc.replace("+", "%2B");
-    postData.addQueryItem("stc", encodedStc);
-    postData.addQueryItem("ajax", "ddt");
-    postData.addQueryItem("SecurityToken", securityToken);
+    auto formEncode = [](const QString &s) -> QByteArray {
+        QByteArray encoded = QUrl::toPercentEncoding(s);
+        return encoded;
+    };
+
+    QByteArray payload;
+    payload += "stc=" + formEncode(text);
+    payload += "&ajax=" + formEncode("ddt");
+    payload += "&SecurityToken=" + formEncode(securityToken);
 
     QNetworkRequest req(makeUrl("/stc/"));
     req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-    QByteArray payload = postData.toString(QUrl::FullyEncoded).toUtf8();
 
     stats.bytesSent += payload.size();
     stats.requestCount++;
