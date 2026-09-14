@@ -2590,6 +2590,10 @@ void CodeEditor::increaseFontSize()
     QFont f = font();
     f.setPointSize(std::min(f.pointSize() + 1, 72));
     setFont(f);
+    
+    // Show tooltip with font size
+    QPoint globalPos = mapToGlobal(QPoint(width() / 2, height() / 2));
+    QToolTip::showText(globalPos, QString("Font size: %1pt").arg(f.pointSize()), this);
 }
 
 void CodeEditor::decreaseFontSize()
@@ -2597,6 +2601,10 @@ void CodeEditor::decreaseFontSize()
     QFont f = font();
     f.setPointSize(std::max(f.pointSize() - 1, 4));
     setFont(f);
+    
+    // Show tooltip with font size
+    QPoint globalPos = mapToGlobal(QPoint(width() / 2, height() / 2));
+    QToolTip::showText(globalPos, QString("Font size: %1pt").arg(f.pointSize()), this);
 }
 
 std::optional<CodeBlock> CodeEditor::selectEnclosingCodeBlock(int cursorPos)
