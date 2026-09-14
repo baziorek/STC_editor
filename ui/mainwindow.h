@@ -75,6 +75,9 @@ public slots:
     void onRepository_pressed();
     void onResumeSessionToggled(bool checked);
 
+    /// language menu:
+    void onLanguageChanged(QAction* action);
+
 protected:
     void setDisabledMenuActionsDependingOnOpenedFile(bool disabled=true);
 

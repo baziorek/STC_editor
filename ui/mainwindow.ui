@@ -252,10 +252,18 @@
     <addaction name="actionStc_Preview_account_at_Cpp0x_pl_required"/>
     <addaction name="actionStop_watch_uptime_and_working_time"/>
    </widget>
+   <widget class="QMenu" name="menuLanguage">
+    <property name="title">
+     <string>Language</string>
+    </property>
+    <addaction name="actionEnglish"/>
+    <addaction name="actionPolish"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuCheck"/>
    <addaction name="menuView"/>
+   <addaction name="menuLanguage"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -563,7 +571,35 @@
     <string>Resume last session on startup</string>
    </property>
   </action>
+  <action name="actionEnglish">
+   <property name="text">
+    <string>English</string>
+   </property>
+  </action>
+  <action name="actionPolish">
+   <property name="text">
+    <string>Polski</string>
+   </property>
+  </action>
  </widget>
+ <connections>
+  <connection>
+   <sender>menuLanguage</sender>
+   <signal>triggered(QAction*)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onLanguageChanged(QAction*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>389</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
  <customwidgets>
   <customwidget>
    <class>CodeEditor</class>

@@ -205,6 +205,12 @@ set(TEXT_FILES
     dictionaries/pl/README_pl.txt
 )
 
+# ------------------ Translation Files ------------------
+set(TRANSLATION_FILES
+    translations/stc_editor_en.ts
+    translations/stc_editor_pl.ts
+)
+
 set(PROJECT_FILES ${PROJECT_SOURCES} ${TEXT_FILES})
 
 set(app_icon_resource_linux "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon.png")
@@ -383,6 +389,21 @@ install(FILES
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(${PROJECT_NAME})
 endif()
+
+# ------------------ Translation Processing ------------------
+# Custom target to update translation files
+add_custom_target(update_translations
+    COMMAND Qt${QT_VERSION_MAJOR}::lupdate ${PROJECT_SOURCES} -ts ${TRANSLATION_FILES}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Updating translation files"
+)
+
+# Custom target to compile translation files
+add_custom_target(compile_translations
+    COMMAND Qt${QT_VERSION_MAJOR}::lrelease ${TRANSLATION_FILES}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Compiling translation files"
+)
 
 # ------------------ Tests (Linux only) ------------------
 if(NOT WIN32)

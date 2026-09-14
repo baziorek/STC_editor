@@ -7,6 +7,7 @@
 #include <QClipboard>
 #include <QStack>
 #include <QScrollBar>
+#include <QTranslator>
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "ui/shortcutsdialog.h"
@@ -426,7 +427,7 @@ void MainWindow::onShowAvailableShortcutsPressed()
 void MainWindow::onFileStatsRequested()
 {
     auto result = DocumentStatistics::analyze(ui->textEditor);
-    QMessageBox::information(this, "File statistics", result.toQString());
+    QMessageBox::information(this, tr("File statistics"), result.toQString());
 }
 
 void MainWindow::onFindTriggered(bool checked)
@@ -767,7 +768,7 @@ bool MainWindow::loadFileContentToEditorDistargingCurrentContent(const QString& 
         return true;
     }
 
-    QMessageBox::warning(this, "Error opening file", "File '" + fileName + "' failed to be opened from commandline!");
+    QMessageBox::warning(this, tr("Error opening file"), tr("File '") + fileName + tr("' failed to be opened from commandline!"));
 
     return false;
 }
@@ -1107,6 +1108,37 @@ void MainWindow::onResumeSessionToggled(bool checked)
     settings.setValue(GeometryNames::RESUME_SESSION, checked);
 }
 
+void MainWindow::onLanguageChanged(QAction* action)
+{
+    QString language = "en"; // default
+    
+    if (action == ui->actionPolish) {
+        language = "pl";
+    } else if (action == ui->actionEnglish) {
+        language = "en";
+    }
+    
+    // Save language preference
+    QSettings settings;
+    settings.setValue("language", language);
+    
+    // Load new translations
+    static QTranslator translator;
+    QApplication::instance()->removeTranslator(&translator);
+    
+    QString translationFile = ":/translations/stc_editor_" + language + ".qm";
+    if (translator.load(translationFile)) {
+        QApplication::instance()->installTranslator(&translator);
+        qDebug() << "Successfully loaded translation:" << translationFile;
+    } else {
+        qWarning() << "Failed to load translation file for language:" << language;
+        qWarning() << "Tried to load:" << translationFile;
+    }
+    
+    // Re-translate UI
+    ui->retranslateUi(this);
+}
+
 void MainWindow::restoreLastSession()
 {
     QSettings settings;
@@ -1226,7 +1258,7 @@ void MainWindow::onShowStcPreviewTriggered()
     });
 
     connect(ui->stcPreviewWidget, &StcPreviewWidget::loginFailed, this, [this](const QString &msg) {
-        QMessageBox::warning(this, "Login error", msg);
+        QMessageBox::warning(this, tr("Login error"), msg);
     });
 
     connect(ui->stcPreviewWidget, &StcPreviewWidget::loginSucceeded, this, [this]() {
