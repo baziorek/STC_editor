@@ -1954,6 +1954,12 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
             // Text on arrow
             QString number = QString::number(blockNumber + 1);
             painter.setPen(Qt::black);
+            
+            // Use smaller font for line numbers to prevent overlap
+            QFont lineNumberFont = font();
+            lineNumberFont.setPointSizeF(font().pointSizeF() * 0.8);
+            painter.setFont(lineNumberFont);
+            
             painter.drawText(0, top, lineNumberArea->width(), fontMetrics().height(),
                            Qt::AlignRight, number);
         }
