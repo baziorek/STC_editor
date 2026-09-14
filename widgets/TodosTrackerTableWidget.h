@@ -28,6 +28,8 @@ public:
 
     auto getTodosTotalCount() const { return todoList.size(); }
 
+    void scanEntireDocumentDetectingAllTodos();
+
 signals:
     void goToLineRequested(int lineNumber);
     void goToLineAndOffsetRequested(int lineNumber, int linePosition);
@@ -38,7 +40,6 @@ private slots:
     void onLineContentChanged(int position, int, int);
 
 protected:
-    void scanEntireDocumentDetectingAllTodos();
     void showEvent(QShowEvent *event) override;
 
     void refreshTable();

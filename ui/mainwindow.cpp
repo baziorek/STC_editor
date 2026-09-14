@@ -133,6 +133,7 @@ void MainWindow::connectSignals2Slots()
         this->setTodosCounterValue(todosTotal);
     });
     connect(ui->textEditor, &QPlainTextEdit::textChanged, ui->stopwatchGroupBox, &WorkAwareStopwatch::notifyWorkActivity);
+    connect(ui->textEditor, &CodeEditor::contentReloaded, ui->todosTableWidget, &TodoTrackerTableWidget::scanEntireDocumentDetectingAllTodos);
     connect(ui->menuOpen_recent, &QMenu::aboutToShow, this, &MainWindow::onRecentRecentFilesMenuOpened);
 
     ui->breadcrumbTextBrowser->setTextEditor(ui->textEditor);
