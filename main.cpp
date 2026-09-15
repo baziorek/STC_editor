@@ -83,7 +83,6 @@ void loadTranslations(QApplication& a, const QString& language)
     QString translationFile = ":/translations/stc_editor_" + language + ".qm";
     if (translator.load(translationFile)) {
         a.installTranslator(&translator);
-        qDebug() << "Successfully loaded translation:" << translationFile;
     } else {
         qWarning() << "Failed to load translation file for language:" << language;
         qWarning() << "Tried to load:" << translationFile;

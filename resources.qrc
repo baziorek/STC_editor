@@ -26,7 +26,7 @@
         <file>resources/icons/mdi/chart-bar.svg</file>
     </qresource>
     <qresource prefix="/translations">
-        <file>translations/stc_editor_en.qm</file>
-        <file>translations/stc_editor_pl.qm</file>
+        <file>stc_editor_en.qm</file>
+        <file>stc_editor_pl.qm</file>
     </qresource>
 </RCC>

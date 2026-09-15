@@ -1129,7 +1129,6 @@ void MainWindow::onLanguageChanged(QAction* action)
     QString translationFile = ":/translations/stc_editor_" + language + ".qm";
     if (translator.load(translationFile)) {
         QApplication::instance()->installTranslator(&translator);
-        qDebug() << "Successfully loaded translation:" << translationFile;
     } else {
         qWarning() << "Failed to load translation file for language:" << language;
         qWarning() << "Tried to load:" << translationFile;
