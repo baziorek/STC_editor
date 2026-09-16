@@ -2,6 +2,7 @@
 
 #include <QMainWindow>
 #include <QFileDialog>
+#include <QTranslator>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
