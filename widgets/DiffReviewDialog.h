@@ -17,10 +17,19 @@ public:
     {
         Save,
         Discard,
-        Cancel
+        Cancel,
+        Reload
+    };
+
+    enum DialogMode
+    {
+        UnsavedChanges,
+        ExternalFileChange
     };
 
     explicit DiffReviewDialog(CodeEditor* editor, const QString &dialogTitle, const QString &dialogMessage, QWidget* parent = nullptr);
+    explicit DiffReviewDialog(CodeEditor* editor, const QString &dialogTitle, const QString &dialogMessage, 
+                             const QStringList& newFileContent, DialogMode mode, QWidget* parent = nullptr);
 
     Result userChoice() const;
 
@@ -34,12 +43,16 @@ protected:
     void addFileNotSavedMessage();
     void setupFileInfoHeader(const QString& filePath);
     void setupDiffArea(CodeEditor* editor);
+    void setupDiffAreaForExternalChange(CodeEditor* editor, const QStringList& newFileContent);
     void setupEditorConnections(CodeEditor* editor);
     void setupButtons();
+    void setupButtonsForExternalChange();
     void handleLineRestoration(CodeEditor* editor, int lineIndex, const QString& restoredText);
 
 private:
     Result selectedResult = Cancel;
+    DialogMode dialogMode = UnsavedChanges;
+    QStringList externalNewContent;
 
     QVBoxLayout* mainLayout = {};
     QLabel* fileLabel = {};

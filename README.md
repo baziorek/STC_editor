@@ -139,7 +139,7 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 12. Szukanie tylko w kodzie
 13. Może AI mi podzieli CodeEditor aby nie był GodObject
 14. Historia zmian w linii
-15. Gdy zewnętrzne zmiany w pliku to powinno też pokazać diffa.
+15. Rezultat komendy w edytorze.
 16. Ctrl + V gdy mamy obrazek w schowku - wtedy powinno zaproponować umieszczenie obrazka w odpowiednim katalogu
 17. Gdy wyświetlamy diffa, ale linie są długie to pojawia się scrolling area, a nie powinna.
 18. Rozważyć użycie tej samej biblioteki do porównywania zarówno linii jak i znaków np. https://github.com/google/diff-match-patch
@@ -175,8 +175,7 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 48. Eksport bloków kodu do osobnych plików.
 49. Konsolidacja obrazów do jednego katalogu z aktualizacją ścieżek w znacznikach STC.
 50. Przy porównywaniu difa niezapisanych zmian z zawartością pliku (linijka w linijkę): możliwość zapisania na dysk poszczególnych linii.
-51. Rezultat komendy w edytorze.
-52. Sprawdzania:
+51. Sprawdzania:
      - Sprawdzanie, czy znaczniki `[run]` znajdują się wewnątrz `[pkt]`.
      - Weryfikacja, czy wszystkie znaczniki są zamknięte (np. po opuszczeniu linijki sprawdzamy czy są tam zmiany, jak tak, to czy jest tam nowy tag)
      - Weryfikacja odpowiednich atrybutów w tagach (czy w cudzysłowiu, czy tylko dozwole atrubytu)

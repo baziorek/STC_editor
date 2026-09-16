@@ -28,6 +28,7 @@
 #include "utils/STCSyntaxHighlighter.h"
 #include "ui/cppcompilerdialog.h"
 #include "utils/DiffCalculation.h"
+#include "widgets/DiffReviewDialog.h"
 #include "types/CodeBlock.h"
 #include "utils/FileEncodingHandler.h"
 #include "stcSyntaxPatterns.h"
@@ -2237,24 +2238,39 @@ void CodeEditor::fileChanged(const QString &path)
                 enableWatchingOfFile(path);
                 return;
             }
+
+            // Show diff dialog for external file changes
+            const QStringList newFileLines = newContent.split('\n');
+            DiffReviewDialog dialog(this, 
+                                  tr("File changed"),
+                                  tr("File '%1' has been modified outside of the editor.\n\n"
+                                     "Do you want to reload it?")
+                                      .arg(path),
+                                  newFileLines,
+                                  DiffReviewDialog::ExternalFileChange,
+                                  this);
+            
+            if (dialog.exec() == QDialog::Accepted)
+            {
+                switch (dialog.userChoice())
+                {
+                case DiffReviewDialog::Reload:
+                    reloadFromFile(/*discardChanges=*/true);
+                    break;
+                case DiffReviewDialog::Discard:
+                    // Do nothing, keep current content
+                    break;
+                case DiffReviewDialog::Cancel:
+                default:
+                    // Do nothing, keep current content
+                    break;
+                }
+            }
         }
         catch (const std::exception& e)
         {
             QMessageBox::warning(const_cast<CodeEditor*>(this), "Checking if no unsaved changes failed!", e.what());
             return;
-        }
-
-        QMessageBox::StandardButton response = QMessageBox::question(
-            this,
-            tr("File changed"),
-            tr("File '%1' has been modified outside of the editor.\n\n"
-               "Do you want to reload it?")
-                .arg(path),
-            QMessageBox::Yes | QMessageBox::No);
-
-        if (response == QMessageBox::Yes)
-        {
-            reloadFromFile(/*discardChanges=*/true);
         }
 
         enableWatchingOfFile(path);

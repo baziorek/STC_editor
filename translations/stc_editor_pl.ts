@@ -126,6 +126,14 @@ Do you want to reload it?</translation>
         <translation>Cancel</translation>
     </message>
     <message>
+        <source>Reload</source>
+        <translation>Reload</translation>
+    </message>
+    <message>
+        <source>Discard External Changes</source>
+        <translation>Discard External Changes</translation>
+    </message>
+    <message>
         <source>Modified lines: %1 | Added: %2 | Removed: %3</source>
         <translation>Modified lines: %1 | Added: %2 | Removed: %3</translation>
     </message>

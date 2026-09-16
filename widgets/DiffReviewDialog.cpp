@@ -12,7 +12,7 @@
 
 
 DiffReviewDialog::DiffReviewDialog(CodeEditor* editor, const QString &dialogTitle, const QString &dialogMessage, QWidget* parent)
-    : QDialog(parent)
+    : QDialog(parent), dialogMode(UnsavedChanges)
 {
     setupDialogTitleAndLayout(dialogTitle);
 
@@ -32,6 +32,30 @@ DiffReviewDialog::DiffReviewDialog(CodeEditor* editor, const QString &dialogTitl
     }
 
     setupButtons();
+}
+
+DiffReviewDialog::DiffReviewDialog(CodeEditor* editor, const QString &dialogTitle, const QString &dialogMessage, 
+                                   const QStringList& newFileContent, DialogMode mode, QWidget* parent)
+    : QDialog(parent), dialogMode(mode), externalNewContent(newFileContent)
+{
+    setupDialogTitleAndLayout(dialogTitle);
+
+    if (!dialogMessage.isEmpty())
+        addDialogMessage(dialogMessage);
+
+    const QString filePath = editor->getFileName();
+    if (filePath.isEmpty())
+    {
+        addFileNotSavedMessage();
+    }
+    else
+    {
+        setupFileInfoHeader(filePath);
+        setupDiffAreaForExternalChange(editor, newFileContent);
+        setupEditorConnections(editor);
+    }
+
+    setupButtonsForExternalChange();
 }
 
 void DiffReviewDialog::setupDialogTitleAndLayout(const QString& dialogTitle)
@@ -111,6 +135,24 @@ void DiffReviewDialog::setupDiffArea(CodeEditor* editor)
     diffWidget->setDiffData(diffs);
 }
 
+void DiffReviewDialog::setupDiffAreaForExternalChange(CodeEditor* editor, const QStringList& newFileContent)
+{
+    diffWidget = new DiffViewerWidget(this);
+    mainLayout->addWidget(diffWidget, 1); // 1 means Expanding
+
+    const QStringList oldLines = editor->toPlainText().split('\n');
+    const QStringList newLines = newFileContent;
+
+    const auto diffLines = DiffCalculation::computeDiff(oldLines, newLines);
+    const auto diffs = DiffCalculation::computeModifiedLineDiffs(diffLines);
+
+    populateMetadata(oldLines, newLines, editor->getFileName(),
+                     editor->getFileModificationTime(),
+                     editor->getLastChangeTime(),
+                     diffs);
+    diffWidget->setDiffData(diffs);
+}
+
 void DiffReviewDialog::setupEditorConnections(CodeEditor* editor)
 {
     connect(diffWidget, &DiffViewerWidget::jumpToLineInEditor, editor, &CodeEditor::go2LineRequested);
@@ -147,9 +189,38 @@ void DiffReviewDialog::setupButtons()
     mainLayout->addLayout(buttonLayout);
 }
 
+void DiffReviewDialog::setupButtonsForExternalChange()
+{
+    QHBoxLayout* buttonLayout = new QHBoxLayout();
+    QPushButton* reloadButton = new QPushButton(tr("Reload"), this);
+    QPushButton* discardButton = new QPushButton(tr("Discard External Changes"), this);
+    QPushButton* cancelButton = new QPushButton(tr("Cancel"), this);
+
+    connect(reloadButton, &QPushButton::clicked, this, [this]() {
+        selectedResult = Reload;
+        accept();
+    });
+    connect(discardButton, &QPushButton::clicked, this, [this]() {
+        selectedResult = Discard;
+        accept();
+    });
+    connect(cancelButton, &QPushButton::clicked, this, [this]() {
+        selectedResult = Cancel;
+        reject();
+    });
+
+    buttonLayout->addStretch();
+    buttonLayout->addWidget(reloadButton);
+    buttonLayout->addWidget(discardButton);
+    buttonLayout->addWidget(cancelButton);
+    mainLayout->addLayout(buttonLayout);
+}
+
 void DiffReviewDialog::handleLineRestoration(CodeEditor* editor, int lineIndex, const QString& restoredText)
 {
-    const QStringList oldLines = editor->getOriginalLines();
+    const QStringList oldLines = (dialogMode == ExternalFileChange) 
+        ? editor->toPlainText().split('\n') 
+        : editor->getOriginalLines();
     QStringList lines = editor->toPlainText().split('\n');
 
     const auto& diffList = diffWidget->diffData();
