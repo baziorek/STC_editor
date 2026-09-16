@@ -8,6 +8,7 @@
 #include <QStack>
 #include <QScrollBar>
 #include <QTranslator>
+#include <QAction>
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "ui/shortcutsdialog.h"
@@ -92,7 +93,7 @@ QList<QPair<QString, MainWindow::RecentFileInfo>> getSortedExistingRecentFiles(c
 } // namespace
 
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), m_translator(nullptr)
 {    
     ui->setupUi(this);
 
@@ -137,6 +138,10 @@ void MainWindow::connectSignals2Slots()
     connect(ui->textEditor, &QPlainTextEdit::textChanged, ui->stopwatchGroupBox, &WorkAwareStopwatch::notifyWorkActivity);
     connect(ui->textEditor, &CodeEditor::contentReloaded, ui->todosTableWidget, &TodoTrackerTableWidget::scanEntireDocumentDetectingAllTodos);
     connect(ui->menuOpen_recent, &QMenu::aboutToShow, this, &MainWindow::onRecentRecentFilesMenuOpened);
+    
+    // Language switching connections
+    connect(ui->actionEnglish, &QAction::triggered, this, &MainWindow::onLanguageChanged);
+    connect(ui->actionPolish, &QAction::triggered, this, &MainWindow::onLanguageChanged);
 
     ui->breadcrumbTextBrowser->setTextEditor(ui->textEditor);
     ui->breadcrumbTextBrowser->setHeaderTable(ui->contextTableWidget);
@@ -1108,8 +1113,10 @@ void MainWindow::onResumeSessionToggled(bool checked)
     settings.setValue(GeometryNames::RESUME_SESSION, checked);
 }
 
-void MainWindow::onLanguageChanged(QAction* action)
+void MainWindow::onLanguageChanged()
 {
+    QAction* action = qobject_cast<QAction*>(sender());
+    
     QString language = "en"; // default
     
     if (action == ui->actionPolish) {
@@ -1122,20 +1129,31 @@ void MainWindow::onLanguageChanged(QAction* action)
     QSettings settings;
     settings.setValue("language", language);
     
+    // Remove old translator if exists
+    if (m_translator) {
+        QApplication::instance()->removeTranslator(m_translator);
+        delete m_translator;
+        m_translator = nullptr;
+    }
+    
     // Load new translations
-    static QTranslator translator;
-    QApplication::instance()->removeTranslator(&translator);
+    m_translator = new QTranslator(this);
     
     QString translationFile = ":/translations/stc_editor_" + language + ".qm";
-    if (translator.load(translationFile)) {
-        QApplication::instance()->installTranslator(&translator);
+    
+    if (m_translator->load(translationFile)) {
+        QApplication::instance()->installTranslator(m_translator);
     } else {
         qWarning() << "Failed to load translation file for language:" << language;
-        qWarning() << "Tried to load:" << translationFile;
+        delete m_translator;
+        m_translator = nullptr;
     }
     
     // Re-translate UI
     ui->retranslateUi(this);
+    
+    // Update dynamically created UI elements
+    onRecentRecentFilesMenuOpened();
 }
 
 void MainWindow::restoreLastSession()

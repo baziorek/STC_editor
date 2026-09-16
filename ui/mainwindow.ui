@@ -583,22 +583,6 @@
   </action>
  </widget>
  <connections>
-  <connection>
-   <sender>menuLanguage</sender>
-   <signal>triggered(QAction*)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>onLanguageChanged(QAction*)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>399</x>
-     <y>389</y>
-    </hint>
-   </hints>
-  </connection>
  </connections>
  <customwidgets>
   <customwidget>

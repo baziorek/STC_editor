@@ -76,7 +76,7 @@ public slots:
     void onResumeSessionToggled(bool checked);
 
     /// language menu:
-    void onLanguageChanged(QAction* action);
+    void onLanguageChanged();
 
 protected:
     void setDisabledMenuActionsDependingOnOpenedFile(bool disabled=true);
@@ -118,4 +118,6 @@ private: // members
     QString lastDirectory;
 
     QMap<QString, RecentFileInfo> recentFilesWithPositions;
+    
+    QTranslator* m_translator = nullptr;
 };

@@ -106,6 +106,7 @@ Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wyb
 13. **Ukrywalne widgety**: wszystko poza edytorem tekstu można ukryć, dzięki temu pewne funkcje są wyłączone i edytowanie działa szybciej.
 14. **Obsługa różnych kodowań pliku tekstowego**: Nie tylko UTF-8. Jest to dzięki bibliotece [uchardet](https://gitlab.freedesktop.org/uchardet/uchardet).
 15. **Stoper pracy**: stoper, który odpala się po uruchomieniu edytora i liczy zarówno czas kiedy edytor jest włączony, jak i czas pracy w edytorze (wykrywa naciśnięcia klawiszy, gdy ich długo nie ma to się zatrzymuje)
+16. **Obsługa wielu języków**: Obsługuje język angielski i polski.
 
 ## ⬇️ Pobieranie (najnowsza wersja zbudowana automatycznie)
 
@@ -124,36 +125,35 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 
 
 ## Planowane funkcjonalności
-
-1. Bug: po uruchomieniu artykułu nie znajduje TODOsów
-2. MiniBug: Niewidoczny tekst gdy aktywna linia w trybie nie-ciemnym.
-3. Wyszukiwanie wielu słów w tej samej linii niezależnie od kolejności.
+1. Jak mam duży plik otwarty i chcę nowy pusty otworzyć to się ścina, to powinien być moment - wszystko wywalić i otworzyć puste
+2. Wyszukiwanie wielu słów w tej samej linii niezależnie od kolejności.
+3. Historia wprowadzanych zmian (`Ctrl+Z`).
 4. Pobieranie aktualizacji przez https://cpp0x.pl/xml/
-5. Dodać zapamiętywanie loginu i hasła, ewentualnie cookie-from-browser aby nie podawać za każdym razem loginu i hasła.
+5. Szybsze wyjście z aplikacji - po prostu wyjście, bez przywracania stanu niewymagającego zapisu
 6. Integracja analizatora składni C++ (np. [flex](https://github.com/westes/flex)).
 7. Podświetlanie składni Pythona za pomocą [QCXXHighlighter](https://github.com/Megaxela/QCodeEditor) (licencja MIT).
 8. Obsługa różnych kolorowań składni (różne typy plików, bazujące na QCodeEditor).
 9. Wyświetlanie statystyk zmian w czasie rzeczywistym (liczba linii, znaków, rozmiar pliku, linia i kolumna).
-10. Historia wprowadzanych zmian (`Ctrl+Z`).
-11. Szybsze wyjście z aplikacji - po prostu wyjście, bez przywracania stanu niewymagającego zapisu
-12. Integracja dokumentacji cppreference (jak w `cppman` lub QtCreator).
-13. FindWidget - aby aktualizował pozycje w tekście na bieżąco przy dodawaniu/usuwaniu linii.
-14. Szukanie tylko w kodzie
-15. Może AI mi podzieli CodeEditor aby nie był GodObject
+10. Integracja dokumentacji cppreference (jak w `cppman` lub QtCreator).
+11. FindWidget - aby aktualizował pozycje w tekście na bieżąco przy dodawaniu/usuwaniu linii.
+12. Szukanie tylko w kodzie
+13. Może AI mi podzieli CodeEditor aby nie był GodObject
+14. Historia zmian w linii
+15. Gdy zewnętrzne zmiany w pliku to powinno też pokazać diffa.
 16. Ctrl + V gdy mamy obrazek w schowku - wtedy powinno zaproponować umieszczenie obrazka w odpowiednim katalogu
-17. Tłumaczenia aplikacji na wiele języków: QLinguist
+17. Gdy wyświetlamy diffa, ale linie są długie to pojawia się scrolling area, a nie powinna.
 18. Rozważyć użycie tej samej biblioteki do porównywania zarówno linii jak i znaków np. https://github.com/google/diff-match-patch
-19. Podpięcie sztucznej inteligencji np. [Ollama](https://ollama.com)
-20. Przy CTRL + SCROLL wyświetlanie informacji o rozmiarze czcionki (jak QtCreator)
+19. Podpięcie sztucznej inteligencji np. [Ollama](https://ollama.com) lub llama.cpp
+20. Precompiled headers dla CodeEditor.h i moduły
 21. Kreator tabel dla znaczników STC.
 22. PreviewWidget: Śledzenie pozycji między pozycją w dokumencie źródłowym a podglądem HTML
-23. Historia zmian w linii
-24. Precompiled headers dla CodeEditor.h i moduły
-25. IWYU podpiąć pod CMake'a
+23. IWYU podpiąć pod CMake'a
+24. Automatyczne backupy treści
+25. Blokowanie pliku, który się edytuje.
 26. Zwijanie nagłówków i kodu (jak funkcje w środowiskach programistycznych)
-27. Automatyczne backupy treści
+27. Optymalizacja wydajności edytora przy szybkim pisaniu.
 28. W danej linii da się wpisać dane np.: `QTextBlockUserData` i potem `block.setUserData(data);` - może da się to wykorzystać w optymalizacji
-29. Optymalizacja wydajności edytora przy szybkim pisaniu.
+29. A może do szukania błędów (niezamkniętych tagów) zaprzędz analizator składniowy: https://www.antlr.org/ ?
 30. Podgląd terminala np. przez https://github.com/lxqt/qtermwidget - tylko czy mi to nie zrobi GPLa?
 31. Zastąpienie listy kontekstu widżetem drzewiastym.
 32. W linijce gradient ostatnio używanych linii z numerami ile temu
@@ -175,10 +175,8 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 48. Eksport bloków kodu do osobnych plików.
 49. Konsolidacja obrazów do jednego katalogu z aktualizacją ścieżek w znacznikach STC.
 50. Przy porównywaniu difa niezapisanych zmian z zawartością pliku (linijka w linijkę): możliwość zapisania na dysk poszczególnych linii.
-51. Gdy zewnętrzne zmiany w pliku to powinno też pokazać diffa.
-52. Gdy wyświetlamy diffa, ale linie są długie to pojawia się scrolling area, a nie powinna.
-53. Rezultat komendy w edytorze.
-54. Sprawdzania:
+51. Rezultat komendy w edytorze.
+52. Sprawdzania:
      - Sprawdzanie, czy znaczniki `[run]` znajdują się wewnątrz `[pkt]`.
      - Weryfikacja, czy wszystkie znaczniki są zamknięte (np. po opuszczeniu linijki sprawdzamy czy są tam zmiany, jak tak, to czy jest tam nowy tag)
      - Weryfikacja odpowiednich atrybutów w tagach (czy w cudzysłowiu, czy tylko dozwole atrubytu)
@@ -186,14 +184,11 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
      - Sprawdzenie czy link istnieje
      - Dodać check: czy nie zamykam nieotwartego tagu?
      - Sprawdzenie czy Run nie jest poza csv lub pkt
-55. Blokowanie pliku, który się edytuje.
-56. A może do szukania błędów (niezamkniętych tagów) zaprzędz analizator składniowy: https://www.antlr.org/ ?
 
 ## Min Bugi (czyli wcale nie trzebaich poprawiać):
-1. Dopasowanie rozmiaru numeracji linii do wielkości czcionki.
+1. Zmiana wielkości czcionki powinna też wpłynąć na czcionkę w ramach numeracji linii
 2. MiniBug: funkcjonalność zmiany wielkości czcionki zakłóca nowe tagi. Jak powiększymy czcionkę i potem dodamy coś np. H1, to on będzie miał czcionkę nawet mniejszą niż reszta, mimo iż to nagłówek
-3. Zmiana wielkości czcionki powinna też wpłynąć na czcionkę w ramach numeracji linii
-4. Usuwanie całych linii z pliku nie zmienia tytułu okna: jak dodajemy linie lub coś zmieniamy to w tytule okna pokazuje ile linii zmieniono, jednakże gdy linie są usuwaneto nie pokazuje. Trzeba by zmienić sposób wykrywania zmian przez bibliotekę, a następnie zmienić generowany tytuł.
+3. Usuwanie całych linii z pliku nie zmienia tytułu okna: jak dodajemy linie lub coś zmieniamy to w tytule okna pokazuje ile linii zmieniono, jednakże gdy linie są usuwaneto nie pokazuje. Trzeba by zmienić sposób wykrywania zmian przez bibliotekę, a następnie zmienić generowany tytuł.
 
 ## Współpraca
 
