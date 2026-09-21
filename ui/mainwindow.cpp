@@ -843,6 +843,14 @@ void MainWindow::onStopWatchVisibilityChanged(bool visible)
     ui->stopwatchGroupBox->setVisible(visible);
 }
 
+void MainWindow::onRightPanelVisibilityChanged(bool visible)
+{
+    ui->buttonsEmittingStc->setVisible(visible);
+    ui->contextsTabWidget->setVisible(visible);
+    ui->goToLineGroupBox->setVisible(visible);
+    ui->stopwatchGroupBox->setVisible(visible);
+}
+
 void MainWindow::onViewMenuAboutToShow()
 {
     /** this functions is because checkboxes are not visible when there are icons close to actions.
@@ -865,6 +873,7 @@ void MainWindow::onViewMenuAboutToShow()
     changeCheckedState(ui->actionGo_to_line);
     changeCheckedState(ui->actionSTC_Tags_buttons);
     changeCheckedState(ui->actionShort_conspect);
+    changeCheckedState(ui->actionRight_panel);
     changeCheckedState(ui->actionStc_Preview_account_at_Cpp0x_pl_required);
     changeCheckedState(ui->actionStop_watch_uptime_and_working_time);
 }

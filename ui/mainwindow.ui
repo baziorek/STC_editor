@@ -249,6 +249,7 @@
     <addaction name="actionSTC_Tags_buttons"/>
     <addaction name="actionShort_conspect"/>
     <addaction name="actionGo_to_line"/>
+    <addaction name="actionRight_panel"/>
     <addaction name="actionStc_Preview_account_at_Cpp0x_pl_required"/>
     <addaction name="actionStop_watch_uptime_and_working_time"/>
    </widget>
@@ -506,6 +507,9 @@
    <property name="text">
     <string>Stc Preview (account at Cpp0x.pl required) ☐</string>
    </property>
+   <property name="shortcut">
+    <string>F6</string>
+   </property>
   </action>
   <action name="actionReload_file">
    <property name="enabled">
@@ -558,6 +562,23 @@
    </property>
    <property name="text">
     <string>Stop watch (uptime and working time) ☐</string>
+   </property>
+  </action>
+  <action name="actionRight_panel">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="view-right-new"/>
+   </property>
+   <property name="text">
+    <string>Right panel ☑</string>
+   </property>
+   <property name="shortcut">
+    <string>F3</string>
    </property>
   </action>
   <action name="actionResumeSession">
@@ -1052,6 +1073,22 @@
    </hints>
   </connection>
   <connection>
+   <sender>actionRight_panel</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onRightPanelVisibilityChanged(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>243</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
    <sender>actionResumeSession</sender>
    <signal>toggled(bool)</signal>
    <receiver>MainWindow</receiver>
@@ -1096,6 +1133,7 @@
   <slot>onViewMenuAboutToShow()</slot>
   <slot>onRenameFilePressed()</slot>
   <slot>onStopWatchVisibilityChanged(bool)</slot>
+  <slot>onRightPanelVisibilityChanged(bool)</slot>
   <slot>onResumeSessionToggled(bool)</slot>
  </slots>
 </ui>
