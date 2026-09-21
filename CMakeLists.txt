@@ -184,11 +184,13 @@ set(PROJECT_SOURCES
     widgets/BreadcrumbTextBrowser.h widgets/BreadcrumbTextBrowser.cpp
     widgets/RenameFileDialog.h widgets/RenameFileDialog.cpp widgets/RenameFileDialog.ui
     widgets/StcTablesCreator.h widgets/StcTablesCreator.cpp widgets/StcTablesCreator.ui
+    widgets/BackupRecoveryDialog.h widgets/BackupRecoveryDialog.cpp
 
     utils/DiffCalculation.h utils/DiffCalculation.cpp
     utils/FileEncodingHandler.h utils/FileEncodingHandler.cpp
     utils/STCSyntaxHighlighter.h utils/STCSyntaxHighlighter.cpp
     utils/SpellChecker.h utils/SpellChecker.cpp
+    utils/BackupManager.h utils/BackupManager.cpp
 )
 
 set(TEXT_FILES

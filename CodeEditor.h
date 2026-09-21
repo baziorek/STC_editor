@@ -5,6 +5,7 @@
 #include <QFileSystemWatcher>
 #include <QDateTime>
 #include <QString>
+#include <QTimer>
 
 class CodeBlock;
 class FileEncodingHandler;
@@ -82,6 +83,11 @@ public:
     void setSearchHighlights(const QList<QTextEdit::ExtraSelection>& highlights);
 
     void stopWatchingFiles();
+
+    // Backup-related functions
+    void checkForBackupOnLoad();
+    void createBackupTimer();
+    void onBackupTimerTimeout();
 
     // Link-related functions
     void addLinkActionsIfApplicable(QMenu* menu);
@@ -236,6 +242,8 @@ private:
     QSet<int> modifiedLines;
     QDateTime fileModificationTime;
     QDateTime lastChangeTime;
+
+    QTimer* backupTimer;
 
     int currentLine = -1;
 

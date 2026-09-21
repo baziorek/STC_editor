@@ -35,6 +35,8 @@
 #include "StripCppComments/CommentStripper.h"
 #include "widgets/StcTablesCreator.h"
 #include "widgets/DocumentationBrowserDialog.h"
+#include "utils/BackupManager.h"
+#include "widgets/BackupRecoveryDialog.h"
 #include <QIcon>
 
 namespace
@@ -299,7 +301,7 @@ std::optional<StcTagDocumentation> documentationForStcTag(const QString& tagName
 
 
 CodeEditor::CodeEditor(QWidget *parent)
-    : QPlainTextEdit(parent), networkManager{new QNetworkAccessManager(this)}, lineNumberArea{new LineNumberArea(this)}, fileEncodingHandler{std::make_unique<FileEncodingHandler>()}
+    : QPlainTextEdit(parent), networkManager{new QNetworkAccessManager(this)}, lineNumberArea{new LineNumberArea(this)}, fileEncodingHandler{std::make_unique<FileEncodingHandler>()}, backupTimer{new QTimer(this)}
 {
     setAcceptDrops(true);
     setMouseTracking(true);
@@ -309,6 +311,7 @@ CodeEditor::CodeEditor(QWidget *parent)
 
     connectSignalsWithSlots();
 
+    createBackupTimer();
 
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
@@ -334,6 +337,8 @@ void CodeEditor::newEmptyFile()
     codeBlocks = {};
 
     fileEncodingHandler = std::make_unique<FileEncodingHandler>();
+
+    backupTimer->stop();
 
     emit contentReloaded();
 }
@@ -375,6 +380,13 @@ void CodeEditor::connectSignalsWithSlots()
     connect(this, &CodeEditor::textChanged, this, [this]() {
         this->lastChangeTime = QDateTime::currentDateTime();
         updateDiffWithOriginal();
+        
+        // Start backup timer when content changes
+        QString fileName = getFileName();
+        if (!fileName.isEmpty() && !backupTimer->isActive())
+        {
+            backupTimer->start();
+        }
     });
     connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::onCursorPositionChanged);
     connect(document(), &QTextDocument::contentsChange, this, &CodeEditor::onContentsChange);
@@ -557,6 +569,12 @@ bool CodeEditor::loadFileContentDistargingCurrentContent(const QString& fileName
         analizeEntireDocumentDetectingCodeBlocks();
 
         emit contentReloaded();
+
+        // Check for backup after loading
+        checkForBackupOnLoad();
+
+        // Start backup timer for this file
+        backupTimer->start();
 
         return true;
     }
@@ -2711,6 +2729,13 @@ void CodeEditor::markAsSaved()
     emit numberOfModifiedLinesChanged(0);
 
     document()->setModified(false);
+    
+    // Delete backup after successful save
+    QString fileName = getFileName();
+    if (!fileName.isEmpty())
+    {
+        BackupManager::deleteBackup(fileName);
+    }
 }
 
 QString CodeEditor::getFileModificationInfoText() const
@@ -3002,4 +3027,70 @@ void CodeEditor::setSearchHighlights(const QList<QTextEdit::ExtraSelection>& hig
     // Store persistent search highlights and update the display
     persistentSearchHighlights = highlights;
     highlightCurrentLine(); // This will merge and display highlights
+}
+
+void CodeEditor::createBackupTimer()
+{
+    // Create a timer that saves backup every 30 seconds if there are unsaved changes
+    backupTimer->setInterval(30000); // 30 seconds
+    connect(backupTimer, &QTimer::timeout, this, &CodeEditor::onBackupTimerTimeout);
+}
+
+void CodeEditor::onBackupTimerTimeout()
+{
+    QString fileName = getFileName();
+    if (!fileName.isEmpty() && isContentModified())
+    {
+        qDebug() << "Creating automatic backup for:" << fileName;
+        BackupManager::createBackup(fileName, toPlainText());
+        // Timer continues running for periodic backups
+    }
+    else
+    {
+        // Stop timer if no unsaved changes or no file
+        backupTimer->stop();
+    }
+}
+
+void CodeEditor::checkForBackupOnLoad()
+{
+    QString fileName = getFileName();
+    if (fileName.isEmpty())
+        return;
+
+    if (BackupManager::backupExists(fileName))
+    {
+        qDebug() << "Backup found for:" << fileName;
+        
+        QString backupContent = BackupManager::loadBackup(fileName);
+        if (backupContent.isEmpty())
+        {
+            qWarning() << "Failed to load backup content for:" << fileName;
+            return;
+        }
+
+        // Show recovery dialog
+        BackupRecoveryDialog dialog(this, fileName, backupContent, this);
+        int result = dialog.exec();
+
+        if (result == QDialog::Accepted)
+        {
+            BackupRecoveryDialog::Result choice = dialog.userChoice();
+            
+            if (choice == BackupRecoveryDialog::RestoreBackup)
+            {
+                // Restore from backup
+                setPlainText(backupContent);
+                document()->setModified(true);
+                qDebug() << "Restored content from backup for:" << fileName;
+            }
+            else if (choice == BackupRecoveryDialog::DiscardBackup)
+            {
+                // Delete backup and continue with current file
+                BackupManager::deleteBackup(fileName);
+                qDebug() << "Discarded backup for:" << fileName;
+            }
+            // If Cancel, do nothing
+        }
+    }
 }
