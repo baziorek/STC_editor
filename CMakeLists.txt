@@ -181,6 +181,7 @@ set(PROJECT_SOURCES
     widgets/StcPreview.h widgets/StcPreview.cpp
     widgets/DiffViewerWidget.h widgets/DiffViewerWidget.cpp
     widgets/DiffReviewDialog.h widgets/DiffReviewDialog.cpp
+    widgets/PastedTextDiffDialog.h widgets/PastedTextDiffDialog.cpp
     widgets/BreadcrumbTextBrowser.h widgets/BreadcrumbTextBrowser.cpp
     widgets/RenameFileDialog.h widgets/RenameFileDialog.cpp widgets/RenameFileDialog.ui
     widgets/StcTablesCreator.h widgets/StcTablesCreator.cpp widgets/StcTablesCreator.ui

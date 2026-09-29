@@ -225,6 +225,8 @@
     </property>
     <addaction name="actionFind"/>
     <addaction name="actionFind_replace"/>
+    <addaction name="separator"/>
+    <addaction name="actionCompare_with_pasted_text"/>
    </widget>
    <widget class="QMenu" name="menuCheck">
     <property name="title">
@@ -337,6 +339,17 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="actionCompare_with_pasted_text">
+   <property name="text">
+    <string>Compare with pasted text...</string>
+   </property>
+   <property name="toolTip">
+    <string>Paste a new version of the text and see the diff against the editor content</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+D</string>
    </property>
   </action>
   <action name="actionFind_replace">
@@ -913,6 +926,22 @@
    </hints>
   </connection>
   <connection>
+   <sender>actionCompare_with_pasted_text</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onCompareWithPastedTextRequested()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>242</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
    <sender>actionFile_statistics</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
@@ -1106,6 +1135,7 @@
   </connection>
  </connections>
  <slots>
+  <slot>onCompareWithPastedTextRequested()</slot>
   <slot>onSaveAsPressed()</slot>
   <slot>onOpenPressed()</slot>
   <slot>onFindCheckChanged(bool)</slot>

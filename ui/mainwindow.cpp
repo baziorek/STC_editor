@@ -9,8 +9,6 @@
 #include <QScrollBar>
 #include <QTranslator>
 #include <QAction>
-#include <QString>
-#include <QRegularExpression>
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "ui/shortcutsdialog.h"
@@ -21,6 +19,7 @@
 #include "types/documentstatistics.h"
 #include "widgets/LoginDialog.h"
 #include "widgets/DiffReviewDialog.h"
+#include "widgets/PastedTextDiffDialog.h"
 #include "widgets/RenameFileDialog.h"
 using namespace std;
 
@@ -342,6 +341,7 @@ QAction* MainWindow::createRecentFileAction(const QString& filePath, const Recen
             return;
         }
 
+        updateRecentFiles(filePath);
         onRecentRecentFilesMenuOpened();
         loadFileContentToEditorDistargingCurrentContent(filePath);
 
@@ -434,6 +434,12 @@ void MainWindow::onFileStatsRequested()
 {
     auto result = DocumentStatistics::analyze(ui->textEditor);
     QMessageBox::information(this, tr("File statistics"), result.toQString());
+}
+
+void MainWindow::onCompareWithPastedTextRequested()
+{
+    PastedTextDiffDialog dialog(ui->textEditor, this);
+    dialog.exec();
 }
 
 void MainWindow::onFindTriggered(bool checked)
@@ -552,12 +558,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
     if (operationWhichDiscardsChangesRequestedReturningIfDiscarded(
             tr("Close without saving?"), tr("Do You really want to close the editor without saving unsaved changes?")))
     {
-        // Update cursor position before saving settings
-        if (!ui->textEditor->getFileName().isEmpty())
-        {
-            updateRecentFiles(ui->textEditor->getFileName());
-        }
-        saveSettings();
         QWidget::closeEvent(event);
     }
     else
@@ -723,7 +723,6 @@ void MainWindow::onOpenPressed()
         ui->contextTableWidget->clear();
 
         loadFileContentToEditorDistargingCurrentContent(fileName);
-        updateRecentFiles(fileName);
     }
 }
 
@@ -742,7 +741,6 @@ void MainWindow::onReloadFilePressed()
     }
 
     ui->textEditor->reloadFromFile(/*discardChanges=*/true);
-    updateRecentFiles(ui->textEditor->getFileName());
 }
 
 void MainWindow::onRenameFilePressed()
@@ -773,12 +771,11 @@ bool MainWindow::loadFileContentToEditorDistargingCurrentContent(const QString& 
         updateWindowTitle(fileName);
 
         ui->actionReload_file->setEnabled(true);
+        updateRecentFiles(fileName);
 
         ui->contextTableWidget->rebuildAllHeaders();
 
         setTodosCounterValue(ui->todosTableWidget->getTodosTotalCount());
-
-        updateRecentFiles(fileName);
 
         return true;
     }

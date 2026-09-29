@@ -43,11 +43,12 @@ namespace syntax
     const QRegularExpression imgAttributeDescRe(R"__(opis="([^"]*)")__");
     const QRegularExpression imgAttributeAutofitRe(R"__(\bautofit\b)__");
     // others
-    const QRegularExpression baseFormatting_boldItalicUnderlineStrikeRe(R"(\[(b|i|u|s)\])");
+    const QRegularExpression baseFormatting_boldItalicUnderlineStrikeRe(R"(\[(b|i|u|s|tt)\])");
     const QRegularExpression boldCloseRe(R"(\[/b\])");
     const QRegularExpression italicCloseRe(R"(\[/i\])");
     const QRegularExpression underlineCloseRe(R"(\[/u\])");
     const QRegularExpression strikeOutCloseRe(R"(\[/s\])");
+    const QRegularExpression teleTypeCloseRe(R"(\[/tt\])");
 
     // const QRegularExpression wordWithPolishCharactersRe(R"(\b\p{L}+(?:[-']\p{L}+)*\b)"); - it does not catch polish
     const QRegularExpression wordWithPolishCharactersRe(R"([A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż]{2,})");

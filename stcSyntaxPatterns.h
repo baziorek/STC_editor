@@ -33,6 +33,7 @@ namespace syntax
     extern const QRegularExpression italicCloseRe;
     extern const QRegularExpression underlineCloseRe;
     extern const QRegularExpression strikeOutCloseRe;
+    extern const QRegularExpression teleTypeCloseRe;
 
     extern const QRegularExpression wordWithPolishCharactersRe;
 } // namespace syntax

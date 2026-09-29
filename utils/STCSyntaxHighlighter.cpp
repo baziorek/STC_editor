@@ -37,6 +37,8 @@ enum BlockState // TODO: Why not to use `enum class StcTags: std::uint32_t` inst
     STATE_STYLE_STRIKE    = 0x10000,
 
     STATE_CODE_CPP_COMMENT= 0x20000,
+
+    STATE_STYLE_TELETYPE  = 0x40000,
 };
 
 constexpr bool PRINT_DEBUG = false; // TODO: Remove when formatting fully works
@@ -850,6 +852,12 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
         f = QTextCharFormat(); f.setFontUnderline(true); map["u"] = f;
         f = QTextCharFormat(); f.setFontStrikeOut(true); map["s"] = f;
 
+        f = QTextCharFormat();
+        f.setFontFixedPitch(true);
+        f.setFontStyleHint(QFont::Monospace);
+        f.setFontFamilies({"Monospace"});
+        map["tt"] = f;
+
         return map;
     }();
 
@@ -859,6 +867,7 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
          { "i", STATE_STYLE_ITALIC },
          { "u", STATE_STYLE_UNDERLINE },
          { "s", STATE_STYLE_STRIKE },
+         { "tt", STATE_STYLE_TELETYPE },
          };
 
     static const QMap<QString, QRegularExpression> closeRes =
@@ -867,6 +876,7 @@ bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)
          { "i", stc::syntax::italicCloseRe },
          { "u", stc::syntax::underlineCloseRe },
          { "s", stc::syntax::strikeOutCloseRe },
+         { "tt", stc::syntax::teleTypeCloseRe },
          };
 
     static QTextCharFormat tagFmt = [] {
@@ -990,6 +1000,12 @@ void STCSyntaxHighlighter::setFormatKeepingBackground(int contentStart, int cont
         baseFmt.setFontItalic(format.fontItalic());
         baseFmt.setFontUnderline(format.fontUnderline());
         baseFmt.setFontStrikeOut(format.fontStrikeOut());
+        if (format.fontFixedPitch()) // [tt]: monospace font, keeps size and colors
+        {
+            baseFmt.setFontFixedPitch(true);
+            baseFmt.setFontStyleHint(format.fontStyleHint());
+            baseFmt.setFontFamilies(format.fontFamilies().toStringList());
+        }
         setFormat(i, 1, baseFmt);
     }
 }
