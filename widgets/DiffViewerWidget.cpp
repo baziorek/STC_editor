@@ -2,9 +2,65 @@
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QTextBrowser>
+#include <QTextDocument>
 #include <QLabel>
+#include <algorithm>
+#include <cmath>
 #include "DiffViewerWidget.h"
 #include "utils/DiffCalculation.h"
+
+
+namespace
+{
+using namespace DiffCalculation;
+
+constexpr int cellPadding = 4;      // text distance from the cell border, the same for both sides
+constexpr int buttonRowHeight = 30; // a row always has room for the 24 px buttons
+constexpr int blockHeaderHeight = 36;
+
+/// Equal text as is; the fragments of `changeType` (deleted on the old side, inserted on the new side) in `changeStyle`
+QString styledHtml(const QList<LineDiffFragment> &fragments, FragmentType changeType, const QString &changeStyle)
+{
+    QString html;
+    for (const auto &frag : fragments)
+    {
+        const QString escaped = frag.text.toHtmlEscaped();
+        if (frag.type == FragmentType::Equal)
+            html += escaped;
+        else if (frag.type == changeType)
+            html += "<span style='" + changeStyle + "'>" + escaped + "</span>";
+    }
+    return html;
+}
+
+/// Unicode code points of the line - helps to spot invisible differences (non-breaking spaces, ...)
+QString codePointsTooltip(const QList<LineDiffFragment> &fragments, FragmentType changeType, const QString &changeColor)
+{
+    QString tooltip;
+    for (const auto &frag : fragments)
+    {
+        const QString color = (frag.type == changeType)         ? changeColor
+                              : (frag.type == FragmentType::Equal) ? "gray"
+                                                                   : "black"; // fallback
+        for (const auto &ch : frag.text)
+        {
+            tooltip += QString("<span style='color:%1'>U+%2</span> ")
+                           .arg(color)
+                           .arg(QString::number(ch.unicode(), 16).toUpper().rightJustified(4, '0'));
+        }
+    }
+    return tooltip.trimmed();
+}
+
+QPushButton *makeSquareButton(QWidget *parent, const QString &text, const QString &tooltip)
+{
+    auto *button = new QPushButton(text, parent);
+    button->setToolTip(tooltip);
+    button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    button->setFixedSize(24, 24);
+    return button;
+}
+} // namespace
 
 
 DiffViewerWidget::DiffViewerWidget(QWidget *parent) : QTableWidget(parent)
@@ -19,6 +75,7 @@ DiffViewerWidget::DiffViewerWidget(QWidget *parent) : QTableWidget(parent)
     horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeToContents); // Restore button
 
     verticalHeader()->setVisible(false);
+    verticalHeader()->setSectionResizeMode(QHeaderView::Fixed); // heights are set by updateRowHeights()
     setEditTriggers(QAbstractItemView::NoEditTriggers);
     setSelectionMode(QAbstractItemView::NoSelection);
 
@@ -29,113 +86,176 @@ DiffViewerWidget::DiffViewerWidget(QWidget *parent) : QTableWidget(parent)
     horizontalHeaderItem(2)->setToolTip("Line number of new file");
     horizontalHeaderItem(3)->setToolTip("Line content of new file");
     horizontalHeaderItem(4)->setToolTip("Buttons to restore to original");
+
+    // The text wraps at the column width, so the row heights follow the column widths
+    rowHeightsTimer.setSingleShot(true);
+    rowHeightsTimer.setInterval(0);
+    connect(&rowHeightsTimer, &QTimer::timeout, this, &DiffViewerWidget::updateRowHeights);
+    connect(horizontalHeader(), &QHeaderView::sectionResized, this, &DiffViewerWidget::scheduleRowHeights);
 }
 
 DiffViewerWidget::~DiffViewerWidget() = default;
 
+void DiffViewerWidget::showEvent(QShowEvent *event)
+{
+    QTableWidget::showEvent(event);
+    scheduleRowHeights();
+}
+
+void DiffViewerWidget::scheduleRowHeights()
+{
+    rowHeightsTimer.start();
+}
+
+/// Row height = the higher of the two texts (wrapped at the current column width); both cells fill the whole row,
+/// so the old and the new side always have the same height.
+void DiffViewerWidget::updateRowHeights()
+{
+    const int width1 = columnWidth(1);
+    const int width3 = columnWidth(3);
+
+    if (!rowHeightsDirty && width1 == lastColumn1Width && width3 == lastColumn3Width)
+        return;
+
+    lastColumn1Width = width1;
+    lastColumn3Width = width3;
+    rowHeightsDirty = false;
+
+    for (int row = 0; row < rowCount() && row < tableRowToDiff.size(); ++row)
+    {
+        if (tableRowToDiff[row] < 0) // block header
+        {
+            setRowHeight(row, blockHeaderHeight);
+            continue;
+        }
+
+        int height = buttonRowHeight;
+
+        if (auto *oldLabel = qobject_cast<QLabel *>(cellWidget(row, 1)))
+            height = std::max(height, oldLabel->heightForWidth(std::max(10, width1 - 1)));
+
+        if (auto *newBrowser = qobject_cast<QTextBrowser *>(cellWidget(row, 3)))
+        {
+            QTextDocument *doc = newBrowser->document();
+            doc->setTextWidth(std::max(10, width3 - 1));
+            height = std::max(height, static_cast<int>(std::ceil(doc->size().height())));
+        }
+
+        setRowHeight(row, height + 1); // + the grid line
+    }
+}
+
 void DiffViewerWidget::setDiffData(const QList<DiffCalculation::LineDiffResult> &diffs)
 {
-    using namespace DiffCalculation;
+    const bool showBlocks = (rowActions == RowActions::AcceptOrDiscardChange);
 
-    setRowCount(diffs.size());
-
-    for (int row = 0; row < diffs.size(); ++row)
+    // Table rows: every diff is one row; a block additionally gets a header row above its first diff
+    QVector<int> blockStartingAt(diffs.size(), -1);
+    int headerCount = 0;
+    if (showBlocks)
     {
-        const auto &diff = diffs[row];
+        for (int b = 0; b < blocks.size(); ++b)
+        {
+            const auto &block = blocks[b];
+            if (block.firstRow >= 0 && block.lastRow > block.firstRow && block.lastRow < diffs.size())
+            {
+                blockStartingAt[block.firstRow] = b;
+                ++headerCount;
+            }
+        }
+    }
+
+    setRowCount(0); // also deletes the cell widgets of the previous data
+    clearSpans();
+    setRowCount(diffs.size() + headerCount);
+
+    tableRowToDiff.clear();
+    tableRowToDiff.reserve(diffs.size() + headerCount);
+
+    int row = 0;
+    for (int diffIndex = 0; diffIndex < diffs.size(); ++diffIndex)
+    {
+        if (blockStartingAt[diffIndex] >= 0)
+        {
+            const int blockIndex = blockStartingAt[diffIndex];
+
+            auto *header = new QWidget(this);
+            header->setObjectName("blockHeader");
+            header->setAttribute(Qt::WA_StyledBackground, true);
+            header->setStyleSheet("#blockHeader { background: #dbe5f1; }");
+
+            auto *headerLayout = new QHBoxLayout(header);
+            headerLayout->setContentsMargins(6, 2, 6, 2);
+
+            auto *title = new QLabel(blocks[blockIndex].title, header);
+            QFont bold = title->font();
+            bold.setBold(true);
+            title->setFont(bold);
+            headerLayout->addWidget(title, 1);
+
+            const int rowsInBlock = blocks[blockIndex].lastRow - blocks[blockIndex].firstRow + 1;
+            auto *acceptBlock = new QPushButton(tr("← Apply block"), header);
+            acceptBlock->setToolTip(tr("Apply all %1 changes of this block to the editor at once").arg(rowsInBlock));
+            auto *discardBlock = new QPushButton(tr("→ Discard block"), header);
+            discardBlock->setToolTip(tr("Discard all %1 changes of this block (keep the editor's lines)").arg(rowsInBlock));
+            headerLayout->addWidget(acceptBlock);
+            headerLayout->addWidget(discardBlock);
+
+            connect(acceptBlock, &QPushButton::clicked, this, [this, blockIndex]() { emit blockAccepted(blockIndex); });
+            connect(discardBlock, &QPushButton::clicked, this, [this, blockIndex]() { emit blockDiscarded(blockIndex); });
+
+            setSpan(row, 0, 1, columnCount());
+            setCellWidget(row, 0, header);
+            tableRowToDiff.append(-1);
+            ++row;
+        }
+
+        const auto &diff = diffs[diffIndex];
 
         // Old line number
         auto *oldLineItem = new QTableWidgetItem();
         if (diff.oldLineIndex >= 0)
             oldLineItem->setText(QString::number(diff.oldLineIndex + 1));
+        oldLineItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignTop);
         setItem(row, 0, oldLineItem);
 
-        // Old line text
-        QString oldStyled;
-        for (const auto &frag : diff.oldFragments)
+        // Old line text (nothing to show for an added line)
+        if (!diff.oldFragments.isEmpty())
         {
-            QString escaped = frag.text.toHtmlEscaped();
-            switch (frag.type)
-            {
-            case FragmentType::Equal:
-                oldStyled += escaped;
-                break;
-            case FragmentType::Delete:
-                oldStyled += "<span style='color:red;text-decoration:line-through'>" + escaped + "</span>";
-                break;
-            default:
-                break;
-            }
+            auto *oldLabel = new QLabel(styledHtml(diff.oldFragments, FragmentType::Delete, "color:red;text-decoration:line-through"));
+            oldLabel->setTextFormat(Qt::RichText);
+            oldLabel->setWordWrap(true);
+            oldLabel->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+            oldLabel->setMargin(cellPadding);
+            oldLabel->setToolTip(codePointsTooltip(diff.oldFragments, FragmentType::Delete, "red"));
+            setCellWidget(row, 1, oldLabel);
         }
-        auto *oldLabel = new QLabel(oldStyled);
-        oldLabel->setTextFormat(Qt::RichText);
-        oldLabel->setWordWrap(true);
-        setCellWidget(row, 1, oldLabel);
-
-        QString oldTooltip;
-        for (const auto &frag : diff.oldFragments)
-        {
-            const QString color = (frag.type == FragmentType::Delete) ? "red"
-                                  : (frag.type == FragmentType::Equal) ? "gray"
-                                                                       : "black";  // fallback
-            for (const auto &ch : frag.text)
-            {
-                oldTooltip += QString("<span style='color:%1'>U+%2</span> ")
-                .arg(color)
-                    .arg(QString::number(ch.unicode(), 16).toUpper().rightJustified(4, '0'));
-            }
-        }
-        oldLabel->setToolTip(oldTooltip.trimmed());
-
 
         // New line number
         auto *newLineItem = new QTableWidgetItem();
         if (diff.newLineIndex >= 0)
             newLineItem->setText(QString::number(diff.newLineIndex + 1));
+        newLineItem->setTextAlignment(Qt::AlignHCenter | Qt::AlignTop);
         setItem(row, 2, newLineItem);
 
-        // New editable line
-        QString newStyled;
-        for (const auto &frag : diff.newFragments)
+        // New line text (nothing to show for a removed line)
+        if (!diff.newFragments.isEmpty())
         {
-            QString escaped = frag.text.toHtmlEscaped();
-            switch (frag.type)
-            {
-            case FragmentType::Equal:
-                newStyled += escaped;
-                break;
-            case FragmentType::Insert:
-                newStyled += "<span style='color:green'>" + escaped + "</span>";
-                break;
-            default:
-                break;
-            }
+            auto *newEdit = new QTextBrowser(this);
+            newEdit->setFrameShape(QFrame::NoFrame); // no frame, no scrollbars: the row is as high as the text
+            newEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+            newEdit->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+            newEdit->document()->setDocumentMargin(cellPadding);
+            newEdit->setHtml(styledHtml(diff.newFragments, FragmentType::Insert, "color:green"));
+            newEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+            newEdit->setToolTip(codePointsTooltip(diff.newFragments, FragmentType::Insert, "green"));
+            newEdit->setCursor(Qt::PointingHandCursor);
+            connect(newEdit, &QTextBrowser::cursorPositionChanged, this, [this, diff]() {
+                if (diff.newLineIndex >= 0)
+                    emit jumpToLineInEditor(diff.newLineIndex);
+            });
+            setCellWidget(row, 3, newEdit);
         }
-
-        auto *newEdit = new QTextBrowser(this);
-        newEdit->setHtml(newStyled);
-        newEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-        setCellWidget(row, 3, newEdit);
-
-        QString newTooltip;
-        for (const auto &frag : diff.newFragments)
-        {
-            const QString color = (frag.type == FragmentType::Insert) ? "green"
-                                  : (frag.type == FragmentType::Equal) ? "gray"
-                                                                       : "black";  // fallback
-            for (const auto &ch : frag.text)
-            {
-                newTooltip += QString("<span style='color:%1'>U+%2</span> ")
-                .arg(color)
-                    .arg(QString::number(ch.unicode(), 16).toUpper().rightJustified(4, '0'));
-            }
-        }
-        newEdit->setToolTip(newTooltip.trimmed());
-
-        newEdit->setCursor(Qt::PointingHandCursor);
-        connect(newEdit, &QTextBrowser::cursorPositionChanged, this, [this, diff]() {
-            if (diff.newLineIndex >= 0)
-                emit jumpToLineInEditor(diff.newLineIndex);
-        });
 
         if (rowActions == RowActions::AcceptOrDiscardChange)
         {
@@ -145,34 +265,25 @@ void DiffViewerWidget::setDiffData(const QList<DiffCalculation::LineDiffResult> 
             auto *boxLayout = new QHBoxLayout(box);
             boxLayout->setContentsMargins(2, 0, 2, 0);
             boxLayout->setSpacing(2);
+            boxLayout->setAlignment(Qt::AlignTop);
 
-            auto makeButton = [box, boxLayout](const QString &text, const QString &tooltip) {
-                auto *button = new QPushButton(text, box);
-                button->setToolTip(tooltip);
-                button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-                button->setFixedSize(24, 24);
-                boxLayout->addWidget(button);
-                return button;
-            };
-
-            auto *acceptBtn = makeButton("←", tr("Apply this change to the editor (take the right-hand line)"));
-            auto *discardBtn = makeButton("→", tr("Discard this change (keep the editor's line)"));
-            connect(acceptBtn, &QPushButton::clicked, this, [this, row]() { emit changeAccepted(row); });
-            connect(discardBtn, &QPushButton::clicked, this, [this, row]() { emit changeDiscarded(row); });
+            auto *acceptBtn = makeSquareButton(box, "←", tr("Apply this change to the editor (take the right-hand line)"));
+            auto *discardBtn = makeSquareButton(box, "→", tr("Discard this change (keep the editor's line)"));
+            boxLayout->addWidget(acceptBtn);
+            boxLayout->addWidget(discardBtn);
+            connect(acceptBtn, &QPushButton::clicked, this, [this, diffIndex]() { emit changeAccepted(diffIndex); });
+            connect(discardBtn, &QPushButton::clicked, this, [this, diffIndex]() { emit changeDiscarded(diffIndex); });
 
             setCellWidget(row, 4, box);
         }
         else
         {
             // Restore button
-            QPushButton *restoreBtn = new QPushButton("↩", this);
-            restoreBtn->setToolTip("Restore original line");
+            QPushButton *restoreBtn = makeSquareButton(this, "↩", "Restore original line");
             connect(restoreBtn, &QPushButton::clicked, this, [this, diff]() {
                 int lineIndexToRestore = (diff.newLineIndex >= 0) ? diff.newLineIndex : diff.oldLineIndex;
                 emit lineRestored(lineIndexToRestore, diff.oldText());
             });
-            restoreBtn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-            restoreBtn->setFixedSize(24, 24);
             setCellWidget(row, 4, restoreBtn);
         }
 
@@ -200,9 +311,14 @@ void DiffViewerWidget::setDiffData(const QList<DiffCalculation::LineDiffResult> 
                 }
             }
         }
+
+        tableRowToDiff.append(diffIndex);
+        ++row;
     }
 
-    resizeRowsToContents();
-
     currentDiffs = diffs;
+
+    rowHeightsDirty = true;
+    updateRowHeights(); // right away for what is known now ...
+    scheduleRowHeights(); // ... and again once the layout has settled
 }
