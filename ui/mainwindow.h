@@ -40,6 +40,7 @@ public slots:
     void onFileContentChanged(const QString& fileName, int changedLines);
 
     void onShowStcPreviewTriggered();
+    void onCopyPreviewHtmlRequested();
 
     /// file menu:
     void onNewFilePressed();

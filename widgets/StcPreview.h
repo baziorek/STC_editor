@@ -31,6 +31,11 @@
  * On successful login and token retrieval, the CSS used by cpp0x.pl is fetched
  * and embedded directly into the HTML preview for consistent appearance.
  *
+ * ### Copying the rendered HTML:
+ * `copyRenderedHtmlToClipboard()` (also available from the preview's context menu) puts the HTML fragment
+ * returned by cpp0x.pl for the current text on the clipboard - handy for pasting it into a bug report
+ * or a conversation. It is the same fragment that is placed inside the preview's `#Preview` container.
+ *
  * ### Statistics:
  * For debugging or diagnostics, you can access request statistics via `getStats()`.
  *
@@ -72,6 +77,16 @@ public:
         return isInitialized;
     }
 
+    /// The HTML fragment cpp0x.pl returned for the most recently rendered text (empty until the first render)
+    const QString &renderedHtml() const
+    {
+        return latestHtml;
+    }
+
+    /// Puts renderedHtml() on the clipboard and shows a short tooltip with the result.
+    /// @return false when there is nothing to copy yet
+    bool copyRenderedHtmlToClipboard();
+
 signals:
     void htmlReady(const QString &html);
 
@@ -83,6 +98,8 @@ protected:
     void fetchStcSecurityToken();
     void loadCssAndInitialize();
     void sendTextRequest(const QString &text);
+    void showRenderedHtml(const QString &html);
+    void showPreviewContextMenu(const QPoint &position);
     void scheduleTextUpdate();
     QString escapeHtmlToJsString(const QString &html);
 
@@ -101,6 +118,8 @@ private:
     QNetworkAccessManager network;
     QString securityToken;
     QString baseCss;
+
+    QString latestHtml;
 
     QString pendingText;
     QString lastSentText;

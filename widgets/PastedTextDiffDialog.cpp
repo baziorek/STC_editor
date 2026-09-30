@@ -9,6 +9,7 @@
 #include <QSplitter>
 #include <QTextBlock>
 #include <QTextCursor>
+#include <QTextDocument>
 #include <QVBoxLayout>
 #include <algorithm>
 #include "PastedTextDiffDialog.h"
@@ -31,6 +32,65 @@ QString matchTrailingNewline(QString pasted, const QString &reference)
         pasted += '\n';
 
     return pasted;
+}
+
+// --- line-level edits of a QTextDocument (block == line); callers group them in an edit block ---
+
+void replaceLine(QTextDocument *doc, int index, const QString &text)
+{
+    const QTextBlock block = doc->findBlockByNumber(index);
+    if (!block.isValid())
+        return;
+
+    QTextCursor cursor(block);
+    cursor.movePosition(QTextCursor::StartOfBlock);
+    cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+    cursor.insertText(text); // an empty text just removes the selection
+}
+
+void removeLine(QTextDocument *doc, int index)
+{
+    const QTextBlock block = doc->findBlockByNumber(index);
+    if (!block.isValid())
+        return;
+
+    QTextCursor cursor(doc);
+    const int blockTextEnd = block.position() + block.length() - 1;
+
+    if (block.previous().isValid())
+    {
+        // the separator before this line goes away together with its text
+        cursor.setPosition(block.previous().position() + block.previous().length() - 1);
+        cursor.setPosition(blockTextEnd, QTextCursor::KeepAnchor);
+    }
+    else if (block.next().isValid())
+    {
+        cursor.setPosition(block.position());
+        cursor.setPosition(block.next().position(), QTextCursor::KeepAnchor);
+    }
+    else // the only line
+    {
+        cursor.setPosition(block.position());
+        cursor.setPosition(blockTextEnd, QTextCursor::KeepAnchor);
+    }
+    cursor.removeSelectedText();
+}
+
+/// afterIndex == -1 inserts before the first line
+void insertLineAfter(QTextDocument *doc, int afterIndex, const QString &text)
+{
+    QTextCursor cursor(doc);
+
+    if (afterIndex < 0)
+    {
+        cursor.setPosition(0);
+        cursor.insertText(text + '\n');
+        return;
+    }
+
+    const QTextBlock block = doc->findBlockByNumber(std::min(afterIndex, doc->blockCount() - 1));
+    cursor.setPosition(block.position() + block.length() - 1);
+    cursor.insertText('\n' + text);
 }
 } // namespace
 
@@ -71,13 +131,19 @@ PastedTextDiffDialog::PastedTextDiffDialog(CodeEditor *editor, QWidget *parent)
     statsLabel = new QLabel(diffContainer);
     diffLayout->addWidget(statsLabel);
 
+    auto *hintLabel = new QLabel(tr("← apply this change to the editor    → discard this change (keep the editor's line)"), diffContainer);
+    hintLabel->setStyleSheet("color: gray");
+    diffLayout->addWidget(hintLabel);
+
     diffWidget = new DiffViewerWidget(diffContainer);
+    diffWidget->setRowActions(DiffViewerWidget::RowActions::AcceptOrDiscardChange);
     diffWidget->setHorizontalHeaderLabels({tr("Editor #"), tr("Editor line"), tr("Pasted #"), tr("Pasted line"), QString()});
     diffWidget->horizontalHeaderItem(0)->setToolTip(tr("Line number in the editor"));
     diffWidget->horizontalHeaderItem(1)->setToolTip(tr("Line content in the editor (current)"));
     diffWidget->horizontalHeaderItem(2)->setToolTip(tr("Line number in the pasted text"));
     diffWidget->horizontalHeaderItem(3)->setToolTip(tr("Line content in the pasted text"));
-    diffWidget->setColumnHidden(4, true); // "restore original line" makes no sense here
+    connect(diffWidget, &DiffViewerWidget::changeAccepted, this, &PastedTextDiffDialog::acceptChange);
+    connect(diffWidget, &DiffViewerWidget::changeDiscarded, this, &PastedTextDiffDialog::discardChange);
     diffLayout->addWidget(diffWidget, 1);
 
     splitter->addWidget(pasteContainer);
@@ -88,7 +154,7 @@ PastedTextDiffDialog::PastedTextDiffDialog(CodeEditor *editor, QWidget *parent)
     // --- buttons ---
     auto *buttonLayout = new QHBoxLayout();
     applyButton = new QPushButton(tr("Apply pasted text to editor"), this);
-    applyButton->setToolTip(tr("Replaces the editor content with the pasted text (can be undone with Ctrl+Z)"));
+    applyButton->setToolTip(tr("Replaces the whole editor content with the pasted text (can be undone with Ctrl+Z)"));
     auto *closeButton = new QPushButton(tr("Close"), this);
     buttonLayout->addStretch();
     buttonLayout->addWidget(applyButton);
@@ -127,8 +193,11 @@ void PastedTextDiffDialog::recomputeDiff()
 {
     recomputeTimer.stop();
 
+    const int keptScroll = diffWidget->verticalScrollBar()->value();
+
     if (pasteEdit->toPlainText().isEmpty())
     {
+        fullDiff.clear();
         diffWidget->setDiffData({});
         statsLabel->setText(tr("Paste the new version of the text above."));
         applyButton->setEnabled(false);
@@ -138,8 +207,8 @@ void PastedTextDiffDialog::recomputeDiff()
     const QStringList oldLines = editor->toPlainText().split('\n');
     const QStringList newLines = pastedTextMatchingEditorEnding().split('\n');
 
-    const auto diffLines = DiffCalculation::computeDiff(oldLines, newLines);
-    const auto diffs = DiffCalculation::computeModifiedLineDiffs(diffLines);
+    fullDiff = DiffCalculation::computeDiff(oldLines, newLines);
+    const auto diffs = DiffCalculation::computeModifiedLineDiffs(fullDiff);
 
     int added = 0, removed = 0, modified = 0;
     for (const auto &diff : diffs)
@@ -153,6 +222,7 @@ void PastedTextDiffDialog::recomputeDiff()
     }
 
     diffWidget->setDiffData(diffs);
+    diffWidget->verticalScrollBar()->setValue(keptScroll); // stay where the user was after accepting/discarding a change
 
     if (diffs.isEmpty())
         statsLabel->setText(tr("No differences - the pasted text is identical to the editor content."));
@@ -161,6 +231,107 @@ void PastedTextDiffDialog::recomputeDiff()
                                 .arg(modified).arg(added).arg(removed));
 
     applyButton->setEnabled(!diffs.isEmpty());
+}
+
+const DiffCalculation::DiffLine *PastedTextDiffDialog::findFullDiffLine(int oldIndex, int newIndex, int *position) const
+{
+    for (size_t i = 0; i < fullDiff.size(); ++i)
+    {
+        if (fullDiff[i].oldIndex == oldIndex && fullDiff[i].newIndex == newIndex)
+        {
+            if (position)
+                *position = static_cast<int>(i);
+            return &fullDiff[i];
+        }
+    }
+    return nullptr;
+}
+
+void PastedTextDiffDialog::acceptChange(int row)
+{
+    if (row < 0 || row >= diffWidget->diffData().size())
+        return;
+
+    const auto &result = diffWidget->diffData()[row];
+    int position = -1;
+    const auto *line = findFullDiffLine(result.oldLineIndex, result.newLineIndex, &position);
+    if (!line)
+        return;
+
+    // The editor is what changes: one edit block == one undo step
+    QTextDocument *doc = editor->document();
+    QTextCursor group(doc);
+    group.beginEditBlock();
+
+    if (line->oldIndex >= 0 && line->newIndex >= 0)      // modified: take the pasted version of the line
+    {
+        replaceLine(doc, line->oldIndex, line->newText);
+    }
+    else if (line->oldIndex >= 0)                        // the pasted text has no such line: remove it from the editor
+    {
+        removeLine(doc, line->oldIndex);
+    }
+    else                                                 // the pasted text has an extra line: insert it after its editor neighbour
+    {
+        int insertAfter = -1;
+        for (int i = position - 1; i >= 0; --i)
+        {
+            if (fullDiff[i].oldIndex >= 0)
+            {
+                insertAfter = fullDiff[i].oldIndex;
+                break;
+            }
+        }
+        insertLineAfter(doc, insertAfter, line->newText);
+    }
+
+    group.endEditBlock();
+
+    // Deferred: the clicked button belongs to the table that is about to be rebuilt
+    QTimer::singleShot(0, this, &PastedTextDiffDialog::recomputeDiff);
+}
+
+void PastedTextDiffDialog::discardChange(int row)
+{
+    if (row < 0 || row >= diffWidget->diffData().size())
+        return;
+
+    const auto &result = diffWidget->diffData()[row];
+    int position = -1;
+    const auto *line = findFullDiffLine(result.oldLineIndex, result.newLineIndex, &position);
+    if (!line)
+        return;
+
+    // The pasted text is what changes (its own undo stack keeps working)
+    QTextDocument *doc = pasteEdit->document();
+    QTextCursor group(doc);
+    group.beginEditBlock();
+
+    if (line->oldIndex >= 0 && line->newIndex >= 0)      // modified: put the editor's line back into the pasted text
+    {
+        replaceLine(doc, line->newIndex, line->oldText);
+    }
+    else if (line->newIndex >= 0)                        // extra line in the pasted text: drop it
+    {
+        removeLine(doc, line->newIndex);
+    }
+    else                                                 // line missing in the pasted text: bring the editor's line back
+    {
+        int insertAfter = -1;
+        for (int i = position - 1; i >= 0; --i)
+        {
+            if (fullDiff[i].newIndex >= 0)
+            {
+                insertAfter = fullDiff[i].newIndex;
+                break;
+            }
+        }
+        insertLineAfter(doc, insertAfter, line->oldText);
+    }
+
+    group.endEditBlock();
+
+    QTimer::singleShot(0, this, &PastedTextDiffDialog::recomputeDiff);
 }
 
 void PastedTextDiffDialog::applyPastedText()

@@ -1,4 +1,5 @@
 #include <QPushButton>
+#include <QHBoxLayout>
 #include <QHeaderView>
 #include <QTextBrowser>
 #include <QLabel>
@@ -136,16 +137,44 @@ void DiffViewerWidget::setDiffData(const QList<DiffCalculation::LineDiffResult> 
                 emit jumpToLineInEditor(diff.newLineIndex);
         });
 
-        // Restore button
-        QPushButton *restoreBtn = new QPushButton("↩", this);
-        restoreBtn->setToolTip("Restore original line");
-        connect(restoreBtn, &QPushButton::clicked, this, [this, diff]() {
-            int lineIndexToRestore = (diff.newLineIndex >= 0) ? diff.newLineIndex : diff.oldLineIndex;
-            emit lineRestored(lineIndexToRestore, diff.oldText());
-        });
-        restoreBtn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-        restoreBtn->setFixedSize(24, 24);
-        setCellWidget(row, 4, restoreBtn);
+        if (rowActions == RowActions::AcceptOrDiscardChange)
+        {
+            // Meld-like arrows: "←" takes the right-hand (new) line into the left-hand side,
+            // "→" keeps the left-hand (old) line, i.e. drops this change from the diff
+            auto *box = new QWidget(this);
+            auto *boxLayout = new QHBoxLayout(box);
+            boxLayout->setContentsMargins(2, 0, 2, 0);
+            boxLayout->setSpacing(2);
+
+            auto makeButton = [box, boxLayout](const QString &text, const QString &tooltip) {
+                auto *button = new QPushButton(text, box);
+                button->setToolTip(tooltip);
+                button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+                button->setFixedSize(24, 24);
+                boxLayout->addWidget(button);
+                return button;
+            };
+
+            auto *acceptBtn = makeButton("←", tr("Apply this change to the editor (take the right-hand line)"));
+            auto *discardBtn = makeButton("→", tr("Discard this change (keep the editor's line)"));
+            connect(acceptBtn, &QPushButton::clicked, this, [this, row]() { emit changeAccepted(row); });
+            connect(discardBtn, &QPushButton::clicked, this, [this, row]() { emit changeDiscarded(row); });
+
+            setCellWidget(row, 4, box);
+        }
+        else
+        {
+            // Restore button
+            QPushButton *restoreBtn = new QPushButton("↩", this);
+            restoreBtn->setToolTip("Restore original line");
+            connect(restoreBtn, &QPushButton::clicked, this, [this, diff]() {
+                int lineIndexToRestore = (diff.newLineIndex >= 0) ? diff.newLineIndex : diff.oldLineIndex;
+                emit lineRestored(lineIndexToRestore, diff.oldText());
+            });
+            restoreBtn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+            restoreBtn->setFixedSize(24, 24);
+            setCellWidget(row, 4, restoreBtn);
+        }
 
         if (diff.oldLineIndex == -1) // added new line
         {

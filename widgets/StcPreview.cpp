@@ -1,4 +1,8 @@
 #include <QLabel>
+#include <QMenu>
+#include <QAction>
+#include <QClipboard>
+#include <QGuiApplication>
 #include <QVBoxLayout>
 #include <QNetworkReply>
 #include <QNetworkReply>
@@ -37,6 +41,41 @@ StcPreviewWidget::StcPreviewWidget(QWidget *parent) : QWidget(parent)
 
     setFocusPolicy(Qt::NoFocus);
     webView.setFocusPolicy(Qt::NoFocus);
+
+    webView.setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(&webView, &QWidget::customContextMenuRequested, this, &StcPreviewWidget::showPreviewContextMenu);
+}
+
+void StcPreviewWidget::showPreviewContextMenu(const QPoint &position)
+{
+    // The standard entries (copy, select all, ...) exist only while a context menu request from the page is being handled
+    QMenu *menu = webView.lastContextMenuRequest() ? webView.createStandardContextMenu() : new QMenu(this);
+    menu->setAttribute(Qt::WA_DeleteOnClose);
+
+    if (!menu->isEmpty())
+        menu->addSeparator();
+
+    QAction *copyHtml = menu->addAction(tr("Copy preview HTML to clipboard"));
+    connect(copyHtml, &QAction::triggered, this, &StcPreviewWidget::copyRenderedHtmlToClipboard);
+
+    menu->popup(webView.mapToGlobal(position));
+}
+
+bool StcPreviewWidget::copyRenderedHtmlToClipboard()
+{
+    if (latestHtml.isEmpty())
+    {
+        QToolTip::showText(QCursor::pos(),
+                           tr("Nothing to copy yet - open the STC preview (F6), log in to cpp0x.pl and let it render some text."),
+                           this);
+        return false;
+    }
+
+    QGuiApplication::clipboard()->setText(latestHtml);
+    QToolTip::showText(QCursor::pos(),
+                       tr("Preview HTML copied to clipboard (%1 characters)").arg(latestHtml.size()),
+                       this);
+    return true;
 }
 
 void StcPreviewWidget::login(const QString &username, const QString &password) {
@@ -205,25 +244,30 @@ void StcPreviewWidget::sendTextRequest(const QString &text)
         reply->deleteLater();
 
         QJsonDocument doc = QJsonDocument::fromJson(response);
-        QString html = doc["html"].toString();
-
-        QString js = QString(R"(
-            (function() {
-                let container = document.getElementById("Preview");
-                if (container) {
-                    container.innerHTML = '%1';
-                }
-            })();
-        )").arg(escapeHtmlToJsString(html).replace("$", "\\$"));
-
-        webView.page()->runJavaScript(js);
-        emit htmlReady(html);
+        showRenderedHtml(doc["html"].toString());
 
         if (hasPendingUpdate && pendingText != lastSentText)
         {
             scheduleTextUpdate();
         }
     });
+}
+
+void StcPreviewWidget::showRenderedHtml(const QString &html)
+{
+    latestHtml = html;
+
+    QString js = QString(R"(
+        (function() {
+            let container = document.getElementById("Preview");
+            if (container) {
+                container.innerHTML = '%1';
+            }
+        })();
+    )").arg(escapeHtmlToJsString(html).replace("$", "\\$"));
+
+    webView.page()->runJavaScript(js);
+    emit htmlReady(html);
 }
 
 QString StcPreviewWidget::escapeHtmlToJsString(const QString &html)

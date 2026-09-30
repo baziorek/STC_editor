@@ -1224,6 +1224,11 @@ void MainWindow::onUpdateBreadcrumb()
     }
 }
 
+void MainWindow::onCopyPreviewHtmlRequested()
+{
+    ui->stcPreviewWidget->copyRenderedHtmlToClipboard();
+}
+
 void MainWindow::onShowStcPreviewTriggered()
 {
     ui->stcPreviewDockWidget->raise();

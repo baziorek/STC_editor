@@ -253,6 +253,7 @@
     <addaction name="actionGo_to_line"/>
     <addaction name="actionRight_panel"/>
     <addaction name="actionStc_Preview_account_at_Cpp0x_pl_required"/>
+    <addaction name="actionCopy_preview_html"/>
     <addaction name="actionStop_watch_uptime_and_working_time"/>
    </widget>
    <widget class="QMenu" name="menuLanguage">
@@ -522,6 +523,17 @@
    </property>
    <property name="shortcut">
     <string>F6</string>
+   </property>
+  </action>
+  <action name="actionCopy_preview_html">
+   <property name="text">
+    <string>Copy preview HTML to clipboard</string>
+   </property>
+   <property name="toolTip">
+    <string>Copies the HTML rendered by cpp0x.pl for the current text</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+H</string>
    </property>
   </action>
   <action name="actionReload_file">
@@ -926,6 +938,22 @@
    </hints>
   </connection>
   <connection>
+   <sender>actionCopy_preview_html</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onCopyPreviewHtmlRequested()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>242</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
    <sender>actionCompare_with_pasted_text</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
@@ -1135,6 +1163,7 @@
   </connection>
  </connections>
  <slots>
+  <slot>onCopyPreviewHtmlRequested()</slot>
   <slot>onCompareWithPastedTextRequested()</slot>
   <slot>onSaveAsPressed()</slot>
   <slot>onOpenPressed()</slot>
