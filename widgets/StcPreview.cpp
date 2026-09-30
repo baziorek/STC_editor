@@ -261,21 +261,24 @@ void StcPreviewWidget::showRenderedHtml(const QString &html)
         (function() {
             let container = document.getElementById("Preview");
             if (container) {
-                container.innerHTML = '%1';
+                container.innerHTML = %1;
             }
         })();
-    )").arg(escapeHtmlToJsString(html).replace("$", "\\$"));
+    )").arg(toJsStringLiteral(html));
 
     webView.page()->runJavaScript(js);
     emit htmlReady(html);
 }
 
-QString StcPreviewWidget::escapeHtmlToJsString(const QString &html)
+QString StcPreviewWidget::toJsStringLiteral(const QString &text)
 {
+    // A JSON string (with its double quotes) is a valid JavaScript string literal whatever the text contains.
+    // Stripping the quotes and wrapping the rest in '...' instead breaks on every apostrophe in the HTML
+    // (e.g. Bjarne's, '\n' in code, single-quoted attributes): the script does not even parse and the preview stays stale.
     QJsonArray arr;
-    arr.append(html);
-    QString wrapped = QJsonDocument(arr).toJson(QJsonDocument::Compact);
-    return wrapped.mid(2, wrapped.length() - 4); // Strip leading [" and trailing "]
+    arr.append(text);
+    const QString wrapped = QJsonDocument(arr).toJson(QJsonDocument::Compact);
+    return wrapped.mid(1, wrapped.length() - 2); // strip the surrounding [ and ]
 }
 
 void StcPreviewWidget::updateStatsLabel()

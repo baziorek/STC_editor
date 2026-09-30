@@ -101,7 +101,7 @@ protected:
     void showRenderedHtml(const QString &html);
     void showPreviewContextMenu(const QPoint &position);
     void scheduleTextUpdate();
-    QString escapeHtmlToJsString(const QString &html);
+    static QString toJsStringLiteral(const QString &text);
 
     void enterEvent(QEnterEvent *event) override;
     void leaveEvent(QEvent *event) override;
