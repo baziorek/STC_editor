@@ -107,6 +107,7 @@ Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wyb
 14. **Obsługa różnych kodowań pliku tekstowego**: Nie tylko UTF-8. Jest to dzięki bibliotece [uchardet](https://gitlab.freedesktop.org/uchardet/uchardet).
 15. **Stoper pracy**: stoper, który odpala się po uruchomieniu edytora i liczy zarówno czas kiedy edytor jest włączony, jak i czas pracy w edytorze (wykrywa naciśnięcia klawiszy, gdy ich długo nie ma to się zatrzymuje)
 16. **Obsługa wielu języków**: Obsługuje język angielski i polski.
+17. **Podmiana treści pliku z diffem**: można z menu aplikacji wybrać edycja - wklej i porównaj tekst - dzięki temu pojawi się pełny diff zmian linia po linii z możliwością aplikowania poszczególnych fragmentów (linii lub bloków).
 
 ## ⬇️ Pobieranie (najnowsza wersja zbudowana automatycznie)
 
@@ -148,7 +149,7 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 21. Kreator tabel dla znaczników STC.
 22. PreviewWidget: Śledzenie pozycji między pozycją w dokumencie źródłowym a podglądem HTML
 23. IWYU podpiąć pod CMake'a
-24. Automatyczne backupy treści
+24. Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
 25. Blokowanie pliku, który się edytuje.
 26. Zwijanie nagłówków i kodu (jak funkcje w środowiskach programistycznych)
 27. Optymalizacja wydajności edytora przy szybkim pisaniu.
@@ -169,13 +170,12 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 42. Obsługa wtyczek, być może z użyciem Lua.
 43. Zamiana prefiksów adresów URL dla obrazów na serwerze.
 44. Dyktowanie tekstu (biblioteka [Whisper](https://github.com/openai/whisper))
-45. Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
+45. Przy porównywaniu diffa niezapisanych zmian z zawartością pliku (linijka w linijkę): możliwość zapisania na dysk poszczególnych linii.
 46. Otwieranie wielu plików jednocześnie.
 47. Widok sąsiadujący do porównywania plików.
 48. Eksport bloków kodu do osobnych plików.
 49. Konsolidacja obrazów do jednego katalogu z aktualizacją ścieżek w znacznikach STC.
-50. Przy porównywaniu difa niezapisanych zmian z zawartością pliku (linijka w linijkę): możliwość zapisania na dysk poszczególnych linii.
-51. Sprawdzania:
+50. Sprawdzania:
      - Sprawdzanie, czy znaczniki `[run]` znajdują się wewnątrz `[pkt]`.
      - Weryfikacja, czy wszystkie znaczniki są zamknięte (np. po opuszczeniu linijki sprawdzamy czy są tam zmiany, jak tak, to czy jest tam nowy tag)
      - Weryfikacja odpowiednich atrybutów w tagach (czy w cudzysłowiu, czy tylko dozwole atrubytu)
