@@ -3,6 +3,7 @@
 #include <QMainWindow>
 #include <QFileDialog>
 #include <QTranslator>
+#include "utils/SyntaxMode.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -82,10 +83,16 @@ public slots:
     /// language menu:
     void onLanguageChanged();
 
+    /// syntax menu (the mode is also changed by opening a file, so it comes from the editor):
+    void onSyntaxModeChanged(SyntaxMode mode);
+
 protected:
     void setDisabledMenuActionsDependingOnOpenedFile(bool disabled=true);
 
     void connectSignals2Slots();
+
+    /// every entry of the "Syntax" menu with the mode it selects
+    QList<std::pair<QAction*, SyntaxMode>> syntaxMenuActions() const;
 
     void putTextBackToCursorPosition(QTextCursor &cursor, QString divClass, QString selectedText,
                                      QString textEnding, QString modifiedText);

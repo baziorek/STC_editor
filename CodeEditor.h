@@ -6,9 +6,11 @@
 #include <QDateTime>
 #include <QString>
 #include <QTimer>
+#include "utils/SyntaxMode.h"
 
 class CodeBlock;
 class FileEncodingHandler;
+class STCSyntaxHighlighter;
 class QNetworkAccessManager;
 
 class CodeEditor : public QPlainTextEdit
@@ -20,6 +22,11 @@ public:
     ~CodeEditor();
 
     void newEmptyFile();
+
+    SyntaxMode syntaxMode() const;
+    /// Switches the highlighting of the whole document. Opening a file chooses the mode by its extension,
+    /// this is what the "Syntax" menu calls to override it. `rehighlightNow=false` is for content which is about to be replaced.
+    void setSyntaxMode(SyntaxMode mode, bool rehighlightNow = true);
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
@@ -115,6 +122,8 @@ signals:
     void linkTitleFetchFailed(const QString& url, int lineNumber, const QString& reason);
 
     void contentReloaded();
+
+    void syntaxModeChanged(SyntaxMode mode);
 
 public slots:
     void fileChanged(const QString &path);
@@ -252,4 +261,7 @@ private:
     QNetworkAccessManager* networkManager = {};
 
     std::unique_ptr<FileEncodingHandler> fileEncodingHandler;
+
+    STCSyntaxHighlighter* syntaxHighlighter = nullptr; // owned by the document
+    QString stcFontFamily; // font of the STC text, to get it back after leaving a source file mode
 };

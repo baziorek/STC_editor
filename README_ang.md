@@ -20,6 +20,7 @@ This editor is designed to simplify working with STC markup for creating content
 If you want to use this editor for writing content for [cpp0x.pl](https://cpp0x.pl/) (which I encourage):
 
 1. **Syntax Highlighting**: Colorizes STC markup for better readability.
+    - Python code inside `[py]...[/py]` tags (block and inline) is highlighted too, including multi-line `"""..."""` strings. The rules are built on the word lists and colors of QCodeEditor.
 2. **Tag Closure Validation**: Checks if all STC tags are properly closed.
 3. **Text Transformation**: Convert selected text to lowercase, uppercase, camelCase to snake_case, or vice versa.
 4. **Document Context View**:
@@ -94,6 +95,7 @@ The editor is also suitable for general document editing. Here are some standout
 13. **Hideable Widgets**: All non-text-editor widgets can be hidden for faster editing.
 14. **Multiple File Encodings**: Supports various encodings (not just UTF-8) using the [uchardet](https://gitlab.freedesktop.org/uchardet/uchardet) library.
 15. **Work Timer**: Tracks both the time the editor is open and active editing time (pauses when no keypresses are detected).
+16. **Whole-File Syntax Highlighting**: The `Syntax` menu switches between STC, C++, Python, XML and JSON. Opening a file picks the mode from its extension (e.g. `.py` → Python, `.cpp`/`.h`/`.hpp` → C++, `.xml`/`.svg`/`.ui`/`.qrc` → XML, `.json` → JSON); unknown extensions use STC. In the code modes the editor uses a fixed-width font and does not interpret STC tags, so `[b]` in Python code stays an ordinary index expression.
 
 ## ⬇️ Downloads (Latest Automatically Built Version)
 
@@ -117,7 +119,6 @@ You can download the latest compiled version of **STC_editor** from the most rec
 3. Multi-word search on the same line, regardless of order.
 6. Integration of a C++ syntax analyzer (e.g., [flex](https://github.com/westes/flex)).
 7. Dedicated C++ code formatting.
-8. C++ and Python syntax highlighting using [QCXXHighlighter](https://github.com/Megaxela/QCodeEditor) (MIT license).
 9. Real-time change statistics (line count, character count, file size, cursor line/column).
 10. Input history for undo/redo (`Ctrl+Z`).
 11. Faster application exit without prompting for unchanged states.

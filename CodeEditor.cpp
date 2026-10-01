@@ -23,6 +23,7 @@
 #include <QTextDocument>
 #include <QUrlQuery>
 #include <QHash>
+#include <QFontDatabase>
 #include "CodeEditor.h"
 #include "widgets/LineNumberArea.h"
 #include "utils/STCSyntaxHighlighter.h"
@@ -316,7 +317,43 @@ CodeEditor::CodeEditor(QWidget *parent)
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
 
-    STCSyntaxHighlighter *highlighter = new STCSyntaxHighlighter(document()); // it does not leak
+    syntaxHighlighter = new STCSyntaxHighlighter(document()); // it does not leak: the document owns it
+}
+
+SyntaxMode CodeEditor::syntaxMode() const
+{
+    return syntaxHighlighter->syntaxMode();
+}
+
+void CodeEditor::setSyntaxMode(SyntaxMode mode, bool rehighlightNow)
+{
+    const SyntaxMode previousMode = syntaxHighlighter->syntaxMode();
+    if (mode == previousMode)
+        return;
+
+    // Indentation matters in a source code, so such a file gets a fixed pitch font.
+    // The STC text gets back the font it had.
+    const bool wasSourceCode = syntaxmode::isSourceCodeMode(previousMode);
+    const bool isSourceCode = syntaxmode::isSourceCodeMode(mode);
+    if (wasSourceCode != isSourceCode)
+    {
+        QFont editorFont = font();
+        if (isSourceCode)
+        {
+            stcFontFamily = editorFont.family();
+            editorFont.setFamily(QFontDatabase::systemFont(QFontDatabase::FixedFont).family());
+            editorFont.setStyleHint(QFont::Monospace);
+        }
+        else
+        {
+            editorFont.setFamily(stcFontFamily);
+            editorFont.setStyleHint(QFont::AnyStyle);
+        }
+        setFont(editorFont);
+    }
+
+    syntaxHighlighter->setSyntaxMode(mode, rehighlightNow);
+    emit syntaxModeChanged(mode);
 }
 
 void CodeEditor::newEmptyFile()
@@ -339,6 +376,8 @@ void CodeEditor::newEmptyFile()
     fileEncodingHandler = std::make_unique<FileEncodingHandler>();
 
     backupTimer->stop();
+
+    setSyntaxMode(SyntaxMode::Stc);
 
     emit contentReloaded();
 }
@@ -433,6 +472,8 @@ const QString CodeEditor::getFileName() const
 
 void CodeEditor::setFileName(const QString &newFileName)
 {
+    const bool fileNameChanged = newFileName != getFileName();
+
     document()->setBaseUrl(QUrl::fromLocalFile(newFileName));
     setDocumentTitle(QFileInfo(newFileName).fileName());
 
@@ -444,6 +485,13 @@ void CodeEditor::setFileName(const QString &newFileName)
     else
     {
         stopWatchingFiles();
+    }
+
+    // "Save as" / rename to a name with a known extension (`x.py`) switches the syntax; an unknown one keeps the current mode
+    if (fileNameChanged)
+    {
+        if (const auto mode = syntaxmode::detectFromFileName(newFileName))
+            setSyntaxMode(*mode);
     }
 }
 
@@ -558,6 +606,13 @@ bool CodeEditor::loadFileContentDistargingCurrentContent(const QString& fileName
     try
     {
         const auto fileContent = fileEncodingHandler->loadFile(fileName);
+
+        // Opening another file chooses the syntax by its extension (unknown => STC).
+        // Reloading the same file keeps whatever was selected in the "Syntax" menu.
+        // It is done before setPlainText(), so the content is highlighted once.
+        if (fileName != getFileName())
+            setSyntaxMode(syntaxmode::detectFromFileName(fileName).value_or(SyntaxMode::Stc), /*rehighlightNow=*/false);
+
         setPlainText(fileContent);
 
         document()->setModified(false);
@@ -2011,6 +2066,13 @@ void CodeEditor::keyPressEvent(QKeyEvent* event)
         }
         if (event->key() == Qt::Key_V)
         {
+            // Rich text -> STC, tables and links wrapped in tags make no sense in a source file
+            if (syntaxmode::isSourceCodeMode(syntaxMode()))
+            {
+                QPlainTextEdit::keyPressEvent(event);
+                return;
+            }
+
             // Check if cursor is inside `[img src="here"]` or `[a href="here"]`
             if (isCursorInsideImgSrcAttribute(textCursor()) || isCursorInsideAHrefAttribute(textCursor()))
             {
@@ -2831,6 +2893,9 @@ void CodeEditor::addHeaderTagActionsIfApplicable(QMenu* menu, const QPoint& pos)
 
 void CodeEditor::addSpellingSuggestionsIfAvailable(QMenu* menu, const QPoint& pos)
 {
+    if (syntaxmode::isSourceCodeMode(syntaxMode())) // identifiers are not checked in a source file
+        return;
+
     auto maybeWord = getMisspelledWordAtPosition(pos);
     if (!maybeWord)
         return;

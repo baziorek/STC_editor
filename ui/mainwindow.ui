@@ -256,6 +256,16 @@
     <addaction name="actionCopy_preview_html"/>
     <addaction name="actionStop_watch_uptime_and_working_time"/>
    </widget>
+   <widget class="QMenu" name="menuSyntax">
+    <property name="title">
+     <string>Syntax</string>
+    </property>
+    <addaction name="actionSyntaxStc"/>
+    <addaction name="actionSyntaxCpp"/>
+    <addaction name="actionSyntaxPython"/>
+    <addaction name="actionSyntaxXml"/>
+    <addaction name="actionSyntaxJson"/>
+   </widget>
    <widget class="QMenu" name="menuLanguage">
     <property name="title">
      <string>Language</string>
@@ -267,6 +277,7 @@
    <addaction name="menuEdit"/>
    <addaction name="menuCheck"/>
    <addaction name="menuView"/>
+   <addaction name="menuSyntax"/>
    <addaction name="menuLanguage"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -625,6 +636,61 @@
   <action name="actionPolish">
    <property name="text">
     <string>Polski</string>
+   </property>
+  </action>
+  <action name="actionSyntaxStc">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>STC (cpp0x.pl markup)</string>
+   </property>
+   <property name="toolTip">
+    <string>Highlight the STC markup; code inside [cpp] and [py] tags is highlighted too</string>
+   </property>
+  </action>
+  <action name="actionSyntaxCpp">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>C++</string>
+   </property>
+   <property name="toolTip">
+    <string>Treat the whole file as C++ source code</string>
+   </property>
+  </action>
+  <action name="actionSyntaxPython">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Python</string>
+   </property>
+   <property name="toolTip">
+    <string>Treat the whole file as Python source code</string>
+   </property>
+  </action>
+  <action name="actionSyntaxXml">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>XML</string>
+   </property>
+   <property name="toolTip">
+    <string>Treat the whole file as XML</string>
+   </property>
+  </action>
+  <action name="actionSyntaxJson">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>JSON</string>
+   </property>
+   <property name="toolTip">
+    <string>Treat the whole file as JSON</string>
    </property>
   </action>
  </widget>

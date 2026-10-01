@@ -300,6 +300,50 @@ Do you want to reload it?</translation>
 <context>
     <name>MainWindow</name>
     <message>
+        <source>Syntax</source>
+        <translation>Syntax</translation>
+    </message>
+    <message>
+        <source>STC (cpp0x.pl markup)</source>
+        <translation>STC (cpp0x.pl markup)</translation>
+    </message>
+    <message>
+        <source>C++</source>
+        <translation>C++</translation>
+    </message>
+    <message>
+        <source>Python</source>
+        <translation>Python</translation>
+    </message>
+    <message>
+        <source>XML</source>
+        <translation>XML</translation>
+    </message>
+    <message>
+        <source>JSON</source>
+        <translation>JSON</translation>
+    </message>
+    <message>
+        <source>Highlight the STC markup; code inside [cpp] and [py] tags is highlighted too</source>
+        <translation>Highlight the STC markup; code inside [cpp] and [py] tags is highlighted too</translation>
+    </message>
+    <message>
+        <source>Treat the whole file as C++ source code</source>
+        <translation>Treat the whole file as C++ source code</translation>
+    </message>
+    <message>
+        <source>Treat the whole file as Python source code</source>
+        <translation>Treat the whole file as Python source code</translation>
+    </message>
+    <message>
+        <source>Treat the whole file as XML</source>
+        <translation>Treat the whole file as XML</translation>
+    </message>
+    <message>
+        <source>Treat the whole file as JSON</source>
+        <translation>Treat the whole file as JSON</translation>
+    </message>
+    <message>
         <source>Language Changed</source>
         <translation>Language Changed</translation>
     </message>

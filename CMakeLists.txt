@@ -190,6 +190,8 @@ set(PROJECT_SOURCES
     utils/DiffCalculation.h utils/DiffCalculation.cpp
     utils/FileEncodingHandler.h utils/FileEncodingHandler.cpp
     utils/STCSyntaxHighlighter.h utils/STCSyntaxHighlighter.cpp
+    utils/SyntaxMode.h utils/SyntaxMode.cpp
+    utils/CodeLanguageHighlighting.h utils/CodeLanguageHighlighting.cpp
     utils/SpellChecker.h utils/SpellChecker.cpp
     utils/BackupManager.h utils/BackupManager.cpp
 )
@@ -425,6 +427,27 @@ if(NOT WIN32)
 
     target_link_libraries(${PROJECT_NAME}Tests PRIVATE ${GTEST_LIBRARIES} pthread gtest_main)
     add_test(NAME ${PROJECT_NAME}Tests COMMAND ${PROJECT_NAME}Tests)
+
+    # Syntax modes (STC / C++ / Python / XML / JSON). Separate from the target above, because it needs Qt,
+    # QCodeEditor and Nuspell (the highlighter spell checks the STC text), and it has its own main() with QApplication.
+    add_executable(${PROJECT_NAME}SyntaxTests
+        tests/SyntaxHighlightingTests.cpp
+        utils/CodeLanguageHighlighting.cpp
+        utils/SyntaxMode.cpp
+        utils/STCSyntaxHighlighter.cpp
+        utils/SpellChecker.cpp
+        stcSyntaxPatterns.cpp
+        types/stcTags.cpp
+    )
+    target_include_directories(${PROJECT_NAME}SyntaxTests PRIVATE ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/libs)
+    target_compile_definitions(${PROJECT_NAME}SyntaxTests PRIVATE
+        DICTIONARY_PATH="${CMAKE_CURRENT_SOURCE_DIR}/dictionaries/pl/pl_PL.aff"
+    )
+    target_link_libraries(${PROJECT_NAME}SyntaxTests PRIVATE
+        Qt${QT_VERSION_MAJOR}::Widgets QCodeEditor Nuspell::nuspell ${GTEST_LIBRARIES} pthread
+    )
+    add_test(NAME ${PROJECT_NAME}SyntaxTests COMMAND ${PROJECT_NAME}SyntaxTests)
+    set_tests_properties(${PROJECT_NAME}SyntaxTests PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 endif()
 
 # ------------------ AddressSanitizer: static runtime (avoid LD_PRELOAD ordering issues) ------------------

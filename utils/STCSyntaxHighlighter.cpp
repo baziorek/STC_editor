@@ -4,6 +4,7 @@
 #include <QSyntaxStyle> // from QCodeEditor
 #include <QFile>
 #include "STCSyntaxHighlighter.h"
+#include "CodeLanguageHighlighting.h"
 #include "../stcSyntaxPatterns.h"
 #include "../types/stcTags.h"
 
@@ -27,7 +28,7 @@ enum BlockState // TODO: Why not to use `enum class StcTags: std::uint32_t` inst
     STATE_CSV             = 0x100,
     STATE_PKT             = 0x200,
 
-    STATE_CPP             = 0x400,
+    STATE_CODE_PY         = 0x400,
     STATE_CODE            = 0x800,
     STATE_CODE_CPP        = 0x1000,
 
@@ -39,7 +40,24 @@ enum BlockState // TODO: Why not to use `enum class StcTags: std::uint32_t` inst
     STATE_CODE_CPP_COMMENT= 0x20000,
 
     STATE_STYLE_TELETYPE  = 0x40000,
+
+    // constructs of the highlighted code which continue on the next line; see `stc::codehl`
+    STATE_PY_TRIPLE_DQ    = 0x80000,   // inside `"""..."""`
+    STATE_PY_TRIPLE_SQ    = 0x100000,  // inside `'''...'''`
+    STATE_XML_COMMENT     = 0x200000,  // inside `<!-- ... -->`  (only when the whole file is XML)
+    STATE_XML_IN_TAG      = 0x400000,  // inside `<tag ...`      (only when the whole file is XML)
 };
+
+constexpr int PY_STATE_SHIFT  = 19;
+constexpr int XML_STATE_SHIFT = 21;
+static_assert((stc::codehl::PY_STATE_TRIPLE_DOUBLE << PY_STATE_SHIFT) == STATE_PY_TRIPLE_DQ);
+static_assert((stc::codehl::PY_STATE_TRIPLE_SINGLE << PY_STATE_SHIFT) == STATE_PY_TRIPLE_SQ);
+static_assert((stc::codehl::XML_STATE_COMMENT << XML_STATE_SHIFT) == STATE_XML_COMMENT);
+static_assert((stc::codehl::XML_STATE_IN_TAG << XML_STATE_SHIFT) == STATE_XML_IN_TAG);
+
+/// All the bits which are owned by the code highlighting (and not by the STC markup).
+constexpr int LANGUAGE_STATE_MASK = STATE_CODE_CPP_COMMENT | STATE_PY_TRIPLE_DQ | STATE_PY_TRIPLE_SQ
+                                    | STATE_XML_COMMENT | STATE_XML_IN_TAG;
 
 constexpr bool PRINT_DEBUG = false; // TODO: Remove when formatting fully works
 #define DEBUG(condition, text) if (PRINT_DEBUG && condition) qDebug() << "\t " << #text << " changes" << __LINE__ << currentBlockState()
@@ -119,7 +137,9 @@ STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
     // Code blocks
     addBlockStyle(tagsClasses[CODE], QColor("yellow"), std::to_underlying(NONE), -1, QColor("black"), "monospace");
     // addBlockStyle(tagsClasses[CPP], QColor("black"), std::to_underlying(NONE), -1, QColor("lightblue"), "monospace"); // TODO: Consider using this when disabled highlighting by library
-    addBlockStyle(tagsClasses[PY], QColor("black"), std::to_underlying(NONE), -1, QColor("brown"), "monospace");
+    // [py] is highlighted token by token (see applyPythonHighlighting), the same way as [cpp]: setFormat() replaces
+    // the format of the colored tokens, so a block-wide background / font would be visible only between them.
+    // addBlockStyle(tagsClasses[PY], QColor("black"), std::to_underlying(NONE), -1, QColor("brown"), "monospace");
 
     // Text styling (b/i/u/s)
     addBlockStyle(tagsClasses[BOLD], QColor::Invalid, std::to_underlying(BOLD));
@@ -173,10 +193,27 @@ STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
     styledTagsMap.insert("tag.attr", { "tag.attr", tagFmt });
 }
 
+void STCSyntaxHighlighter::setSyntaxMode(SyntaxMode mode, bool rehighlightNow)
+{
+    if (_mode == mode)
+        return;
+
+    _mode = mode;
+    if (rehighlightNow)
+        rehighlight();
+}
+
 void STCSyntaxHighlighter::highlightBlock(const QString &text)
 {
+    if (_mode != SyntaxMode::Stc)
+    {
+        highlightSourceFileBlock(text);
+        return;
+    }
+
     _codeRangesThisLine.clear();     // clear before each line
     _noFormatRangesThisLine.clear(); // clear before each line
+    _languageStateBits = 0;          // set only by the code blocks which do not end on this line
 
     const int prev = previousBlockState();  // save before overwriting
     DEBUG(true, "----------") << prev << text;
@@ -216,6 +253,57 @@ void STCSyntaxHighlighter::highlightBlock(const QString &text)
     bool anyChange = divChanges | headersChanges | pktOrCsvChanges | codeChanges | styleChanges | hrefImgChanges;
     if (!anyChange)
         setCurrentBlockState(prev);
+
+    mergeLanguageStateIntoBlockState();
+}
+
+int STCSyntaxHighlighter::languageStateFromPreviousBlock() const
+{
+    const int previous = previousBlockState();
+    return previous == STATE_NONE ? 0 : previous;
+}
+
+/// The STC states are being computed from `previousBlockState()` in many places, so whatever they did,
+/// the bits owned by the code highlighting (which were only copied from the previous line) are fixed here, once.
+void STCSyntaxHighlighter::mergeLanguageStateIntoBlockState()
+{
+    const int state = currentBlockState();
+    if (state == STATE_NONE)
+    {
+        if (_languageStateBits != 0)
+            setCurrentBlockState(_languageStateBits);
+        return;
+    }
+    setCurrentBlockState((state & ~LANGUAGE_STATE_MASK) | _languageStateBits);
+}
+
+void STCSyntaxHighlighter::highlightSourceFileBlock(const QString &text)
+{
+    const int stateIn = languageStateFromPreviousBlock();
+    int stateOut = 0;
+
+    switch (_mode)
+    {
+    case SyntaxMode::Cpp:
+        stateOut = applyCppHighlighting(text, 0, text.length(), stateIn);
+        break;
+    case SyntaxMode::Python:
+        stateOut = applyPythonHighlighting(text, 0, text.length(), stateIn);
+        break;
+    case SyntaxMode::Xml:
+        stateOut = stc::codehl::highlightXml(text, 0, text.length(),
+                                             (stateIn >> XML_STATE_SHIFT) & stc::codehl::XML_STATE_MASK,
+                                             [this](int start, int length, const QTextCharFormat &format) { setFormat(start, length, format); })
+                   << XML_STATE_SHIFT;
+        break;
+    case SyntaxMode::Json:
+        stc::codehl::highlightJson(text, 0, text.length(),
+                                   [this](int start, int length, const QTextCharFormat &format) { setFormat(start, length, format); });
+        break;
+    case SyntaxMode::Stc:
+        break; // handled by highlightBlock()
+    }
+    setCurrentBlockState(stateOut);
 }
 
 bool STCSyntaxHighlighter::highlightHeading(const QString &text)
@@ -587,7 +675,7 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
             {
                 { STATE_CODE_CPP, "cpp",  stc::syntax::cppCloseRe },
                 { STATE_CODE,     "code", stc::syntax::codeCloseRe },
-                { STATE_CPP,      "py",   stc::syntax::pythonCloseRe }
+                { STATE_CODE_PY,  "py",   stc::syntax::pythonCloseRe }
             };
 
         for (const auto& blk : blocks)
@@ -601,8 +689,7 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
                     const int closeStart = close.capturedStart();
 
                     setFormat(0, closeStart, fmt);
-                    if (blk.stateFlag == STATE_CODE_CPP)
-                        applyCppHighlighting(text, 0, closeStart); // <— tylko fragment C++
+                    applyCodeHighlighting(blk.stateFlag, text, 0, closeStart, languageStateFromPreviousBlock()); // <— tylko fragment kodu; blok się kończy, więc nic nie przechodzi do następnej linii
 
                     setFormat(closeStart, close.capturedLength(), tagFmt);
                     _codeRangesThisLine.append({ closeStart, close.capturedLength() });
@@ -614,8 +701,7 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
                 else
                 {
                     setFormat(0, text.length(), fmt);
-                    if (blk.stateFlag == STATE_CODE_CPP)
-                        applyCppHighlighting(text, 0, text.length()); // <— do końca linii
+                    _languageStateBits = applyCodeHighlighting(blk.stateFlag, text, 0, text.length(), languageStateFromPreviousBlock()); // <— do końca linii
 
                     currentBlockStateWithFlag(blk.stateFlag);
                     _codeRangesThisLine.append({ 0, text.length() });
@@ -652,7 +738,7 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
         {
             styleKey = "py";
             fmt = styledTagsMap.value(styleKey).format;
-            stateFlag = STATE_CPP;
+            stateFlag = STATE_CODE_PY;
             closeRe = closeReMap["py"];
         }
         else
@@ -677,8 +763,7 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
             setFormat(tagStart, tagEnd - tagStart, tagFmt);
             setFormat(contentStart, contentLen, fmt);
 
-            if (stateFlag == STATE_CODE_CPP)
-                applyCppHighlighting(text, contentStart, closeStart); // <— tylko [cpp]…[/cpp]
+            applyCodeHighlighting(stateFlag, text, contentStart, closeStart, 0); // <— tylko [cpp]…[/cpp], [py]…[/py]
 
             _codeRangesThisLine.append({ contentStart, contentLen });
             setFormat(closeStart, closeLen, tagFmt);
@@ -691,8 +776,7 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
             setFormat(tagStart, tagEnd - tagStart, tagFmt);
             setFormat(tagEnd, text.length() - tagEnd, fmt);
 
-            if (stateFlag == STATE_CODE_CPP)
-                applyCppHighlighting(text, tagEnd, text.length()); // <— od tagu do końca linii
+            _languageStateBits = applyCodeHighlighting(stateFlag, text, tagEnd, text.length(), 0); // <— od tagu do końca linii
 
             _codeRangesThisLine.append({ tagEnd, text.length() - tagEnd });
             currentBlockStateWithFlag(stateFlag);
@@ -703,12 +787,33 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
     return found;
 }
 /// This function is adapted from https://github.com/ArsMasiuk/QCodeEditor, which was orginally made by https://github.com/Megaxela/QCodeEditor
-void STCSyntaxHighlighter::applyCppHighlighting(const QString &text, int from, int to)
+int STCSyntaxHighlighter::applyCodeHighlighting(int codeBlockStateFlag, const QString &text, int from, int to, int stateIn)
+{
+    switch (codeBlockStateFlag)
+    {
+    case STATE_CODE_CPP:
+        return applyCppHighlighting(text, from, to, stateIn);
+    case STATE_CODE_PY:
+        return applyPythonHighlighting(text, from, to, stateIn);
+    default:
+        return 0; // `[code]` has no highlighting
+    }
+}
+
+int STCSyntaxHighlighter::applyPythonHighlighting(const QString &text, int from, int to, int stateIn)
+{
+    const int pythonState = stc::codehl::highlightPython(
+        text, from, to, (stateIn >> PY_STATE_SHIFT) & stc::codehl::PY_STATE_MASK,
+        [this](int start, int length, const QTextCharFormat &format) { setFormat(start, length, format); });
+    return pythonState << PY_STATE_SHIFT;
+}
+
+int STCSyntaxHighlighter::applyCppHighlighting(const QString &text, int from, int to, int stateIn)
 {
     from = std::max(from, 0);
     to = std::min<decltype(to)>(text.length(), to);
     if (from >= to)
-        return;
+        return stateIn & STATE_CODE_CPP_COMMENT; // e.g. an empty line inside of a block comment
 
     struct CppHighlightRule
     {
@@ -803,8 +908,9 @@ void STCSyntaxHighlighter::applyCppHighlighting(const QString &text, int from, i
     }
 
     // komentarze blokowe (/* ... */)
+    bool commentContinuesOnNextLine = false;
     int startIndex = -1;
-    if (previousBlockState() != STATE_NONE && (previousBlockState() & STATE_CODE_CPP_COMMENT))
+    if (stateIn & STATE_CODE_CPP_COMMENT)
     {
         startIndex = 0;
     }
@@ -822,7 +928,7 @@ void STCSyntaxHighlighter::applyCppHighlighting(const QString &text, int from, i
 
         if (endIndex == -1)
         {
-            currentBlockStateWithFlag(STATE_CODE_CPP_COMMENT);
+            commentContinuesOnNextLine = true;
             commentLength = fragment.length() - startIndex;
         }
         else
@@ -837,6 +943,7 @@ void STCSyntaxHighlighter::applyCppHighlighting(const QString &text, int from, i
         auto nextStart = commentStartPattern.match(fragment, startIndex + commentLength);
         startIndex = nextStart.hasMatch() ? nextStart.capturedStart() : -1;
     }
+    return commentContinuesOnNextLine ? STATE_CODE_CPP_COMMENT : 0;
 }
 
 bool STCSyntaxHighlighter::highlightTextStyleTags(const QString& text)

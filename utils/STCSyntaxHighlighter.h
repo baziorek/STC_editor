@@ -7,6 +7,7 @@
 #include <QString>
 #include <QRegularExpression>
 #include "utils/SpellChecker.h"
+#include "utils/SyntaxMode.h"
 
 
 /// class inspired with: https://doc.qt.io/qt-6.2/qtwidgets-richtext-syntaxhighlighter-example.html
@@ -22,6 +23,15 @@ public:
         return spellChecker;
     }
 
+    /// `Stc` highlights the STC markup (and the code inside of `[cpp]`, `[py]`, ... blocks),
+    /// the other modes highlight the entire document as a source file in that language.
+    SyntaxMode syntaxMode() const
+    {
+        return _mode;
+    }
+    /// Pass `rehighlightNow=false` when the document content is about to be replaced anyway.
+    void setSyntaxMode(SyntaxMode mode, bool rehighlightNow = true);
+
 protected:
     void highlightBlock(const QString &text) override;
     bool highlightHeading(const QString &text);
@@ -32,7 +42,17 @@ protected:
     bool highlightTagsWithAttributes(const QString& text);
     void highlightPlainTextContent(const QString &text);
 
-    void applyCppHighlighting(const QString &text, int from, int to);
+    /// Highlighting of the code in `[0, to)`; it is the state of the previous line what says whether
+    /// a construct (`/* ... */`, `"""..."""`) is continued. All of them return the bits of the state which
+    /// the next line has to know about (they are merged to the block state once per line, see `highlightBlock`).
+    int applyCppHighlighting(const QString &text, int from, int to, int stateIn);
+    int applyPythonHighlighting(const QString &text, int from, int to, int stateIn);
+    int applyCodeHighlighting(int codeBlockStateFlag, const QString &text, int from, int to, int stateIn);
+
+    /// Used when the syntax mode is not `Stc`: the whole block is a line of a source file.
+    void highlightSourceFileBlock(const QString &text);
+    int languageStateFromPreviousBlock() const;
+    void mergeLanguageStateIntoBlockState();
 
     void addBlockStyle(const QString &tag,
                        QColor foreground = Qt::black,
@@ -87,4 +107,7 @@ private:
     QVector<QPair<int, int>> _noFormatRangesThisLine; // position start and length
 
     SpellChecker spellChecker;
+
+    SyntaxMode _mode = SyntaxMode::Stc;
+    int _languageStateBits = 0; // what the code highlighting of this line wants the next line to know
 };

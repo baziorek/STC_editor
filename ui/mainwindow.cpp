@@ -9,6 +9,7 @@
 #include <QScrollBar>
 #include <QTranslator>
 #include <QAction>
+#include <QActionGroup>
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "ui/shortcutsdialog.h"
@@ -143,6 +144,17 @@ void MainWindow::connectSignals2Slots()
     // Language switching connections
     connect(ui->actionEnglish, &QAction::triggered, this, &MainWindow::onLanguageChanged);
     connect(ui->actionPolish, &QAction::triggered, this, &MainWindow::onLanguageChanged);
+
+    // Syntax switching: exactly one mode is checked at a time
+    auto* syntaxActions = new QActionGroup(this);
+    syntaxActions->setExclusive(true);
+    for (const auto& [action, mode] : syntaxMenuActions())
+    {
+        syntaxActions->addAction(action);
+        connect(action, &QAction::triggered, this, [this, mode] { ui->textEditor->setSyntaxMode(mode); });
+    }
+    connect(ui->textEditor, &CodeEditor::syntaxModeChanged, this, &MainWindow::onSyntaxModeChanged);
+    onSyntaxModeChanged(ui->textEditor->syntaxMode());
 
     ui->breadcrumbTextBrowser->setTextEditor(ui->textEditor);
     ui->breadcrumbTextBrowser->setHeaderTable(ui->contextTableWidget);
@@ -1170,6 +1182,26 @@ void MainWindow::onLanguageChanged()
     
     // Update dynamically created UI elements
     onRecentRecentFilesMenuOpened();
+}
+
+QList<std::pair<QAction*, SyntaxMode>> MainWindow::syntaxMenuActions() const
+{
+    return {
+        { ui->actionSyntaxStc, SyntaxMode::Stc },
+        { ui->actionSyntaxCpp, SyntaxMode::Cpp },
+        { ui->actionSyntaxPython, SyntaxMode::Python },
+        { ui->actionSyntaxXml, SyntaxMode::Xml },
+        { ui->actionSyntaxJson, SyntaxMode::Json },
+    };
+}
+
+void MainWindow::onSyntaxModeChanged(SyntaxMode mode)
+{
+    for (const auto& [action, actionMode] : syntaxMenuActions())
+        action->setChecked(actionMode == mode);
+
+    // checking whether the STC tags are closed makes no sense for a source file
+    ui->actioncheck_if_tags_are_closed->setEnabled(!syntaxmode::isSourceCodeMode(mode));
 }
 
 void MainWindow::restoreLastSession()

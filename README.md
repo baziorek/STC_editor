@@ -19,6 +19,7 @@ Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników
 Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://cpp0x.pl/) (do czego zachęcam):
  1. **Kolorowanie składni**: Podświetlanie znaczników STC dla lepszej czytelności.
     - Kolorowanie składni C++ w ramach znaczników `[cpp]...[/cpp]`. Jest to zaimplementowane przy wykorzystaniu [QCodeEditor](https://github.com/Megaxela/QCodeEditor) (autorstwa [Megaxela](https://github.com/Megaxela), bazując na [forku ArsMasiuk](https://github.com/ArsMasiuk/QCodeEditor)).
+    - Kolorowanie składni Pythona w ramach znaczników `[py]...[/py]` (zarówno blokowo, jak i w linii), łącznie z wieloliniowymi łańcuchami `"""..."""`. Reguły są oparte na słownikach i kolorach z QCodeEditor.
  2. **Weryfikacja zamknięcia znaczników**: Sprawdza, czy wszystkie znaczniki STC są poprawnie zamknięte.
  3. **Transformacja tekstu**: Zmiana zaznaczonego tekstu na małe litery, wielkie litery, camelCase na snake_case lub odwrotnie.
  4. **Podgląd kontekstu dokumentu**:
@@ -107,7 +108,7 @@ Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wyb
 14. **Obsługa różnych kodowań pliku tekstowego**: Nie tylko UTF-8. Jest to dzięki bibliotece [uchardet](https://gitlab.freedesktop.org/uchardet/uchardet).
 15. **Stoper pracy**: stoper, który odpala się po uruchomieniu edytora i liczy zarówno czas kiedy edytor jest włączony, jak i czas pracy w edytorze (wykrywa naciśnięcia klawiszy, gdy ich długo nie ma to się zatrzymuje)
 16. **Obsługa wielu języków**: Obsługuje język angielski i polski.
-17. **Podmiana treści pliku z diffem**: można z menu aplikacji wybrać edycja - wklej i porównaj tekst - dzięki temu pojawi się pełny diff zmian linia po linii z możliwością aplikowania poszczególnych fragmentów (linii lub bloków).
+17. **Kolorowanie składni całego pliku**: Menu `Składnia` pozwala przełączać między trybami: STC, C++, Python, XML i JSON. Przy otwieraniu pliku tryb jest dobierany po rozszerzeniu (np. `.py` → Python, `.cpp`/`.h`/`.hpp` → C++, `.xml`/`.svg`/`.ui`/`.qrc` → XML, `.json` → JSON), a dla nieznanych rozszerzeń używany jest tryb STC. W trybach kodu edytor używa czcionki o stałej szerokości i nie interpretuje znaczników STC, więc `[b]` w kodzie Pythona pozostaje zwykłym indeksowaniem.
 
 ## ⬇️ Pobieranie (najnowsza wersja zbudowana automatycznie)
 
@@ -132,8 +133,6 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 4. Pobieranie aktualizacji przez https://cpp0x.pl/xml/
 5. Szybsze wyjście z aplikacji - po prostu wyjście, bez przywracania stanu niewymagającego zapisu
 6. Integracja analizatora składni C++ (np. [flex](https://github.com/westes/flex)).
-7. Podświetlanie składni Pythona za pomocą [QCXXHighlighter](https://github.com/Megaxela/QCodeEditor) (licencja MIT).
-8. Obsługa różnych kolorowań składni (różne typy plików, bazujące na QCodeEditor).
 9. Wyświetlanie statystyk zmian w czasie rzeczywistym (liczba linii, znaków, rozmiar pliku, linia i kolumna).
 10. Integracja dokumentacji cppreference (jak w `cppman` lub QtCreator).
 11. FindWidget - aby aktualizował pozycje w tekście na bieżąco przy dodawaniu/usuwaniu linii.
@@ -170,12 +169,13 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 42. Obsługa wtyczek, być może z użyciem Lua.
 43. Zamiana prefiksów adresów URL dla obrazów na serwerze.
 44. Dyktowanie tekstu (biblioteka [Whisper](https://github.com/openai/whisper))
-45. Przy porównywaniu diffa niezapisanych zmian z zawartością pliku (linijka w linijkę): możliwość zapisania na dysk poszczególnych linii.
+45. Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
 46. Otwieranie wielu plików jednocześnie.
 47. Widok sąsiadujący do porównywania plików.
 48. Eksport bloków kodu do osobnych plików.
 49. Konsolidacja obrazów do jednego katalogu z aktualizacją ścieżek w znacznikach STC.
-50. Sprawdzania:
+50. Przy porównywaniu difa niezapisanych zmian z zawartością pliku (linijka w linijkę): możliwość zapisania na dysk poszczególnych linii.
+51. Sprawdzania:
      - Sprawdzanie, czy znaczniki `[run]` znajdują się wewnątrz `[pkt]`.
      - Weryfikacja, czy wszystkie znaczniki są zamknięte (np. po opuszczeniu linijki sprawdzamy czy są tam zmiany, jak tak, to czy jest tam nowy tag)
      - Weryfikacja odpowiednich atrybutów w tagach (czy w cudzysłowiu, czy tylko dozwole atrubytu)
