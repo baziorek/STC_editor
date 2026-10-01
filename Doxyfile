@@ -14,7 +14,7 @@ INPUT                  = .
 RECURSIVE              = YES
 FILE_PATTERNS          = *.h *.hpp *.cpp *.md
 EXCLUDE_PATTERNS       = */libs/* */qt-runtime/* */tests/* */build*/* \
-                         */_docs/* */dictionaries/* */translations/* \
+                         */_docs/* */docs/* */dictionaries/* */translations/* \
                          */resources/* */.github/* */README_ang.md
 
 # README.md is used as the front page of the documentation.
@@ -43,7 +43,13 @@ HAVE_DOT               = NO
 SOURCE_BROWSER         = NO
 VERBATIM_HEADERS       = NO
 GENERATE_TREEVIEW      = YES
+DISABLE_INDEX          = NO
 FULL_SIDEBAR           = NO
+
+# Theme: doxygen-awesome-css v2.5.0 (sidebar-only variant), files kept in docs/
+HTML_COLORSTYLE        = LIGHT
+HTML_EXTRA_STYLESHEET  = docs/doxygen-awesome-css/doxygen-awesome.css \
+                         docs/doxygen-awesome-css/doxygen-awesome-sidebar-only.css
 SEARCHENGINE           = YES
 
 # --- warnings --------------------------------------------------------------
