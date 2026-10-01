@@ -189,6 +189,15 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 2. MiniBug: funkcjonalność zmiany wielkości czcionki zakłóca nowe tagi. Jak powiększymy czcionkę i potem dodamy coś np. H1, to on będzie miał czcionkę nawet mniejszą niż reszta, mimo iż to nagłówek
 3. Usuwanie całych linii z pliku nie zmienia tytułu okna: jak dodajemy linie lub coś zmieniamy to w tytule okna pokazuje ile linii zmieniono, jednakże gdy linie są usuwaneto nie pokazuje. Trzeba by zmienić sposób wykrywania zmian przez bibliotekę, a następnie zmienić generowany tytuł.
 
+[![Documentation dla programistów](https://github.com/baziorek/STC_editor/actions/workflows/docs.yml/badge.svg)](https://baziorek.github.io/STC_editor/)
+
+## Dokumentacja kodu
+
+Dokumentacja API generowana jest przez Doxygen i publikowana automatycznie po każdym pushu na `master`:
+👉 **https://baziorek.github.io/STC_editor/**
+
+Lokalnie: `doxygen Doxyfile` w katalogu głównym, wynik w `_docs/html/index.html`.
+
 ## Współpraca
 
 Zapraszam do współpracy! Propozycje zmian i pull requesty są mile widziane, aby uczynić ten edytor jeszcze bardziej użytecznym.

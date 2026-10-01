@@ -184,6 +184,13 @@ You can download the latest compiled version of **STC_editor** from the most rec
 
 Contributions are welcome! Feel free to submit pull requests or suggest improvements to make this editor more user-friendly.
 
+## Code documentation
+
+The API documentation is generated with Doxygen and published automatically on every push to `master`:
+👉 **https://baziorek.github.io/STC_editor/**
+
+Locally: run `doxygen Doxyfile` in the repository root, the output goes to `_docs/html/index.html`.
+
 ### Found Bugs?
 
 Please provide detailed information about any bugs:
