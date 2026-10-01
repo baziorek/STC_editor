@@ -5,6 +5,7 @@
 #include <QFile>
 #include "STCSyntaxHighlighter.h"
 #include "CodeLanguageHighlighting.h"
+#include "LinkDetection.h"
 #include "../stcSyntaxPatterns.h"
 #include "../types/stcTags.h"
 
@@ -300,10 +301,35 @@ void STCSyntaxHighlighter::highlightSourceFileBlock(const QString &text)
         stc::codehl::highlightJson(text, 0, text.length(),
                                    [this](int start, int length, const QTextCharFormat &format) { setFormat(start, length, format); });
         break;
+    case SyntaxMode::PlainText:
+        highlightPlainTextBlock(text);
+        break;
     case SyntaxMode::Stc:
         break; // handled by highlightBlock()
     }
     setCurrentBlockState(stateOut);
+}
+
+void STCSyntaxHighlighter::highlightPlainTextBlock(const QString &text)
+{
+    static const QTextCharFormat linkFormat = [] {
+        QTextCharFormat fmt; // the same look as the text of `[a href=...]`
+        fmt.setForeground(QColor("blue"));
+        fmt.setFontUnderline(true);
+        return fmt;
+    }();
+
+    _codeRangesThisLine.clear();
+    _noFormatRangesThisLine.clear();
+
+    // the parts of an address are not words, so they are left out of the spell checking
+    for (const auto &link : stc::links::findLinks(text))
+    {
+        setFormat(link.start, link.length, linkFormat);
+        _noFormatRangesThisLine.append({ link.start, link.length });
+    }
+
+    applySpellcheckToTextRange(text, 0, text.length(), QTextCharFormat());
 }
 
 bool STCSyntaxHighlighter::highlightHeading(const QString &text)

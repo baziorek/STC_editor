@@ -261,6 +261,7 @@
      <string>Syntax</string>
     </property>
     <addaction name="actionSyntaxStc"/>
+    <addaction name="actionSyntaxPlainText"/>
     <addaction name="actionSyntaxCpp"/>
     <addaction name="actionSyntaxPython"/>
     <addaction name="actionSyntaxXml"/>
@@ -647,6 +648,17 @@
    </property>
    <property name="toolTip">
     <string>Highlight the STC markup; code inside [cpp] and [py] tags is highlighted too</string>
+   </property>
+  </action>
+  <action name="actionSyntaxPlainText">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Plain text</string>
+   </property>
+   <property name="toolTip">
+    <string>No markup: spell checking and formatted links and e-mail addresses only</string>
    </property>
   </action>
   <action name="actionSyntaxCpp">

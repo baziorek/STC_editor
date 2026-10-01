@@ -24,7 +24,8 @@ public:
     }
 
     /// `Stc` highlights the STC markup (and the code inside of `[cpp]`, `[py]`, ... blocks),
-    /// the other modes highlight the entire document as a source file in that language.
+    /// `PlainText` has no markup (only the spell checking and the links), the other modes highlight
+    /// the entire document as a source file in that language.
     SyntaxMode syntaxMode() const
     {
         return _mode;
@@ -49,8 +50,10 @@ protected:
     int applyPythonHighlighting(const QString &text, int from, int to, int stateIn);
     int applyCodeHighlighting(int codeBlockStateFlag, const QString &text, int from, int to, int stateIn);
 
-    /// Used when the syntax mode is not `Stc`: the whole block is a line of a source file.
+    /// Used when the syntax mode is not `Stc`: the whole block is a line of a source file (or of a plain text).
     void highlightSourceFileBlock(const QString &text);
+    /// `SyntaxMode::PlainText`: links and e-mail addresses are formatted, the rest is only spell checked.
+    void highlightPlainTextBlock(const QString &text);
     int languageStateFromPreviousBlock() const;
     void mergeLanguageStateIntoBlockState();
 

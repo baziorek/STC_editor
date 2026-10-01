@@ -27,6 +27,9 @@ public:
     /// Switches the highlighting of the whole document. Opening a file chooses the mode by its extension,
     /// this is what the "Syntax" menu calls to override it. `rehighlightNow=false` is for content which is about to be replaced.
     void setSyntaxMode(SyntaxMode mode, bool rehighlightNow = true);
+    /// What the user chose in the "Syntax" menu: applied now and remembered for the current file,
+    /// so it is the same after the file is opened again (`.txt` can be an STC article or a plain note).
+    void setSyntaxModeChosenByUser(SyntaxMode mode);
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
@@ -261,6 +264,9 @@ private:
     QNetworkAccessManager* networkManager = {};
 
     std::unique_ptr<FileEncodingHandler> fileEncodingHandler;
+
+    /// The mode of a file: what the user chose for it earlier, else what its extension says, else nothing.
+    static std::optional<SyntaxMode> syntaxModeForFile(const QString& fileName);
 
     STCSyntaxHighlighter* syntaxHighlighter = nullptr; // owned by the document
     QString stcFontFamily; // font of the STC text, to get it back after leaving a source file mode

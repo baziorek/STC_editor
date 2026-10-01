@@ -11,9 +11,15 @@
 #include <QTextLayout>
 #include <vector>
 
+#include <QCoreApplication>
+#include <QSettings>
+#include <QTemporaryDir>
+
 #include "utils/CodeLanguageHighlighting.h"
+#include "utils/LinkDetection.h"
 #include "utils/STCSyntaxHighlighter.h"
 #include "utils/SyntaxMode.h"
+#include "utils/SyntaxModeMemory.h"
 
 namespace
 {
@@ -134,7 +140,6 @@ struct HighlightedDocument
 TEST(SyntaxModeDetection, RecognizesKnownExtensions)
 {
     using syntaxmode::detectFromFileName;
-    EXPECT_EQ(detectFromFileName("article.stc"), SyntaxMode::Stc);
     EXPECT_EQ(detectFromFileName("script.py"), SyntaxMode::Python);
     EXPECT_EQ(detectFromFileName("main.cpp"), SyntaxMode::Cpp);
     EXPECT_EQ(detectFromFileName("header.hpp"), SyntaxMode::Cpp);
@@ -149,6 +154,19 @@ TEST(SyntaxModeDetection, IsCaseInsensitiveAndIgnoresDirectories)
     using syntaxmode::detectFromFileName;
     EXPECT_EQ(detectFromFileName("/home/user/projects.v2/SCRIPT.PY"), SyntaxMode::Python);
     EXPECT_EQ(detectFromFileName("C:\\dir.with.dots\\Main.CPP"), SyntaxMode::Cpp);
+}
+
+TEST(SyntaxModeDetection, MarkdownAndProseAreAPlainText)
+{
+    using syntaxmode::detectFromFileName;
+    EXPECT_EQ(detectFromFileName("README.md"), SyntaxMode::PlainText);
+    EXPECT_EQ(detectFromFileName("notes.text"), SyntaxMode::PlainText);
+}
+
+TEST(SyntaxModeDetection, TxtIsNotDetected_ItIsWhatTheStcArticlesAreSavedAs)
+{
+    // otherwise opening an article would turn its tags off
+    EXPECT_FALSE(syntaxmode::detectFromFileName("article.txt").has_value());
 }
 
 TEST(SyntaxModeDetection, UnknownExtensionsGiveNothing)
@@ -578,6 +596,284 @@ TEST(HighlighterModes, EditingARestOfTheFileUpdatesFollowingLines)
     cursor.setPosition(7, QTextCursor::KeepAnchor);
     cursor.removeSelectedText();
     EXPECT_FALSE(blockHasColor(blockAt(d.document, 1), "String"));
+}
+
+// ------------------------------------------------------------------ SyntaxMode: names, predicates, wildcards
+
+TEST(SyntaxModeNames, EveryModeSurvivesAConversionToTextAndBack)
+{
+    for (auto mode : { SyntaxMode::Stc, SyntaxMode::PlainText, SyntaxMode::Cpp, SyntaxMode::Python, SyntaxMode::Xml,
+                       SyntaxMode::Json })
+    {
+        const auto back = syntaxmode::fromString(syntaxmode::toString(mode));
+        ASSERT_TRUE(back.has_value());
+        EXPECT_EQ(*back, mode);
+    }
+    EXPECT_FALSE(syntaxmode::fromString("klingon").has_value());
+    EXPECT_FALSE(syntaxmode::fromString("").has_value());
+}
+
+TEST(SyntaxModePredicates, PlainTextIsNeitherSourceCodeNorStc)
+{
+    EXPECT_TRUE(syntaxmode::usesStcMarkup(SyntaxMode::Stc));
+    EXPECT_FALSE(syntaxmode::usesStcMarkup(SyntaxMode::PlainText));
+    EXPECT_FALSE(syntaxmode::isSourceCodeMode(SyntaxMode::PlainText)); // keeps the font and the spell checking
+    EXPECT_FALSE(syntaxmode::isSourceCodeMode(SyntaxMode::Stc));
+    EXPECT_TRUE(syntaxmode::isSourceCodeMode(SyntaxMode::Python));
+}
+
+TEST(SyntaxModeWildcards, ListSourceFilesButNeitherTxtNorProse)
+{
+    const auto wildcards = syntaxmode::knownSourceFileWildcards();
+    EXPECT_TRUE(wildcards.contains("*.py"));
+    EXPECT_TRUE(wildcards.contains("*.json"));
+    EXPECT_TRUE(wildcards.contains("*.hpp"));
+    EXPECT_FALSE(wildcards.contains("*.txt"));
+    EXPECT_FALSE(wildcards.contains("*.md"));
+}
+
+// ------------------------------------------------------------------ remembered choice
+
+class SyntaxModeMemoryTest : public ::testing::Test
+{
+protected:
+    void SetUp() override
+    {
+        // a settings file of its own, so the tests never touch the real configuration of the user
+        QSettings::setDefaultFormat(QSettings::IniFormat);
+        QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, tempDir.path());
+        QCoreApplication::setOrganizationName("STC_editor_tests");
+        QCoreApplication::setApplicationName("syntax_memory_tests");
+        QSettings().clear();
+    }
+
+    QTemporaryDir tempDir;
+};
+
+TEST_F(SyntaxModeMemoryTest, NothingIsRememberedAtFirst)
+{
+    EXPECT_FALSE(syntaxmode::memory::recall("/tmp/notes.txt").has_value());
+    EXPECT_FALSE(syntaxmode::memory::recall("").has_value());
+}
+
+TEST_F(SyntaxModeMemoryTest, RemembersTheChoiceForAFile)
+{
+    syntaxmode::memory::remember("/tmp/notes.txt", SyntaxMode::PlainText);
+    EXPECT_EQ(syntaxmode::memory::recall("/tmp/notes.txt"), SyntaxMode::PlainText);
+    EXPECT_FALSE(syntaxmode::memory::recall("/tmp/other.txt").has_value()) << "it is a per-file choice";
+}
+
+TEST_F(SyntaxModeMemoryTest, TheNewestChoiceWinsAndForgettingRemovesIt)
+{
+    syntaxmode::memory::remember("/tmp/a.txt", SyntaxMode::Python);
+    syntaxmode::memory::remember("/tmp/a.txt", SyntaxMode::Json);
+    EXPECT_EQ(syntaxmode::memory::recall("/tmp/a.txt"), SyntaxMode::Json);
+
+    syntaxmode::memory::forget("/tmp/a.txt");
+    EXPECT_FALSE(syntaxmode::memory::recall("/tmp/a.txt").has_value());
+}
+
+TEST_F(SyntaxModeMemoryTest, PathsWithTheSeparatorCharacterWork)
+{
+    syntaxmode::memory::remember("/tmp/we|rd name.txt", SyntaxMode::PlainText);
+    EXPECT_EQ(syntaxmode::memory::recall("/tmp/we|rd name.txt"), SyntaxMode::PlainText);
+}
+
+TEST_F(SyntaxModeMemoryTest, OldestEntriesAreDroppedWhenThereAreTooMany)
+{
+    for (int i = 0; i < 600; ++i)
+        syntaxmode::memory::remember(QString("/tmp/file%1.txt").arg(i), SyntaxMode::PlainText);
+
+    EXPECT_FALSE(syntaxmode::memory::recall("/tmp/file0.txt").has_value());
+    EXPECT_TRUE(syntaxmode::memory::recall("/tmp/file599.txt").has_value());
+}
+
+// ------------------------------------------------------------------ links and e-mail addresses
+
+namespace
+{
+using stc::links::LinkKind;
+using stc::links::LinkSpan;
+
+std::vector<QString> linkTexts(const QString& text, LinkKind kind)
+{
+    std::vector<QString> result;
+    for (const auto& link : stc::links::findLinks(text))
+        if (link.kind == kind)
+            result.push_back(text.mid(link.start, link.length));
+    return result;
+}
+} // namespace
+
+TEST(LinkDetection, FindsWebAddresses)
+{
+    const QString text = "Zobacz https://cpp0x.pl/kurs/x?a=1&b=2#frag oraz http://example.com i ftp://files.example.org/a.zip tam.";
+    const auto urls = linkTexts(text, LinkKind::Url);
+    ASSERT_EQ(urls.size(), 3u);
+    EXPECT_EQ(urls[0], "https://cpp0x.pl/kurs/x?a=1&b=2#frag");
+    EXPECT_EQ(urls[1], "http://example.com");
+    EXPECT_EQ(urls[2], "ftp://files.example.org/a.zip");
+}
+
+TEST(LinkDetection, WwwWithoutASchemeIsAnAddress)
+{
+    const auto urls = linkTexts("strona www.cpp0x.pl, zapraszam", LinkKind::Url);
+    ASSERT_EQ(urls.size(), 1u);
+    EXPECT_EQ(urls[0], "www.cpp0x.pl");
+}
+
+TEST(LinkDetection, PunctuationAroundAnAddressIsNotPartOfIt)
+{
+    EXPECT_EQ(linkTexts("(zob. https://example.com/a).", LinkKind::Url), std::vector<QString>{ "https://example.com/a" });
+    EXPECT_EQ(linkTexts("\"https://example.com\"", LinkKind::Url), std::vector<QString>{ "https://example.com" });
+    EXPECT_EQ(linkTexts("Czy to https://example.com/x?!", LinkKind::Url), std::vector<QString>{ "https://example.com/x" });
+    EXPECT_EQ(linkTexts("<https://example.com/x>", LinkKind::Url), std::vector<QString>{ "https://example.com/x" });
+}
+
+TEST(LinkDetection, ClosingParenthesisOfTheAddressIsKept)
+{
+    EXPECT_EQ(linkTexts("https://pl.wikipedia.org/wiki/C_(język)", LinkKind::Url),
+              std::vector<QString>{ "https://pl.wikipedia.org/wiki/C_(język)" });
+    EXPECT_EQ(linkTexts("(https://pl.wikipedia.org/wiki/C_(język))", LinkKind::Url),
+              std::vector<QString>{ "https://pl.wikipedia.org/wiki/C_(język)" });
+}
+
+TEST(LinkDetection, ASchemeOrWwwAloneIsNotAnAddress)
+{
+    EXPECT_TRUE(stc::links::findLinks("ftp:// oraz www. oraz https://.").isEmpty());
+}
+
+TEST(LinkDetection, SchemeInsideAWordIsNotAnAddress)
+{
+    EXPECT_TRUE(stc::links::findLinks("xhttp://example.com").isEmpty());
+}
+
+TEST(LinkDetection, FindsEmailAddresses)
+{
+    const auto emails = linkTexts("Pisz do jan.kowalski+stc@agh.edu.pl lub mailto:biuro@example.com, dzięki.", LinkKind::Email);
+    ASSERT_EQ(emails.size(), 2u);
+    EXPECT_EQ(emails[0], "jan.kowalski+stc@agh.edu.pl");
+    EXPECT_EQ(emails[1], "mailto:biuro@example.com");
+}
+
+TEST(LinkDetection, NotEverythingWithAnAtSignIsAnEmail)
+{
+    EXPECT_TRUE(stc::links::findLinks("@decorator oraz a @ b oraz user@localhost oraz @mention").isEmpty());
+}
+
+TEST(LinkDetection, EmailInsideOfAWebAddressIsNotReportedTwice)
+{
+    const auto links = stc::links::findLinks("https://user@example.com/path");
+    ASSERT_EQ(links.size(), 1);
+    EXPECT_EQ(links[0].kind, LinkKind::Url);
+}
+
+TEST(LinkDetection, ReportsPositionsInTheOrderOfAppearance)
+{
+    const QString text = "a@b.pl i http://x.pl i c@d.pl";
+    const auto links = stc::links::findLinks(text);
+    ASSERT_EQ(links.size(), 3);
+    EXPECT_EQ(links[0], (LinkSpan{ 0, 6, LinkKind::Email }));
+    EXPECT_EQ(links[1], (LinkSpan{ 9, 11, LinkKind::Url }));
+    EXPECT_EQ(links[2], (LinkSpan{ 23, 6, LinkKind::Email }));
+}
+
+TEST(LinkDetection, SearchesOnlyTheRequestedFragment)
+{
+    const QString text = "http://a.pl http://b.pl http://c.pl";
+    const auto links = stc::links::findLinks(text, 12, 23);
+    ASSERT_EQ(links.size(), 1);
+    EXPECT_EQ(text.mid(links[0].start, links[0].length), "http://b.pl");
+}
+
+// ------------------------------------------------------------------ STCSyntaxHighlighter: plain text
+
+namespace
+{
+/// The format of the character at `column`, as it was set by the highlighter.
+QTextCharFormat formatAt(const QTextBlock& block, int column)
+{
+    for (const auto& range : block.layout()->formats())
+        if (column >= range.start && column < range.start + range.length)
+            return range.format;
+    return {};
+}
+
+bool isLinkFormat(const QTextCharFormat& f)
+{
+    return f.fontUnderline() && f.foreground().color() == QColor("blue");
+}
+
+bool isMisspelledFormat(const QTextCharFormat& f)
+{
+    return f.underlineStyle() == QTextCharFormat::SpellCheckUnderline;
+}
+} // namespace
+
+TEST(PlainTextMode, TagsAreJustCharacters)
+{
+    HighlightedDocument d("[h1]Tytuł[/h1] [b]pogrubione[/b]\n[cpp]\nint x;\n[/cpp]\n", SyntaxMode::PlainText);
+    for (int line = 0; line < 4; ++line)
+        for (const auto& s : blockSpans(blockAt(d.document, line)))
+            EXPECT_NE(s.color, QColor(Qt::gray)) << "line " << line << ": the STC tag format leaked into a plain text";
+
+    EXPECT_FALSE(blockHasColor(blockAt(d.document, 2), "Keyword")) << "`int` inside [cpp] is not a code here";
+    EXPECT_EQ(blockAt(d.document, 2).userState(), 0) << "a plain text has no multi-line states";
+}
+
+TEST(PlainTextMode, LinksAndEmailsAreFormatted)
+{
+    const QString text = "Wejdź na https://cpp0x.pl/kurs lub napisz: jan@agh.edu.pl, dziękuję.";
+    HighlightedDocument d(text, SyntaxMode::PlainText);
+    const auto block = blockAt(d.document, 0);
+
+    EXPECT_FALSE(isLinkFormat(formatAt(block, 0))) << "ordinary text";
+    EXPECT_TRUE(isLinkFormat(formatAt(block, text.indexOf("https"))));
+    EXPECT_TRUE(isLinkFormat(formatAt(block, text.indexOf("kurs"))));
+    EXPECT_TRUE(isLinkFormat(formatAt(block, text.indexOf("jan@"))));
+    EXPECT_TRUE(isLinkFormat(formatAt(block, text.indexOf("edu"))));
+    EXPECT_FALSE(isLinkFormat(formatAt(block, text.indexOf("dziękuję")))) << "the comma and what follows are not the address";
+}
+
+TEST(PlainTextMode, MisspelledWordsAreUnderlined)
+{
+    const QString text = "Ten kot ma kttkkkkk dom";
+    HighlightedDocument d(text, SyntaxMode::PlainText);
+    const auto block = blockAt(d.document, 0);
+
+    EXPECT_FALSE(isMisspelledFormat(formatAt(block, text.indexOf("kot"))));
+    EXPECT_FALSE(isMisspelledFormat(formatAt(block, text.indexOf("dom"))));
+    EXPECT_TRUE(isMisspelledFormat(formatAt(block, text.indexOf("kttkkkkk"))));
+}
+
+TEST(PlainTextMode, PartsOfAddressesAreNotSpellChecked)
+{
+    const QString text = "https://zzzzqqqq.example.com/qwrtp i bzdurny@zzzzqqqq.pl";
+    HighlightedDocument d(text, SyntaxMode::PlainText);
+    const auto block = blockAt(d.document, 0);
+
+    for (int column = 0; column < text.length(); ++column)
+        EXPECT_FALSE(isMisspelledFormat(formatAt(block, column))) << "column " << column << " '" << text[column].toLatin1() << "'";
+}
+
+TEST(PlainTextMode, StcModeKeepsItsOwnBehavior)
+{
+    // the same text in the STC mode: no link formatting is added there
+    const QString text = "https://example.com";
+    HighlightedDocument d(text, SyntaxMode::Stc);
+    EXPECT_FALSE(isLinkFormat(formatAt(blockAt(d.document, 0), 3)));
+}
+
+TEST(PlainTextMode, SwitchingBackAndForthRehighlights)
+{
+    HighlightedDocument d("[b]x[/b] www.cpp0x.pl\n");
+    EXPECT_FALSE(isLinkFormat(formatAt(blockAt(d.document, 0), 10)));
+
+    d.highlighter->setSyntaxMode(SyntaxMode::PlainText);
+    EXPECT_TRUE(isLinkFormat(formatAt(blockAt(d.document, 0), 10)));
+
+    d.highlighter->setSyntaxMode(SyntaxMode::Stc);
+    EXPECT_FALSE(isLinkFormat(formatAt(blockAt(d.document, 0), 10)));
 }
 
 int main(int argc, char** argv)

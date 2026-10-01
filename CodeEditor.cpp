@@ -25,6 +25,7 @@
 #include <QHash>
 #include <QFontDatabase>
 #include "CodeEditor.h"
+#include "utils/SyntaxModeMemory.h"
 #include "widgets/LineNumberArea.h"
 #include "utils/STCSyntaxHighlighter.h"
 #include "ui/cppcompilerdialog.h"
@@ -325,6 +326,28 @@ SyntaxMode CodeEditor::syntaxMode() const
     return syntaxHighlighter->syntaxMode();
 }
 
+std::optional<SyntaxMode> CodeEditor::syntaxModeForFile(const QString& fileName)
+{
+    if (const auto remembered = syntaxmode::memory::recall(fileName))
+        return remembered;
+    return syntaxmode::detectFromFileName(fileName);
+}
+
+void CodeEditor::setSyntaxModeChosenByUser(SyntaxMode mode)
+{
+    setSyntaxMode(mode);
+
+    const QString fileName = getFileName();
+    if (fileName.isEmpty())
+        return; // an unsaved document: it is remembered when it gets a name, see setFileName()
+
+    // The mode which the extension gives anyway needs no entry
+    if (mode == syntaxmode::detectFromFileName(fileName).value_or(SyntaxMode::Stc))
+        syntaxmode::memory::forget(fileName);
+    else
+        syntaxmode::memory::remember(fileName, mode);
+}
+
 void CodeEditor::setSyntaxMode(SyntaxMode mode, bool rehighlightNow)
 {
     const SyntaxMode previousMode = syntaxHighlighter->syntaxMode();
@@ -487,11 +510,14 @@ void CodeEditor::setFileName(const QString &newFileName)
         stopWatchingFiles();
     }
 
-    // "Save as" / rename to a name with a known extension (`x.py`) switches the syntax; an unknown one keeps the current mode
-    if (fileNameChanged)
+    // "Save as" / rename: a name with a known extension (`x.py`) or a name with a remembered choice switches the syntax;
+    // any other name keeps the current mode, and it is remembered so that the file is opened the same way next time
+    if (fileNameChanged && !newFileName.isEmpty())
     {
-        if (const auto mode = syntaxmode::detectFromFileName(newFileName))
+        if (const auto mode = syntaxModeForFile(newFileName))
             setSyntaxMode(*mode);
+        else if (syntaxMode() != SyntaxMode::Stc)
+            syntaxmode::memory::remember(newFileName, syntaxMode());
     }
 }
 
@@ -607,11 +633,11 @@ bool CodeEditor::loadFileContentDistargingCurrentContent(const QString& fileName
     {
         const auto fileContent = fileEncodingHandler->loadFile(fileName);
 
-        // Opening another file chooses the syntax by its extension (unknown => STC).
-        // Reloading the same file keeps whatever was selected in the "Syntax" menu.
+        // Opening another file chooses the syntax: what the user chose for this file earlier, else by its extension
+        // (unknown => STC). Reloading the same file keeps whatever is selected in the "Syntax" menu.
         // It is done before setPlainText(), so the content is highlighted once.
         if (fileName != getFileName())
-            setSyntaxMode(syntaxmode::detectFromFileName(fileName).value_or(SyntaxMode::Stc), /*rehighlightNow=*/false);
+            setSyntaxMode(syntaxModeForFile(fileName).value_or(SyntaxMode::Stc), /*rehighlightNow=*/false);
 
         setPlainText(fileContent);
 
@@ -2066,8 +2092,8 @@ void CodeEditor::keyPressEvent(QKeyEvent* event)
         }
         if (event->key() == Qt::Key_V)
         {
-            // Rich text -> STC, tables and links wrapped in tags make no sense in a source file
-            if (syntaxmode::isSourceCodeMode(syntaxMode()))
+            // Rich text -> STC, tables and links wrapped in tags make no sense outside of the STC markup
+            if (!syntaxmode::usesStcMarkup(syntaxMode()))
             {
                 QPlainTextEdit::keyPressEvent(event);
                 return;

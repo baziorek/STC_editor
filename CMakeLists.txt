@@ -191,6 +191,8 @@ set(PROJECT_SOURCES
     utils/FileEncodingHandler.h utils/FileEncodingHandler.cpp
     utils/STCSyntaxHighlighter.h utils/STCSyntaxHighlighter.cpp
     utils/SyntaxMode.h utils/SyntaxMode.cpp
+    utils/SyntaxModeMemory.h utils/SyntaxModeMemory.cpp
+    utils/LinkDetection.h utils/LinkDetection.cpp
     utils/CodeLanguageHighlighting.h utils/CodeLanguageHighlighting.cpp
     utils/SpellChecker.h utils/SpellChecker.cpp
     utils/BackupManager.h utils/BackupManager.cpp
@@ -434,6 +436,8 @@ if(NOT WIN32)
         tests/SyntaxHighlightingTests.cpp
         utils/CodeLanguageHighlighting.cpp
         utils/SyntaxMode.cpp
+        utils/SyntaxModeMemory.cpp
+        utils/LinkDetection.cpp
         utils/STCSyntaxHighlighter.cpp
         utils/SpellChecker.cpp
         stcSyntaxPatterns.cpp

@@ -300,6 +300,22 @@ Do you want to reload it?</translation>
 <context>
     <name>MainWindow</name>
     <message>
+        <source>Plain text</source>
+        <translation>Zwykły tekst</translation>
+    </message>
+    <message>
+        <source>No markup: spell checking and formatted links and e-mail addresses only</source>
+        <translation>Bez znaczników: tylko sprawdzanie pisowni oraz formatowanie linków i adresów e-mail</translation>
+    </message>
+    <message>
+        <source>Source and data files (%1)</source>
+        <translation>Pliki kodu źródłowego i danych (%1)</translation>
+    </message>
+    <message>
+        <source>All files (*)</source>
+        <translation>Wszystkie pliki (*)</translation>
+    </message>
+    <message>
         <source>Syntax</source>
         <translation>Składnia</translation>
     </message>

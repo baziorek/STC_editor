@@ -151,7 +151,7 @@ void MainWindow::connectSignals2Slots()
     for (const auto& [action, mode] : syntaxMenuActions())
     {
         syntaxActions->addAction(action);
-        connect(action, &QAction::triggered, this, [this, mode] { ui->textEditor->setSyntaxMode(mode); });
+        connect(action, &QAction::triggered, this, [this, mode] { ui->textEditor->setSyntaxModeChosenByUser(mode); });
     }
     connect(ui->textEditor, &CodeEditor::syntaxModeChanged, this, &MainWindow::onSyntaxModeChanged);
     onSyntaxModeChanged(ui->textEditor->syntaxMode());
@@ -650,7 +650,9 @@ QString MainWindow::chooseFileWithDialog(QFileDialog::AcceptMode acceptMode)
 {
     QFileDialog dialog(this);
     QStringList nameFilters;
-    nameFilters << QWidget::tr("Text file (*.txt)");
+    nameFilters << QWidget::tr("Text file (*.txt)")
+                << tr("Source and data files (%1)").arg(syntaxmode::knownSourceFileWildcards().join(' '))
+                << tr("All files (*)");
     dialog.setNameFilters(nameFilters);
     dialog.setAcceptMode(acceptMode);
     dialog.setDefaultSuffix(".txt");
@@ -1188,6 +1190,7 @@ QList<std::pair<QAction*, SyntaxMode>> MainWindow::syntaxMenuActions() const
 {
     return {
         { ui->actionSyntaxStc, SyntaxMode::Stc },
+        { ui->actionSyntaxPlainText, SyntaxMode::PlainText },
         { ui->actionSyntaxCpp, SyntaxMode::Cpp },
         { ui->actionSyntaxPython, SyntaxMode::Python },
         { ui->actionSyntaxXml, SyntaxMode::Xml },
@@ -1200,8 +1203,8 @@ void MainWindow::onSyntaxModeChanged(SyntaxMode mode)
     for (const auto& [action, actionMode] : syntaxMenuActions())
         action->setChecked(actionMode == mode);
 
-    // checking whether the STC tags are closed makes no sense for a source file
-    ui->actioncheck_if_tags_are_closed->setEnabled(!syntaxmode::isSourceCodeMode(mode));
+    // checking whether the STC tags are closed makes no sense when there are no STC tags
+    ui->actioncheck_if_tags_are_closed->setEnabled(syntaxmode::usesStcMarkup(mode));
 }
 
 void MainWindow::restoreLastSession()
