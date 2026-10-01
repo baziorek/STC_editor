@@ -3,3 +3,4 @@ CMakeLists.txt.user
 cmake-build-debug
 build
 .cache/clangd
+/_docs/

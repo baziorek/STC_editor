@@ -1,4 +1,8 @@
-/// the code of the class was inspired by: https://doc.qt.io/qt-6.2/qtwidgets-widgets-codeeditor-example.html
+/** @file CodeEditor.h
+ * @brief Declaration of CodeEditor, the central text-editing widget of STC_editor.
+ *
+ * The class was inspired by the Qt example:
+ * https://doc.qt.io/qt-6.2/qtwidgets-widgets-codeeditor-example.html */
 #pragma once
 
 #include <QPlainTextEdit>
@@ -13,6 +17,14 @@ class FileEncodingHandler;
 class STCSyntaxHighlighter;
 class QNetworkAccessManager;
 
+/** @brief Text editor widget with line numbers and support for STC markup.
+ *
+ * Extends QPlainTextEdit with:
+ *  - loading and saving files (with encoding detection) and watching them for external changes,
+ *  - tracking which lines differ from the originally loaded content,
+ *  - detection of code blocks (e.g. `[cpp]...[/cpp]`) in the document,
+ *  - whole-document syntax modes (STC, plain text, C++, Python, XML, JSON),
+ *  - context-menu actions, smart pasting (links, tables, rich text) and spelling suggestions. */
 class CodeEditor : public QPlainTextEdit
 {
     Q_OBJECT

@@ -1,0 +1,52 @@
+# Minimal Doxyfile for STC_editor (Doxygen 1.9+).
+# Only options that differ from Doxygen defaults are listed.
+# Full reference: https://www.doxygen.nl/manual/config.html
+
+PROJECT_NAME           = "STC_editor"
+PROJECT_BRIEF          = "Qt text editor for STC markup used on cpp0x.pl"
+OUTPUT_DIRECTORY       = _docs
+HTML_OUTPUT            = html
+
+# --- what is scanned -------------------------------------------------------
+# Whole repository, so documenting any further file/class later "just works".
+# Without EXTRACT_ALL only commented entities appear in the output.
+INPUT                  = .
+RECURSIVE              = YES
+FILE_PATTERNS          = *.h *.hpp *.cpp *.md
+EXCLUDE_PATTERNS       = */libs/* */qt-runtime/* */tests/* */build*/* \
+                         */_docs/* */dictionaries/* */translations/* \
+                         */resources/* */.github/* */README_ang.md
+
+# README.md is used as the front page of the documentation.
+USE_MDFILE_AS_MAINPAGE = README.md
+IMAGE_PATH             = .
+
+# --- extraction ------------------------------------------------------------
+EXTRACT_ALL            = NO
+EXTRACT_PRIVATE        = NO
+HIDE_UNDOC_CLASSES     = YES
+HIDE_UNDOC_MEMBERS     = YES
+JAVADOC_AUTOBRIEF      = YES
+QT_AUTOBRIEF           = YES
+OPTIMIZE_OUTPUT_FOR_C  = NO
+
+# Qt macros which confuse the parser
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = YES
+PREDEFINED             = Q_OBJECT= Q_SIGNALS=public Q_SLOTS=
+
+# --- output ----------------------------------------------------------------
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+HAVE_DOT               = NO
+SOURCE_BROWSER         = NO
+VERBATIM_HEADERS       = NO
+GENERATE_TREEVIEW      = YES
+FULL_SIDEBAR           = NO
+SEARCHENGINE           = YES
+
+# --- warnings --------------------------------------------------------------
+QUIET                  = YES
+WARN_IF_UNDOCUMENTED   = NO
+WARN_NO_PARAMDOC       = NO
