@@ -1891,10 +1891,10 @@ void CodeEditor::addCodeBlockActionsIfApplicable(QMenu* menu, const QPoint& pos)
             menu->addAction(format);
 
             QAction* compile = new QAction(QIcon::fromTheme("applications-development"), "Compile C++ with g++", this);
-            connect(compile, &QAction::triggered, this, [=, this]() {
-                QString raw = cursor.selectedText().replace(QChar::ParagraphSeparator, '\n');
-                auto* dlg = new CppCompilerDialog(raw, this);
-                dlg->exec();
+            const CodeBlock codeOnlyBlock = *maybeBlock; // `cursor` selects just the code, without [cpp] and [/cpp]
+            connect(compile, &QAction::triggered, this, [codeOnlyBlock, this]() {
+                CppCompilerDialog dialog(codeOnlyBlock, this);
+                dialog.exec();
             });
             menu->addAction(compile);
 

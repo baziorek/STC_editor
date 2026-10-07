@@ -33,6 +33,7 @@ Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://c
  7. **Formatowanie kodu C++**: Kliknij prawym przyciskiem wewnątrz `[cpp]...[/cpp]`, aby sformatować kod za pomocą `clang-format` (wymaga zainstalowanego `clang-format`).
     - Jeśli obok pliku tekstowego znajduje się plik z ustawieniami formatowania ".clang-format" to zostanie on użyty, w przeciwny wypadku domyślne użyte zostanie "LLVM".
  8. **Kompilacja kodu C++**: Kliknij prawym przyciskiem wewnątrz `[cpp]...[/cpp]`, aby skompilować kod za pomocą `g++` (wymaga zainstalowanego `g++`).
+    - Następnie pojawia się okno umożliwiające kompilacje i podejrzenie jej błędów, jak również wyświetlenie outputu programu. Są też przyciski umożliwiające wstawienie tego od razu do edytowanego dokumentu.
  9. **Usuwanie komentarzy C++**: Kliknij prawym przyciskiem wewnątrz `[cpp]...[/cpp]`, aby usunąć wszystkie komentarze z kodu C++ (wykorzystuje bibliotekę [StripCppComments](https://github.com/wtwhite/StripCppComments)). Dodatkowo funkcja czyści nadmiarowe puste linie, pozostawiając maksymalnie dwie puste linie obok siebie.
 10. **Czyszczenie pustych linii**: Kliknij prawym przyciskiem wewnątrz dowolnego tekstu, aby usunąć nadmiarowe puste linie, pozostawiając maksymalnie dwie puste linie obok siebie. Przydatne do porządkowania tekstu po usunięciu komentarzy lub ogólnego czyszczenia formatowania.
  9. **Statystyki pliku**: Wyświetla statystyki specyficzne dla STC, np. użycie znaczników, obok standardowych metryk edytora.
@@ -132,7 +133,7 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 3. Historia wprowadzanych zmian (`Ctrl+Z`).
 4. Pobieranie aktualizacji przez https://cpp0x.pl/xml/
 5. Szybsze wyjście z aplikacji - po prostu wyjście, bez przywracania stanu niewymagającego zapisu
-6. Integracja analizatora składni C++ (np. [flex](https://github.com/westes/flex)).
+6. Rozważenie integracji Scintilla wraz z Lexillą jako silnika edycji i kolorowania składni (zamiast obecnego QCodeEditor). Dzięki temu możliwe byłoby uzyskanie znacznie bogatszego podświetlania składni C++ (oraz wielu innych języków), składania kodu (code folding), lepszej obsługi dużych plików oraz bardziej profesjonalnego wyglądu edytora, przy zachowaniu dobrej wydajności.
 9. Wyświetlanie statystyk zmian w czasie rzeczywistym (liczba linii, znaków, rozmiar pliku, linia i kolumna).
 10. Integracja dokumentacji cppreference (jak w `cppman` lub QtCreator).
 11. FindWidget - aby aktualizował pozycje w tekście na bieżąco przy dodawaniu/usuwaniu linii.
