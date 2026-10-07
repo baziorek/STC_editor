@@ -194,6 +194,7 @@ set(PROJECT_SOURCES
     utils/SyntaxModeMemory.h utils/SyntaxModeMemory.cpp
     utils/LinkDetection.h utils/LinkDetection.cpp
     utils/CodeLanguageHighlighting.h utils/CodeLanguageHighlighting.cpp
+    utils/AnsiTextWriter.h utils/AnsiTextWriter.cpp
     utils/SpellChecker.h utils/SpellChecker.cpp
     utils/BackupManager.h utils/BackupManager.cpp
 )

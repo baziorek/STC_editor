@@ -7,6 +7,7 @@
 #include <QStringConverter>
 #include <QTextCursor>
 #include "types/CodeBlock.h"
+#include "utils/AnsiTextWriter.h"
 
 class CodeEditor;
 class QCheckBox;
@@ -89,6 +90,7 @@ private:
     QTimer* timeoutTimer_ = nullptr;
     std::unique_ptr<QTemporaryDir> workDir_;
     QStringDecoder decoder_{QStringDecoder::Utf8};
+    AnsiTextWriter ansiWriter_; ///< shows the colors of the compiler messages, keeps the text plain
     qint64 receivedBytes_ = 0;
     bool stoppedByUser_ = false;
     bool timedOut_ = false;

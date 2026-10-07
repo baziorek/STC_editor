@@ -189,6 +189,7 @@ void CppCompilerDialog::buildUi()
         auto* edit = new QPlainTextEdit(this);
         edit->setFont(monoFont);
         edit->setLineWrapMode(QPlainTextEdit::NoWrap);
+        edit->setUndoRedoEnabled(false); // the pane is filled by the program, the undo history would only eat memory
         edit->setPlaceholderText(placeholder);
         connect(edit, &QPlainTextEdit::textChanged, this, &CppCompilerDialog::updateInsertButtons);
         return edit;
@@ -294,7 +295,7 @@ void CppCompilerDialog::startCompilation()
     source.close();
 
     QStringList arguments;
-    arguments << QStringLiteral("-fdiagnostics-color=never"); // no escape sequences in the log which is pasted into the article
+    arguments << QStringLiteral("-fdiagnostics-color=always"); // shown in color (see AnsiTextWriter); the text itself stays plain, so is the log pasted into the article
     arguments += splitFlags(compileFlagsEdit_->text());
     arguments << QString::fromLatin1(kSourceFileName);
     arguments += splitFlags(linkFlagsEdit_->text()); // libraries have to follow the source file
@@ -323,6 +324,7 @@ void CppCompilerDialog::startProcess(const QString& program, const QStringList& 
     timedOut_ = false;
     outputTruncated_ = false;
     decoder_ = QStringDecoder(QStringDecoder::Utf8);
+    ansiWriter_.reset();
 
     process_ = new QProcess(this);
     process_->setWorkingDirectory(workDir_->path());
@@ -388,8 +390,7 @@ void CppCompilerDialog::onProcessOutput()
     text.replace(QStringLiteral("\r\n"), QStringLiteral("\n"));
 
     QPlainTextEdit* pane = currentPane();
-    pane->moveCursor(QTextCursor::End);
-    pane->insertPlainText(text);
+    ansiWriter_.append(pane, text);
     pane->verticalScrollBar()->setValue(pane->verticalScrollBar()->maximum());
 
     if (receivedBytes_ > kMaxOutputBytes)
