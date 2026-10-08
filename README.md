@@ -70,6 +70,9 @@ Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://c
     - Jest również możliwość drag&drop między komórkami powodująca ich zamianę
 25. **Wyszukiwanie na [Cppreference](cppreference.com) po słowach kluczowych z kodu C++**: jak w ramach tagów `[cpp]...[/cpp]` klikniemy PPM na słowie to w menu kontekstowym pojawia się opcja wyszukiwania, po jej naciśnięciu pojawia się nam okno z cppreference dla danego hasła.
 26. **Otwieranie opisu tagów STC**: jak klikniemy PPM na dowolnym tagu otwierającym STC to pojawia się opcja w menu kontekstowym, której wybranie powoduje otwarcie podstrony [kursu STC](https://cpp0x.pl/kursy/Kurs-STC/169) zawierającej ten tag.
+27. **Czteroklik na tekście**: Czwarte kliknięcie na tekście powoduje:
+    - Jeśli jesteśmy w między tagami `[x]...[/x]` to zaznacza cały tekst między tagami.
+    - Jeśli klikamy w przestrzeni na artybut `[y atr="..."]` to zaznaczany jest cały tekst atrybutu.
 
 ## Ogólne funkcje edytora
 Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wybrane funkcjonalności, których brakuje mi w zwykłych edytorach:

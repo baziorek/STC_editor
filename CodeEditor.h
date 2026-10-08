@@ -182,6 +182,7 @@ protected:
 
     void mouseMoveEvent(QMouseEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
+    void mouseDoubleClickEvent(QMouseEvent* event) override;
 
     void wheelEvent(QWheelEvent* event) override;
 
@@ -210,6 +211,13 @@ protected:
     QVector<CodeBlock> parseAllCodeBlocks();
 
     void handleCodeBlockDetectionOnChange(int position);
+
+    /// 4th, 5th... click (STC mode): selects the value of the attribute / the text between the tags around the click,
+    /// every next click selects the next, bigger region. Returns true if the event was handled.
+    bool trySelectTagRegionOnMultiClick(QMouseEvent* event);
+    int multiClickCount_ = 0;          ///< consecutive clicks of the left button: close in time and in place
+    quint64 lastClickTimestamp_ = 0;   ///< [ms], timestamp of the event
+    QPoint lastClickPosition_;
 
     /// methods to handle opening links on click:
     bool isCtrlLeftClick(QMouseEvent *event) const;

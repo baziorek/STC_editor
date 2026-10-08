@@ -26,6 +26,7 @@
 #include <QFontDatabase>
 #include "CodeEditor.h"
 #include "utils/SyntaxModeMemory.h"
+#include "utils/StcTagRegions.h"
 #include "widgets/LineNumberArea.h"
 #include "utils/EditHistory.h"
 #include "widgets/EditHistoryDialog.h"
@@ -3127,7 +3128,52 @@ void CodeEditor::mousePressEvent(QMouseEvent* event)
             return; // link found and opened
     }
 
+    if (trySelectTagRegionOnMultiClick(event))
+        return;
+
     QPlainTextEdit::mousePressEvent(event); // default behavior
+}
+
+void CodeEditor::mouseDoubleClickEvent(QMouseEvent* event)
+{
+    // Depending on the platform, the 4th click arrives as a press or as another double click, so both are counted
+    if (trySelectTagRegionOnMultiClick(event))
+        return;
+
+    QPlainTextEdit::mouseDoubleClickEvent(event); // default behavior: selects the word
+}
+
+bool CodeEditor::trySelectTagRegionOnMultiClick(QMouseEvent* event)
+{
+    if (event->button() != Qt::LeftButton || event->modifiers() != Qt::NoModifier)
+    {
+        multiClickCount_ = 0;
+        return false;
+    }
+
+    const bool continuesSequence = multiClickCount_ > 0 &&
+                                   event->timestamp() - lastClickTimestamp_ <= static_cast<quint64>(QApplication::doubleClickInterval()) &&
+                                   (event->pos() - lastClickPosition_).manhattanLength() <= QApplication::startDragDistance();
+    multiClickCount_ = continuesSequence ? multiClickCount_ + 1 : 1;
+    lastClickTimestamp_ = event->timestamp();
+    lastClickPosition_ = event->pos();
+
+    // 1st click: cursor, 2nd: word, 3rd: line (all by QPlainTextEdit)
+    constexpr int kFirstRegionClick = 4;
+    if (multiClickCount_ < kFirstRegionClick || syntaxMode() != SyntaxMode::Stc)
+        return false;
+
+    const QList<StcTagRegions::Range> regions = StcTagRegions::regionsAround(toPlainText(), cursorForPosition(event->pos()).position());
+    event->accept();
+    if (regions.isEmpty())
+        return true; // nothing to select: the line from the 3rd click stays selected
+
+    const StcTagRegions::Range region = regions[qMin<qsizetype>(multiClickCount_ - kFirstRegionClick, regions.size() - 1)];
+    QTextCursor selection(document());
+    selection.setPosition(region.start);
+    selection.setPosition(region.end, QTextCursor::KeepAnchor);
+    setTextCursor(selection);
+    return true;
 }
 
 bool CodeEditor::isCtrlLeftClick(QMouseEvent* event) const
