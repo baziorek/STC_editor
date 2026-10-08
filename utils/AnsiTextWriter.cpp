@@ -46,6 +46,15 @@ void AnsiTextWriter::reset()
 {
     pending_.clear();
     format_ = QTextCharFormat();
+    started_ = false;
+}
+
+QTextCharFormat AnsiTextWriter::baseFormat(bool darkBackground) const
+{
+    QTextCharFormat format;
+    if (defaultColorIndex_ >= 0)
+        format.setForeground(basicColor(defaultColorIndex_, darkBackground));
+    return format;
 }
 
 void AnsiTextWriter::applySgr(const QString& parameters, bool darkBackground)
@@ -60,7 +69,7 @@ void AnsiTextWriter::applySgr(const QString& parameters, bool darkBackground)
         const int code = codes[i];
         if (code == 0)
         {
-            format_ = QTextCharFormat();
+            format_ = baseFormat(darkBackground);
         }
         else if (code == 1)
         {
@@ -88,7 +97,10 @@ void AnsiTextWriter::applySgr(const QString& parameters, bool darkBackground)
         }
         else if (code == 39)
         {
-            format_.clearForeground();
+            if (defaultColorIndex_ >= 0)
+                format_.setForeground(basicColor(defaultColorIndex_, darkBackground));
+            else
+                format_.clearForeground();
         }
         else if (code >= 40 && code <= 47)
         {
@@ -131,6 +143,11 @@ void AnsiTextWriter::append(QPlainTextEdit* edit, const QString& chunk)
 {
     pending_ += chunk;
     const bool darkBackground = edit->palette().base().color().lightness() < 128;
+    if (!started_)
+    {
+        format_ = baseFormat(darkBackground);
+        started_ = true;
+    }
 
     QTextCursor cursor(edit->document()); // our own cursor: the selection and the position of the user stay untouched
     cursor.movePosition(QTextCursor::End);

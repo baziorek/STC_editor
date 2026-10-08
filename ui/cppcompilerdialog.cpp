@@ -40,6 +40,16 @@ constexpr char kProgramFileName[] = "program.exe";
 constexpr char kProgramFileName[] = "program";
 #endif
 
+/// "850 us", "12.4 ms", "1.23 s"
+QString formatDuration(qint64 nanoseconds)
+{
+    if (nanoseconds < 1'000'000)
+        return QObject::tr("%1 us").arg(nanoseconds / 1000);
+    if (nanoseconds < 1'000'000'000)
+        return QObject::tr("%1 ms").arg(nanoseconds / 1e6, 0, 'f', nanoseconds < 10'000'000 ? 2 : 1);
+    return QObject::tr("%1 s").arg(nanoseconds / 1e9, 0, 'f', 2);
+}
+
 QString normalizedNewlines(QString text)
 {
     text.replace(QStringLiteral("\r\n"), QStringLiteral("\n"));
@@ -115,6 +125,8 @@ CppCompilerDialog::CppCompilerDialog(const CodeBlock& block, QWidget* parent)
 {
     setWindowTitle(tr("g++ compilation"));
     resize(1000, 780);
+
+    stderrWriter_.setDefaultColorIndex(1); // red
 
     timeoutTimer_ = new QTimer(this);
     timeoutTimer_->setSingleShot(true);
@@ -204,20 +216,43 @@ void CppCompilerDialog::buildUi()
     insertProgramOutputButton_->setToolTip(tr("Adds [code]...[/code] with this text under the closing tag of the code block"));
     insertProgramOutputButton_->setAutoDefault(false);
 
-    auto makePane = [&](const QString& title, QPlainTextEdit* edit, QPushButton* button) {
+    // --- the right side of the headers of the panes: the checkboxes of the streams and how long it took
+    auto makeTimeLabel = [&](const QString& toolTip) {
+        auto* label = new QLabel(this);
+        label->setForegroundRole(QPalette::PlaceholderText); // gray
+        label->setToolTip(toolTip);
+        return label;
+    };
+    compileTimeLabel_ = makeTimeLabel(tr("Compilation time"));
+    runTimeLabel_ = makeTimeLabel(tr("Execution time of the program"));
+
+    showStdoutCheck_ = new QCheckBox(tr("stdout"), this);
+    showStdoutCheck_->setChecked(true);
+    showStdoutCheck_->setToolTip(tr("Show what the program wrote to stdout"));
+    showStderrCheck_ = new QCheckBox(tr("stderr"), this);
+    showStderrCheck_->setChecked(true);
+    showStderrCheck_->setToolTip(tr("Show what the program wrote to stderr (red). Unchecked text is not inserted into the article either."));
+    connect(showStdoutCheck_, &QCheckBox::toggled, this, &CppCompilerDialog::rebuildProgramOutput);
+    connect(showStderrCheck_, &QCheckBox::toggled, this, &CppCompilerDialog::rebuildProgramOutput);
+
+    auto makePane = [&](const QString& title, const QList<QWidget*>& headerWidgets, QPlainTextEdit* edit, QPushButton* button) {
         auto* pane = new QWidget(this);
         auto* layout = new QVBoxLayout(pane);
         layout->setContentsMargins(0, 0, 0, 0);
-        auto* label = new QLabel(QStringLiteral("<b>%1</b>").arg(title), pane);
-        layout->addWidget(label);
+        auto* header = new QHBoxLayout;
+        header->addWidget(new QLabel(QStringLiteral("<b>%1</b>").arg(title), pane));
+        header->addStretch(1);
+        for (QWidget* widget : headerWidgets)
+            header->addWidget(widget);
+        layout->addLayout(header);
         layout->addWidget(edit, 1);
         layout->addWidget(button);
         return pane;
     };
 
     auto* logsSplitter = new QSplitter(Qt::Horizontal, this);
-    logsSplitter->addWidget(makePane(tr("Compiler log"), compilerLogEdit_, insertCompilerLogButton_));
-    logsSplitter->addWidget(makePane(tr("Program output"), programOutputEdit_, insertProgramOutputButton_));
+    logsSplitter->addWidget(makePane(tr("Compiler log"), {compileTimeLabel_}, compilerLogEdit_, insertCompilerLogButton_));
+    logsSplitter->addWidget(makePane(tr("Program output"), {showStdoutCheck_, showStderrCheck_, runTimeLabel_}, programOutputEdit_, insertProgramOutputButton_));
 
     auto* codeAndLogsSplitter = new QSplitter(Qt::Vertical, this);
     codeAndLogsSplitter->addWidget(codeEdit_);
@@ -277,6 +312,9 @@ void CppCompilerDialog::startCompilation()
     saveSettings();
     compilerLogEdit_->clear();
     programOutputEdit_->clear();
+    programChunks_.clear();
+    compileTimeLabel_->clear();
+    runTimeLabel_->clear();
 
     workDir_ = std::make_unique<QTemporaryDir>(QDir::tempPath() + QStringLiteral("/stc_cppXXXXXX"));
     if (!workDir_->isValid())
@@ -324,18 +362,25 @@ void CppCompilerDialog::startProcess(const QString& program, const QStringList& 
     timedOut_ = false;
     outputTruncated_ = false;
     decoder_ = QStringDecoder(QStringDecoder::Utf8);
+    stderrDecoder_ = QStringDecoder(QStringDecoder::Utf8);
     ansiWriter_.reset();
+    stdoutWriter_.reset();
+    stderrWriter_.reset();
 
     process_ = new QProcess(this);
     process_->setWorkingDirectory(workDir_->path());
-    process_->setProcessChannelMode(QProcess::MergedChannels); // stdout and stderr in the order in which they were written
+    // g++ writes the messages to stderr: one pane, in the order in which they were written.
+    // The program: separate channels, so that stdout and stderr can be told apart (stderr is red, both can be hidden).
+    process_->setProcessChannelMode(stage_ == Stage::Running ? QProcess::SeparateChannels : QProcess::MergedChannels);
     process_->setStandardInputFile(QProcess::nullDevice());    // a program waiting for std::cin gets EOF instead of hanging
 
     connect(process_, &QProcess::readyReadStandardOutput, this, &CppCompilerDialog::onProcessOutput);
+    connect(process_, &QProcess::readyReadStandardError, this, &CppCompilerDialog::onProcessErrorOutput);
     connect(process_, &QProcess::finished, this, &CppCompilerDialog::onProcessFinished);
     connect(process_, &QProcess::errorOccurred, this, &CppCompilerDialog::onProcessError);
 
     timeoutTimer_->start(timeoutMs);
+    processTimer_.start();
     process_->start(program, arguments);
 }
 
@@ -378,20 +423,46 @@ QPlainTextEdit* CppCompilerDialog::currentPane() const
 
 void CppCompilerDialog::onProcessOutput()
 {
-    if (!process_)
-        return;
+    if (process_)
+        handleOutput(process_->readAllStandardOutput(), false);
+}
 
-    const QByteArray data = process_->readAllStandardOutput();
+void CppCompilerDialog::onProcessErrorOutput()
+{
+    if (process_)
+        handleOutput(process_->readAllStandardError(), true);
+}
+
+void CppCompilerDialog::drainOutput()
+{
+    onProcessOutput();
+    onProcessErrorOutput();
+}
+
+bool CppCompilerDialog::isStreamVisible(bool isStderr) const
+{
+    return (isStderr ? showStderrCheck_ : showStdoutCheck_)->isChecked();
+}
+
+void CppCompilerDialog::handleOutput(const QByteArray& data, bool isStderr)
+{
     if (data.isEmpty() || outputTruncated_)
         return;
 
     receivedBytes_ += data.size();
-    QString text = decoder_(data);
+    QStringDecoder& decoder = isStderr ? stderrDecoder_ : decoder_;
+    QString text = decoder(data);
     text.replace(QStringLiteral("\r\n"), QStringLiteral("\n"));
 
-    QPlainTextEdit* pane = currentPane();
-    ansiWriter_.append(pane, text);
-    pane->verticalScrollBar()->setValue(pane->verticalScrollBar()->maximum());
+    if (stage_ == Stage::Running)
+    {
+        appendProgramText(isStderr, text);
+    }
+    else
+    {
+        ansiWriter_.append(compilerLogEdit_, text);
+        compilerLogEdit_->verticalScrollBar()->setValue(compilerLogEdit_->verticalScrollBar()->maximum());
+    }
 
     if (receivedBytes_ > kMaxOutputBytes)
     {
@@ -400,13 +471,38 @@ void CppCompilerDialog::onProcessOutput()
     }
 }
 
+void CppCompilerDialog::appendProgramText(bool isStderr, const QString& text)
+{
+    programChunks_.push_back({isStderr, text});
+    if (!isStreamVisible(isStderr))
+        return;
+
+    (isStderr ? stderrWriter_ : stdoutWriter_).append(programOutputEdit_, text);
+    programOutputEdit_->verticalScrollBar()->setValue(programOutputEdit_->verticalScrollBar()->maximum());
+}
+
+void CppCompilerDialog::rebuildProgramOutput()
+{
+    programOutputEdit_->clear();
+    stdoutWriter_.reset();
+    stderrWriter_.reset();
+    for (const OutputChunk& chunk : programChunks_)
+    {
+        if (isStreamVisible(chunk.isStderr))
+            (chunk.isStderr ? stderrWriter_ : stdoutWriter_).append(programOutputEdit_, chunk.text);
+    }
+    programOutputEdit_->verticalScrollBar()->setValue(programOutputEdit_->verticalScrollBar()->maximum());
+}
+
 void CppCompilerDialog::onProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    onProcessOutput(); // whatever is still in the pipe
+    const qint64 elapsedNs = processTimer_.nsecsElapsed();
+    drainOutput(); // whatever is still in the pipes
 
     const Stage finishedStage = stage_;
     const QString what = finishedStage == Stage::Compiling ? tr("Compilation") : tr("The program");
     releaseProcess();
+    (finishedStage == Stage::Compiling ? compileTimeLabel_ : runTimeLabel_)->setText(formatDuration(elapsedNs));
 
     if (stoppedByUser_)
     {
