@@ -96,6 +96,12 @@ The editor is also suitable for general document editing. Here are some standout
 14. **Multiple File Encodings**: Supports various encodings (not just UTF-8) using the [uchardet](https://gitlab.freedesktop.org/uchardet/uchardet) library.
 15. **Work Timer**: Tracks both the time the editor is open and active editing time (pauses when no keypresses are detected).
 16. **Whole-File Syntax Modes**: The `Syntax` menu switches between STC, Plain text, C++, Python, XML and JSON. Opening a file picks the mode from its extension (e.g. `.py` → Python, `.cpp`/`.h`/`.hpp` → C++, `.xml`/`.svg`/`.ui`/`.qrc` → XML, `.json` → JSON, `.md`/`.rst` → plain text); every other extension, including `.txt` (what the STC articles are saved as), uses STC. A mode chosen by hand in the menu is remembered for that file, so e.g. a `.txt` note is opened as plain text next time. In the code modes the editor uses a fixed-width font and does not interpret STC tags, so `[b]` in Python code stays an ordinary index expression. **Plain text** has no markup at all: spell checking works, and links (`https://...`, `www....`) and e-mail addresses are colored and underlined (their parts are not reported as misspelled). The open dialog offers filters for `.txt` files, source and data files, and all files.
+17. **Edit History** (since the file was opened; it is gone when the editor is closed or another file is opened):
+    - `Ctrl+Z` / `Ctrl+Shift+Z` work as before - they undo a whole run of typed text (a few words) at once, not letter by letter. The history only watches them; Qt's undo stack is untouched.
+    - Context menu → **Edit history…**: a table of all the steps (time, number of changed lines and their numbers - modified, `+added`, `−removed` - number of changed characters, when the file was saved). The `▶` arrow marks the current state of the document and moves with `Ctrl+Z` / `Ctrl+Shift+Z`; undone steps are greyed out and come back with `Ctrl+Shift+Z` (they are dropped only when you make a new edit after an undo). Clicking a step shows the diff of what it changed; double click goes to the line. The window follows the document while it is open.
+    - **Line history**: lines changed in this session have a circle around their number (dotted when all the changes of the line are undone). Clicking the number (or context menu → **History of line…**) shows a table of the changes of that line: time, the change in one line (green added, red removed), when the file was saved with that change in it, and the current state.
+    - A line keeps its history when lines are inserted or removed above it, and a removed line gets it back with `Ctrl+Z`.
+    - Memory: no copy of the document is made per keystroke. A step keeps only the lines it changed (before and after), and the total is capped - when the cap is exceeded the oldest steps lose their text but keep their numbers.
 
 ## ⬇️ Downloads (Latest Automatically Built Version)
 
@@ -120,7 +126,6 @@ You can download the latest compiled version of **STC_editor** from the most rec
 6. Integration of a C++ syntax analyzer (e.g., [flex](https://github.com/westes/flex)).
 7. Dedicated C++ code formatting.
 9. Real-time change statistics (line count, character count, file size, cursor line/column).
-10. Input history for undo/redo (`Ctrl+Z`).
 11. Faster application exit without prompting for unchanged states.
 12. Integration of cppreference documentation (similar to `cppman` or QtCreator).
 13. FindWidget: Update match positions in real-time when adding/removing lines.
@@ -133,7 +138,6 @@ You can download the latest compiled version of **STC_editor** from the most rec
 20. Display font size information during `Ctrl+Scroll` (like QtCreator).
 21. Table generator for STC tables.
 22. PreviewWidget: Track positions between the source document and HTML preview.
-23. Line change history.
 24. Precompiled headers for `codeEditor.h` and module support.
 25. Integrate IWYU with CMake.
 26. Code and header folding (like in IDEs).

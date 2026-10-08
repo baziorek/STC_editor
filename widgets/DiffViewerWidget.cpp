@@ -148,6 +148,7 @@ void DiffViewerWidget::updateRowHeights()
 void DiffViewerWidget::setDiffData(const QList<DiffCalculation::LineDiffResult> &diffs)
 {
     const bool showBlocks = (rowActions == RowActions::AcceptOrDiscardChange);
+    setColumnHidden(4, rowActions == RowActions::None);
 
     // Table rows: every diff is one row; a block additionally gets a header row above its first diff
     QVector<int> blockStartingAt(diffs.size(), -1);
@@ -276,7 +277,7 @@ void DiffViewerWidget::setDiffData(const QList<DiffCalculation::LineDiffResult> 
 
             setCellWidget(row, 4, box);
         }
-        else
+        else if (rowActions == RowActions::RestoreOriginal)
         {
             // Restore button
             QPushButton *restoreBtn = makeSquareButton(this, "↩", "Restore original line");

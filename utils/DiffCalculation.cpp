@@ -308,6 +308,125 @@ QList<LineDiffResult> computeModifiedLineDiffs(const std::vector<DiffLine>& diff
     return results;
 }
 
+namespace
+{
+/// Above this many characters (of the part that differs) a text is not compared character by character
+constexpr qsizetype maxCharDiffLength = 200'000;
+constexpr float charDiffTimeoutSeconds = 0.25f;
+
+struct CommonEnds
+{
+    qsizetype prefix = 0;
+    qsizetype suffix = 0;
+};
+
+/// Length of the text equal at the start and at the end of both strings (never splitting a surrogate pair)
+CommonEnds commonEnds(const QString& a, const QString& b)
+{
+    CommonEnds ends;
+    const qsizetype shortest = std::min(a.size(), b.size());
+
+    while (ends.prefix < shortest && a[ends.prefix] == b[ends.prefix])
+        ++ends.prefix;
+    while (ends.prefix > 0 && a[ends.prefix - 1].isHighSurrogate())
+        --ends.prefix;
+
+    while (ends.suffix < shortest - ends.prefix && a[a.size() - 1 - ends.suffix] == b[b.size() - 1 - ends.suffix])
+        ++ends.suffix;
+    while (ends.suffix > 0 && a[a.size() - ends.suffix].isLowSurrogate())
+        --ends.suffix;
+
+    return ends;
+}
+
+int codePoints(QStringView text)
+{
+    int count = 0;
+    for (qsizetype i = 0; i < text.size(); ++i)
+    {
+        if (text[i].isHighSurrogate() && i + 1 < text.size() && text[i + 1].isLowSurrogate())
+            ++i;
+        ++count;
+    }
+    return count;
+}
+} // namespace
+
+CharChangeCounts countCharChanges(const QString& oldText, const QString& newText)
+{
+    const CommonEnds ends = commonEnds(oldText, newText);
+    const QString oldMiddle = oldText.mid(ends.prefix, oldText.size() - ends.prefix - ends.suffix);
+    const QString newMiddle = newText.mid(ends.prefix, newText.size() - ends.prefix - ends.suffix);
+
+    CharChangeCounts counts;
+    if (oldMiddle.isEmpty() || newMiddle.isEmpty() || oldMiddle.size() + newMiddle.size() > maxCharDiffLength)
+    {
+        counts.removed = codePoints(oldMiddle);
+        counts.inserted = codePoints(newMiddle);
+        counts.approximate = !oldMiddle.isEmpty() && !newMiddle.isEmpty(); // a pure insertion / deletion is exact
+        return counts;
+    }
+
+    using DMP = diff_match_patch<std::u32string>;
+    DMP dmp;
+    dmp.Diff_Timeout = charDiffTimeoutSeconds;
+    const auto diffs = dmp.diff_main(oldMiddle.toStdU32String(), newMiddle.toStdU32String());
+    for (const auto& d : diffs)
+    {
+        if (d.operation == DMP::Operation::INSERT)
+            counts.inserted += static_cast<int>(d.text.size());
+        else if (d.operation == DMP::Operation::DELETE)
+            counts.removed += static_cast<int>(d.text.size());
+    }
+    return counts;
+}
+
+QList<LineDiffFragment> computeInlineDiff(const QString& oldText, const QString& newText)
+{
+    QList<LineDiffFragment> fragments;
+    auto append = [&fragments](FragmentType type, const QString& text) {
+        if (text.isEmpty())
+            return;
+        if (!fragments.isEmpty() && fragments.last().type == type)
+            fragments.last().text += text;
+        else
+            fragments.append({ type, text });
+    };
+
+    const CommonEnds ends = commonEnds(oldText, newText);
+    const QString oldMiddle = oldText.mid(ends.prefix, oldText.size() - ends.prefix - ends.suffix);
+    const QString newMiddle = newText.mid(ends.prefix, newText.size() - ends.prefix - ends.suffix);
+
+    append(FragmentType::Equal, oldText.left(ends.prefix));
+
+    if (oldMiddle.isEmpty() || newMiddle.isEmpty() || oldMiddle.size() + newMiddle.size() > maxCharDiffLength)
+    {
+        append(FragmentType::Delete, oldMiddle);
+        append(FragmentType::Insert, newMiddle);
+    }
+    else
+    {
+        using DMP = diff_match_patch<std::u32string>;
+        DMP dmp;
+        dmp.Diff_Timeout = charDiffTimeoutSeconds;
+        auto diffs = dmp.diff_main(oldMiddle.toStdU32String(), newMiddle.toStdU32String());
+        dmp.diff_cleanupSemantic(diffs);
+        for (const auto& d : diffs)
+        {
+            const QString text = QString::fromUcs4(d.text.data(), static_cast<int>(d.text.size()));
+            switch (d.operation)
+            {
+            case DMP::Operation::EQUAL:  append(FragmentType::Equal, text);  break;
+            case DMP::Operation::DELETE: append(FragmentType::Delete, text); break;
+            case DMP::Operation::INSERT: append(FragmentType::Insert, text); break;
+            }
+        }
+    }
+
+    append(FragmentType::Equal, oldText.right(ends.suffix));
+    return fragments;
+}
+
 QList<LineDiffResult> computeAllLineDiffs(const std::vector<DiffLine>& diffLines)
 {
     // using namespace DiffCalculation;

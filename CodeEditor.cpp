@@ -27,6 +27,9 @@
 #include "CodeEditor.h"
 #include "utils/SyntaxModeMemory.h"
 #include "widgets/LineNumberArea.h"
+#include "utils/EditHistory.h"
+#include "widgets/EditHistoryDialog.h"
+#include "widgets/LineHistoryDialog.h"
 #include "utils/STCSyntaxHighlighter.h"
 #include "ui/cppcompilerdialog.h"
 #include "utils/DiffCalculation.h"
@@ -311,6 +314,10 @@ CodeEditor::CodeEditor(QWidget *parent)
 
     registerShortcuts();
 
+    // Before connectSignalsWithSlots(): it has to see every change of the document first
+    editHistory = new EditHistory(document(), this);
+    connect(editHistory, &EditHistory::changed, lineNumberArea, qOverload<>(&QWidget::update));
+
     connectSignalsWithSlots();
 
     createBackupTimer();
@@ -459,7 +466,7 @@ int CodeEditor::lineNumberAreaWidth()
     const int maxLine = linesCount();
     const int digits4LineNumber = std::log10(maxLine) + 1;
 
-    const int space = 3 + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits4LineNumber;
+    const int space = 7 + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits4LineNumber; // 4 px of it for the circle of a line with history
     return space;
 }
 
@@ -758,6 +765,7 @@ void CodeEditor::contextMenuEvent(QContextMenuEvent* event)
     moveCursorToClickPosition(event->pos());
     QMenu* menu = createStandardContextMenu();
 
+    addEditHistoryActions(menu, clickCursor.blockNumber());
     addSpellingSuggestionsIfAvailable(menu, event->pos());
     addCppReferenceSearchActionIfApplicable(menu, clickCursor);
     addStcDocumentationActionIfApplicable(menu, clickCursor);
@@ -2020,6 +2028,12 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
     QPainter painter(lineNumberArea);
     painter.fillRect(event->rect(), Qt::lightGray);
 
+    // Use smaller font for line numbers to prevent overlap
+    QFont lineNumberFont = font();
+    lineNumberFont.setPointSizeF(font().pointSizeF() * 0.8);
+    const QFontMetrics lineNumberMetrics(lineNumberFont);
+    constexpr int numberRightMargin = 4; // room for the circle of a line with history
+
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
     int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
@@ -2054,14 +2068,31 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
             // Text on arrow
             QString number = QString::number(blockNumber + 1);
             painter.setPen(Qt::black);
-            
-            // Use smaller font for line numbers to prevent overlap
-            QFont lineNumberFont = font();
-            lineNumberFont.setPointSizeF(font().pointSizeF() * 0.8);
             painter.setFont(lineNumberFont);
-            
-            painter.drawText(0, top, lineNumberArea->width(), fontMetrics().height(),
+
+            painter.drawText(0, top, lineNumberArea->width() - numberRightMargin, fontMetrics().height(),
                            Qt::AlignRight, number);
+
+            // A circle around the number: something happened to this line in this session, it has a history.
+            // Dotted when all of it is undone (it comes back with redo).
+            const auto marker = editHistory->lineMarker(blockNumber);
+            if (marker != EditHistory::LineMarker::None)
+            {
+                constexpr int padding = 3;
+                const int textWidth = lineNumberMetrics.horizontalAdvance(number);
+                const QRectF circle(lineNumberArea->width() - numberRightMargin - textWidth - padding, top + 0.5,
+                                    textWidth + 2 * padding, lineNumberMetrics.height());
+
+                painter.save();
+                painter.setRenderHint(QPainter::Antialiasing);
+                painter.setBrush(Qt::NoBrush);
+                QPen pen(marker == EditHistory::LineMarker::Applied ? QColor("#1f5fbf") : QColor("#7d93b8"), 1.3);
+                if (marker == EditHistory::LineMarker::UndoneOnly)
+                    pen.setStyle(Qt::DotLine);
+                painter.setPen(pen);
+                painter.drawEllipse(circle);
+                painter.restore();
+            }
         }
 
         block = block.next();
@@ -2073,6 +2104,21 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 
 void CodeEditor::keyPressEvent(QKeyEvent* event)
 {
+    // Ctrl+Z / Ctrl+Shift+Z (and Ctrl+Y): the same as the default ones, but the history of edits is told about it
+    if (!isReadOnly())
+    {
+        if (event->matches(QKeySequence::Undo))
+        {
+            undoWithHistory();
+            return;
+        }
+        if (event->matches(QKeySequence::Redo))
+        {
+            redoWithHistory();
+            return;
+        }
+    }
+
     if (event->modifiers() & Qt::ControlModifier
         && event->modifiers() & Qt::ShiftModifier
         && event->key() == Qt::Key_V)
@@ -2817,6 +2863,7 @@ void CodeEditor::markAsSaved()
     emit numberOfModifiedLinesChanged(0);
 
     document()->setModified(false);
+    editHistory->noteSaved();
     
     // Delete backup after successful save
     QString fileName = getFileName();
@@ -3184,4 +3231,148 @@ void CodeEditor::checkForBackupOnLoad()
             // If Cancel, do nothing
         }
     }
+}
+
+
+// ---------------------------------------------------------------------------------------------------------------
+// History of edits: undo/redo, the circles at line numbers, the windows
+// ---------------------------------------------------------------------------------------------------------------
+
+void CodeEditor::undoWithHistory()
+{
+    EditHistory::UndoRedoScope scope(*editHistory, EditHistory::UndoRedoScope::Kind::Undo);
+    undo();
+}
+
+void CodeEditor::redoWithHistory()
+{
+    EditHistory::UndoRedoScope scope(*editHistory, EditHistory::UndoRedoScope::Kind::Redo);
+    redo();
+}
+
+void CodeEditor::addEditHistoryActions(QMenu* menu, int clickedLine)
+{
+    // The Undo and Redo of the standard menu are connected inside Qt: take them over, or the history of edits
+    // would not know that a change of the document is an undo. Qt names them (they do not depend on the language);
+    // the shortcut at the end of their text is a second way to find them.
+    const QString undoSuffix = QLatin1Char('\t') + QKeySequence(QKeySequence::Undo).toString(QKeySequence::NativeText);
+    const QString redoSuffix = QLatin1Char('\t') + QKeySequence(QKeySequence::Redo).toString(QKeySequence::NativeText);
+    QAction* redoAction = nullptr;
+    for (QAction* action : menu->actions())
+    {
+        if (action->isSeparator() || action->menu())
+            continue;
+
+        const bool isUndo = action->objectName() == QLatin1String("edit-undo") || action->text().endsWith(undoSuffix);
+        const bool isRedo = action->objectName() == QLatin1String("edit-redo") || action->text().endsWith(redoSuffix);
+        if (!isUndo && !isRedo)
+            continue;
+
+        action->disconnect(SIGNAL(triggered(bool)));
+        connect(action, &QAction::triggered, this, isUndo ? &CodeEditor::undoWithHistory : &CodeEditor::redoWithHistory);
+        if (isRedo)
+            redoAction = action;
+    }
+
+    QList<QAction*> actions;
+    auto* historyAction = new QAction(tr("Edit history…"), menu);
+    connect(historyAction, &QAction::triggered, this, &CodeEditor::showEditHistory);
+    actions << historyAction;
+
+    if (clickedLine >= 0 && editHistory->lineMarker(clickedLine) != EditHistory::LineMarker::None)
+    {
+        auto* lineAction = new QAction(tr("History of line %1…").arg(clickedLine + 1), menu);
+        connect(lineAction, &QAction::triggered, this, [this, clickedLine]() { showLineHistory(clickedLine); });
+        actions << lineAction;
+    }
+
+    // right after Redo
+    const QList<QAction*> existing = menu->actions();
+    const int redoIndex = redoAction ? static_cast<int>(existing.indexOf(redoAction)) : -1;
+    if (redoIndex >= 0 && redoIndex + 1 < existing.size())
+        menu->insertActions(existing.at(redoIndex + 1), actions);
+    else
+        menu->addActions(actions);
+}
+
+void CodeEditor::showEditHistory()
+{
+    if (!editHistoryDialog)
+    {
+        editHistoryDialog = new EditHistoryDialog(editHistory, window());
+        editHistoryDialog->setAttribute(Qt::WA_DeleteOnClose);
+        connect(editHistoryDialog, &EditHistoryDialog::jumpToLineRequested, this, [this](int line) { go2LineRequested(line + 1); });
+    }
+    editHistoryDialog->show();
+    editHistoryDialog->raise();
+    editHistoryDialog->activateWindow();
+}
+
+void CodeEditor::showLineHistory(int line)
+{
+    const int id = editHistory->lineId(line);
+    if (id < 0)
+        return;
+
+    if (!lineHistoryDialog)
+    {
+        lineHistoryDialog = new LineHistoryDialog(editHistory, id, window());
+        lineHistoryDialog->setAttribute(Qt::WA_DeleteOnClose);
+        connect(lineHistoryDialog, &LineHistoryDialog::jumpToLineRequested, this, [this](int l) { go2LineRequested(l + 1); });
+    }
+    else
+    {
+        lineHistoryDialog->showLine(id);
+    }
+    lineHistoryDialog->show();
+    lineHistoryDialog->raise();
+    lineHistoryDialog->activateWindow();
+}
+
+int CodeEditor::lineAtGutterY(int y) const
+{
+    QTextBlock block = firstVisibleBlock();
+    int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
+    int bottom = top + qRound(blockBoundingRect(block).height());
+
+    while (block.isValid() && top <= y)
+    {
+        if (block.isVisible() && y < bottom)
+            return block.blockNumber();
+        block = block.next();
+        top = bottom;
+        bottom = top + qRound(blockBoundingRect(block).height());
+    }
+    return -1;
+}
+
+void CodeEditor::lineNumberAreaMousePress(QMouseEvent* event)
+{
+    if (event->button() != Qt::LeftButton)
+        return;
+
+    const int line = lineAtGutterY(static_cast<int>(event->position().y()));
+    if (line >= 0 && editHistory->lineMarker(line) != EditHistory::LineMarker::None)
+    {
+        showLineHistory(line);
+        event->accept();
+    }
+}
+
+void CodeEditor::lineNumberAreaMouseMove(QMouseEvent* event)
+{
+    const int line = lineAtGutterY(static_cast<int>(event->position().y()));
+    const auto marker = line >= 0 ? editHistory->lineMarker(line) : EditHistory::LineMarker::None;
+    if (marker == EditHistory::LineMarker::None)
+    {
+        lineNumberArea->unsetCursor();
+        lineNumberArea->setToolTip(QString());
+        return;
+    }
+
+    lineNumberArea->setCursor(Qt::PointingHandCursor);
+    QString tip = tr("This line was changed %n time(s) in this session - click to see its history", "", editHistory->lineChangeCount(line));
+    if (marker == EditHistory::LineMarker::UndoneOnly)
+        tip += QStringLiteral("\n") + tr("(all the changes are undone now; Ctrl+Shift+Z brings them back)");
+    lineNumberArea->setToolTip(tip);
 }

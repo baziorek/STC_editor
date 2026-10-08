@@ -180,6 +180,10 @@ set(PROJECT_SOURCES
     widgets/LoginDialog.h widgets/LoginDialog.cpp
     widgets/StcPreview.h widgets/StcPreview.cpp
     widgets/DiffViewerWidget.h widgets/DiffViewerWidget.cpp
+    widgets/EditHistoryDialog.h widgets/EditHistoryDialog.cpp
+    widgets/EditHistoryFormat.h widgets/EditHistoryFormat.cpp
+    widgets/LineHistoryDialog.h widgets/LineHistoryDialog.cpp
+    widgets/RichTextDelegate.h widgets/RichTextDelegate.cpp
     widgets/DiffReviewDialog.h widgets/DiffReviewDialog.cpp
     widgets/PastedTextDiffDialog.h widgets/PastedTextDiffDialog.cpp
     widgets/BreadcrumbTextBrowser.h widgets/BreadcrumbTextBrowser.cpp
@@ -188,6 +192,7 @@ set(PROJECT_SOURCES
     widgets/BackupRecoveryDialog.h widgets/BackupRecoveryDialog.cpp
 
     utils/DiffCalculation.h utils/DiffCalculation.cpp
+    utils/EditHistory.h utils/EditHistory.cpp
     utils/FileEncodingHandler.h utils/FileEncodingHandler.cpp
     utils/STCSyntaxHighlighter.h utils/STCSyntaxHighlighter.cpp
     utils/SyntaxMode.h utils/SyntaxMode.cpp
@@ -453,6 +458,19 @@ if(NOT WIN32)
     )
     add_test(NAME ${PROJECT_NAME}SyntaxTests COMMAND ${PROJECT_NAME}SyntaxTests)
     set_tests_properties(${PROJECT_NAME}SyntaxTests PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+    # Edit history (the table of edits, circles at line numbers). Needs only Qt and the diff libraries; own main() with QApplication.
+    add_executable(${PROJECT_NAME}EditHistoryTests
+        tests/EditHistoryTests.cpp
+        utils/EditHistory.cpp
+        utils/DiffCalculation.cpp
+    )
+    target_include_directories(${PROJECT_NAME}EditHistoryTests PRIVATE ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/libs)
+    target_link_libraries(${PROJECT_NAME}EditHistoryTests PRIVATE
+        Qt${QT_VERSION_MAJOR}::Widgets ${GTEST_LIBRARIES} pthread
+    )
+    add_test(NAME ${PROJECT_NAME}EditHistoryTests COMMAND ${PROJECT_NAME}EditHistoryTests)
+    set_tests_properties(${PROJECT_NAME}EditHistoryTests PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 endif()
 
 # ------------------ AddressSanitizer: static runtime (avoid LD_PRELOAD ordering issues) ------------------

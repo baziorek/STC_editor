@@ -102,6 +102,25 @@ Do you want to reload it?</translation>
         <source>Spelling suggestions</source>
         <translation>Spelling suggestions</translation>
     </message>
+    <message>
+        <source>Edit history…</source>
+        <translation>Edit history…</translation>
+    </message>
+    <message>
+        <source>History of line %1…</source>
+        <translation>History of line %1…</translation>
+    </message>
+    <message numerus="yes">
+        <source>This line was changed %n time(s) in this session - click to see its history</source>
+        <translation>
+            <numerusform>This line was changed %n time(s) in this session - click to see its history</numerusform>
+            <numerusform>This line was changed %n time(s) in this session - click to see its history</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>(all the changes are undone now; Ctrl+Shift+Z brings them back)</source>
+        <translation>(all the changes are undone now; Ctrl+Shift+Z brings them back)</translation>
+    </message>
 </context>
 <context>
     <name>DiffReviewDialog</name>
@@ -163,6 +182,165 @@ Do you want to reload it?</translation>
     <message>
         <source>Open current address in the system browser</source>
         <translation>Open current address in the system browser</translation>
+    </message>
+</context>
+<context>
+    <name>EditHistoryDialog</name>
+    <message>
+        <source>Edit history</source>
+        <translation>Edit history</translation>
+    </message>
+    <message>
+        <source>Current state: &lt;b&gt;%1&lt;/b&gt; of %2</source>
+        <translation>Current state: &lt;b&gt;%1&lt;/b&gt; of %2</translation>
+    </message>
+    <message>
+        <source> (%1 undone - Ctrl+Shift+Z brings them back)</source>
+        <translation> (%1 undone - Ctrl+Shift+Z brings them back)</translation>
+    </message>
+    <message>
+        <source>not saved in this session</source>
+        <translation>not saved in this session</translation>
+    </message>
+    <message>
+        <source>last saved at %1 (that state is gone: edits were made after an undo)</source>
+        <translation>last saved at %1 (that state is gone: edits were made after an undo)</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;saved&lt;/b&gt; at %1 (the document is in the saved state)</source>
+        <translation>&lt;b&gt;saved&lt;/b&gt; at %1 (the document is in the saved state)</translation>
+    </message>
+    <message>
+        <source>last saved at %1, in state %2</source>
+        <translation>last saved at %1, in state %2</translation>
+    </message>
+    <message>
+        <source>The text of the oldest %1 steps was dropped to save memory; their numbers are kept.</source>
+        <translation>The text of the oldest %1 steps was dropped to save memory; their numbers are kept.</translation>
+    </message>
+    <message>
+        <source>The state the document started in (loaded at %1). Select a step to see what it changed.</source>
+        <translation>The state the document started in (loaded at %1). Select a step to see what it changed.</translation>
+    </message>
+    <message>
+        <source>Step %1, %2</source>
+        <translation>Step %1, %2</translation>
+    </message>
+    <message>
+        <source> (undone)</source>
+        <translation> (undone)</translation>
+    </message>
+    <message>
+        <source>the text of this step was dropped to save memory.</source>
+        <translation>the text of this step was dropped to save memory.</translation>
+    </message>
+    <message>
+        <source>no text changed (only formatting).</source>
+        <translation>no text changed (only formatting).</translation>
+    </message>
+    <message>
+        <source>%1 modified, %2 added, %3 removed lines; %4 characters</source>
+        <translation>%1 modified, %2 added, %3 removed lines; %4 characters</translation>
+    </message>
+</context>
+<context>
+    <name>EditHistoryFormat</name>
+    <message>
+        <source>(initial state)</source>
+        <translation>(initial state)</translation>
+    </message>
+    <message>
+        <source>(no text changed)</source>
+        <translation>(no text changed)</translation>
+    </message>
+</context>
+<context>
+    <name>EditHistoryModel</name>
+    <message>
+        <source>#</source>
+        <translation>#</translation>
+    </message>
+    <message>
+        <source>Time</source>
+        <translation>Time</translation>
+    </message>
+    <message>
+        <source>Lines</source>
+        <translation>Lines</translation>
+    </message>
+    <message>
+        <source>Line numbers</source>
+        <translation>Line numbers</translation>
+    </message>
+    <message>
+        <source>Characters</source>
+        <translation>Characters</translation>
+    </message>
+    <message>
+        <source>Saved</source>
+        <translation>Saved</translation>
+    </message>
+    <message>
+        <source>Number of the state of the document after the step. 0 is the state it started in.
+Ctrl+Z moves the current state (▶) back by one, Ctrl+Shift+Z forward by one.</source>
+        <translation>Number of the state of the document after the step. 0 is the state it started in.
+Ctrl+Z moves the current state (▶) back by one, Ctrl+Shift+Z forward by one.</translation>
+    </message>
+    <message>
+        <source>How many lines the step changed (modified, added and removed ones)</source>
+        <translation>How many lines the step changed (modified, added and removed ones)</translation>
+    </message>
+    <message>
+        <source>Modified lines; +added lines; −removed lines.
+Modified and added lines are numbered as after the step, removed ones as before it.</source>
+        <translation>Modified lines; +added lines; −removed lines.
+Modified and added lines are numbered as after the step, removed ones as before it.</translation>
+    </message>
+    <message>
+        <source>Characters inserted (+) and removed (−), line breaks included</source>
+        <translation>Characters inserted (+) and removed (−), line breaks included</translation>
+    </message>
+    <message>
+        <source>When the file was written while the document was in this state</source>
+        <translation>When the file was written while the document was in this state</translation>
+    </message>
+    <message>
+        <source>The state the document started in</source>
+        <translation>The state the document started in</translation>
+    </message>
+    <message>
+        <source>The document is in this state now</source>
+        <translation>The document is in this state now</translation>
+    </message>
+    <message>
+        <source>Undone: Ctrl+Shift+Z brings it back</source>
+        <translation>Undone: Ctrl+Shift+Z brings it back</translation>
+    </message>
+    <message>
+        <source>The content was loaded at %1</source>
+        <translation>The content was loaded at %1</translation>
+    </message>
+    <message>
+        <source>Started: %1
+Last edit: %2</source>
+        <translation>Started: %1
+Last edit: %2</translation>
+    </message>
+    <message>
+        <source>%1 modified, %2 added, %3 removed</source>
+        <translation>%1 modified, %2 added, %3 removed</translation>
+    </message>
+    <message>
+        <source>Modified lines; +added lines; −removed lines.
+Modified and added lines are numbered as after the step, removed ones as before it.
+Double click to go to the line.</source>
+        <translation>Modified lines; +added lines; −removed lines.
+Modified and added lines are numbered as after the step, removed ones as before it.
+Double click to go to the line.</translation>
+    </message>
+    <message>
+        <source>The texts were too long to compare character by character: the numbers are approximate</source>
+        <translation>The texts were too long to compare character by character: the numbers are approximate</translation>
     </message>
 </context>
 <context>
@@ -295,6 +473,115 @@ Do you want to reload it?</translation>
     <message>
         <source>Go to line</source>
         <translation>Go to line</translation>
+    </message>
+</context>
+<context>
+    <name>LineHistoryDialog</name>
+    <message>
+        <source>added</source>
+        <translation>added</translation>
+    </message>
+    <message>
+        <source>removed</source>
+        <translation>removed</translation>
+    </message>
+    <message>
+        <source>Greyed entries are undone (Ctrl+Shift+Z brings them back); they disappear when you edit after an undo.</source>
+        <translation>Greyed entries are undone (Ctrl+Shift+Z brings them back); they disappear when you edit after an undo.</translation>
+    </message>
+    <message>
+        <source>History of line %1</source>
+        <translation>History of line %1</translation>
+    </message>
+    <message>
+        <source>Line &lt;b&gt;%1&lt;/b&gt;</source>
+        <translation>Line &lt;b&gt;%1&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <source>History of a line</source>
+        <translation>History of a line</translation>
+    </message>
+    <message>
+        <source>This line has no history any more (the document was replaced).</source>
+        <translation>This line has no history any more (the document was replaced).</translation>
+    </message>
+    <message>
+        <source>This line is not in the document now (its creation is undone).</source>
+        <translation>This line is not in the document now (its creation is undone).</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n change(s) in this session</source>
+        <translation>
+            <numerusform>%n change(s) in this session</numerusform>
+            <numerusform>%n change(s) in this session</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>, %1 of them undone</source>
+        <translation>, %1 of them undone</translation>
+    </message>
+    <message>
+        <source>current state of the document: step &lt;b&gt;%1&lt;/b&gt; of %2</source>
+        <translation>current state of the document: step &lt;b&gt;%1&lt;/b&gt; of %2</translation>
+    </message>
+    <message>
+        <source>the line is in the state before the first change</source>
+        <translation>the line is in the state before the first change</translation>
+    </message>
+</context>
+<context>
+    <name>LineHistoryModel</name>
+    <message>
+        <source>Step</source>
+        <translation>Step</translation>
+    </message>
+    <message>
+        <source>Time</source>
+        <translation>Time</translation>
+    </message>
+    <message>
+        <source>Change</source>
+        <translation>Change</translation>
+    </message>
+    <message>
+        <source>Saved</source>
+        <translation>Saved</translation>
+    </message>
+    <message>
+        <source>Number of the step in the table of edits. ▶ marks the state of the line in the document now.</source>
+        <translation>Number of the step in the table of edits. ▶ marks the state of the line in the document now.</translation>
+    </message>
+    <message>
+        <source>When the file was first written with this change in it</source>
+        <translation>When the file was first written with this change in it</translation>
+    </message>
+    <message>
+        <source>(the text was dropped to save memory)</source>
+        <translation>(the text was dropped to save memory)</translation>
+    </message>
+    <message>
+        <source>new line:</source>
+        <translation>new line:</translation>
+    </message>
+    <message>
+        <source>line removed:</source>
+        <translation>line removed:</translation>
+    </message>
+    <message>
+        <source>The line is in this state now</source>
+        <translation>The line is in this state now</translation>
+    </message>
+    <message>
+        <source>Undone: Ctrl+Shift+Z brings it back</source>
+        <translation>Undone: Ctrl+Shift+Z brings it back</translation>
+    </message>
+    <message>
+        <source>Not written to the file yet</source>
+        <translation>Not written to the file yet</translation>
+    </message>
+    <message>
+        <source>Green: added, red and struck through: removed. Double click to go to the line.</source>
+        <translation>Green: added, red and struck through: removed. Double click to go to the line.</translation>
     </message>
 </context>
 <context>

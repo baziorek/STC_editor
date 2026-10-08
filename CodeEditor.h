@@ -6,6 +6,7 @@
 #pragma once
 
 #include <QPlainTextEdit>
+#include <QPointer>
 #include <QFileSystemWatcher>
 #include <QDateTime>
 #include <QString>
@@ -13,7 +14,10 @@
 #include "utils/SyntaxMode.h"
 
 class CodeBlock;
+class EditHistory;
+class EditHistoryDialog;
 class FileEncodingHandler;
+class LineHistoryDialog;
 class STCSyntaxHighlighter;
 class QNetworkAccessManager;
 
@@ -45,6 +49,19 @@ public:
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
+    /// Clicking a number which is circled shows the history of that line; the cursor and the tooltip say which are
+    void lineNumberAreaMousePress(QMouseEvent *event);
+    void lineNumberAreaMouseMove(QMouseEvent *event);
+
+    /// Undo / redo: what Ctrl+Z, Ctrl+Shift+Z and the context menu call. They are QPlainTextEdit::undo() / redo()
+    /// plus a word to the history of edits about what is going on.
+    void undoWithHistory();
+    void redoWithHistory();
+
+    /// Table of the edits made to the document in this session (opened from the context menu)
+    void showEditHistory();
+    /// History of one line of the document (zero-based number), opened from the context menu or by a click on its number
+    void showLineHistory(int line);
 
     bool noUnsavedChanges() const;
 
@@ -257,6 +274,13 @@ private slots:
 
 private:
     QWidget *lineNumberArea;
+
+    EditHistory* editHistory = nullptr; // watches the document; child of this widget
+    QPointer<EditHistoryDialog> editHistoryDialog;
+    QPointer<LineHistoryDialog> lineHistoryDialog;
+    /// Zero-based number of the line whose number is drawn at height `y` of the margin; -1 if none
+    int lineAtGutterY(int y) const;
+    void addEditHistoryActions(QMenu* menu, int clickedLine);
     QList<QTextEdit::ExtraSelection> persistentSearchHighlights;
 
     QFileSystemWatcher fileWatcher;

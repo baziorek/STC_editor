@@ -19,7 +19,8 @@ public:
     enum class RowActions
     {
         RestoreOriginal,       ///< one "↩" button per row -> lineRestored() (default; used by unsaved-changes / backup dialogs)
-        AcceptOrDiscardChange  ///< "←" / "→" buttons per row -> changeAccepted() / changeDiscarded() (used when comparing with pasted text)
+        AcceptOrDiscardChange, ///< "←" / "→" buttons per row -> changeAccepted() / changeDiscarded() (used when comparing with pasted text)
+        None                   ///< no buttons (the last column is hidden): the diff is only shown (history of edits)
     };
 
     /// A run of consecutive changed rows that can be moved as a whole (AcceptOrDiscardChange mode only).

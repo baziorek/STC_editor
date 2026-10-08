@@ -110,6 +110,12 @@ Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wyb
 15. **Stoper pracy**: stoper, który odpala się po uruchomieniu edytora i liczy zarówno czas kiedy edytor jest włączony, jak i czas pracy w edytorze (wykrywa naciśnięcia klawiszy, gdy ich długo nie ma to się zatrzymuje)
 16. **Obsługa wielu języków**: Obsługuje język angielski i polski.
 17. **Tryby składni całego pliku**: Menu `Składnia` pozwala przełączać między trybami: STC, Zwykły tekst, C++, Python, XML i JSON. Przy otwieraniu pliku tryb jest dobierany po rozszerzeniu (np. `.py` → Python, `.cpp`/`.h`/`.hpp` → C++, `.xml`/`.svg`/`.ui`/`.qrc` → XML, `.json` → JSON, `.md`/`.rst` → zwykły tekst), a dla pozostałych rozszerzeń, w tym `.txt` (w którym zapisywane są artykuły STC), używany jest tryb STC. Tryb wybrany ręcznie z menu jest zapamiętywany dla danego pliku, więc np. notatka `.txt` otwiera się następnym razem jako zwykły tekst. W trybach kodu edytor używa czcionki o stałej szerokości i nie interpretuje znaczników STC, więc `[b]` w kodzie Pythona pozostaje zwykłym indeksowaniem. Tryb **Zwykły tekst** nie ma żadnych znaczników: działa w nim sprawdzanie pisowni, a linki (`https://...`, `www....`) i adresy e-mail są kolorowane i podkreślane (ich fragmenty nie są zgłaszane jako błędy pisowni). Dialog otwierania ma filtry: pliki `.txt`, pliki kodu i danych oraz wszystkie pliki.
+18. **Historia edycji** (od ostatniego otwarcia pliku; znika po zamknięciu edytora i po otwarciu innego pliku):
+    - `Ctrl+Z` / `Ctrl+Shift+Z` działają tak jak dotąd - cofają od razu cały fragment wpisanego tekstu (kilka słów), a nie pojedyncze litery. Historia tylko je obserwuje, nie zmienia stosu cofania Qt.
+    - Menu kontekstowe → **Historia edycji…**: tabela wszystkich kroków (czas, liczba zmienionych linii i ich numery - zmodyfikowane, `+dodane`, `−usunięte` - liczba zmienionych znaków, czas zapisu pliku). Strzałka `▶` pokazuje bieżący stan dokumentu i przesuwa się przy `Ctrl+Z` / `Ctrl+Shift+Z`; cofnięte kroki są wyszarzone i wracają po `Ctrl+Shift+Z` (znikają dopiero, gdy po cofnięciu wprowadzimy nową zmianę). Kliknięcie kroku pokazuje diff tego, co zmienił; dwuklik przenosi do linii. Okno na bieżąco śledzi dokument.
+    - **Historia linii**: linie zmienione w tej sesji mają kółko wokół numeru (kropkowane, gdy wszystkie zmiany tej linii są cofnięte). Kliknięcie numeru (lub menu kontekstowe → **Historia linii…**) pokazuje tabelę zmian tej linii: czas, zmianę w jednej linii (zielone dodane, czerwone usunięte), czas zapisu pliku z tą zmianą oraz bieżący stan.
+    - Linia zachowuje swoją historię, gdy powyżej wstawiamy lub usuwamy linie, a po `Ctrl+Z` odzyskuje ją także linia usunięta.
+    - Oszczędność pamięci: nie powstaje kopia dokumentu przy każdym znaku. Krok przechowuje tylko zmienione linie (przed i po), a całość jest ograniczona limitem - gdy zostanie przekroczony, najstarsze kroki tracą treść, ale zachowują liczby.
 
 ## ⬇️ Pobieranie (najnowsza wersja zbudowana automatycznie)
 
@@ -130,7 +136,6 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 ## Planowane funkcjonalności
 1. Jak mam duży plik otwarty i chcę nowy pusty otworzyć to się ścina, to powinien być moment - wszystko wywalić i otworzyć puste
 2. Wyszukiwanie wielu słów w tej samej linii niezależnie od kolejności.
-3. Historia wprowadzanych zmian (`Ctrl+Z`).
 4. Pobieranie aktualizacji przez https://cpp0x.pl/xml/
 5. Szybsze wyjście z aplikacji - po prostu wyjście, bez przywracania stanu niewymagającego zapisu
 6. Rozważenie integracji Scintilla wraz z Lexillą jako silnika edycji i kolorowania składni (zamiast obecnego QCodeEditor). Dzięki temu możliwe byłoby uzyskanie znacznie bogatszego podświetlania składni C++ (oraz wielu innych języków), składania kodu (code folding), lepszej obsługi dużych plików oraz bardziej profesjonalnego wyglądu edytora, przy zachowaniu dobrej wydajności.
@@ -139,7 +144,6 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 11. FindWidget - aby aktualizował pozycje w tekście na bieżąco przy dodawaniu/usuwaniu linii.
 12. Szukanie tylko w kodzie
 13. Może AI mi podzieli CodeEditor aby nie był GodObject
-14. Historia zmian w linii
 15. Rezultat komendy w edytorze.
 16. Ctrl + V gdy mamy obrazek w schowku - wtedy powinno zaproponować umieszczenie obrazka w odpowiednim katalogu
 17. Gdy wyświetlamy diffa, ale linie są długie to pojawia się scrolling area, a nie powinna.

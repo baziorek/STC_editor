@@ -60,4 +60,20 @@ struct LineDiffResult
 
 QList<LineDiffResult> computeModifiedLineDiffs(const std::vector<DiffLine>& modifiedLines);
 QList<LineDiffResult> computeAllLineDiffs(const std::vector<DiffLine>& diffLines);
+
+
+struct CharChangeCounts
+{
+    int inserted = 0;
+    int removed = 0;
+    bool approximate = false; ///< the texts were too long to be compared character by character
+};
+
+/// How many characters (Unicode code points) have to be inserted and removed to turn `oldText` into `newText`.
+/// The text which is the same at the start and at the end is skipped first, so a typical edit costs almost nothing.
+CharChangeCounts countCharChanges(const QString& oldText, const QString& newText);
+
+/// Character diff of two texts as ONE sequence in text order: equal text, deleted text, inserted text.
+/// (computeAllLineDiffs() gives the old and the new side separately - this one is for showing a change inline.)
+QList<LineDiffFragment> computeInlineDiff(const QString& oldText, const QString& newText);
 } // namespace DiffCalculation
