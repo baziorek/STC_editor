@@ -18,6 +18,7 @@ class EditHistory;
 class EditHistoryDialog;
 class FileEncodingHandler;
 class LineHistoryDialog;
+class QPainter;
 class STCSyntaxHighlighter;
 class QNetworkAccessManager;
 
@@ -49,6 +50,10 @@ public:
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
+    /// The whole text exactly as the user has it (see exactPlainText()): this is what is saved to the file and compared
+    /// with it. toPlainText() would turn non-breaking spaces into plain ones.
+    QString exactText() const;
+    QStringList exactLines() const;
     /// Clicking a number which is circled shows the history of that line; the cursor and the tooltip say which are
     void lineNumberAreaMousePress(QMouseEvent *event);
     void lineNumberAreaMouseMove(QMouseEvent *event);
@@ -289,6 +294,20 @@ private:
     /// Zero-based number of the line whose number is drawn at height `y` of the margin; -1 if none
     int lineAtGutterY(int y) const;
     void addEditHistoryActions(QMenu* menu, int clickedLine);
+    /// Makes Undo and Redo of the standard menu go through the history; returns the Redo action (null if not found)
+    QAction* routeUndoRedoThroughHistory(QMenu* menu);
+    QList<QAction*> createEditHistoryActions(QMenu* menu, int clickedLine);
+
+    // The margin with line numbers, one row at a time
+    QFont lineNumberFont() const;
+    void paintLineNumberRow(QPainter& painter, int blockNumber, int top) const;
+    void paintModifiedLineBackground(QPainter& painter, int top) const;
+    void paintCurrentLineArrow(QPainter& painter, int top) const;
+    void paintLineNumber(QPainter& painter, int blockNumber, int top) const;
+    void paintHistoryCircle(QPainter& painter, int blockNumber, int top) const;
+
+    /// "Compile" in the menu of a code block: g++ for [cpp] and [code], syntax check and run for [py]
+    void addCompileAction(QMenu* menu, const CodeBlock& codeOnlyBlock);
     QList<QTextEdit::ExtraSelection> persistentSearchHighlights;
 
     QFileSystemWatcher fileWatcher;

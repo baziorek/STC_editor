@@ -17,6 +17,7 @@
 #include "PastedTextDiffDialog.h"
 #include "DiffViewerWidget.h"
 #include "CodeEditor.h"
+#include "utils/ExactText.h"
 #include "utils/DiffCalculation.h"
 
 
@@ -222,7 +223,7 @@ PastedTextDiffDialog::PastedTextDiffDialog(CodeEditor *editor, QWidget *parent)
 
 QString PastedTextDiffDialog::pastedTextMatchingEditorEnding() const
 {
-    return matchTrailingNewline(pasteEdit->toPlainText(), editor->toPlainText());
+    return matchTrailingNewline(exactPlainText(pasteEdit->document()), editor->exactText());
 }
 
 void PastedTextDiffDialog::pasteFromClipboard()
@@ -247,7 +248,7 @@ void PastedTextDiffDialog::recomputeDiff()
         return;
     }
 
-    const QStringList oldLines = editor->toPlainText().split('\n');
+    const QStringList oldLines = editor->exactLines();
     const QStringList newLines = pastedTextMatchingEditorEnding().split('\n');
 
     fullDiff = DiffCalculation::computeDiff(oldLines, newLines);
@@ -508,7 +509,7 @@ void PastedTextDiffDialog::discardBlock(int blockIndex)
 
 void PastedTextDiffDialog::applyPastedText()
 {
-    const QString oldText = editor->toPlainText();
+    const QString oldText = editor->exactText();
     const QString newText = pastedTextMatchingEditorEnding();
     if (newText == oldText)
         return;

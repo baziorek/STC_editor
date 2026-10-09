@@ -11,6 +11,7 @@
 
 #include "utils/DiffCalculation.h"
 
+class QTextBlock;
 class QTextDocument;
 
 /// Remembers how a document was edited during this session, so that the editor can show it - without keeping
@@ -221,10 +222,19 @@ private:
     };
 
     void resync(const char* reason);
+    /// A real edit leaves something to undo and nothing to redo
+    bool isOrdinaryEdit() const;
     bool computeRegion(int position, int charsRemoved, int charsAdded, bool allocateIds, Region& region);
+    /// The line of the old text (`lines`) where the removed characters end; none if `lines` does not fit them
+    std::optional<int> lastLineOfRemovedText(int firstLine, int offsetInFirstLine, int charsRemoved) const;
+    /// The line of the document where the inserted text ends; -1 if there is none
+    int lastLineOfInsertedText(int position, int charsAdded) const;
+    bool readNewLines(const QTextBlock& firstBlock, int count, QList<QString>& newLines) const;
     void applyRegion(const Region& region);
+    void recordRegion(const Region& region);
     void beginStep(const Region& region);
     void extendStep(Step& step, const Region& region);
+    void growStepToCover(Step& step, int top, int bottom);
     void recordTouches(Step& step, int number, const QList<int>& ids);
     void dropRedoBranch();
     void finishOperation();
@@ -232,6 +242,8 @@ private:
     void assignMissingIds();
     void enforceBudget();
     void discardDetails(Step& step);
+    std::vector<DiffCalculation::DiffLine> diffLinesOf(const Step& step) const;
+    LineEntry lineEntry(int id, int stepNumber) const;
     const StepInfo& summaryOf(const Step& step) const;
     StepInfo computeSummary(const Step& step) const;
 

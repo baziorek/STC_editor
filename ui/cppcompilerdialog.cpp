@@ -9,6 +9,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QPlainTextEdit>
+#include <QProcessEnvironment>
 #include <QPushButton>
 #include <QScrollBar>
 #include <QSettings>
@@ -31,13 +32,18 @@ constexpr qint64 kMaxOutputBytes = 1 << 20; // a program printing in an endless 
 constexpr char kSettingCompileFlags[] = "cppCompiler/compileFlags";
 constexpr char kSettingLinkFlags[] = "cppCompiler/linkFlags";
 constexpr char kSettingRunAfterCompile[] = "cppCompiler/runAfterCompile";
+constexpr char kSettingPythonFlags[] = "pythonRunner/flags";
+constexpr char kSettingPythonRunAfterCheck[] = "pythonRunner/runAfterCheck";
 constexpr char kDefaultCompileFlags[] = "-std=c++23";
 
 constexpr char kSourceFileName[] = "main.cpp"; // relative name: the compiler messages say "main.cpp:5:3: error", not "/tmp/.../codeX.cpp:5:3"
+constexpr char kPythonSourceFileName[] = "main.py";
 #ifdef Q_OS_WIN
 constexpr char kProgramFileName[] = "program.exe";
+constexpr char kPythonExecutable[] = "python";
 #else
 constexpr char kProgramFileName[] = "program";
+constexpr char kPythonExecutable[] = "python3";
 #endif
 
 /// "850 us", "12.4 ms", "1.23 s"
@@ -121,9 +127,9 @@ QStringList splitFlags(const QString& text)
 } // namespace
 
 CppCompilerDialog::CppCompilerDialog(const CodeBlock& block, QWidget* parent)
-    : QDialog(parent), articleCodeCursor_(block.cursor), tag_(block.tag)
+    : QDialog(parent), articleCodeCursor_(block.cursor), tag_(block.tag), isPython_(block.tag == QLatin1String("py"))
 {
-    setWindowTitle(tr("g++ compilation"));
+    setWindowTitle(isPython_ ? tr("Python: syntax check and run") : tr("g++ compilation"));
     resize(1000, 780);
 
     stderrWriter_.setDefaultColorIndex(1); // red
@@ -158,7 +164,7 @@ void CppCompilerDialog::buildUi()
 
     // --- code: the same editor (C++ highlighting, line numbers) as in the main window
     codeEdit_ = new CodeEditor(this);
-    codeEdit_->setSyntaxMode(SyntaxMode::Cpp);
+    codeEdit_->setSyntaxMode(isPython_ ? SyntaxMode::Python : SyntaxMode::Cpp);
 
     // --- flags
     compileFlagsEdit_ = new QLineEdit(this);
@@ -183,10 +189,12 @@ void CppCompilerDialog::buildUi()
     statusLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
 
     auto* flagsLayout = new QGridLayout;
-    flagsLayout->addWidget(new QLabel(tr("Compiler flags:"), this), 0, 0);
+    compileFlagsLabel_ = new QLabel(tr("Compiler flags:"), this);
+    linkFlagsLabel_ = new QLabel(tr("Linker flags / libraries:"), this);
+    flagsLayout->addWidget(compileFlagsLabel_, 0, 0);
     flagsLayout->addWidget(compileFlagsEdit_, 0, 1);
     flagsLayout->addWidget(runButton_, 0, 2);
-    flagsLayout->addWidget(new QLabel(tr("Linker flags / libraries:"), this), 1, 0);
+    flagsLayout->addWidget(linkFlagsLabel_, 1, 0);
     flagsLayout->addWidget(linkFlagsEdit_, 1, 1);
     flagsLayout->addWidget(stopButton_, 1, 2);
     flagsLayout->setColumnStretch(1, 1);
@@ -251,8 +259,8 @@ void CppCompilerDialog::buildUi()
     };
 
     auto* logsSplitter = new QSplitter(Qt::Horizontal, this);
-    logsSplitter->addWidget(makePane(tr("Compiler log"), {compileTimeLabel_}, compilerLogEdit_, insertCompilerLogButton_));
-    logsSplitter->addWidget(makePane(tr("Program output"), {showStdoutCheck_, showStderrCheck_, runTimeLabel_}, programOutputEdit_, insertProgramOutputButton_));
+    logsSplitter->addWidget(makePane(isPython_ ? tr("Syntax check") : tr("Compiler log"), {compileTimeLabel_}, compilerLogEdit_, insertCompilerLogButton_));
+    logsSplitter->addWidget(makePane(isPython_ ? tr("Script output") : tr("Program output"), {showStdoutCheck_, showStderrCheck_, runTimeLabel_}, programOutputEdit_, insertProgramOutputButton_));
 
     auto* codeAndLogsSplitter = new QSplitter(Qt::Vertical, this);
     codeAndLogsSplitter->addWidget(codeEdit_);
@@ -284,11 +292,38 @@ void CppCompilerDialog::buildUi()
     connect(insertProgramOutputButton_, &QPushButton::clicked, this, &CppCompilerDialog::insertProgramOutputBelowCode);
     connect(replaceCodeButton_, &QPushButton::clicked, this, &CppCompilerDialog::replaceCodeInArticle);
     connect(closeButton, &QPushButton::clicked, this, &QDialog::accept);
+
+    if (isPython_)
+    {
+        adaptUiToPython();
+    }
+}
+
+/// The same window, the words of an interpreter instead of a compiler: no linker, a syntax check instead of the compilation
+void CppCompilerDialog::adaptUiToPython()
+{
+    compileFlagsLabel_->setText(tr("Interpreter flags:"));
+    compileFlagsEdit_->setPlaceholderText(tr("e.g. -W error  (the script is always run with -u)"));
+    compileFlagsEdit_->setToolTip(tr("Passed to python3 before the script. Split like in a shell: \'...\', \"...\" and \\ work"));
+    linkFlagsLabel_->hide();
+    linkFlagsEdit_->hide();
+    runAfterCompileCheck_->setText(tr("Run the script after a successful syntax check"));
+    runButton_->setText(tr("Run (F5)"));
+    compilerLogEdit_->setPlaceholderText(tr("Result of the syntax check (python3 -m py_compile)"));
+    programOutputEdit_->setPlaceholderText(tr("Output of the script"));
+    compileTimeLabel_->setToolTip(tr("Time of the syntax check"));
+    runTimeLabel_->setToolTip(tr("Execution time of the script"));
 }
 
 void CppCompilerDialog::loadSettings()
 {
     QSettings settings;
+    if (isPython_)
+    {
+        compileFlagsEdit_->setText(settings.value(kSettingPythonFlags).toString());
+        runAfterCompileCheck_->setChecked(settings.value(kSettingPythonRunAfterCheck, true).toBool());
+        return;
+    }
     compileFlagsEdit_->setText(settings.value(kSettingCompileFlags, QString::fromLatin1(kDefaultCompileFlags)).toString());
     linkFlagsEdit_->setText(settings.value(kSettingLinkFlags).toString());
     runAfterCompileCheck_->setChecked(settings.value(kSettingRunAfterCompile, true).toBool());
@@ -297,6 +332,12 @@ void CppCompilerDialog::loadSettings()
 void CppCompilerDialog::saveSettings() const
 {
     QSettings settings;
+    if (isPython_)
+    {
+        settings.setValue(kSettingPythonFlags, compileFlagsEdit_->text());
+        settings.setValue(kSettingPythonRunAfterCheck, runAfterCompileCheck_->isChecked());
+        return;
+    }
     settings.setValue(kSettingCompileFlags, compileFlagsEdit_->text());
     settings.setValue(kSettingLinkFlags, linkFlagsEdit_->text());
     settings.setValue(kSettingRunAfterCompile, runAfterCompileCheck_->isChecked());
@@ -304,38 +345,67 @@ void CppCompilerDialog::saveSettings() const
 
 // ------------------------------------------------------------------ running
 
+QString CppCompilerDialog::sourceFileName() const
+{
+    return QString::fromLatin1(isPython_ ? kPythonSourceFileName : kSourceFileName);
+}
+
+QString CppCompilerDialog::compilationName() const
+{
+    return isPython_ ? tr("Syntax check") : tr("Compilation");
+}
+
 void CppCompilerDialog::startCompilation()
 {
     if (stage_ != Stage::Idle)
         return;
 
     saveSettings();
+    clearResults();
+    if (!writeSourceFile())
+        return;
+
+    if (isPython_)
+        startPythonSyntaxCheck();
+    else
+        startGppCompilation();
+}
+
+void CppCompilerDialog::clearResults()
+{
     compilerLogEdit_->clear();
     programOutputEdit_->clear();
     programChunks_.clear();
     compileTimeLabel_->clear();
     runTimeLabel_->clear();
+}
 
+bool CppCompilerDialog::writeSourceFile()
+{
     workDir_ = std::make_unique<QTemporaryDir>(QDir::tempPath() + QStringLiteral("/stc_cppXXXXXX"));
     if (!workDir_->isValid())
     {
         setStatus(tr("Failed to create a temporary directory."), true);
-        return;
+        return false;
     }
 
-    QFile source(workDir_->filePath(QString::fromLatin1(kSourceFileName)));
+    QFile source(workDir_->filePath(sourceFileName()));
     if (!source.open(QIODevice::WriteOnly))
     {
         setStatus(tr("Failed to create the temporary source file."), true);
-        return;
+        return false;
     }
-    source.write(codeEdit_->toPlainText().toUtf8());
+    source.write(codeEdit_->exactText().toUtf8());
     source.close();
+    return true;
+}
 
+void CppCompilerDialog::startGppCompilation()
+{
     QStringList arguments;
     arguments << QStringLiteral("-fdiagnostics-color=always"); // shown in color (see AnsiTextWriter); the text itself stays plain, so is the log pasted into the article
     arguments += splitFlags(compileFlagsEdit_->text());
-    arguments << QString::fromLatin1(kSourceFileName);
+    arguments << sourceFileName();
     arguments += splitFlags(linkFlagsEdit_->text()); // libraries have to follow the source file
     arguments << QStringLiteral("-o") << QString::fromLatin1(kProgramFileName);
 
@@ -345,11 +415,38 @@ void CppCompilerDialog::startCompilation()
     startProcess(QStringLiteral("g++"), arguments, kCompileTimeoutMs);
 }
 
+void CppCompilerDialog::startPythonSyntaxCheck()
+{
+    QStringList arguments = splitFlags(compileFlagsEdit_->text());
+    arguments << QStringLiteral("-m") << QStringLiteral("py_compile") << sourceFileName();
+
+    setStage(Stage::Compiling);
+    setStatus(tr("Checking the syntax..."));
+    statusLabel_->setToolTip(QString::fromLatin1(kPythonExecutable) + QLatin1Char(' ') + arguments.join(QLatin1Char(' ')));
+    startProcess(QString::fromLatin1(kPythonExecutable), arguments, kCompileTimeoutMs);
+}
+
+QStringList CppCompilerDialog::pythonRunArguments() const
+{
+    // -u: the output is not buffered, so stdout and stderr arrive in the order in which the script wrote them
+    QStringList arguments{QStringLiteral("-u")};
+    arguments += splitFlags(compileFlagsEdit_->text());
+    arguments << sourceFileName();
+    return arguments;
+}
+
 void CppCompilerDialog::runProgram()
 {
     setStage(Stage::Running);
-    setStatus(tr("Running the program..."));
     statusLabel_->setToolTip(QString());
+    if (isPython_)
+    {
+        setStatus(tr("Running the script..."));
+        startProcess(QString::fromLatin1(kPythonExecutable), pythonRunArguments(), kRunTimeoutMs);
+        return;
+    }
+
+    setStatus(tr("Running the program..."));
     startProcess(workDir_->filePath(QString::fromLatin1(kProgramFileName)), {}, kRunTimeoutMs);
 }
 
@@ -373,6 +470,12 @@ void CppCompilerDialog::startProcess(const QString& program, const QStringList& 
     // The program: separate channels, so that stdout and stderr can be told apart (stderr is red, both can be hidden).
     process_->setProcessChannelMode(stage_ == Stage::Running ? QProcess::SeparateChannels : QProcess::MergedChannels);
     process_->setStandardInputFile(QProcess::nullDevice());    // a program waiting for std::cin gets EOF instead of hanging
+    if (isPython_)
+    {
+        QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
+        environment.insert(QStringLiteral("PYTHONIOENCODING"), QStringLiteral("utf-8")); // decoded as UTF-8 below
+        process_->setProcessEnvironment(environment);
+    }
 
     connect(process_, &QProcess::readyReadStandardOutput, this, &CppCompilerDialog::onProcessOutput);
     connect(process_, &QProcess::readyReadStandardError, this, &CppCompilerDialog::onProcessErrorOutput);
@@ -500,7 +603,7 @@ void CppCompilerDialog::onProcessFinished(int exitCode, QProcess::ExitStatus exi
     drainOutput(); // whatever is still in the pipes
 
     const Stage finishedStage = stage_;
-    const QString what = finishedStage == Stage::Compiling ? tr("Compilation") : tr("The program");
+    const QString what = finishedStage == Stage::Compiling ? compilationName() : (isPython_ ? tr("The script") : tr("The program"));
     releaseProcess();
     (finishedStage == Stage::Compiling ? compileTimeLabel_ : runTimeLabel_)->setText(formatDuration(elapsedNs));
 
@@ -525,7 +628,9 @@ void CppCompilerDialog::onProcessFinished(int exitCode, QProcess::ExitStatus exi
     {
         if (exitCode != 0)
         {
-            setStatus(tr("Compilation failed (exit code %1).").arg(exitCode), true);
+            setStatus(isPython_ ? tr("Syntax check failed (exit code %1).").arg(exitCode)
+                                : tr("Compilation failed (exit code %1).").arg(exitCode),
+                      true);
         }
         else if (runAfterCompileCheck_->isChecked())
         {
@@ -534,12 +639,12 @@ void CppCompilerDialog::onProcessFinished(int exitCode, QProcess::ExitStatus exi
         }
         else
         {
-            setStatus(tr("Compilation succeeded."));
+            setStatus(isPython_ ? tr("The syntax is correct.") : tr("Compilation succeeded."));
         }
     }
     else
     {
-        setStatus(tr("The program finished, exit code %1.").arg(exitCode), exitCode != 0);
+        setStatus((isPython_ ? tr("The script finished, exit code %1.") : tr("The program finished, exit code %1.")).arg(exitCode), exitCode != 0);
     }
 
     setStage(Stage::Idle);
@@ -552,9 +657,10 @@ void CppCompilerDialog::onProcessError(QProcess::ProcessError error)
 
     const bool compiling = stage_ == Stage::Compiling;
     releaseProcess();
-    setStatus(compiling ? tr("Failed to start g++. Is it installed and available in PATH?")
-                        : tr("Failed to start the compiled program."),
-              true);
+    const QString failedToStartCompiler = isPython_
+        ? tr("Failed to start python3. Is it installed and available in PATH?")
+        : tr("Failed to start g++. Is it installed and available in PATH?");
+    setStatus(compiling ? failedToStartCompiler : tr("Failed to start the compiled program."), true);
     setStage(Stage::Idle);
 }
 
@@ -581,7 +687,7 @@ void CppCompilerDialog::updateInsertButtons()
 
 void CppCompilerDialog::replaceCodeInArticle()
 {
-    const QString newCode = codeEdit_->toPlainText();
+    const QString newCode = codeEdit_->exactText();
 
     QTextCursor edit = articleCodeCursor_;
     const int start = edit.selectionStart();

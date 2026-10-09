@@ -1,15 +1,115 @@
 #include "LineHistoryDialog.h"
 
 #include <QApplication>
-#include <QDialogButtonBox>
-#include <QFontMetrics>
 #include <QHeaderView>
-#include <QLabel>
-#include <QTableView>
-#include <QVBoxLayout>
 
 #include "EditHistoryFormat.h"
 #include "RichTextDelegate.h"
+#include "ui_LineHistoryDialog.h"
+
+namespace
+{
+using Entry = EditHistory::LineEntry;
+
+QString displayText(const Entry& entry, bool isCurrent, int column)
+{
+    switch (column)
+    {
+    case LineHistoryModel::StepColumn:
+        return isCurrent ? QStringLiteral("▶ %1").arg(entry.step) : QString::number(entry.step);
+    case LineHistoryModel::TimeColumn:
+        return EditHistoryFormat::time(entry.time);
+    case LineHistoryModel::ChangeColumn:
+        if (entry.detailsDiscarded)
+            return LineHistoryModel::tr("(the text was dropped to save memory)");
+        return entry.kind == EditHistory::LineKind::Removed ? entry.oldText : entry.newText;
+    case LineHistoryModel::SavedColumn:
+        return entry.savedAt.isValid() ? EditHistoryFormat::time(entry.savedAt) : QStringLiteral("–");
+    }
+    return {};
+}
+
+/// The change in one line, coloured
+QVariant richText(const Entry& entry, int column)
+{
+    if (column != LineHistoryModel::ChangeColumn)
+        return {};
+
+    if (entry.detailsDiscarded)
+        return QStringLiteral("<i>") + LineHistoryModel::tr("(the text was dropped to save memory)").toHtmlEscaped() + QStringLiteral("</i>");
+
+    switch (entry.kind)
+    {
+    case EditHistory::LineKind::Modified:
+        return EditHistoryFormat::inlineDiffHtml(entry.oldText, entry.newText);
+    case EditHistory::LineKind::Added:
+        return QStringLiteral("<i>%1</i> ").arg(LineHistoryModel::tr("new line:").toHtmlEscaped()) + EditHistoryFormat::insertedHtml(entry.newText);
+    case EditHistory::LineKind::Removed:
+        return QStringLiteral("<i>%1</i> ").arg(LineHistoryModel::tr("line removed:").toHtmlEscaped()) + EditHistoryFormat::deletedHtml(entry.oldText);
+    }
+    return {};
+}
+
+QString toolTipText(const Entry& entry, bool isCurrent, int column)
+{
+    switch (column)
+    {
+    case LineHistoryModel::StepColumn:
+        if (isCurrent)
+            return LineHistoryModel::tr("The line is in this state now");
+        return entry.applied ? QString() : LineHistoryModel::tr("Undone: Ctrl+Shift+Z brings it back");
+    case LineHistoryModel::TimeColumn:
+        return entry.time.toString(Qt::ISODate);
+    case LineHistoryModel::SavedColumn:
+        return entry.savedAt.isValid() ? entry.savedAt.toString(Qt::ISODate) : LineHistoryModel::tr("Not written to the file yet");
+    case LineHistoryModel::ChangeColumn:
+        return LineHistoryModel::tr("Green: added, red and struck through: removed. Double click to go to the line.");
+    }
+    return {};
+}
+
+QString headerText(int section)
+{
+    switch (section)
+    {
+    case LineHistoryModel::StepColumn:   return LineHistoryModel::tr("Step");
+    case LineHistoryModel::TimeColumn:   return LineHistoryModel::tr("Time");
+    case LineHistoryModel::ChangeColumn: return LineHistoryModel::tr("Change");
+    case LineHistoryModel::SavedColumn:  return LineHistoryModel::tr("Saved");
+    }
+    return {};
+}
+
+QString headerToolTip(int section)
+{
+    switch (section)
+    {
+    case LineHistoryModel::StepColumn:
+        return LineHistoryModel::tr("Number of the step in the table of edits. ▶ marks the state of the line in the document now.");
+    case LineHistoryModel::SavedColumn:
+        return LineHistoryModel::tr("When the file was first written with this change in it");
+    }
+    return {};
+}
+
+QFont rowFont(const Entry& entry, bool isCurrent)
+{
+    QFont font = QApplication::font();
+    font.setBold(isCurrent);
+    font.setItalic(!entry.applied);
+    return font;
+}
+
+QVariant currentRowBackground(bool isCurrent)
+{
+    if (!isCurrent)
+        return {};
+    QColor color = QApplication::palette().color(QPalette::Highlight);
+    color.setAlpha(55);
+    return QBrush(color);
+}
+} // namespace
+
 
 LineHistoryModel::LineHistoryModel(QObject* parent)
     : QAbstractTableModel(parent)
@@ -48,27 +148,10 @@ QVariant LineHistoryModel::headerData(int section, Qt::Orientation orientation, 
 {
     if (orientation != Qt::Horizontal)
         return {};
-
     if (role == Qt::DisplayRole)
-    {
-        switch (section)
-        {
-        case StepColumn:   return tr("Step");
-        case TimeColumn:   return tr("Time");
-        case ChangeColumn: return tr("Change");
-        case SavedColumn:  return tr("Saved");
-        }
-    }
-    else if (role == Qt::ToolTipRole)
-    {
-        switch (section)
-        {
-        case StepColumn:
-            return tr("Number of the step in the table of edits. ▶ marks the state of the line in the document now.");
-        case SavedColumn:
-            return tr("When the file was first written with this change in it");
-        }
-    }
+        return headerText(section);
+    if (role == Qt::ToolTipRole)
+        return headerToolTip(section);
     return {};
 }
 
@@ -77,153 +160,74 @@ QVariant LineHistoryModel::data(const QModelIndex& index, int role) const
     if (!index.isValid() || index.row() >= history.entries.size())
         return {};
 
-    const EditHistory::LineEntry& entry = history.entries[index.row()];
+    const Entry& entry = history.entries[index.row()];
     const bool isCurrent = index.row() == currentRow();
 
     switch (role)
     {
-    case Qt::DisplayRole:
-        switch (index.column())
-        {
-        case StepColumn:
-            return isCurrent ? QStringLiteral("▶ %1").arg(entry.step) : QString::number(entry.step);
-        case TimeColumn:
-            return EditHistoryFormat::time(entry.time);
-        case ChangeColumn:
-            if (entry.detailsDiscarded)
-                return tr("(the text was dropped to save memory)");
-            return entry.kind == EditHistory::LineKind::Removed ? entry.oldText : entry.newText;
-        case SavedColumn:
-            return entry.savedAt.isValid() ? EditHistoryFormat::time(entry.savedAt) : QStringLiteral("–");
-        }
-        break;
-
-    case RichTextDelegate::RichTextRole:
-        if (index.column() == ChangeColumn)
-        {
-            if (entry.detailsDiscarded)
-                return QStringLiteral("<i>") + tr("(the text was dropped to save memory)").toHtmlEscaped() + QStringLiteral("</i>");
-
-            switch (entry.kind)
-            {
-            case EditHistory::LineKind::Modified:
-                return EditHistoryFormat::inlineDiffHtml(entry.oldText, entry.newText);
-            case EditHistory::LineKind::Added:
-                return QStringLiteral("<i>%1</i> ").arg(tr("new line:").toHtmlEscaped()) + EditHistoryFormat::insertedHtml(entry.newText);
-            case EditHistory::LineKind::Removed:
-                return QStringLiteral("<i>%1</i> ").arg(tr("line removed:").toHtmlEscaped()) + EditHistoryFormat::deletedHtml(entry.oldText);
-            }
-        }
-        break;
-
-    case Qt::ToolTipRole:
-        switch (index.column())
-        {
-        case StepColumn:
-            if (isCurrent)
-                return tr("The line is in this state now");
-            return entry.applied ? QString() : tr("Undone: Ctrl+Shift+Z brings it back");
-        case TimeColumn:
-            return entry.time.toString(Qt::ISODate);
-        case SavedColumn:
-            return entry.savedAt.isValid() ? entry.savedAt.toString(Qt::ISODate) : tr("Not written to the file yet");
-        case ChangeColumn:
-            return tr("Green: added, red and struck through: removed. Double click to go to the line.");
-        }
-        break;
-
-    case Qt::ForegroundRole:
-        if (!entry.applied)
-            return QBrush(QApplication::palette().color(QPalette::Disabled, QPalette::Text));
-        break;
-
-    case Qt::FontRole:
-    {
-        QFont font = QApplication::font();
-        font.setBold(isCurrent);
-        font.setItalic(!entry.applied);
-        return font;
-    }
-
-    case Qt::BackgroundRole:
-        if (isCurrent)
-        {
-            QColor color = QApplication::palette().color(QPalette::Highlight);
-            color.setAlpha(55);
-            return QBrush(color);
-        }
-        break;
-
-    case Qt::TextAlignmentRole:
-        if (index.column() == ChangeColumn)
-            return int(Qt::AlignLeft | Qt::AlignVCenter);
-        return int(Qt::AlignCenter);
+    case Qt::DisplayRole:                return displayText(entry, isCurrent, index.column());
+    case RichTextDelegate::RichTextRole: return richText(entry, index.column());
+    case Qt::ToolTipRole:                return toolTipText(entry, isCurrent, index.column());
+    case Qt::ForegroundRole:             return entry.applied ? QVariant() : QVariant(QBrush(QApplication::palette().color(QPalette::Disabled, QPalette::Text)));
+    case Qt::FontRole:                   return rowFont(entry, isCurrent);
+    case Qt::BackgroundRole:             return currentRowBackground(isCurrent);
+    case Qt::TextAlignmentRole:          return int(index.column() == ChangeColumn ? Qt::AlignLeft | Qt::AlignVCenter : Qt::AlignCenter);
     }
     return {};
 }
 
 
 LineHistoryDialog::LineHistoryDialog(EditHistory* history, int lineId, QWidget* parent)
-    : QDialog(parent, Qt::Window), history(history), lineId(lineId), model(new LineHistoryModel(this))
+    : QDialog(parent, Qt::Window), ui(new Ui::LineHistoryDialog), history(history), lineId(lineId), model(new LineHistoryModel(this))
 {
-    resize(900, 420);
+    ui->setupUi(this);
+    setUpTable();
+    connectSignals();
+    refresh();
+}
 
-    summaryLabel = new QLabel(this);
-    summaryLabel->setWordWrap(true);
-    summaryLabel->setTextFormat(Qt::RichText);
+LineHistoryDialog::~LineHistoryDialog()
+{
+    delete ui;
+}
 
-    table = new QTableView(this);
-    table->setModel(model);
-    table->setSelectionBehavior(QAbstractItemView::SelectRows);
-    table->setSelectionMode(QAbstractItemView::SingleSelection);
-    table->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    table->setWordWrap(true);
-    table->verticalHeader()->hide();
-    table->setItemDelegateForColumn(LineHistoryModel::ChangeColumn, new RichTextDelegate(true, table));
+void LineHistoryDialog::setUpTable()
+{
+    ui->table->setModel(model);
+    ui->table->setItemDelegateForColumn(LineHistoryModel::ChangeColumn, new RichTextDelegate(true, ui->table));
 
-    QHeaderView* header = table->horizontalHeader();
-    header->setSectionResizeMode(LineHistoryModel::StepColumn, QHeaderView::ResizeToContents);
-    header->setSectionResizeMode(LineHistoryModel::TimeColumn, QHeaderView::ResizeToContents);
-    header->setSectionResizeMode(LineHistoryModel::ChangeColumn, QHeaderView::Stretch);
-    header->setSectionResizeMode(LineHistoryModel::SavedColumn, QHeaderView::ResizeToContents);
+    QHeaderView* header = ui->table->horizontalHeader();
+    for (int column = 0; column < LineHistoryModel::ColumnCount; ++column)
+        header->setSectionResizeMode(column, column == LineHistoryModel::ChangeColumn ? QHeaderView::Stretch
+                                                                                      : QHeaderView::ResizeToContents);
+
     // rows are as high as the wrapped text needs: again whenever the width of the text column changes
-    connect(header, &QHeaderView::sectionResized, table, [this](int column) {
+    connect(header, &QHeaderView::sectionResized, ui->table, [this](int column) {
         if (column == LineHistoryModel::ChangeColumn)
-            table->resizeRowsToContents();
+            ui->table->resizeRowsToContents();
     });
+}
 
-    auto* legend = new QLabel(QStringLiteral("<span style=\"color:#116329;background-color:#aceebb\">&nbsp;%1&nbsp;</span> "
-                                             "<span style=\"color:#82071e;background-color:#ffc1ba;text-decoration:line-through\">&nbsp;%2&nbsp;</span>"
-                                             "&nbsp;&nbsp;%3")
-                                  .arg(tr("added").toHtmlEscaped(), tr("removed").toHtmlEscaped(),
-                                       tr("Greyed entries are undone (Ctrl+Shift+Z brings them back); they disappear when you edit after an undo.").toHtmlEscaped()),
-                              this);
-    legend->setTextFormat(Qt::RichText);
-    legend->setWordWrap(true);
-
-    auto* buttons = new QDialogButtonBox(QDialogButtonBox::Close, this);
-    connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::close);
-
-    auto* layout = new QVBoxLayout(this);
-    layout->addWidget(summaryLabel);
-    layout->addWidget(table, 1);
-    layout->addWidget(legend);
-    layout->addWidget(buttons);
-
-    connect(table, &QTableView::doubleClicked, this, [this]() {
-        if (!this->history)
-            return;
-        const int line = this->history->lineOfId(this->lineId);
-        if (line >= 0)
-            emit jumpToLineRequested(line);
-    });
+void LineHistoryDialog::connectSignals()
+{
+    connect(ui->table, &QTableView::doubleClicked, this, [this]() { requestJumpToLine(); });
 
     refreshTimer.setSingleShot(true);
     refreshTimer.setInterval(150);
     connect(&refreshTimer, &QTimer::timeout, this, &LineHistoryDialog::refresh);
     connect(history, &EditHistory::changed, &refreshTimer, qOverload<>(&QTimer::start));
 
-    refresh();
+    // Esc rejects the dialog, which only hides it: let it go for good, like the Close button does
+    connect(this, &QDialog::finished, this, &QObject::deleteLater);
+}
+
+void LineHistoryDialog::requestJumpToLine()
+{
+    if (!history)
+        return;
+    const int line = history->lineOfId(lineId);
+    if (line >= 0)
+        emit jumpToLineRequested(line);
 }
 
 void LineHistoryDialog::showLine(int newLineId)
@@ -238,41 +242,42 @@ void LineHistoryDialog::refresh()
         return;
 
     model->setLineHistory(history->lineHistoryById(lineId));
-    table->resizeRowsToContents();
+    ui->table->resizeRowsToContents();
     updateSummary();
 
     const int row = model->currentRow();
-    if (row >= 0)
+    if (row < 0)
     {
-        table->selectRow(row);
-        table->scrollTo(model->index(row, 0), QAbstractItemView::PositionAtCenter);
+        ui->table->clearSelection();
+        return;
     }
-    else
-    {
-        table->clearSelection();
-    }
+    ui->table->selectRow(row);
+    ui->table->scrollTo(model->index(row, 0), QAbstractItemView::PositionAtCenter);
+}
+
+QString LineHistoryDialog::windowTitleText() const
+{
+    const int line = model->lineHistory().line;
+    return line >= 0 ? tr("History of line %1").arg(line + 1) : tr("History of a line");
+}
+
+QString LineHistoryDialog::lineTitle() const
+{
+    const EditHistory::LineHistory& data = model->lineHistory();
+    if (data.line >= 0)
+        return tr("Line <b>%1</b>").arg(data.line + 1);
+    return data.entries.isEmpty() ? tr("This line has no history any more (the document was replaced).")
+                                  : tr("This line is not in the document now (its creation is undone).");
 }
 
 void LineHistoryDialog::updateSummary()
 {
     const EditHistory::LineHistory& data = model->lineHistory();
-
-    QString title;
-    if (data.line >= 0)
-    {
-        setWindowTitle(tr("History of line %1").arg(data.line + 1));
-        title = tr("Line <b>%1</b>").arg(data.line + 1);
-    }
-    else
-    {
-        setWindowTitle(tr("History of a line"));
-        title = data.entries.isEmpty() ? tr("This line has no history any more (the document was replaced).")
-                                       : tr("This line is not in the document now (its creation is undone).");
-    }
-
+    setWindowTitle(windowTitleText());
+    const QString title = lineTitle();
     if (data.entries.isEmpty())
     {
-        summaryLabel->setText(title);
+        ui->summaryLabel->setText(title);
         return;
     }
 
@@ -286,5 +291,5 @@ void LineHistoryDialog::updateSummary()
     text += QStringLiteral("  ·  ") + tr("current state of the document: step <b>%1</b> of %2").arg(data.currentIndex).arg(data.stepCount);
     if (model->currentRow() < 0)
         text += QStringLiteral("  ·  ") + tr("the line is in the state before the first change");
-    summaryLabel->setText(text);
+    ui->summaryLabel->setText(text);
 }

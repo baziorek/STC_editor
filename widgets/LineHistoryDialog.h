@@ -7,8 +7,9 @@
 
 #include "utils/EditHistory.h"
 
-class QLabel;
-class QTableView;
+namespace Ui {
+class LineHistoryDialog;
+}
 
 /// The entries of the history of one line, oldest first
 class LineHistoryModel : public QAbstractTableModel
@@ -45,12 +46,14 @@ private:
 /// What happened to one line during this session: when it was changed, what exactly (green: added, red: removed),
 /// when the change was written to the file, and where the current state of the document is.
 /// It follows the line while it is open (the line is found by its identity, not by its number).
+/// The layout is in LineHistoryDialog.ui.
 class LineHistoryDialog : public QDialog
 {
     Q_OBJECT
 
 public:
     LineHistoryDialog(EditHistory* history, int lineId, QWidget* parent = nullptr);
+    ~LineHistoryDialog() override;
 
     /// Show another line in the same window
     void showLine(int lineId);
@@ -60,13 +63,19 @@ signals:
     void jumpToLineRequested(int line);
 
 private:
+    void setUpTable();
+    void connectSignals();
+
     void refresh();
     void updateSummary();
+    /// "Line 12", or why there is no line
+    QString lineTitle() const;
+    QString windowTitleText() const;
+    void requestJumpToLine();
 
+    Ui::LineHistoryDialog* ui;
     QPointer<EditHistory> history;
     int lineId;
     LineHistoryModel* model;
-    QTableView* table;
-    QLabel* summaryLabel;
     QTimer refreshTimer;
 };

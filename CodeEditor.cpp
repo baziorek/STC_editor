@@ -29,6 +29,7 @@
 #include "utils/StcTagRegions.h"
 #include "widgets/LineNumberArea.h"
 #include "utils/EditHistory.h"
+#include "utils/ExactText.h"
 #include "widgets/EditHistoryDialog.h"
 #include "widgets/LineHistoryDialog.h"
 #include "utils/STCSyntaxHighlighter.h"
@@ -471,18 +472,31 @@ int CodeEditor::lineNumberAreaWidth()
     return space;
 }
 
+QString CodeEditor::exactText() const
+{
+    return exactPlainText(document());
+}
+
+QStringList CodeEditor::exactLines() const
+{
+    return exactText().split('\n');
+}
+
 bool CodeEditor::noUnsavedChanges() const
 {
+    if (getFileName().isEmpty())
+    {
+        // Only an empty document has nothing to lose. The "modified" flag does not matter here: it stays set after
+        // something was typed and deleted again, and asking whether to save an empty document makes no sense.
+        return document()->isEmpty();
+    }
+
     if (document()->isModified())
     {
         return false;
     }
 
-    const auto currentlyVisibleText = toPlainText();
-    if (getFileName().isEmpty())
-    {
-        return currentlyVisibleText.isEmpty();
-    }
+    const auto currentlyVisibleText = exactText();
 
     try
     {
@@ -683,7 +697,7 @@ bool CodeEditor::saveEntireContent2File(const QString &fileName)
     }
     setFileName(fileName);
 
-    auto savedNumberOfBytes = outputFile.write(toPlainText().toUtf8());
+    auto savedNumberOfBytes = outputFile.write(exactText().toUtf8());
     if (savedNumberOfBytes > -1)
     {
         markAsSaved();
@@ -693,7 +707,7 @@ bool CodeEditor::saveEntireContent2File(const QString &fileName)
 }
 void CodeEditor::trackOriginalVersionOfFile(const QString& fileName)
 {
-    originalLines = toPlainText().split('\n');
+    originalLines = exactLines();
     modifiedLines.clear();
     fileModificationTime = QFileInfo(fileName).lastModified();
     lastChangeTime = QDateTime(); // reset
@@ -1899,13 +1913,7 @@ void CodeEditor::addCodeBlockActionsIfApplicable(QMenu* menu, const QPoint& pos)
             });
             menu->addAction(format);
 
-            QAction* compile = new QAction(QIcon::fromTheme("applications-development"), "Compile C++ with g++", this);
-            const CodeBlock codeOnlyBlock = *maybeBlock; // `cursor` selects just the code, without [cpp] and [/cpp]
-            connect(compile, &QAction::triggered, this, [codeOnlyBlock, this]() {
-                CppCompilerDialog dialog(codeOnlyBlock, this);
-                dialog.exec();
-            });
-            menu->addAction(compile);
+            addCompileAction(menu, *maybeBlock);
 
             QAction* removeComments = new QAction(QIcon::fromTheme("edit-clear"), "Remove C++ Comments", this);
             connect(removeComments, &QAction::triggered, this, [=, this]() mutable {
@@ -1933,7 +1941,24 @@ void CodeEditor::addCodeBlockActionsIfApplicable(QMenu* menu, const QPoint& pos)
             });
             menu->addAction(cleanWhitespace);
         }
+        else if (tag == "code" || tag == "py")
+        {
+            addCompileAction(menu, *maybeBlock);
+        }
     }
+}
+
+void CodeEditor::addCompileAction(QMenu* menu, const CodeBlock& codeOnlyBlock)
+{
+    // `codeOnlyBlock.cursor` selects just the code, without the opening and the closing tag
+    const bool isPython = codeOnlyBlock.tag == QLatin1String("py");
+    auto* compile = new QAction(QIcon::fromTheme("applications-development"),
+                                isPython ? tr("Check and run Python (python3)") : tr("Compile C++ with g++"), menu);
+    connect(compile, &QAction::triggered, this, [codeOnlyBlock, this]() {
+        CppCompilerDialog dialog(codeOnlyBlock, this);
+        dialog.exec();
+    });
+    menu->addAction(compile);
 }
 
 QString CodeEditor::formatCppWithClang(const QString& code) const
@@ -2029,12 +2054,6 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
     QPainter painter(lineNumberArea);
     painter.fillRect(event->rect(), Qt::lightGray);
 
-    // Use smaller font for line numbers to prevent overlap
-    QFont lineNumberFont = font();
-    lineNumberFont.setPointSizeF(font().pointSizeF() * 0.8);
-    const QFontMetrics lineNumberMetrics(lineNumberFont);
-    constexpr int numberRightMargin = 4; // room for the circle of a line with history
-
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
     int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
@@ -2044,56 +2063,7 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
     {
         if (block.isVisible() && bottom >= event->rect().top())
         {
-            if (modifiedLines.contains(blockNumber + 1))
-            {
-                painter.fillRect(0, top, lineNumberArea->width(), fontMetrics().height(), QColor("#FFDD88"));
-            }
-
-            // Drawing arrow in the current position
-            if (blockNumber == currentLine)
-            {
-                const int yCenter = top + fontMetrics().height()/2;
-                const int arrowHeight = 6;
-
-                painter.setPen(Qt::NoPen);
-                painter.setBrush(Qt::yellow);
-
-                QPolygon arrow;
-                arrow << QPoint(lineNumberArea->width() - 1, yCenter) // top of arrow on the right edge
-                     << QPoint(0, yCenter - arrowHeight/2)  // upper left corner
-                     << QPoint(0, yCenter + arrowHeight/2); // lower button corner
-
-                painter.drawPolygon(arrow);
-            }
-
-            // Text on arrow
-            QString number = QString::number(blockNumber + 1);
-            painter.setPen(Qt::black);
-            painter.setFont(lineNumberFont);
-
-            painter.drawText(0, top, lineNumberArea->width() - numberRightMargin, fontMetrics().height(),
-                           Qt::AlignRight, number);
-
-            // A circle around the number: something happened to this line in this session, it has a history.
-            // Dotted when all of it is undone (it comes back with redo).
-            const auto marker = editHistory->lineMarker(blockNumber);
-            if (marker != EditHistory::LineMarker::None)
-            {
-                constexpr int padding = 3;
-                const int textWidth = lineNumberMetrics.horizontalAdvance(number);
-                const QRectF circle(lineNumberArea->width() - numberRightMargin - textWidth - padding, top + 0.5,
-                                    textWidth + 2 * padding, lineNumberMetrics.height());
-
-                painter.save();
-                painter.setRenderHint(QPainter::Antialiasing);
-                painter.setBrush(Qt::NoBrush);
-                QPen pen(marker == EditHistory::LineMarker::Applied ? QColor("#1f5fbf") : QColor("#7d93b8"), 1.3);
-                if (marker == EditHistory::LineMarker::UndoneOnly)
-                    pen.setStyle(Qt::DotLine);
-                painter.setPen(pen);
-                painter.drawEllipse(circle);
-                painter.restore();
-            }
+            paintLineNumberRow(painter, blockNumber, top);
         }
 
         block = block.next();
@@ -2101,6 +2071,94 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
         bottom = top + qRound(blockBoundingRect(block).height());
         ++blockNumber;
     }
+}
+
+namespace
+{
+constexpr int lineNumberRightMargin = 4; // room for the circle of a line with history
+} // namespace
+
+void CodeEditor::paintLineNumberRow(QPainter& painter, int blockNumber, int top) const
+{
+    if (modifiedLines.contains(blockNumber + 1))
+    {
+        paintModifiedLineBackground(painter, top);
+    }
+    if (blockNumber == currentLine)
+    {
+        paintCurrentLineArrow(painter, top);
+    }
+
+    paintLineNumber(painter, blockNumber, top);
+    paintHistoryCircle(painter, blockNumber, top);
+}
+
+void CodeEditor::paintModifiedLineBackground(QPainter& painter, int top) const
+{
+    painter.fillRect(0, top, lineNumberArea->width(), fontMetrics().height(), QColor("#FFDD88"));
+}
+
+void CodeEditor::paintCurrentLineArrow(QPainter& painter, int top) const
+{
+    const int yCenter = top + fontMetrics().height()/2;
+    const int arrowHeight = 6;
+
+    QPolygon arrow;
+    arrow << QPoint(lineNumberArea->width() - 1, yCenter) // top of arrow on the right edge
+          << QPoint(0, yCenter - arrowHeight/2)           // upper left corner
+          << QPoint(0, yCenter + arrowHeight/2);          // lower button corner
+
+    painter.save();
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(Qt::yellow);
+    painter.drawPolygon(arrow);
+    painter.restore();
+}
+
+QFont CodeEditor::lineNumberFont() const
+{
+    // Smaller than the text of the editor, to prevent overlap
+    QFont numberFont = font();
+    numberFont.setPointSizeF(font().pointSizeF() * 0.8);
+    return numberFont;
+}
+
+void CodeEditor::paintLineNumber(QPainter& painter, int blockNumber, int top) const
+{
+    painter.setPen(Qt::black);
+    painter.setFont(lineNumberFont());
+    painter.drawText(0, top, lineNumberArea->width() - lineNumberRightMargin, fontMetrics().height(),
+                     Qt::AlignRight, QString::number(blockNumber + 1));
+}
+
+/// A circle around the number: something happened to this line in this session, it has a history.
+/// Dotted when all of it is undone (it comes back with redo).
+void CodeEditor::paintHistoryCircle(QPainter& painter, int blockNumber, int top) const
+{
+    const auto marker = editHistory->lineMarker(blockNumber);
+    if (marker == EditHistory::LineMarker::None)
+    {
+        return;
+    }
+
+    const QFontMetrics numberMetrics(lineNumberFont());
+    constexpr int padding = 3;
+    const int textWidth = numberMetrics.horizontalAdvance(QString::number(blockNumber + 1));
+    const QRectF circle(lineNumberArea->width() - lineNumberRightMargin - textWidth - padding, top + 0.5,
+                        textWidth + 2 * padding, numberMetrics.height());
+
+    QPen pen(marker == EditHistory::LineMarker::Applied ? QColor("#1f5fbf") : QColor("#7d93b8"), 1.3);
+    if (marker == EditHistory::LineMarker::UndoneOnly)
+    {
+        pen.setStyle(Qt::DotLine);
+    }
+
+    painter.save();
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setBrush(Qt::NoBrush);
+    painter.setPen(pen);
+    painter.drawEllipse(circle);
+    painter.restore();
 }
 
 void CodeEditor::keyPressEvent(QKeyEvent* event)
@@ -2380,7 +2438,7 @@ void CodeEditor::fileChanged(const QString &path)
 
     // delayed reaction
     QTimer::singleShot(300, this, [this, path]() {
-        const QByteArray currentContent = toPlainText().toUtf8();
+        const QByteArray currentContent = exactText().toUtf8();
 
         try
         {
@@ -2833,7 +2891,7 @@ void CodeEditor::wheelEvent(QWheelEvent* event)
 
 void CodeEditor::updateDiffWithOriginal()
 {
-    const QStringList currentLines = toPlainText().split('\n');
+    const QStringList currentLines = exactLines();
     const QSet<int> newDiff = DiffCalculation::calculateModifiedLines(originalLines, currentLines);
 
     if (newDiff != modifiedLines)
@@ -2855,7 +2913,7 @@ void CodeEditor::updateDiffWithOriginal()
 
 void CodeEditor::markAsSaved()
 {
-    originalLines = toPlainText().split('\n');
+    originalLines = exactLines();
     modifiedLines.clear();
     lastChangeTime = {};
     fileModificationTime = QFileInfo(getFileName()).lastModified();
@@ -3226,7 +3284,7 @@ void CodeEditor::onBackupTimerTimeout()
     if (!fileName.isEmpty() && isContentModified())
     {
         qDebug() << "Creating automatic backup for:" << fileName;
-        BackupManager::createBackup(fileName, toPlainText());
+        BackupManager::createBackup(fileName, exactText());
         // Timer continues running for periodic backups
     }
     else
@@ -3298,6 +3356,24 @@ void CodeEditor::redoWithHistory()
 
 void CodeEditor::addEditHistoryActions(QMenu* menu, int clickedLine)
 {
+    QAction* redoAction = routeUndoRedoThroughHistory(menu);
+    const QList<QAction*> actions = createEditHistoryActions(menu, clickedLine);
+
+    // right after Redo
+    const QList<QAction*> existing = menu->actions();
+    const int redoIndex = redoAction ? static_cast<int>(existing.indexOf(redoAction)) : -1;
+    if (redoIndex >= 0 && redoIndex + 1 < existing.size())
+    {
+        menu->insertActions(existing.at(redoIndex + 1), actions);
+    }
+    else
+    {
+        menu->addActions(actions);
+    }
+}
+
+QAction* CodeEditor::routeUndoRedoThroughHistory(QMenu* menu)
+{
     // The Undo and Redo of the standard menu are connected inside Qt: take them over, or the history of edits
     // would not know that a change of the document is an undo. Qt names them (they do not depend on the language);
     // the shortcut at the end of their text is a second way to find them.
@@ -3307,20 +3383,31 @@ void CodeEditor::addEditHistoryActions(QMenu* menu, int clickedLine)
     for (QAction* action : menu->actions())
     {
         if (action->isSeparator() || action->menu())
+        {
             continue;
+        }
 
         const bool isUndo = action->objectName() == QLatin1String("edit-undo") || action->text().endsWith(undoSuffix);
         const bool isRedo = action->objectName() == QLatin1String("edit-redo") || action->text().endsWith(redoSuffix);
         if (!isUndo && !isRedo)
+        {
             continue;
+        }
 
         action->disconnect(SIGNAL(triggered(bool)));
         connect(action, &QAction::triggered, this, isUndo ? &CodeEditor::undoWithHistory : &CodeEditor::redoWithHistory);
         if (isRedo)
+        {
             redoAction = action;
+        }
     }
+    return redoAction;
+}
 
+QList<QAction*> CodeEditor::createEditHistoryActions(QMenu* menu, int clickedLine)
+{
     QList<QAction*> actions;
+
     auto* historyAction = new QAction(tr("Edit history…"), menu);
     connect(historyAction, &QAction::triggered, this, &CodeEditor::showEditHistory);
     actions << historyAction;
@@ -3331,14 +3418,7 @@ void CodeEditor::addEditHistoryActions(QMenu* menu, int clickedLine)
         connect(lineAction, &QAction::triggered, this, [this, clickedLine]() { showLineHistory(clickedLine); });
         actions << lineAction;
     }
-
-    // right after Redo
-    const QList<QAction*> existing = menu->actions();
-    const int redoIndex = redoAction ? static_cast<int>(existing.indexOf(redoAction)) : -1;
-    if (redoIndex >= 0 && redoIndex + 1 < existing.size())
-        menu->insertActions(existing.at(redoIndex + 1), actions);
-    else
-        menu->addActions(actions);
+    return actions;
 }
 
 void CodeEditor::showEditHistory()

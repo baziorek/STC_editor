@@ -91,7 +91,7 @@ void BackupRecoveryDialog::setupDiffArea(CodeEditor* editor, const QString& back
     mainLayout->addWidget(diffWidget, 1); // 1 means Expanding
 
     const QStringList backupLines = backupContent.split('\n');
-    const QStringList currentLines = editor->toPlainText().split('\n');
+    const QStringList currentLines = editor->exactLines();
 
     const auto diffLines = DiffCalculation::computeDiff(backupLines, currentLines);
     const auto diffs = DiffCalculation::computeModifiedLineDiffs(diffLines);

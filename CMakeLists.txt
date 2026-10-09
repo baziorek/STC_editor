@@ -180,9 +180,9 @@ set(PROJECT_SOURCES
     widgets/LoginDialog.h widgets/LoginDialog.cpp
     widgets/StcPreview.h widgets/StcPreview.cpp
     widgets/DiffViewerWidget.h widgets/DiffViewerWidget.cpp
-    widgets/EditHistoryDialog.h widgets/EditHistoryDialog.cpp
+    widgets/EditHistoryDialog.h widgets/EditHistoryDialog.cpp widgets/EditHistoryDialog.ui
     widgets/EditHistoryFormat.h widgets/EditHistoryFormat.cpp
-    widgets/LineHistoryDialog.h widgets/LineHistoryDialog.cpp
+    widgets/LineHistoryDialog.h widgets/LineHistoryDialog.cpp widgets/LineHistoryDialog.ui
     widgets/RichTextDelegate.h widgets/RichTextDelegate.cpp
     widgets/DiffReviewDialog.h widgets/DiffReviewDialog.cpp
     widgets/PastedTextDiffDialog.h widgets/PastedTextDiffDialog.cpp
@@ -472,6 +472,7 @@ if(NOT WIN32)
     # Edit history (the table of edits, circles at line numbers). Needs only Qt and the diff libraries; own main() with QApplication.
     add_executable(${PROJECT_NAME}EditHistoryTests
         tests/EditHistoryTests.cpp
+        tests/ExactTextTests.cpp
         utils/EditHistory.cpp
         utils/DiffCalculation.cpp
     )

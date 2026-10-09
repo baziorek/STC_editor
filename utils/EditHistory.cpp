@@ -52,10 +52,51 @@ QList<EditHistory::LineRange> toRanges(const QList<int>& numbers)
     return ranges;
 }
 
+int commonPrefixLength(const QList<QString>& a, const QList<QString>& b)
+{
+    int length = 0;
+    while (length < a.size() && length < b.size() && a[length] == b[length])
+        ++length;
+    return length;
+}
+
+/// Equal lines at the end, not counting the first `prefix` lines of both
+int commonSuffixLength(const QList<QString>& a, const QList<QString>& b, int prefix)
+{
+    int length = 0;
+    while (length < a.size() - prefix && length < b.size() - prefix && a[a.size() - 1 - length] == b[b.size() - 1 - length])
+        ++length;
+    return length;
+}
+
+/// For every new line: the index of the old line it is, or -1 for a line which is new.
+/// Small regions are matched by similarity (a line inserted among edited ones does not take the identity of its
+/// neighbour); big ones, and a single line against many, simply one by one.
+QList<int> matchMiddleLines(const QList<QString>& oldMiddle, const QList<QString>& newMiddle)
+{
+    QList<int> newToOld(newMiddle.size(), -1);
+    const bool bySimilarity = oldMiddle.size() > 1 && newMiddle.size() > 1
+                              && oldMiddle.size() <= maxLinesForSimilarityPairing && newMiddle.size() <= maxLinesForSimilarityPairing;
+    if (!bySimilarity)
+    {
+        for (int j = 0; j < std::min(oldMiddle.size(), newMiddle.size()); ++j)
+            newToOld[j] = j;
+        return newToOld;
+    }
+
+    const auto diff = DiffCalculation::computeDiff(QStringList(oldMiddle), QStringList(newMiddle));
+    for (const auto& line : diff)
+    {
+        if (line.oldIndex >= 0 && line.newIndex >= 0)
+            newToOld[line.newIndex] = line.oldIndex;
+    }
+    return newToOld;
+}
+
 /// Decides which of the new lines ARE the old lines (so a line keeps its identity, and its history, when it is edited,
 /// pushed down by a line inserted above, ...) and which ones are new.
 ///   - lines equal at the start and at the end of the region are the same lines,
-///   - what is left in between is paired by similarity (small regions), or one by one,
+///   - what is left in between is matched by matchMiddleLines(),
 ///   - old lines left without a partner are removed, new lines without a partner are added.
 /// `touched` receives the ids of the lines that were modified, added or removed.
 /// When `allocateIds` is false the added lines get -1 (they get their real id when undo/redo has finished).
@@ -64,48 +105,23 @@ void pairLines(const QList<QString>& oldLines, const QList<int>& oldIds, const Q
 {
     const int oldCount = oldLines.size();
     const int newCount = newLines.size();
+    const int prefix = commonPrefixLength(oldLines, newLines);
+    const int suffix = commonSuffixLength(oldLines, newLines, prefix);
+
     newIds = QList<int>(newCount, -1);
-
-    int prefix = 0;
-    while (prefix < oldCount && prefix < newCount && oldLines[prefix] == newLines[prefix])
-        ++prefix;
-
-    int suffix = 0;
-    while (suffix < oldCount - prefix && suffix < newCount - prefix
-           && oldLines[oldCount - 1 - suffix] == newLines[newCount - 1 - suffix])
-        ++suffix;
-
     for (int i = 0; i < prefix; ++i)
         newIds[i] = oldIds[i];
     for (int i = 0; i < suffix; ++i)
         newIds[newCount - 1 - i] = oldIds[oldCount - 1 - i];
 
-    const int oldMiddle = oldCount - prefix - suffix;
-    const int newMiddle = newCount - prefix - suffix;
-    if (oldMiddle == 0 && newMiddle == 0)
+    const int oldMiddleCount = oldCount - prefix - suffix;
+    const int newMiddleCount = newCount - prefix - suffix;
+    if (oldMiddleCount == 0 && newMiddleCount == 0)
         return;
 
-    QList<int> newToOld(newMiddle, -1); // index in the old middle part, or -1
-    const bool bySimilarity = oldMiddle > 1 && newMiddle > 1
-                              && oldMiddle <= maxLinesForSimilarityPairing && newMiddle <= maxLinesForSimilarityPairing;
-    if (bySimilarity)
-    {
-        const auto diff = DiffCalculation::computeDiff(QStringList(oldLines.mid(prefix, oldMiddle)),
-                                                       QStringList(newLines.mid(prefix, newMiddle)));
-        for (const auto& line : diff)
-        {
-            if (line.oldIndex >= 0 && line.newIndex >= 0)
-                newToOld[line.newIndex] = line.oldIndex;
-        }
-    }
-    else
-    {
-        for (int j = 0; j < std::min(oldMiddle, newMiddle); ++j)
-            newToOld[j] = j;
-    }
-
-    QList<bool> oldKept(oldMiddle, false);
-    for (int j = 0; j < newMiddle; ++j)
+    const QList<int> newToOld = matchMiddleLines(oldLines.mid(prefix, oldMiddleCount), newLines.mid(prefix, newMiddleCount));
+    QList<bool> oldKept(oldMiddleCount, false);
+    for (int j = 0; j < newMiddleCount; ++j)
     {
         const int target = prefix + j;
         const int source = newToOld[j];
@@ -123,7 +139,7 @@ void pairLines(const QList<QString>& oldLines, const QList<int>& oldIds, const Q
         }
     }
 
-    for (int i = 0; i < oldMiddle; ++i)
+    for (int i = 0; i < oldMiddleCount; ++i)
     {
         if (!oldKept[i])
             touched.append(oldIds[prefix + i]);
@@ -234,23 +250,18 @@ void EditHistory::onContentsChange(int position, int charsRemoved, int charsAdde
 {
     if (!document->isUndoRedoEnabled())
     {
-        // setPlainText(), clear(): the whole content was replaced (and Qt dropped its undo stack too)
-        resync("content replaced");
+        resync("content replaced"); // setPlainText(), clear(): Qt dropped its undo stack too
         return;
     }
 
     const bool recording = (operation == Operation::Edit);
-    if (recording)
+    if (recording && !isOrdinaryEdit())
     {
-        // A real edit leaves something to undo and nothing to redo. Otherwise this was not an edit made in a way we
-        // know of (e.g. QTextDocument::clear(), or an undo which did not go through UndoRedoScope).
-        if (document->availableUndoSteps() == 0 || document->availableRedoSteps() > 0)
-        {
-            resync("not an edit we know of");
-            return;
-        }
-        dropRedoBranch();
+        resync("not an edit we know of");
+        return;
     }
+    if (recording)
+        dropRedoBranch();
 
     Region region;
     if (!computeRegion(position, charsRemoved, charsAdded, recording, region))
@@ -260,18 +271,9 @@ void EditHistory::onContentsChange(int position, int charsRemoved, int charsAdde
     }
 
     if (recording)
-    {
-        const bool startsNewStep = newStepPending || current == 0;
-        newStepPending = false;
-        if (startsNewStep)
-            beginStep(region);
-        else
-            extendStep(steps[current - 1], region);
-    }
+        recordRegion(region);
     else
-    {
         ++operationEvents;
-    }
 
     applyRegion(region);
 
@@ -280,6 +282,23 @@ void EditHistory::onContentsChange(int position, int charsRemoved, int charsAdde
         enforceBudget();
         emit changed();
     }
+}
+
+bool EditHistory::isOrdinaryEdit() const
+{
+    // Otherwise this was not an edit made in a way we know of: e.g. QTextDocument::clear(), or an undo which did not
+    // go through UndoRedoScope.
+    return document->availableUndoSteps() > 0 && document->availableRedoSteps() == 0;
+}
+
+void EditHistory::recordRegion(const Region& region)
+{
+    const bool startsNewStep = newStepPending || current == 0;
+    newStepPending = false;
+    if (startsNewStep)
+        beginStep(region);
+    else
+        extendStep(steps[current - 1], region);
 }
 
 bool EditHistory::computeRegion(int position, int charsRemoved, int charsAdded, bool allocateIds, Region& region)
@@ -292,59 +311,70 @@ bool EditHistory::computeRegion(int position, int charsRemoved, int charsAdded, 
     if (region.first >= lines.size())
         return false;
 
-    // The lines as they were: walk through the removed characters (every line break counts as one character)
-    int lastOld = region.first;
-    int offset = position - firstBlock.position();
-    int remaining = charsRemoved;
-    while (true)
-    {
-        const int available = lines[lastOld].size() - offset;
-        if (available < 0)
-            return false;
-        if (remaining <= available)
-            break;
-        if (lastOld + 1 >= lines.size())
-        {
-            // The range reaches the separator after the very last line. It is not a character of the text and cannot be
-            // removed, but Qt reports it when the format of that separator changes (pressing Enter on an empty last line
-            // does that, as a separate undo step).
-            if (remaining == available + 1)
-                break;
-            return false;
-        }
-        remaining -= available + 1;
-        ++lastOld;
-        offset = 0;
-    }
-
-    // The lines as they are now: up to the line which holds the end of the inserted text
-    const int lastPosition = document->characterCount() - 1; // that separator
-    const QTextBlock lastBlock = document->findBlock(std::min(position + charsAdded, lastPosition));
-    if (!lastBlock.isValid())
-        return false;
-    const int lastNew = lastBlock.blockNumber();
-    if (lastNew < region.first)
+    const std::optional<int> lastOld = lastLineOfRemovedText(region.first, position - firstBlock.position(), charsRemoved);
+    const int lastNew = lastLineOfInsertedText(position, charsAdded);
+    if (!lastOld || lastNew < region.first)
         return false;
 
-    const int oldCount = lastOld - region.first + 1;
+    const int oldCount = *lastOld - region.first + 1;
     const int newCount = lastNew - region.first + 1;
     if (lines.size() - oldCount + newCount != document->blockCount())
         return false;
 
     region.oldLines = lines.mid(region.first, oldCount);
     region.oldIds = ids.mid(region.first, oldCount);
-    region.newLines.reserve(newCount);
-    QTextBlock block = firstBlock;
-    for (int i = 0; i < newCount; ++i, block = block.next())
-    {
-        if (!block.isValid())
-            return false;
-        region.newLines.append(block.text());
-    }
+    if (!readNewLines(firstBlock, newCount, region.newLines))
+        return false;
 
     pairLines(region.oldLines, region.oldIds, region.newLines, region.newIds, region.touched, nextId, allocateIds);
     if (!allocateIds && region.newIds.contains(-1))
         placeholderIds = true;
+    return true;
+}
+
+/// Walks through the removed characters; every line break counts as one character
+std::optional<int> EditHistory::lastLineOfRemovedText(int firstLine, int offsetInFirstLine, int charsRemoved) const
+{
+    int line = firstLine;
+    int offset = offsetInFirstLine;
+    int remaining = charsRemoved;
+    while (true)
+    {
+        const int available = lines[line].size() - offset;
+        if (available < 0)
+            return std::nullopt;
+        if (remaining <= available)
+            return line;
+        if (line + 1 >= lines.size())
+        {
+            // The range reaches the separator after the very last line. It is not a character of the text and cannot be
+            // removed, but Qt reports it when the format of that separator changes (pressing Enter on an empty last line
+            // does that, as a separate undo step).
+            return remaining == available + 1 ? std::optional<int>(line) : std::nullopt;
+        }
+        remaining -= available + 1;
+        ++line;
+        offset = 0;
+    }
+}
+
+int EditHistory::lastLineOfInsertedText(int position, int charsAdded) const
+{
+    const int lastPosition = document->characterCount() - 1; // the separator after the very last line
+    const QTextBlock block = document->findBlock(std::min(position + charsAdded, lastPosition));
+    return block.isValid() ? block.blockNumber() : -1;
+}
+
+bool EditHistory::readNewLines(const QTextBlock& firstBlock, int count, QList<QString>& newLines) const
+{
+    newLines.reserve(count);
+    QTextBlock block = firstBlock;
+    for (int i = 0; i < count; ++i, block = block.next())
+    {
+        if (!block.isValid())
+            return false;
+        newLines.append(block.text());
+    }
     return true;
 }
 
@@ -375,15 +405,32 @@ void EditHistory::beginStep(const Region& region)
 void EditHistory::extendStep(Step& step, const Region& region)
 {
     const qint64 before = step.characters();
-    const bool keepText = !step.detailsDiscarded;
 
     const int stepEnd = step.first + static_cast<int>(step.newIds.size()); // in the document as it is now
     const int regionEnd = region.first + static_cast<int>(region.oldIds.size());
-    const int top = std::min(step.first, region.first);
-    const int bottom = std::max(stepEnd, regionEnd);
+    growStepToCover(step, std::min(step.first, region.first), std::max(stepEnd, regionEnd));
 
-    // Lines the step had not touched so far but the new change reaches: they are the same before and after the step
-    // (`lines` and `ids` still describe the document before the new change, which is what we need here)
+    const int offset = region.first - step.first;
+    replaceRange(step.newIds, offset, static_cast<int>(region.oldIds.size()), region.newIds);
+    if (!step.detailsDiscarded)
+    {
+        replaceRange(step.newLines, offset, static_cast<int>(region.oldLines.size()), region.newLines);
+        step.summary.reset();
+    }
+
+    step.lastTime = QDateTime::currentDateTime();
+    retained += step.characters() - before;
+    recordTouches(step, current, region.touched);
+}
+
+/// Qt merged one more change (typing goes character by character) into the undo step we already have, and the change
+/// reaches lines the step had not touched so far: they are the same before and after the step.
+/// (`lines` and `ids` still describe the document before the new change, which is what is needed here.)
+void EditHistory::growStepToCover(Step& step, int top, int bottom)
+{
+    const bool keepText = !step.detailsDiscarded;
+    const int stepEnd = step.first + static_cast<int>(step.newIds.size());
+
     if (top < step.first)
     {
         const int count = step.first - top;
@@ -407,18 +454,6 @@ void EditHistory::extendStep(Step& step, const Region& region)
             step.newLines += lines.mid(stepEnd, count);
         }
     }
-
-    const int offset = region.first - step.first;
-    replaceRange(step.newIds, offset, static_cast<int>(region.oldIds.size()), region.newIds);
-    if (keepText)
-    {
-        replaceRange(step.newLines, offset, static_cast<int>(region.oldLines.size()), region.newLines);
-        step.summary.reset();
-    }
-
-    step.lastTime = QDateTime::currentDateTime();
-    retained += step.characters() - before;
-    recordTouches(step, current, region.touched);
 }
 
 void EditHistory::recordTouches(Step& step, int number, const QList<int>& touchedIds)
@@ -654,6 +689,12 @@ QList<DiffCalculation::LineDiffResult> EditHistory::stepDiff(int number) const
     if (step.detailsDiscarded)
         return {};
 
+    return DiffCalculation::computeAllLineDiffs(diffLinesOf(step));
+}
+
+/// The lines of the step in the order of the document, each one unchanged, modified, added or removed
+std::vector<DiffCalculation::DiffLine> EditHistory::diffLinesOf(const Step& step) const
+{
     const QSet<int> oldIdSet(step.oldIds.begin(), step.oldIds.end());
     const QSet<int> newIdSet(step.newIds.begin(), step.newIds.end());
 
@@ -697,7 +738,7 @@ QList<DiffCalculation::LineDiffResult> EditHistory::stepDiff(int number) const
         }
     }
 
-    return DiffCalculation::computeAllLineDiffs(diffLines);
+    return diffLines;
 }
 
 int EditHistory::stepLineInEditor(int number) const
@@ -770,39 +811,43 @@ EditHistory::LineHistory EditHistory::lineHistoryById(int id) const
 
     for (const int number : *it)
     {
-        if (number < 1 || number > stepCount())
-            continue;
-        const Step& step = steps[number - 1];
-
-        LineEntry entry;
-        entry.step = number;
-        entry.time = step.time;
-        entry.applied = number <= current;
-        entry.isCurrent = number == current;
-        entry.detailsDiscarded = step.detailsDiscarded;
-
-        const qsizetype oldIndex = step.oldIds.indexOf(id);
-        const qsizetype newIndex = step.newIds.indexOf(id);
-        entry.kind = oldIndex < 0 ? LineKind::Added : (newIndex < 0 ? LineKind::Removed : LineKind::Modified);
-        if (!step.detailsDiscarded)
-        {
-            if (oldIndex >= 0)
-                entry.oldText = step.oldLines[oldIndex];
-            if (newIndex >= 0)
-                entry.newText = step.newLines[newIndex];
-        }
-
-        for (const SaveMark& mark : saves)
-        {
-            if (!mark.stateDiscarded && mark.state >= number)
-            {
-                entry.savedAt = mark.time; // the first write which had this change in it
-                break;
-            }
-        }
-        history.entries.append(entry);
+        if (number >= 1 && number <= stepCount())
+            history.entries.append(lineEntry(id, number));
     }
     return history;
+}
+
+EditHistory::LineEntry EditHistory::lineEntry(int id, int stepNumber) const
+{
+    const Step& step = steps[stepNumber - 1];
+
+    LineEntry entry;
+    entry.step = stepNumber;
+    entry.time = step.time;
+    entry.applied = stepNumber <= current;
+    entry.isCurrent = stepNumber == current;
+    entry.detailsDiscarded = step.detailsDiscarded;
+
+    const qsizetype oldIndex = step.oldIds.indexOf(id);
+    const qsizetype newIndex = step.newIds.indexOf(id);
+    entry.kind = oldIndex < 0 ? LineKind::Added : (newIndex < 0 ? LineKind::Removed : LineKind::Modified);
+    if (!step.detailsDiscarded)
+    {
+        if (oldIndex >= 0)
+            entry.oldText = step.oldLines[oldIndex];
+        if (newIndex >= 0)
+            entry.newText = step.newLines[newIndex];
+    }
+
+    for (const SaveMark& mark : saves)
+    {
+        if (!mark.stateDiscarded && mark.state >= stepNumber)
+        {
+            entry.savedAt = mark.time; // the first write which had this change in it
+            break;
+        }
+    }
+    return entry;
 }
 
 bool EditHistory::verifyConsistency(QString* problem) const

@@ -20,7 +20,9 @@ class QPushButton;
 class QTemporaryDir;
 class QTimer;
 
-/// Compiles (and optionally runs) the C++ code of an STC `[cpp]` block.
+/// Compiles (and optionally runs) the C++ code of an STC `[cpp]` or `[code]` block with g++.
+/// For a `[py]` block the same window checks the syntax of the Python code (`python3 -m py_compile`) and optionally
+/// runs it (`python3`): the check takes the place of the compilation, the compiler flags are the interpreter flags.
 ///
 /// The dialog shows:
 ///  - the code in an editor with the same C++ highlighting and line numbers as the main window
@@ -57,8 +59,19 @@ private:
     enum class Stage { Idle, Compiling, Running };
 
     void buildUi();
+    void adaptUiToPython();
     void loadSettings();
     void saveSettings() const;
+
+    QString sourceFileName() const;
+    void clearResults();
+    /// Creates the temporary directory with the source file; says in the status what went wrong
+    bool writeSourceFile();
+    void startGppCompilation();
+    void startPythonSyntaxCheck();
+    QStringList pythonRunArguments() const;
+    /// "Compilation" or "Syntax check"
+    QString compilationName() const;
 
     void startProcess(const QString& program, const QStringList& arguments, int timeoutMs);
     void releaseProcess();
@@ -78,6 +91,8 @@ private:
     int endOfClosingTagLine() const;
 
     CodeEditor* codeEdit_ = nullptr;
+    QLabel* compileFlagsLabel_ = nullptr;
+    QLabel* linkFlagsLabel_ = nullptr;
     QLineEdit* compileFlagsEdit_ = nullptr;
     QLineEdit* linkFlagsEdit_ = nullptr;
     QCheckBox* runAfterCompileCheck_ = nullptr;
@@ -95,7 +110,8 @@ private:
     QCheckBox* showStderrCheck_ = nullptr;
 
     QTextCursor articleCodeCursor_; ///< selects the code in the main editor (follows its edits)
-    QString tag_;                   ///< "cpp"
+    QString tag_;                   ///< "cpp", "code" or "py"
+    bool isPython_ = false;         ///< a `[py]` block
 
     Stage stage_ = Stage::Idle;
     QProcess* process_ = nullptr;

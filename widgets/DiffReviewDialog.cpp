@@ -123,7 +123,7 @@ void DiffReviewDialog::setupDiffArea(CodeEditor* editor)
     mainLayout->addWidget(diffWidget, 1); // 1 means Expanding
 
     const QStringList oldLines = editor->getOriginalLines();
-    const QStringList newLines = editor->toPlainText().split('\n');
+    const QStringList newLines = editor->exactLines();
 
     const auto diffLines = DiffCalculation::computeDiff(oldLines, newLines);
     const auto diffs = DiffCalculation::computeModifiedLineDiffs(diffLines);
@@ -140,7 +140,7 @@ void DiffReviewDialog::setupDiffAreaForExternalChange(CodeEditor* editor, const 
     diffWidget = new DiffViewerWidget(this);
     mainLayout->addWidget(diffWidget, 1); // 1 means Expanding
 
-    const QStringList oldLines = editor->toPlainText().split('\n');
+    const QStringList oldLines = editor->exactLines();
     const QStringList newLines = newFileContent;
 
     const auto diffLines = DiffCalculation::computeDiff(oldLines, newLines);
@@ -219,9 +219,9 @@ void DiffReviewDialog::setupButtonsForExternalChange()
 void DiffReviewDialog::handleLineRestoration(CodeEditor* editor, int lineIndex, const QString& restoredText)
 {
     const QStringList oldLines = (dialogMode == ExternalFileChange) 
-        ? editor->toPlainText().split('\n') 
+        ? editor->exactLines() 
         : editor->getOriginalLines();
-    QStringList lines = editor->toPlainText().split('\n');
+    QStringList lines = editor->exactLines();
 
     const auto& diffList = diffWidget->diffData();
     const auto it = std::find_if(diffList.begin(), diffList.end(),
@@ -263,7 +263,7 @@ void DiffReviewDialog::handleLineRestoration(CodeEditor* editor, int lineIndex, 
         }
     }
 
-    const QStringList newLines = editor->toPlainText().split('\n');
+    const QStringList newLines = editor->exactLines();
     const auto diffLines = DiffCalculation::computeDiff(oldLines, newLines);
     const auto diffs = DiffCalculation::computeModifiedLineDiffs(diffLines);
 
