@@ -9,6 +9,8 @@
 #include <QEnterEvent>
 #include <QToolTip>
 #include <QCursor>
+#include <QMouseEvent>
+#include <QChildEvent>
 #include "StcPreview.h"
 
 
@@ -45,6 +47,53 @@ StcPreviewWidget::StcPreviewWidget(QWidget *parent) : QWidget(parent)
 
     webView.setContextMenuPolicy(Qt::CustomContextMenu);
     connect(&webView, &QWidget::customContextMenuRequested, this, &StcPreviewWidget::showPreviewContextMenu);
+
+    // The mouse events of the page go to the widget inside of the view (it can be created later), not to the view
+    webView.installEventFilter(this);
+    for (QObject *child : webView.children())
+    {
+        installClickFilter(child);
+    }
+}
+
+void StcPreviewWidget::installClickFilter(QObject *renderWidget)
+{
+    if (renderWidget->isWidgetType())
+    {
+        renderWidget->installEventFilter(this);
+    }
+}
+
+bool StcPreviewWidget::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == &webView)
+    {
+        if (event->type() == QEvent::ChildAdded)
+        {
+            installClickFilter(static_cast<QChildEvent *>(event)->child());
+        }
+        return false;
+    }
+
+    const bool press = event->type() == QEvent::MouseButtonPress;
+    if (press || event->type() == QEvent::MouseButtonRelease)
+    {
+        const auto *mouse = static_cast<QMouseEvent *>(event);
+        if (mouse->button() == Qt::LeftButton)
+        {
+            // a click is a press and a release in (almost) the same place; a drag is selecting the text
+            constexpr int kClickTolerance = 5;
+            if (press)
+            {
+                mousePressedAt = mouse->position().toPoint();
+            }
+            else if ((mouse->position().toPoint() - mousePressedAt).manhattanLength() < kClickTolerance)
+            {
+                findSourceOfClick(mouse->position().toPoint());
+            }
+        }
+    }
+    return false; // the page still gets the event
 }
 
 void StcPreviewWidget::showPreviewContextMenu(const QPoint &position)
@@ -60,6 +109,11 @@ void StcPreviewWidget::showPreviewContextMenu(const QPoint &position)
     syncScroll->setCheckable(true);
     syncScroll->setChecked(scrollSyncEnabled);
     connect(syncScroll, &QAction::toggled, this, &StcPreviewWidget::setScrollSyncEnabled);
+
+    QAction *clickSync = menu->addAction(tr("Move the editor cursor to the place clicked in the preview"));
+    clickSync->setCheckable(true);
+    clickSync->setChecked(clickSyncEnabled);
+    connect(clickSync, &QAction::toggled, this, &StcPreviewWidget::setClickSyncEnabled);
 
     QAction *copyHtml = menu->addAction(tr("Copy preview HTML to clipboard"));
     connect(copyHtml, &QAction::triggered, this, &StcPreviewWidget::copyRenderedHtmlToClipboard);
@@ -286,6 +340,7 @@ void StcPreviewWidget::showRenderedHtml(const QString &html)
     const QString renderedSource = lastSentText; // the response is for the text sent last (one request at a time)
     webView.page()->runJavaScript(js, [this, renderedSource](const QVariant &textNodes) {
         syncMap = PreviewSync::SyncMap(renderedSource, textNodes.toStringList());
+        ++renderGeneration;
         forgetLastScroll();
         applyScrollSync();
     });
@@ -310,6 +365,90 @@ void StcPreviewWidget::setScrollSyncEnabled(bool enabled)
     emit scrollSyncEnabledChanged(enabled);
 
     applyScrollSync();
+}
+
+void StcPreviewWidget::setClickSyncEnabled(bool enabled)
+{
+    if (clickSyncEnabled == enabled)
+    {
+        return;
+    }
+
+    clickSyncEnabled = enabled;
+    emit clickSyncEnabledChanged(enabled);
+}
+
+void StcPreviewWidget::findSourceOfClick(const QPoint &clickedAt)
+{
+    if (!clickSyncEnabled || !isInitialized || syncMap.isEmpty())
+    {
+        return;
+    }
+
+    // The place in the page: the character (of a text node) under the point. A click which ends a selection of text
+    // is not a click for us (the user is copying), so it is when nothing is selected.
+    const QPointF pagePoint = QPointF(clickedAt) / webView.zoomFactor();
+    const QString js = QString(R"(
+        (function(x, y) {
+            const selection = window.getSelection();
+            if (selection && selection.toString().length > 0) {
+                return null;
+            }
+
+            let node = null;
+            let offset = 0;
+            if (document.caretPositionFromPoint) {
+                const caret = document.caretPositionFromPoint(x, y);
+                if (caret) {
+                    node = caret.offsetNode;
+                    offset = caret.offset;
+                }
+            } else if (document.caretRangeFromPoint) {
+                const range = document.caretRangeFromPoint(x, y);
+                if (range) {
+                    node = range.startContainer;
+                    offset = range.startOffset;
+                }
+            }
+            if (!node) {
+                return null;
+            }
+
+            if (node.nodeType !== Node.TEXT_NODE) {
+                // the click is on an element, not on a text: the first text in it (or after the place in it)
+                const from = node.childNodes[offset] || node;
+                if (from.nodeType === Node.TEXT_NODE) {
+                    node = from;
+                } else {
+                    const walker = document.createTreeWalker(from, NodeFilter.SHOW_TEXT);
+                    if (!walker.nextNode()) {
+                        return null;
+                    }
+                    node = walker.currentNode;
+                }
+                offset = 0;
+            }
+
+            const textNodes = window.__stcTextNodes;
+            const chunk = textNodes ? textNodes.indexOf(node) : -1;
+            return chunk < 0 ? null : [chunk, offset];
+        })(%1, %2);
+    )").arg(pagePoint.x()).arg(pagePoint.y());
+
+    const int generation = renderGeneration;
+    webView.page()->runJavaScript(js, [this, generation](const QVariant &answer) {
+        const QVariantList place = answer.toList();
+        if (place.size() != 2 || generation != renderGeneration)
+        {
+            return; // not a click on the text, or the page was rendered again in the meantime
+        }
+
+        const int position = syncMap.sourcePositionAt({place[0].toInt(), place[1].toInt()});
+        if (position >= 0)
+        {
+            emit sourcePositionClicked(position);
+        }
+    });
 }
 
 void StcPreviewWidget::forgetLastScroll()

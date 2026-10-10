@@ -7,6 +7,7 @@
 #include <QClipboard>
 #include <QStack>
 #include <QScrollBar>
+#include <QTimer>
 #include <QTranslator>
 #include <QAction>
 #include <QActionGroup>
@@ -40,6 +41,7 @@ namespace GeometryNames
     constexpr const char LOGIN_REMEMBER[] = "login/remember";
     constexpr const char LOGIN_AUTO_LOGIN[] = "login/autoLogin";
     constexpr const char PREVIEW_SCROLL_SYNC[] = "preview/scrollSync";
+    constexpr const char PREVIEW_CLICK_SYNC[] = "preview/clickSync";
 };
 
 std::pair<QString, QString> extractLink(const QString& text)
@@ -138,6 +140,12 @@ void MainWindow::connectSignals2Slots()
     connect(ui->textEditor, &QPlainTextEdit::textChanged, this, &MainWindow::onEditorViewportMoved);
     connect(ui->stcPreviewWidget, &StcPreviewWidget::scrollSyncEnabledChanged, this, [](bool enabled) {
         QSettings().setValue(GeometryNames::PREVIEW_SCROLL_SYNC, enabled);
+    });
+
+    // ... and a click in the preview puts the cursor of the editor in the clicked place
+    connect(ui->stcPreviewWidget, &StcPreviewWidget::sourcePositionClicked, this, &MainWindow::onPreviewClicked);
+    connect(ui->stcPreviewWidget, &StcPreviewWidget::clickSyncEnabledChanged, this, [](bool enabled) {
+        QSettings().setValue(GeometryNames::PREVIEW_CLICK_SYNC, enabled);
     });
     connect(ui->textEditor, &CodeEditor::numberOfModifiedLinesChanged, [this](int linesNumber) {
         this->onFileContentChanged(ui->textEditor->getFileName(), linesNumber);
@@ -1080,6 +1088,7 @@ void MainWindow::loadSettings()
     lastDirectory = settings.value(GeometryNames::LAST_DIRECTORY, QDir::homePath()).toString();
 
     ui->stcPreviewWidget->setScrollSyncEnabled(settings.value(GeometryNames::PREVIEW_SCROLL_SYNC, true).toBool());
+    ui->stcPreviewWidget->setClickSyncEnabled(settings.value(GeometryNames::PREVIEW_CLICK_SYNC, true).toBool());
 
     QVariantMap filesMap = settings.value(GeometryNames::RECENT_FILES_LIST).toMap();
     for (auto it = filesMap.begin(); it != filesMap.end(); ++it)
@@ -1276,8 +1285,22 @@ void MainWindow::onCopyPreviewHtmlRequested()
 
 void MainWindow::onEditorViewportMoved()
 {
+    if (previewClickInProgress)
+    {
+        return; // the user has just clicked the preview: it must not run away from under the mouse
+    }
+
     const CodeEditor::ViewportTop top = ui->textEditor->viewportTop();
     ui->stcPreviewWidget->scrollToSourceLine(top.line, top.fraction, top.atEndOfDocument);
+}
+
+void MainWindow::onPreviewClicked(int sourcePosition)
+{
+    // Moving the cursor can scroll the editor, and the editor would scroll the preview back (see onEditorViewportMoved)
+    previewClickInProgress = true;
+    ui->textEditor->showPosition(sourcePosition);
+    ui->textEditor->setFocus();
+    QTimer::singleShot(0, this, [this] { previewClickInProgress = false; });
 }
 
 void MainWindow::onShowStcPreviewTriggered()

@@ -5,17 +5,20 @@
 #include <algorithm>
 #include <cstdint>
 #include <optional>
+#include <utility>
 #include <unordered_map>
 
 namespace PreviewSync
 {
 namespace
 {
-/// A character of the source which is a part of the text shown in the preview, and the line (0-based) it is in
+/// A character of the source which is a part of the text shown in the preview, the line (0-based) it is in,
+/// and its place in the source (for the text shown by a tag - the place of the tag)
 struct SourceChar
 {
     char16_t character;
     int line;
+    int index;
 };
 
 /// Longest skip, on one side, which is looked for with the cheap search of the next common text
@@ -29,6 +32,8 @@ constexpr int kShortAnchorLength = 4;
 constexpr int kFarAnchorLength = 12;
 constexpr int kFarSourceWindow = 4000;
 constexpr int kFarDomWindow = 30000;
+/// How far (in characters of the preview) the source of a place is looked for, when the place itself has none
+constexpr int kNearestSourceCharWindow = 200;
 
 bool isVerbatimTag(const QString& name)
 {
@@ -147,7 +152,7 @@ std::vector<SourceChar> visibleSourceChars(const QString& source)
                 else if (tag.name == "a" && !tag.closing)
                 {
                     for (const QChar shown : textShownByLink(tag.attributes))
-                        result.push_back({shown.unicode(), line});
+                        result.push_back({shown.unicode(), line, i});
                 }
 
                 i += tag.length - 1; // the tag itself is not a text
@@ -161,7 +166,7 @@ std::vector<SourceChar> visibleSourceChars(const QString& source)
         if (c == ';' && csvDepth > 0 && verbatimTag.isEmpty())
             continue;
 
-        result.push_back({c.unicode(), line});
+        result.push_back({c.unicode(), line, i});
     }
     return result;
 }
@@ -258,10 +263,10 @@ std::optional<Skip> nearestCommonText(const std::vector<SourceChar>& source, int
 }
 
 /// Alignment of the two texts, which are in the same order and differ in small places (see SyncMap::SyncMap).
-/// @return for each character of the preview: the line of the source which it comes from, or -1
-std::vector<int> alignLines(const std::vector<SourceChar>& source, const std::vector<char16_t>& dom)
+/// @return for each character of the preview: the number of the character of `source` which it comes from, or -1
+std::vector<int> alignChars(const std::vector<SourceChar>& source, const std::vector<char16_t>& dom)
 {
-    std::vector<int> lineOfDomChar(dom.size(), -1);
+    std::vector<int> sourceOfDomChar(dom.size(), -1);
     std::optional<FragmentIndex> farIndex; // built when the first long jump is needed
 
     const int sourceSize = static_cast<int>(source.size());
@@ -273,7 +278,7 @@ std::vector<int> alignLines(const std::vector<SourceChar>& source, const std::ve
     {
         if (source[static_cast<size_t>(s)].character == dom[static_cast<size_t>(d)])
         {
-            lineOfDomChar[static_cast<size_t>(d)] = source[static_cast<size_t>(s)].line;
+            sourceOfDomChar[static_cast<size_t>(d)] = s;
             ++s;
             ++d;
             continue;
@@ -311,7 +316,7 @@ std::vector<int> alignLines(const std::vector<SourceChar>& source, const std::ve
             ++d;
         }
     }
-    return lineOfDomChar;
+    return sourceOfDomChar;
 }
 } // namespace
 
@@ -333,21 +338,25 @@ SyncMap::SyncMap(const QString& stcSource, const QStringList& domTextChunks)
     domCharCount = static_cast<int>(domChars.size());
 
     const std::vector<SourceChar> source = visibleSourceChars(stcSource);
-    const std::vector<int> lineOfDomChar = alignLines(source, domText);
+    const std::vector<int> sourceOfDomChar = alignChars(source, domText);
 
     const int lineCount = static_cast<int>(stcSource.count('\n')) + 1;
     firstDomOfLine.assign(static_cast<size_t>(lineCount), -1);
     lastDomOfLine.assign(static_cast<size_t>(lineCount), -1);
+    sourceIndexOfDomChar.assign(domChars.size(), -1);
     for (int d = 0; d < domCharCount; ++d)
     {
-        const int line = lineOfDomChar[static_cast<size_t>(d)];
-        if (line < 0)
+        const int sourceChar = sourceOfDomChar[static_cast<size_t>(d)];
+        if (sourceChar < 0)
             continue;
 
+        const SourceChar& matched = source[static_cast<size_t>(sourceChar)];
+        sourceIndexOfDomChar[static_cast<size_t>(d)] = matched.index;
+
         ++matchedChars;
-        if (firstDomOfLine[static_cast<size_t>(line)] < 0)
-            firstDomOfLine[static_cast<size_t>(line)] = d;
-        lastDomOfLine[static_cast<size_t>(line)] = d;
+        if (firstDomOfLine[static_cast<size_t>(matched.line)] < 0)
+            firstDomOfLine[static_cast<size_t>(matched.line)] = d;
+        lastDomOfLine[static_cast<size_t>(matched.line)] = d;
     }
 }
 
@@ -379,6 +388,31 @@ TextPosition SyncMap::positionForLine(int line, double fraction) const
     const int last = lastDomOfLine[static_cast<size_t>(withText)];
     const double clamped = std::clamp(fraction, 0.0, 0.999999);
     return positionOfDomChar(first + static_cast<int>(clamped * (last - first + 1)));
+}
+
+int SyncMap::sourcePositionAt(const TextPosition& position) const
+{
+    if (isEmpty() || !position.isValid())
+        return -1;
+
+    // the character of the preview at the place, or the first one after it (the place can be a whitespace)
+    const auto it = std::lower_bound(domChars.begin(), domChars.end(), position,
+                                     [](const DomChar& domChar, const TextPosition& wanted) {
+                                         return std::pair(domChar.chunk, domChar.offset) < std::pair(wanted.chunk, wanted.offset);
+                                     });
+    const int domIndex = static_cast<int>(std::min<std::ptrdiff_t>(it - domChars.begin(), static_cast<std::ptrdiff_t>(domChars.size()) - 1));
+
+    // Not every character of the preview comes from the source (the server adds labels): the nearest one which does
+    for (int distance = 0; distance <= kNearestSourceCharWindow; ++distance)
+    {
+        for (const int candidate : {domIndex - distance, domIndex + distance})
+        {
+            if (candidate >= 0 && candidate < static_cast<int>(domChars.size())
+                && sourceIndexOfDomChar[static_cast<size_t>(candidate)] >= 0)
+                return sourceIndexOfDomChar[static_cast<size_t>(candidate)];
+        }
+    }
+    return -1;
 }
 
 TextPosition SyncMap::positionOfDomChar(int domIndex) const

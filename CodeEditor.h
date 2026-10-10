@@ -73,6 +73,10 @@ public:
     };
     ViewportTop viewportTop() const;
 
+    /// Puts the cursor at the position (a number of the character of the text) and makes it visible: the view is
+    /// moved only when the position is not visible now, and then the position is put in the middle of it.
+    void showPosition(int position);
+
     /// Table of the edits made to the document in this session (opened from the context menu)
     void showEditHistory();
     /// History of one line of the document (zero-based number), opened from the context menu or by a click on its number

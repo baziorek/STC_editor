@@ -203,3 +203,77 @@ TEST(PreviewSyncMap, NothingRenderedYet)
     const SyncMap noSource("", {"coś"});
     EXPECT_TRUE(noSource.isEmpty());
 }
+
+TEST(PreviewSyncMapReverse, PlaceInThePreviewGivesThePlaceInTheSource)
+{
+    const QString source =
+        "[h2]Podstawy[/h2]\n"
+        "Zwykły akapit z [b]pogrubieniem[/b] w środku.\n";
+    const QStringList dom = {"Podstawy", "Zwykły akapit z ", "pogrubieniem", " w środku."};
+
+    const SyncMap map(source, dom);
+
+    EXPECT_EQ(map.sourcePositionAt({0, 0}), source.indexOf("Podstawy"));
+    EXPECT_EQ(map.sourcePositionAt({0, 3}), source.indexOf("Podstawy") + 3);
+    EXPECT_EQ(map.sourcePositionAt({2, 0}), source.indexOf("pogrubieniem"));
+    EXPECT_EQ(map.sourcePositionAt({2, 5}), source.indexOf("pogrubieniem") + 5);
+    EXPECT_EQ(map.sourcePositionAt({3, 3}), source.indexOf("w środku") + 2) << "the letter after \"w \"";
+}
+
+TEST(PreviewSyncMapReverse, WhitespaceInThePreviewGivesTheNextCharacter)
+{
+    const QString source = "ala ma kota\n";
+    const QStringList dom = {"ala ", "ma kota"};
+
+    const SyncMap map(source, dom);
+
+    EXPECT_EQ(map.sourcePositionAt({0, 3}), source.indexOf("ma")) << "the space after 'ala'";
+}
+
+TEST(PreviewSyncMapReverse, LabelAddedByTheServerGivesTheNearestTextOfTheSource)
+{
+    const QString source = "Przed\n[cpp]\nint main()\n[/cpp]\nPo\n";
+    const QStringList dom = {"Przed", "C/C++", "int main()", "Po"};
+
+    const SyncMap map(source, dom);
+
+    const int position = map.sourcePositionAt({1, 2});
+    EXPECT_TRUE(position == source.indexOf("Przed") + 4 || position == source.indexOf("int main"))
+        << "the neighbours of the label, was " << position;
+}
+
+TEST(PreviewSyncMapReverse, TextOfALinkPointsAtItsTag)
+{
+    const QString source = "Zobacz [a href=\"https://x.y\" name=\"stronę\"] teraz\n";
+    const QStringList dom = {"Zobacz ", "stronę", " teraz"};
+
+    const SyncMap map(source, dom);
+
+    const int tag = source.indexOf("[a href");
+    EXPECT_EQ(map.sourcePositionAt({1, 2}), tag) << "the whole text of the link is the place of its tag";
+}
+
+TEST(PreviewSyncMapReverse, NoPlaceNoAnswer)
+{
+    const SyncMap map("jakiś tekst\n", {"jakiś tekst"});
+
+    EXPECT_EQ(map.sourcePositionAt({}), -1);
+    EXPECT_EQ(SyncMap().sourcePositionAt({0, 0}), -1);
+    EXPECT_GE(map.sourcePositionAt({0, 100}), 0) << "an offset after the end is the end of the node";
+    EXPECT_GE(map.sourcePositionAt({7, 0}), 0) << "a node after the last one is the end";
+}
+
+TEST(PreviewSyncMapReverse, GoingThereAndBackComesToTheSameLine)
+{
+    const QString source = "pierwsza linia\n[b]druga[/b] linia\n\ntrzecia linia\n";
+    const QStringList dom = {"pierwsza linia", "druga", " linia", "trzecia linia"};
+
+    const SyncMap map(source, dom);
+
+    for (int line : {0, 1, 3})
+    {
+        const int position = map.sourcePositionAt(map.positionForLine(line));
+        ASSERT_GE(position, 0);
+        EXPECT_EQ(source.left(position).count('\n'), line);
+    }
+}

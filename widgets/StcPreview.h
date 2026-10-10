@@ -8,6 +8,7 @@
 #include <QJsonArray>
 #include <QUrlQuery>
 #include <QRegularExpression>
+#include <QPoint>
 #include <optional>
 #include "utils/PreviewSyncMap.h"
 
@@ -43,6 +44,11 @@
  * the text of the page is compared with the text sent (PreviewSync::SyncMap). `scrollToSourceLine()` then scrolls
  * the page to the place which shows the given line of the source - the user scrolls only the editor and the preview follows.
  * It can be switched off with a checkbox in the context menu of the preview (`setScrollSyncEnabled()`); on by default.
+ *
+ * ### Going from the preview to the source:
+ * A click in the preview (not a selection of text with the mouse) emits `sourcePositionClicked()` with the position in the
+ * source of the place which was clicked, so the editor can put its cursor there. Another checkbox in the context menu
+ * switches it off (`setClickSyncEnabled()`); on by default.
  *
  * ### Statistics:
  * For debugging or diagnostics, you can access request statistics via `getStats()`.
@@ -107,12 +113,23 @@ public:
     }
     void setScrollSyncEnabled(bool enabled);
 
+    bool isClickSyncEnabled() const
+    {
+        return clickSyncEnabled;
+    }
+    void setClickSyncEnabled(bool enabled);
+
 signals:
     void htmlReady(const QString &html);
 
     void loginFailed(const QString &message);
     void loginSucceeded();
     void scrollSyncEnabledChanged(bool enabled);
+    void clickSyncEnabledChanged(bool enabled);
+
+    /// The place of the preview which was clicked is this place of the source: the number of the character (as a
+    /// position of a QTextCursor in the text which was sent with updateText())
+    void sourcePositionClicked(int position);
 
 protected:
     void updateStatsLabel();
@@ -124,6 +141,9 @@ protected:
     void scheduleTextUpdate();
     void applyScrollSync();
     void forgetLastScroll();
+    void installClickFilter(QObject *renderWidget);
+    void findSourceOfClick(const QPoint &clickedAt);
+    bool eventFilter(QObject *watched, QEvent *event) override;
     static QString toJsStringLiteral(const QString &text);
 
     void enterEvent(QEnterEvent *event) override;
@@ -161,6 +181,9 @@ private:
     };
 
     bool scrollSyncEnabled = true;
+    bool clickSyncEnabled = true;
+    QPoint mousePressedAt;
+    int renderGeneration = 0;                                  ///< counts the maps built, to drop an answer which is about an older page
     std::optional<EditorViewportTop> editorTop;
     PreviewSync::SyncMap syncMap;                              ///< lines of the source <-> text nodes of the page, after the last render
     std::optional<PreviewSync::TextPosition> lastScrolledTo;   ///< not to ask the page for the same scroll again and again

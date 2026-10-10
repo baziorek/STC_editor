@@ -2154,6 +2154,11 @@ Currently unsaved changes would be declined.</translation>
         <translation>Synchronizuj przewijanie z edytorem</translation>
     </message>
     <message>
+        <location filename="../widgets/StcPreview.cpp" line="140"/>
+        <source>Move the editor cursor to the place clicked in the preview</source>
+        <translation>Przenieś kursor edytora w miejsce kliknięte w podglądzie</translation>
+    </message>
+    <message>
         <location filename="../widgets/StcPreview.cpp" line="58"/>
         <source>Copy preview HTML to clipboard</source>
         <translation>Kopiuj HTML podglądu do schowka</translation>

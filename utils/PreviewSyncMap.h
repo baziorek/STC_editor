@@ -47,6 +47,11 @@ public:
     /// A line without any text (empty, only tags) gives the place of the next line which has some.
     TextPosition positionForLine(int line, double fraction = 0.0) const;
 
+    /// The opposite direction: the place in the source (the number of the character, so also the position in
+    /// a QTextCursor) which became the given place in the preview. A place which is not in the source (a label
+    /// added by the server) gives the nearest one which is. -1 when there is no such place.
+    int sourcePositionAt(const TextPosition& position) const;
+
     /// Share of the characters of the preview which were found in the source (1.0 - perfect match). For diagnostics and tests.
     double matchedRatio() const { return domCharCount == 0 ? 0.0 : double(matchedChars) / double(domCharCount); }
 
@@ -62,6 +67,7 @@ private:
     std::vector<DomChar> domChars;       ///< the not-whitespace characters of the preview
     std::vector<int> firstDomOfLine;     ///< for each line of the source: the first aligned character of the preview (or -1)
     std::vector<int> lastDomOfLine;      ///< ... and the last one
+    std::vector<int> sourceIndexOfDomChar; ///< for each character of the preview: the number of the character of the source it came from (or -1)
     int matchedChars = 0;
     int domCharCount = 0;
 };

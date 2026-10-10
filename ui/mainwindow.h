@@ -43,6 +43,7 @@ public slots:
     void onShowStcPreviewTriggered();
     void onCopyPreviewHtmlRequested();
     void onEditorViewportMoved();
+    void onPreviewClicked(int sourcePosition);
 
     /// file menu:
     void onNewFilePressed();
@@ -128,6 +129,9 @@ private: // members
     Ui::MainWindow *ui;
 
     QString lastDirectory;
+
+    /// true for a moment after a click in the preview moved the editor (see onPreviewClicked)
+    bool previewClickInProgress = false;
 
     QMap<QString, RecentFileInfo> recentFilesWithPositions;
     

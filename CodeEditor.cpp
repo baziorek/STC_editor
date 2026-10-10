@@ -3402,6 +3402,19 @@ CodeEditor::ViewportTop CodeEditor::viewportTop() const
     return top;
 }
 
+void CodeEditor::showPosition(int position)
+{
+    QTextCursor cursor(document());
+    cursor.setPosition(std::clamp(position, 0, std::max(0, document()->characterCount() - 1)));
+
+    const bool wasVisible = viewport()->rect().contains(cursorRect(cursor).center());
+    setTextCursor(cursor);
+    if (!wasVisible)
+    {
+        centerCursor();
+    }
+}
+
 void CodeEditor::addEditHistoryActions(QMenu* menu, int clickedLine)
 {
     QAction* redoAction = routeUndoRedoThroughHistory(menu);
