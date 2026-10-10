@@ -473,6 +473,7 @@ if(NOT WIN32)
     add_executable(${PROJECT_NAME}EditHistoryTests
         tests/EditHistoryTests.cpp
         tests/ExactTextTests.cpp
+        tests/CodeBlockTests.cpp
         utils/EditHistory.cpp
         utils/DiffCalculation.cpp
     )

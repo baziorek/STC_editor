@@ -1900,6 +1900,12 @@ void CodeEditor::addCodeBlockActionsIfApplicable(QMenu* menu, const QPoint& pos)
         });
         menu->addAction(selectAll);
 
+        QAction* copyCode = new QAction(QIcon::fromTheme("edit-copy"), tr("Copy this source code"), this);
+        connect(copyCode, &QAction::triggered, this, [cursor]() {
+            QGuiApplication::clipboard()->setText(cursor.selectedText().replace(QChar::ParagraphSeparator, '\n'));
+        });
+        menu->addAction(copyCode);
+
         if (tag == "cpp")
         {
             QAction* format = new QAction(QIcon::fromTheme("tools-wizard"), "Format C++ with clang-format", this);
@@ -1913,7 +1919,7 @@ void CodeEditor::addCodeBlockActionsIfApplicable(QMenu* menu, const QPoint& pos)
             });
             menu->addAction(format);
 
-            addCompileAction(menu, *maybeBlock);
+            addCompileAction(menu, *maybeBlock); // a [cpp] block is always compilable
 
             QAction* removeComments = new QAction(QIcon::fromTheme("edit-clear"), "Remove C++ Comments", this);
             connect(removeComments, &QAction::triggered, this, [=, this]() mutable {
@@ -1941,7 +1947,8 @@ void CodeEditor::addCodeBlockActionsIfApplicable(QMenu* menu, const QPoint& pos)
             });
             menu->addAction(cleanWhitespace);
         }
-        else if (tag == "code" || tag == "py")
+
+        else if (maybeBlock->canBeCompiled()) // [code] and [py], also with src="..."
         {
             addCompileAction(menu, *maybeBlock);
         }
@@ -1951,7 +1958,7 @@ void CodeEditor::addCodeBlockActionsIfApplicable(QMenu* menu, const QPoint& pos)
 void CodeEditor::addCompileAction(QMenu* menu, const CodeBlock& codeOnlyBlock)
 {
     // `codeOnlyBlock.cursor` selects just the code, without the opening and the closing tag
-    const bool isPython = codeOnlyBlock.tag == QLatin1String("py");
+    const bool isPython = codeOnlyBlock.isPython();
     auto* compile = new QAction(QIcon::fromTheme("applications-development"),
                                 isPython ? tr("Check and run Python (python3)") : tr("Compile C++ with g++"), menu);
     connect(compile, &QAction::triggered, this, [codeOnlyBlock, this]() {
@@ -2847,8 +2854,10 @@ std::optional<CodeBlock> CodeEditor::selectEnclosingCodeBlock(int cursorPos)
                 QString blockText = block.cursor.selectedText();
 
                 // Detecting code by removing STC tags:
-                QRegularExpression tagPattern(QString("^\\[%1\\](.*)\\[\\/%1\\]$")
-                    .arg(QRegularExpression::escape(block.tag)));
+                // The opening tag may have attributes: [code src="python"]
+                const QRegularExpression tagPattern(QString(R"(^\[%1(?:\s+src\s*=\s*"[^"]*")?\](.*)\[/\s*%1\s*\]$)")
+                    .arg(QRegularExpression::escape(block.tag)),
+                    QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption);
 
                 auto match = tagPattern.match(blockText);
                 if (match.hasMatch())

@@ -19,7 +19,7 @@ Edytor ten został zaprojektowany, aby uprościć pracę z językiem znaczników
 Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://cpp0x.pl/) (do czego zachęcam):
  1. **Kolorowanie składni**: Podświetlanie znaczników STC dla lepszej czytelności.
     - Kolorowanie składni C++ w ramach znaczników `[cpp]...[/cpp]`. Jest to zaimplementowane przy wykorzystaniu [QCodeEditor](https://github.com/Megaxela/QCodeEditor) (autorstwa [Megaxela](https://github.com/Megaxela), bazując na [forku ArsMasiuk](https://github.com/ArsMasiuk/QCodeEditor)).
-    - Kolorowanie składni Pythona w ramach znaczników `[py]...[/py]` (zarówno blokowo, jak i w linii), łącznie z wieloliniowymi łańcuchami `"""..."""`. Reguły są oparte na słownikach i kolorach z QCodeEditor.
+    - Kolorowanie składni Pythona w ramach znaczników `[py]...[/py]` (zarówno blokowo, jak i w linii), łącznie z wieloliniowymi łańcuchami `"""..."""`. Reguły są oparte na słownikach i kolorach z [QCodeEditor](https://github.com/Megaxela/QCodeEditor).
  2. **Weryfikacja zamknięcia znaczników**: Sprawdza, czy wszystkie znaczniki STC są poprawnie zamknięte.
  3. **Transformacja tekstu**: Zmiana zaznaczonego tekstu na małe litery, wielkie litery, camelCase na snake_case lub odwrotnie.
  4. **Podgląd kontekstu dokumentu**:

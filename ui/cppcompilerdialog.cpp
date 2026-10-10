@@ -127,7 +127,7 @@ QStringList splitFlags(const QString& text)
 } // namespace
 
 CppCompilerDialog::CppCompilerDialog(const CodeBlock& block, QWidget* parent)
-    : QDialog(parent), articleCodeCursor_(block.cursor), tag_(block.tag), isPython_(block.tag == QLatin1String("py"))
+    : QDialog(parent), articleCodeCursor_(block.cursor), tag_(block.tag), isPython_(block.isPython())
 {
     setWindowTitle(isPython_ ? tr("Python: syntax check and run") : tr("g++ compilation"));
     resize(1000, 780);

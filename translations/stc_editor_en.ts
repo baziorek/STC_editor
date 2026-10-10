@@ -157,22 +157,27 @@
         <translation>Renumber selection</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1956"/>
+        <location filename="../CodeEditor.cpp" line="1903"/>
+        <source>Copy this source code</source>
+        <translation>Copy this source code</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditor.cpp" line="1963"/>
         <source>Check and run Python (python3)</source>
         <translation>Check and run Python (python3)</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1956"/>
+        <location filename="../CodeEditor.cpp" line="1963"/>
         <source>Compile C++ with g++</source>
         <translation>Compile C++ with g++</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="2456"/>
+        <location filename="../CodeEditor.cpp" line="2463"/>
         <source>File changed</source>
         <translation>File changed</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="2457"/>
+        <location filename="../CodeEditor.cpp" line="2464"/>
         <source>File &apos;%1&apos; has been modified outside of the editor.
 
 Do you want to reload it?</source>
@@ -181,22 +186,22 @@ Do you want to reload it?</source>
 Do you want to reload it?</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="3046"/>
+        <location filename="../CodeEditor.cpp" line="3055"/>
         <source>Spelling suggestions</source>
         <translation>Spelling suggestions</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="3411"/>
+        <location filename="../CodeEditor.cpp" line="3420"/>
         <source>Edit history…</source>
         <translation>Edit history…</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="3417"/>
+        <location filename="../CodeEditor.cpp" line="3426"/>
         <source>History of line %1…</source>
         <translation>History of line %1…</translation>
     </message>
     <message numerus="yes">
-        <location filename="../CodeEditor.cpp" line="3500"/>
+        <location filename="../CodeEditor.cpp" line="3509"/>
         <source>This line was changed %n time(s) in this session - click to see its history</source>
         <translation>
             <numerusform>This line was changed %n time(s) in this session - click to see its history</numerusform>
@@ -204,7 +209,7 @@ Do you want to reload it?</translation>
         </translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="3502"/>
+        <location filename="../CodeEditor.cpp" line="3511"/>
         <source>(all the changes are undone now; Ctrl+Shift+Z brings them back)</source>
         <translation>(all the changes are undone now; Ctrl+Shift+Z brings them back)</translation>
     </message>
@@ -229,7 +234,7 @@ Do you want to reload it?</translation>
     <message>
         <location filename="../ui/cppcompilerdialog.cpp" line="173"/>
         <source>Passed to g++ before the source file. Split like in a shell: &apos;...&apos;, &quot;...&quot; and \ work, e.g. -DNAME=&apos;&quot;a b&quot;&apos;</source>
-        <translation>Passed to g++ before the source file. Split like in a shell: &apos;...&apos;, "..." and \ work, e.g. -DNAME=&apos;"a b"&apos;</translation>
+        <translation>Passed to g++ before the source file. Split like in a shell: &apos;...&apos;, &quot;...&quot; and \ work, e.g. -DNAME=&apos;&quot;a b&quot;&apos;</translation>
     </message>
     <message>
         <location filename="../ui/cppcompilerdialog.cpp" line="176"/>
@@ -371,7 +376,7 @@ Do you want to reload it?</translation>
     <message>
         <location filename="../ui/cppcompilerdialog.cpp" line="307"/>
         <source>Passed to python3 before the script. Split like in a shell: &apos;...&apos;, &quot;...&quot; and \ work</source>
-        <translation>Passed to python3 before the script. Split like in a shell: &apos;...&apos;, "..." and \ work</translation>
+        <translation>Passed to python3 before the script. Split like in a shell: &apos;...&apos;, &quot;...&quot; and \ work</translation>
     </message>
     <message>
         <location filename="../ui/cppcompilerdialog.cpp" line="310"/>
