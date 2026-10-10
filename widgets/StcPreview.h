@@ -9,6 +9,7 @@
 #include <QUrlQuery>
 #include <QRegularExpression>
 #include <QPoint>
+#include <QPointer>
 #include <optional>
 #include "utils/PreviewSyncMap.h"
 
@@ -64,6 +65,8 @@
  * - This widget is designed to be embedded in applications like editors or documentation tools.
  * - It requires an active internet connection.
  */
+class HtmlSourceDialog;
+
 class StcPreviewWidget : public QWidget
 {
     Q_OBJECT
@@ -100,6 +103,10 @@ public:
     /// Puts renderedHtml() on the clipboard and shows a short tooltip with the result.
     /// @return false when there is nothing to copy yet
     bool copyRenderedHtmlToClipboard();
+
+    /// Opens a window with renderedHtml(), formatted and highlighted (the "View page source" of the browser does
+    /// nothing here: there is no window which it could open). Shows a tooltip when nothing was rendered yet.
+    void showHtmlSource();
 
     /// Scrolls the preview to the place of the page which shows the given part of the source: the `line` (zero-based)
     /// which is at the top of the editor, `fraction` (0..1) of the way through it. When the editor is scrolled
@@ -183,6 +190,7 @@ private:
     bool scrollSyncEnabled = true;
     bool clickSyncEnabled = true;
     QPoint mousePressedAt;
+    QPointer<HtmlSourceDialog> htmlSourceDialog;
     int renderGeneration = 0;                                  ///< counts the maps built, to drop an answer which is about an older page
     std::optional<EditorViewportTop> editorTop;
     PreviewSync::SyncMap syncMap;                              ///< lines of the source <-> text nodes of the page, after the last render

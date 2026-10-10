@@ -179,6 +179,7 @@ set(PROJECT_SOURCES
     widgets/TodosTrackerTableWidget.h widgets/TodosTrackerTableWidget.cpp
     widgets/LoginDialog.h widgets/LoginDialog.cpp
     widgets/StcPreview.h widgets/StcPreview.cpp
+    widgets/HtmlSourceDialog.h widgets/HtmlSourceDialog.cpp
     widgets/DiffViewerWidget.h widgets/DiffViewerWidget.cpp
     widgets/EditHistoryDialog.h widgets/EditHistoryDialog.cpp widgets/EditHistoryDialog.ui
     widgets/EditHistoryFormat.h widgets/EditHistoryFormat.cpp
@@ -202,6 +203,7 @@ set(PROJECT_SOURCES
     utils/AnsiTextWriter.h utils/AnsiTextWriter.cpp
     utils/StcTagRegions.h utils/StcTagRegions.cpp
     utils/PreviewSyncMap.h utils/PreviewSyncMap.cpp
+    utils/HtmlPrettyPrinter.h utils/HtmlPrettyPrinter.cpp
     utils/SpellChecker.h utils/SpellChecker.cpp
     utils/BackupManager.h utils/BackupManager.cpp
 )
@@ -478,6 +480,15 @@ if(NOT WIN32)
     target_include_directories(${PROJECT_NAME}PreviewSyncTests PRIVATE ${PROJECT_SOURCE_DIR})
     target_link_libraries(${PROJECT_NAME}PreviewSyncTests PRIVATE Qt${QT_VERSION_MAJOR}::Core ${GTEST_LIBRARIES} pthread gtest_main)
     add_test(NAME ${PROJECT_NAME}PreviewSyncTests COMMAND ${PROJECT_NAME}PreviewSyncTests)
+
+    # Formatting of the HTML for the "HTML source" window of the preview. Only QtCore.
+    add_executable(${PROJECT_NAME}HtmlPrettyPrinterTests
+        tests/HtmlPrettyPrinterTests.cpp
+        utils/HtmlPrettyPrinter.cpp
+    )
+    target_include_directories(${PROJECT_NAME}HtmlPrettyPrinterTests PRIVATE ${PROJECT_SOURCE_DIR})
+    target_link_libraries(${PROJECT_NAME}HtmlPrettyPrinterTests PRIVATE Qt${QT_VERSION_MAJOR}::Core ${GTEST_LIBRARIES} pthread gtest_main)
+    add_test(NAME ${PROJECT_NAME}HtmlPrettyPrinterTests COMMAND ${PROJECT_NAME}HtmlPrettyPrinterTests)
 
     # Edit history (the table of edits, circles at line numbers). Needs only Qt and the diff libraries; own main() with QApplication.
     add_executable(${PROJECT_NAME}EditHistoryTests

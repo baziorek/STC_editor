@@ -45,6 +45,7 @@ If you want to use this editor for writing content for [cpp0x.pl](https://cpp0x.
 14. **Real-Time Web Preview**: Uses the [STC-to-HTML conversion backend](https://cpp0x.pl/stc/) to preview content in real-time. Statistics (data sent/received) are shown on hover over the rendering area.
     - The preview scrolls together with the editor: you scroll only the code and the preview follows (positions are matched by text, because the HTML from the server has no information about its source). The synchronization can be switched off with a checkbox in the context menu of the preview (on by default).
     - A click in the preview puts the editor cursor in the matching place of the source (selecting text with the mouse does not). This can also be switched off with a checkbox in the context menu of the preview.
+    - "View HTML source of the preview" in the context menu opens a window with the HTML of the page (formatted and highlighted), with buttons to refresh and copy it.
     - Text selected in the preview can be copied with `Ctrl+C` (clicking the preview gives it the focus).
 15. **TODO Tracking**: Displays `TODO:` comments in the document context view, clickable to jump to their position.
 16. **Clickable Links**: Hold `Ctrl` and left-click inside `[a href="..."]` or `[a href="..." name="..."]` tags to open the link.

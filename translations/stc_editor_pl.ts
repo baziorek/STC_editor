@@ -2159,6 +2159,16 @@ Currently unsaved changes would be declined.</translation>
         <translation>Przenieś kursor edytora w miejsce kliknięte w podglądzie</translation>
     </message>
     <message>
+        <location filename="../widgets/StcPreview.cpp"/>
+        <source>View HTML source of the preview</source>
+        <translation>Pokaż źródło HTML podglądu</translation>
+    </message>
+    <message>
+        <location filename="../widgets/StcPreview.cpp"/>
+        <source>Nothing to show yet - open the STC preview (F6), log in to cpp0x.pl and let it render some text.</source>
+        <translation>Nie ma jeszcze czego pokazać - otwórz podgląd STC (F6), zaloguj się do cpp0x.pl i poczekaj, aż wyrenderuje jakiś tekst.</translation>
+    </message>
+    <message>
         <location filename="../widgets/StcPreview.cpp" line="58"/>
         <source>Copy preview HTML to clipboard</source>
         <translation>Kopiuj HTML podglądu do schowka</translation>
@@ -2599,6 +2609,49 @@ Currently unsaved changes would be declined.</translation>
         <location filename="../ui/WorkAwareStopwatch.ui" line="100"/>
         <source>Idle time treshold [minutes]: </source>
         <translation>Idle time treshold [minutes]: </translation>
+    </message>
+</context>
+<context>
+    <name>HtmlSourceDialog</name>
+    <message>
+        <location filename="../widgets/HtmlSourceDialog.cpp"/>
+        <source>HTML source of the preview</source>
+        <translation>Źródło HTML podglądu</translation>
+    </message>
+    <message>
+        <location filename="../widgets/HtmlSourceDialog.cpp"/>
+        <source>Wrap lines</source>
+        <translation>Zawijaj wiersze</translation>
+    </message>
+    <message>
+        <location filename="../widgets/HtmlSourceDialog.cpp"/>
+        <source>Refresh</source>
+        <translation>Odśwież</translation>
+    </message>
+    <message>
+        <location filename="../widgets/HtmlSourceDialog.cpp"/>
+        <source>Shows the HTML of the text rendered most recently</source>
+        <translation>Pokazuje HTML ostatnio wyrenderowanego tekstu</translation>
+    </message>
+    <message>
+        <location filename="../widgets/HtmlSourceDialog.cpp"/>
+        <source>Copy</source>
+        <translation>Kopiuj</translation>
+    </message>
+    <message>
+        <location filename="../widgets/HtmlSourceDialog.cpp"/>
+        <source>Copies the formatted HTML shown here</source>
+        <translation>Kopiuje sformatowany HTML pokazany w tym oknie</translation>
+    </message>
+    <message>
+        <location filename="../widgets/HtmlSourceDialog.cpp"/>
+        <source>Close</source>
+        <translation>Zamknij</translation>
+    </message>
+    <message>
+        <location filename="../widgets/HtmlSourceDialog.cpp"/>
+        <source>%1 lines, %2 characters of HTML from the server</source>
+        <translation>Liczba linii: %1, znaków HTML z serwera: %2</translation>
     </message>
 </context>
 </TS>

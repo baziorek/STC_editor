@@ -47,6 +47,7 @@ Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://c
 14. **Podgląd strony w czasie rzeczywistym**: Jest możliwe użycie w programie [backendu konwertującego kod ze znacznikami STC na kod HTML](https://cpp0x.pl/stc/).
     - Podgląd przewija się razem z edytorem: przewijasz tylko kod, a podgląd podąża za nim (pozycje są dopasowywane po tekście, bo HTML z serwera nie zawiera informacji o źródle). Synchronizację można wyłączyć checkboxem w menu kontekstowym podglądu (domyślnie włączona).
     - Kliknięcie w podglądzie ustawia kursor w edytorze w odpowiednim miejscu źródła (zaznaczanie tekstu myszą tego nie robi). To również można wyłączyć checkboxem w menu kontekstowym podglądu.
+    - Opcja "Pokaż źródło HTML podglądu" w menu kontekstowym otwiera okno z kodem HTML ze strony (sformatowanym i pokolorowanym), z przyciskami odświeżenia i kopiowania.
     - Zaznaczony w podglądzie tekst można skopiować `Ctrl+C` (kliknięcie w podgląd daje mu fokus).
     - Dostępne są również statystyki: ile danych wysłano i pobrano, widoczne po najechaniu myszką na obszar renderujący
 15. **Śledzenie TODO w dokumencie**: W podglądzie dokumentu widać komentarze `TODO: ` wraz z tekstem na prawo od tego, są one klikalne i wtedy przechodzą do danej pozycji.

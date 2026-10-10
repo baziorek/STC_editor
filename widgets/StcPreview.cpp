@@ -12,6 +12,7 @@
 #include <QMouseEvent>
 #include <QChildEvent>
 #include "StcPreview.h"
+#include "HtmlSourceDialog.h"
 
 
 namespace
@@ -118,7 +119,45 @@ void StcPreviewWidget::showPreviewContextMenu(const QPoint &position)
     QAction *copyHtml = menu->addAction(tr("Copy preview HTML to clipboard"));
     connect(copyHtml, &QAction::triggered, this, &StcPreviewWidget::copyRenderedHtmlToClipboard);
 
+    // The browser's own "View page source" opens a new browser window, which this widget cannot show, so it did nothing:
+    // our window with the HTML is there instead
+    QAction *showSource = new QAction(tr("View HTML source of the preview"), menu);
+    connect(showSource, &QAction::triggered, this, &StcPreviewWidget::showHtmlSource);
+    if (QAction *browserViewSource = webView.pageAction(QWebEnginePage::ViewSource); menu->actions().contains(browserViewSource))
+    {
+        menu->insertAction(browserViewSource, showSource);
+        menu->removeAction(browserViewSource);
+    }
+    else
+    {
+        menu->addAction(showSource);
+    }
+
     menu->popup(webView.mapToGlobal(position));
+}
+
+void StcPreviewWidget::showHtmlSource()
+{
+    if (latestHtml.isEmpty())
+    {
+        QToolTip::showText(QCursor::pos(),
+                           tr("Nothing to show yet - open the STC preview (F6), log in to cpp0x.pl and let it render some text."),
+                           this);
+        return;
+    }
+
+    if (!htmlSourceDialog)
+    {
+        htmlSourceDialog = new HtmlSourceDialog(window());
+        connect(htmlSourceDialog, &HtmlSourceDialog::refreshRequested, this, [this]() {
+            htmlSourceDialog->setHtml(latestHtml);
+        });
+    }
+
+    htmlSourceDialog->setHtml(latestHtml);
+    htmlSourceDialog->show();
+    htmlSourceDialog->raise();
+    htmlSourceDialog->activateWindow();
 }
 
 bool StcPreviewWidget::copyRenderedHtmlToClipboard()
