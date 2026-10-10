@@ -43,6 +43,8 @@ If you want to use this editor for writing content for [cpp0x.pl](https://cpp0x.
     - Text files with C/C++ extensions are inserted and wrapped in `[cpp]...[/cpp]` tags.
     - Other text files are inserted and wrapped in `[code]...[/code]` tags.
 14. **Real-Time Web Preview**: Uses the [STC-to-HTML conversion backend](https://cpp0x.pl/stc/) to preview content in real-time. Statistics (data sent/received) are shown on hover over the rendering area.
+    - The preview scrolls together with the editor: you scroll only the code and the preview follows (positions are matched by text, because the HTML from the server has no information about its source). The synchronization can be switched off with a checkbox in the context menu of the preview (on by default).
+    - Text selected in the preview can be copied with `Ctrl+C` (clicking the preview gives it the focus).
 15. **TODO Tracking**: Displays `TODO:` comments in the document context view, clickable to jump to their position.
 16. **Clickable Links**: Hold `Ctrl` and left-click inside `[a href="..."]` or `[a href="..." name="..."]` tags to open the link.
 17. **Smart Link Pasting**: Pasting a URL via `Ctrl+V` wraps it in `[a href="link"]` tags:
@@ -137,7 +139,7 @@ You can download the latest compiled version of **STC_editor** from the most rec
 19. Integration with AI models (e.g., [Ollama](https://ollama.com)).
 20. Display font size information during `Ctrl+Scroll` (like QtCreator).
 21. Table generator for STC tables.
-22. PreviewWidget: Track positions between the source document and HTML preview.
+22. PreviewWidget: Tracking positions the other way round - a click in the HTML preview moves the cursor in the editor to the matching place (scrolling editor → preview already works).
 24. Precompiled headers for `codeEditor.h` and module support.
 25. Integrate IWYU with CMake.
 26. Code and header folding (like in IDEs).

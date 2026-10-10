@@ -39,8 +39,9 @@ StcPreviewWidget::StcPreviewWidget(QWidget *parent) : QWidget(parent)
     // Display initial empty preview container
     webView.setHtml("<html><body><div id='Preview'></div></body></html>", makeUrl("/"));
 
+    // The page takes the focus when it is clicked, so that Ctrl+C copies what is selected in the page, not in the editor
     setFocusPolicy(Qt::NoFocus);
-    webView.setFocusPolicy(Qt::NoFocus);
+    webView.setFocusPolicy(Qt::ClickFocus);
 
     webView.setContextMenuPolicy(Qt::CustomContextMenu);
     connect(&webView, &QWidget::customContextMenuRequested, this, &StcPreviewWidget::showPreviewContextMenu);
@@ -54,6 +55,11 @@ void StcPreviewWidget::showPreviewContextMenu(const QPoint &position)
 
     if (!menu->isEmpty())
         menu->addSeparator();
+
+    QAction *syncScroll = menu->addAction(tr("Synchronize scrolling with the editor"));
+    syncScroll->setCheckable(true);
+    syncScroll->setChecked(scrollSyncEnabled);
+    connect(syncScroll, &QAction::toggled, this, &StcPreviewWidget::setScrollSyncEnabled);
 
     QAction *copyHtml = menu->addAction(tr("Copy preview HTML to clipboard"));
     connect(copyHtml, &QAction::triggered, this, &StcPreviewWidget::copyRenderedHtmlToClipboard);
@@ -257,17 +263,117 @@ void StcPreviewWidget::showRenderedHtml(const QString &html)
 {
     latestHtml = html;
 
+    // The page is replaced and, in the same script, its text nodes are collected (and remembered in the page,
+    // to be found by their numbers when scrolling) - they are what the lines of the source are matched with.
     QString js = QString(R"(
         (function() {
             let container = document.getElementById("Preview");
-            if (container) {
-                container.innerHTML = %1;
+            if (!container) {
+                return [];
             }
+            container.innerHTML = %1;
+
+            const textNodes = [];
+            const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+            while (walker.nextNode()) {
+                textNodes.push(walker.currentNode);
+            }
+            window.__stcTextNodes = textNodes;
+            return textNodes.map(node => node.data);
         })();
     )").arg(toJsStringLiteral(html));
 
-    webView.page()->runJavaScript(js);
+    const QString renderedSource = lastSentText; // the response is for the text sent last (one request at a time)
+    webView.page()->runJavaScript(js, [this, renderedSource](const QVariant &textNodes) {
+        syncMap = PreviewSync::SyncMap(renderedSource, textNodes.toStringList());
+        forgetLastScroll();
+        applyScrollSync();
+    });
     emit htmlReady(html);
+}
+
+void StcPreviewWidget::scrollToSourceLine(int line, double fraction, bool atEndOfDocument)
+{
+    editorTop = EditorViewportTop{line, fraction, atEndOfDocument};
+    applyScrollSync();
+}
+
+void StcPreviewWidget::setScrollSyncEnabled(bool enabled)
+{
+    if (scrollSyncEnabled == enabled)
+    {
+        return;
+    }
+
+    scrollSyncEnabled = enabled;
+    forgetLastScroll();
+    emit scrollSyncEnabledChanged(enabled);
+
+    applyScrollSync();
+}
+
+void StcPreviewWidget::forgetLastScroll()
+{
+    lastScrolledTo.reset();
+    lastScrolledToEnd = false;
+}
+
+void StcPreviewWidget::applyScrollSync()
+{
+    if (!scrollSyncEnabled || !editorTop || !isInitialized)
+    {
+        return;
+    }
+
+    if (editorTop->atEndOfDocument)
+    {
+        if (lastScrolledToEnd)
+        {
+            return;
+        }
+        forgetLastScroll();
+        lastScrolledToEnd = true;
+
+        webView.page()->runJavaScript(R"(
+            (function() {
+                const scroller = document.scrollingElement || document.documentElement;
+                scroller.scrollTo({top: scroller.scrollHeight, behavior: 'instant'});
+            })();
+        )");
+        return;
+    }
+
+    const PreviewSync::TextPosition position = syncMap.positionForLine(editorTop->line, editorTop->fraction);
+    if (!position.isValid() || (!lastScrolledToEnd && lastScrolledTo == position))
+    {
+        return;
+    }
+    forgetLastScroll();
+    lastScrolledTo = position;
+
+    // The place of the character in the page decides, so it is right whatever the width of the preview is
+    QString js = QString(R"(
+        (function(chunk, offset) {
+            const textNodes = window.__stcTextNodes;
+            const node = textNodes && textNodes[chunk];
+            if (!node || !node.isConnected) {
+                return;
+            }
+            const start = Math.min(offset, node.length);
+            const range = document.createRange();
+            range.setStart(node, start);
+            range.setEnd(node, Math.min(start + 1, node.length));
+
+            let rect = range.getBoundingClientRect();
+            if (rect.width === 0 && rect.height === 0 && node.parentElement) {
+                rect = node.parentElement.getBoundingClientRect();
+            }
+            const scroller = document.scrollingElement || document.documentElement;
+            scroller.scrollTo({top: Math.max(0, rect.top + scroller.scrollTop - 2), behavior: 'instant'});
+        })(%1, %2);
+    )").arg(position.chunk).arg(position.offset);
+
+    webView.page()->runJavaScript(js);
 }
 
 QString StcPreviewWidget::toJsStringLiteral(const QString &text)

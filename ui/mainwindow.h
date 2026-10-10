@@ -42,6 +42,7 @@ public slots:
 
     void onShowStcPreviewTriggered();
     void onCopyPreviewHtmlRequested();
+    void onEditorViewportMoved();
 
     /// file menu:
     void onNewFilePressed();

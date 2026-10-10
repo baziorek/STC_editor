@@ -2150,6 +2150,11 @@ Currently unsaved changes would be declined.</translation>
     <name>StcPreviewWidget</name>
     <message>
         <location filename="../widgets/StcPreview.cpp" line="58"/>
+        <source>Synchronize scrolling with the editor</source>
+        <translation>Synchronizuj przewijanie z edytorem</translation>
+    </message>
+    <message>
+        <location filename="../widgets/StcPreview.cpp" line="58"/>
         <source>Copy preview HTML to clipboard</source>
         <translation>Kopiuj HTML podglądu do schowka</translation>
     </message>

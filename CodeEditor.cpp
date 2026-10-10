@@ -5,6 +5,7 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QScrollBar>
+#include <algorithm>
 #include <QApplication>
 #include <QToolTip>
 #include <QTimer>
@@ -3380,6 +3381,25 @@ void CodeEditor::redoWithHistory()
 {
     EditHistory::UndoRedoScope scope(*editHistory, EditHistory::UndoRedoScope::Kind::Redo);
     redo();
+}
+
+CodeEditor::ViewportTop CodeEditor::viewportTop() const
+{
+    const QTextBlock block = firstVisibleBlock();
+    if (!block.isValid())
+        return {};
+
+    ViewportTop top;
+    top.line = block.blockNumber();
+
+    const qreal height = blockBoundingRect(block).height();
+    const qreal hiddenAbove = -blockBoundingGeometry(block).translated(contentOffset()).top();
+    if (height > 0)
+        top.fraction = std::clamp(hiddenAbove / height, 0.0, 0.999);
+
+    const QScrollBar* scrollBar = verticalScrollBar();
+    top.atEndOfDocument = scrollBar->maximum() > 0 && scrollBar->value() >= scrollBar->maximum();
+    return top;
 }
 
 void CodeEditor::addEditHistoryActions(QMenu* menu, int clickedLine)

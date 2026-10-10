@@ -45,6 +45,8 @@ Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://c
     - Zawartość plików tekstowych o rozszerzeniach wskazujących na C/C++ zostanie wstawione i otoczona tagami `[cpp]...[/cpp]`
     - Zawartość pozostałych plików tekstowych zostanie wstawiona i otoczona tagami `[code]...[/code]`
 14. **Podgląd strony w czasie rzeczywistym**: Jest możliwe użycie w programie [backendu konwertującego kod ze znacznikami STC na kod HTML](https://cpp0x.pl/stc/).
+    - Podgląd przewija się razem z edytorem: przewijasz tylko kod, a podgląd podąża za nim (pozycje są dopasowywane po tekście, bo HTML z serwera nie zawiera informacji o źródle). Synchronizację można wyłączyć checkboxem w menu kontekstowym podglądu (domyślnie włączona).
+    - Zaznaczony w podglądzie tekst można skopiować `Ctrl+C` (kliknięcie w podgląd daje mu fokus).
     - Dostępne są również statystyki: ile danych wysłano i pobrano, widoczne po najechaniu myszką na obszar renderujący
 15. **Śledzenie TODO w dokumencie**: W podglądzie dokumentu widać komentarze `TODO: ` wraz z tekstem na prawo od tego, są one klikalne i wtedy przechodzą do danej pozycji.
 16. **Klikalne linki**: wewnątrz tagów z linkiem `[a href="..."]` lub `[a href="..." name="..."]` możemy przytrzymać CTRL + lewy przycisk myszy i nam się otworzy dany link
@@ -154,7 +156,7 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 19. Podpięcie sztucznej inteligencji np. [Ollama](https://ollama.com) lub llama.cpp
 20. Precompiled headers dla CodeEditor.h i moduły
 21. Kreator tabel dla znaczników STC.
-22. PreviewWidget: Śledzenie pozycji między pozycją w dokumencie źródłowym a podglądem HTML
+22. PreviewWidget: Śledzenie pozycji w drugą stronę - kliknięcie w podglądzie HTML przenosi kursor w edytorze do odpowiedniego miejsca (przewijanie edytor → podgląd już działa)
 23. IWYU podpiąć pod CMake'a
 24. Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
 25. Blokowanie pliku, który się edytuje.

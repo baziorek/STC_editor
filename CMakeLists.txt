@@ -201,6 +201,7 @@ set(PROJECT_SOURCES
     utils/CodeLanguageHighlighting.h utils/CodeLanguageHighlighting.cpp
     utils/AnsiTextWriter.h utils/AnsiTextWriter.cpp
     utils/StcTagRegions.h utils/StcTagRegions.cpp
+    utils/PreviewSyncMap.h utils/PreviewSyncMap.cpp
     utils/SpellChecker.h utils/SpellChecker.cpp
     utils/BackupManager.h utils/BackupManager.cpp
 )
@@ -468,6 +469,15 @@ if(NOT WIN32)
     target_include_directories(${PROJECT_NAME}TagRegionsTests PRIVATE ${PROJECT_SOURCE_DIR})
     target_link_libraries(${PROJECT_NAME}TagRegionsTests PRIVATE Qt${QT_VERSION_MAJOR}::Core ${GTEST_LIBRARIES} pthread gtest_main)
     add_test(NAME ${PROJECT_NAME}TagRegionsTests COMMAND ${PROJECT_NAME}TagRegionsTests)
+
+    # Mapping of the lines of the source to the places of the HTML preview (scroll synchronization). Only QtCore.
+    add_executable(${PROJECT_NAME}PreviewSyncTests
+        tests/PreviewSyncMapTests.cpp
+        utils/PreviewSyncMap.cpp
+    )
+    target_include_directories(${PROJECT_NAME}PreviewSyncTests PRIVATE ${PROJECT_SOURCE_DIR})
+    target_link_libraries(${PROJECT_NAME}PreviewSyncTests PRIVATE Qt${QT_VERSION_MAJOR}::Core ${GTEST_LIBRARIES} pthread gtest_main)
+    add_test(NAME ${PROJECT_NAME}PreviewSyncTests COMMAND ${PROJECT_NAME}PreviewSyncTests)
 
     # Edit history (the table of edits, circles at line numbers). Needs only Qt and the diff libraries; own main() with QApplication.
     add_executable(${PROJECT_NAME}EditHistoryTests

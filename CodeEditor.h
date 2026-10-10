@@ -63,6 +63,16 @@ public:
     void undoWithHistory();
     void redoWithHistory();
 
+    /// What is at the top edge of the viewport: the line (zero-based) and how far the viewport is inside it, 0..1
+    /// (a long line is wrapped into many rows, so scrolling by rows moves inside one line)
+    struct ViewportTop
+    {
+        int line = 0;
+        double fraction = 0.0;
+        bool atEndOfDocument = false; ///< scrolled all the way down (so the last lines are visible, whatever is at the top)
+    };
+    ViewportTop viewportTop() const;
+
     /// Table of the edits made to the document in this session (opened from the context menu)
     void showEditHistory();
     /// History of one line of the document (zero-based number), opened from the context menu or by a click on its number

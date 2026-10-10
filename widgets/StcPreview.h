@@ -8,6 +8,8 @@
 #include <QJsonArray>
 #include <QUrlQuery>
 #include <QRegularExpression>
+#include <optional>
+#include "utils/PreviewSyncMap.h"
 
 /**
  * @class StcPreviewWidget
@@ -35,6 +37,12 @@
  * `copyRenderedHtmlToClipboard()` (also available from the preview's context menu) puts the HTML fragment
  * returned by cpp0x.pl for the current text on the clipboard - handy for pasting it into a bug report
  * or a conversation. It is the same fragment that is placed inside the preview's `#Preview` container.
+ *
+ * ### Scrolling together with the editor:
+ * The HTML from cpp0x.pl does not say which part of the source is which part of the page, so after each render
+ * the text of the page is compared with the text sent (PreviewSync::SyncMap). `scrollToSourceLine()` then scrolls
+ * the page to the place which shows the given line of the source - the user scrolls only the editor and the preview follows.
+ * It can be switched off with a checkbox in the context menu of the preview (`setScrollSyncEnabled()`); on by default.
  *
  * ### Statistics:
  * For debugging or diagnostics, you can access request statistics via `getStats()`.
@@ -87,11 +95,24 @@ public:
     /// @return false when there is nothing to copy yet
     bool copyRenderedHtmlToClipboard();
 
+    /// Scrolls the preview to the place of the page which shows the given part of the source: the `line` (zero-based)
+    /// which is at the top of the editor, `fraction` (0..1) of the way through it. When the editor is scrolled
+    /// to its end, the preview goes to its end too. The place is remembered, so it is also used after the next render.
+    /// Does nothing visible while the synchronization is switched off.
+    void scrollToSourceLine(int line, double fraction, bool atEndOfDocument);
+
+    bool isScrollSyncEnabled() const
+    {
+        return scrollSyncEnabled;
+    }
+    void setScrollSyncEnabled(bool enabled);
+
 signals:
     void htmlReady(const QString &html);
 
     void loginFailed(const QString &message);
     void loginSucceeded();
+    void scrollSyncEnabledChanged(bool enabled);
 
 protected:
     void updateStatsLabel();
@@ -101,6 +122,8 @@ protected:
     void showRenderedHtml(const QString &html);
     void showPreviewContextMenu(const QPoint &position);
     void scheduleTextUpdate();
+    void applyScrollSync();
+    void forgetLastScroll();
     static QString toJsStringLiteral(const QString &text);
 
     void enterEvent(QEnterEvent *event) override;
@@ -128,4 +151,18 @@ private:
     bool hasPendingUpdate = false;
 
     Stats stats;
+
+    /// Where the editor is, as the last call of scrollToSourceLine() said
+    struct EditorViewportTop
+    {
+        int line = 0;
+        double fraction = 0.0;
+        bool atEndOfDocument = false;
+    };
+
+    bool scrollSyncEnabled = true;
+    std::optional<EditorViewportTop> editorTop;
+    PreviewSync::SyncMap syncMap;                              ///< lines of the source <-> text nodes of the page, after the last render
+    std::optional<PreviewSync::TextPosition> lastScrolledTo;   ///< not to ask the page for the same scroll again and again
+    bool lastScrolledToEnd = false;
 };

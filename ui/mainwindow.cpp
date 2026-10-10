@@ -39,6 +39,7 @@ namespace GeometryNames
     constexpr const char LOGIN_PASSWORD[] = "login/password";
     constexpr const char LOGIN_REMEMBER[] = "login/remember";
     constexpr const char LOGIN_AUTO_LOGIN[] = "login/autoLogin";
+    constexpr const char PREVIEW_SCROLL_SYNC[] = "preview/scrollSync";
 };
 
 std::pair<QString, QString> extractLink(const QString& text)
@@ -131,6 +132,13 @@ void MainWindow::connectSignals2Slots()
     connect(ui->findWidget, &FindDialog::jumpToLocationRequested, ui->textEditor, &CodeEditor::goToLineAndOffset);
     connect(ui->textEditor, &CodeEditor::totalLinesCountChanged, ui->goToLineGroupBox, &GoToLineWidget::setMaxLine);
     connect(ui->textEditor, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateBreadcrumb);
+
+    // The preview follows the editor (the user scrolls only the editor)
+    connect(ui->textEditor->verticalScrollBar(), &QScrollBar::valueChanged, this, &MainWindow::onEditorViewportMoved);
+    connect(ui->textEditor, &QPlainTextEdit::textChanged, this, &MainWindow::onEditorViewportMoved);
+    connect(ui->stcPreviewWidget, &StcPreviewWidget::scrollSyncEnabledChanged, this, [](bool enabled) {
+        QSettings().setValue(GeometryNames::PREVIEW_SCROLL_SYNC, enabled);
+    });
     connect(ui->textEditor, &CodeEditor::numberOfModifiedLinesChanged, [this](int linesNumber) {
         this->onFileContentChanged(ui->textEditor->getFileName(), linesNumber);
     });
@@ -1071,6 +1079,8 @@ void MainWindow::loadSettings()
 
     lastDirectory = settings.value(GeometryNames::LAST_DIRECTORY, QDir::homePath()).toString();
 
+    ui->stcPreviewWidget->setScrollSyncEnabled(settings.value(GeometryNames::PREVIEW_SCROLL_SYNC, true).toBool());
+
     QVariantMap filesMap = settings.value(GeometryNames::RECENT_FILES_LIST).toMap();
     for (auto it = filesMap.begin(); it != filesMap.end(); ++it)
     {
@@ -1262,6 +1272,12 @@ void MainWindow::onUpdateBreadcrumb()
 void MainWindow::onCopyPreviewHtmlRequested()
 {
     ui->stcPreviewWidget->copyRenderedHtmlToClipboard();
+}
+
+void MainWindow::onEditorViewportMoved()
+{
+    const CodeEditor::ViewportTop top = ui->textEditor->viewportTop();
+    ui->stcPreviewWidget->scrollToSourceLine(top.line, top.fraction, top.atEndOfDocument);
 }
 
 void MainWindow::onShowStcPreviewTriggered()
