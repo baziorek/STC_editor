@@ -52,6 +52,12 @@
 <context>
     <name>CodeEditor</name>
     <message>
+        <location filename="../CodeEditor.cpp" line="508"/>
+        <location filename="../CodeEditor.cpp" line="2509"/>
+        <source>Checking if no unsaved changes failed!</source>
+        <translation>Checking if no unsaved changes failed!</translation>
+    </message>
+    <message>
         <location filename="../CodeEditor.cpp" line="686"/>
         <source>Loading file error</source>
         <translation>Loading file error</translation>
@@ -75,6 +81,21 @@
         <location filename="../CodeEditor.cpp" line="870"/>
         <source>STC course: %1</source>
         <translation>STC course: %1</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditor.cpp" line="895"/>
+        <source>Copy link</source>
+        <translation>Copy link</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditor.cpp" line="900"/>
+        <source>Remove link</source>
+        <translation>Remove link</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditor.cpp" line="905"/>
+        <source>Select link</source>
+        <translation>Select link</translation>
     </message>
     <message>
         <location filename="../CodeEditor.cpp" line="1006"/>
@@ -147,6 +168,26 @@
         <translation>Convert to [div class=&quot;uwaga&quot;]</translation>
     </message>
     <message>
+        <location filename="../CodeEditor.cpp" line="1488"/>
+        <source>To UPPER CASE</source>
+        <translation>To UPPER CASE</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditor.cpp" line="1498"/>
+        <source>To lower case</source>
+        <translation>To lower case</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditor.cpp" line="1514"/>
+        <source>To camelCase</source>
+        <translation>To camelCase</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditor.cpp" line="1525"/>
+        <source>To snake_case</source>
+        <translation>To snake_case</translation>
+    </message>
+    <message>
         <location filename="../CodeEditor.cpp" line="1556"/>
         <source>Remove numbering</source>
         <translation>Remove numbering</translation>
@@ -157,27 +198,97 @@
         <translation>Renumber selection</translation>
     </message>
     <message>
+        <location filename="../CodeEditor.cpp" line="1569"/>
+        <source>Add numeration: 1., 2., 3. ...</source>
+        <translation>Add numeration: 1., 2., 3. ...</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditor.cpp" line="1598"/>
+        <source>Add bullet points</source>
+        <translation>Add bullet points</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditor.cpp" line="1625"/>
+        <source>Join lines with space</source>
+        <translation>Join lines with space</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditor.cpp" line="1634"/>
+        <source>Sort lines ascending</source>
+        <translation>Sort lines ascending</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditor.cpp" line="1641"/>
+        <source>Sort lines descending</source>
+        <translation>Sort lines descending</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditor.cpp" line="1860"/>
+        <source>Remove [%1]</source>
+        <translation>Remove [%1]</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditor.cpp" line="1897"/>
+        <source>Select this source code</source>
+        <translation>Select this source code</translation>
+    </message>
+    <message>
         <location filename="../CodeEditor.cpp" line="1903"/>
         <source>Copy this source code</source>
         <translation>Copy this source code</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1963"/>
-        <source>Check and run Python (python3)</source>
-        <translation>Check and run Python (python3)</translation>
+        <location filename="../CodeEditor.cpp" line="1911"/>
+        <source>Format C++ with clang-format</source>
+        <translation>Format C++ with clang-format</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1963"/>
+        <location filename="../CodeEditor.cpp" line="1918"/>
+        <source>Formatting failed or clang-format not available.</source>
+        <translation>Formatting failed or clang-format not available.</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditor.cpp" line="1924"/>
+        <source>Remove C++ Comments</source>
+        <translation>Remove C++ Comments</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditor.cpp" line="1937"/>
+        <source>Clean Up Empty Lines</source>
+        <translation>Clean Up Empty Lines</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditor.cpp" line="1977"/>
         <source>Compile C++ with g++</source>
         <translation>Compile C++ with g++</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="2463"/>
+        <location filename="../CodeEditor.cpp" line="1980"/>
+        <source>Check the syntax (python3), do not run</source>
+        <translation>Check the syntax (python3), do not run</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditor.cpp" line="1981"/>
+        <source>Check the syntax and run (python3)</source>
+        <translation>Check the syntax and run (python3)</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditor.cpp" line="1984"/>
+        <source>Check the syntax (bash -n), do not run</source>
+        <translation>Check the syntax (bash -n), do not run</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditor.cpp" line="1985"/>
+        <source>Check the syntax and run (bash)</source>
+        <translation>Check the syntax and run (bash)</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditor.cpp" line="2482"/>
         <source>File changed</source>
         <translation>File changed</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="2464"/>
+        <location filename="../CodeEditor.cpp" line="2483"/>
         <source>File &apos;%1&apos; has been modified outside of the editor.
 
 Do you want to reload it?</source>
@@ -186,22 +297,27 @@ Do you want to reload it?</source>
 Do you want to reload it?</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="3055"/>
+        <location filename="../CodeEditor.cpp" line="3031"/>
+        <source>Convert to [%1]</source>
+        <translation>Convert to [%1]</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditor.cpp" line="3074"/>
         <source>Spelling suggestions</source>
         <translation>Spelling suggestions</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="3420"/>
+        <location filename="../CodeEditor.cpp" line="3439"/>
         <source>Edit history…</source>
         <translation>Edit history…</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="3426"/>
+        <location filename="../CodeEditor.cpp" line="3445"/>
         <source>History of line %1…</source>
         <translation>History of line %1…</translation>
     </message>
     <message numerus="yes">
-        <location filename="../CodeEditor.cpp" line="3509"/>
+        <location filename="../CodeEditor.cpp" line="3528"/>
         <source>This line was changed %n time(s) in this session - click to see its history</source>
         <translation>
             <numerusform>This line was changed %n time(s) in this session - click to see its history</numerusform>
@@ -209,7 +325,7 @@ Do you want to reload it?</translation>
         </translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="3511"/>
+        <location filename="../CodeEditor.cpp" line="3530"/>
         <source>(all the changes are undone now; Ctrl+Shift+Z brings them back)</source>
         <translation>(all the changes are undone now; Ctrl+Shift+Z brings them back)</translation>
     </message>
@@ -217,319 +333,324 @@ Do you want to reload it?</translation>
 <context>
     <name>CppCompilerDialog</name>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="132"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="163"/>
         <source>Python: syntax check and run</source>
         <translation>Python: syntax check and run</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="132"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="160"/>
         <source>g++ compilation</source>
         <translation>g++ compilation</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="171"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="166"/>
+        <source>Bash: syntax check and run</source>
+        <translation>Bash: syntax check and run</translation>
+    </message>
+    <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="208"/>
         <source>e.g. -std=c++23 -O2 -Wall -Wextra</source>
         <translation>e.g. -std=c++23 -O2 -Wall -Wextra</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="173"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="210"/>
         <source>Passed to g++ before the source file. Split like in a shell: &apos;...&apos;, &quot;...&quot; and \ work, e.g. -DNAME=&apos;&quot;a b&quot;&apos;</source>
         <translation>Passed to g++ before the source file. Split like in a shell: &apos;...&apos;, &quot;...&quot; and \ work, e.g. -DNAME=&apos;&quot;a b&quot;&apos;</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="176"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="213"/>
         <source>e.g. -lpthread -lm  or  -L/path/to/libs -lfoo</source>
         <translation>e.g. -lpthread -lm  or  -L/path/to/libs -lfoo</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="178"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="215"/>
         <source>Passed to g++ after the source file (libraries, -L paths, ...)</source>
         <translation>Passed to g++ after the source file (libraries, -L paths, ...)</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="180"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="217"/>
         <source>Run the program after a successful compilation</source>
         <translation>Run the program after a successful compilation</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="182"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="219"/>
         <source>Compile (F5)</source>
         <translation>Compile (F5)</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="185"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="222"/>
         <source>Stop</source>
         <translation>Stop</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="192"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="229"/>
         <source>Compiler flags:</source>
         <translation>Compiler flags:</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="193"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="230"/>
         <source>Linker flags / libraries:</source>
         <translation>Linker flags / libraries:</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="217"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="254"/>
         <source>Compiler messages (errors, warnings)</source>
         <translation>Compiler messages (errors, warnings)</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="218"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="255"/>
         <source>Output of the program</source>
         <translation>Output of the program</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="220"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="257"/>
         <source>Insert compiler log below the code</source>
         <translation>Insert compiler log below the code</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="221"/>
-        <location filename="../ui/cppcompilerdialog.cpp" line="224"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="258"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="261"/>
         <source>Adds [code]...[/code] with this text under the closing tag of the code block</source>
         <translation>Adds [code]...[/code] with this text under the closing tag of the code block</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="223"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="260"/>
         <source>Insert program output below the code</source>
         <translation>Insert program output below the code</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="234"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="271"/>
         <source>Compilation time</source>
         <translation>Compilation time</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="235"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="272"/>
         <source>Execution time of the program</source>
         <translation>Execution time of the program</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="237"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="274"/>
         <source>stdout</source>
         <translation>stdout</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="239"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="276"/>
         <source>Show what the program wrote to stdout</source>
         <translation>Show what the program wrote to stdout</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="240"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="277"/>
         <source>stderr</source>
         <translation>stderr</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="242"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="279"/>
         <source>Show what the program wrote to stderr (red). Unchecked text is not inserted into the article either.</source>
         <translation>Show what the program wrote to stderr (red). Unchecked text is not inserted into the article either.</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="262"/>
-        <location filename="../ui/cppcompilerdialog.cpp" line="355"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="299"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="420"/>
         <source>Syntax check</source>
         <translation>Syntax check</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="262"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="299"/>
         <source>Compiler log</source>
         <translation>Compiler log</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="263"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="300"/>
         <source>Script output</source>
         <translation>Script output</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="263"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="300"/>
         <source>Program output</source>
         <translation>Program output</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="272"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="309"/>
         <source>Put the code back into the article</source>
         <translation>Put the code back into the article</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="273"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="310"/>
         <source>Replaces the content of the code block in the article with the code from this window</source>
         <translation>Replaces the content of the code block in the article with the code from this window</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="275"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="312"/>
         <source>Close</source>
         <translation>Close</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="305"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="356"/>
         <source>Interpreter flags:</source>
         <translation>Interpreter flags:</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="306"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="357"/>
         <source>e.g. -W error  (the script is always run with -u)</source>
         <translation>e.g. -W error  (the script is always run with -u)</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="307"/>
-        <source>Passed to python3 before the script. Split like in a shell: &apos;...&apos;, &quot;...&quot; and \ work</source>
-        <translation>Passed to python3 before the script. Split like in a shell: &apos;...&apos;, &quot;...&quot; and \ work</translation>
+        <location filename="../ui/cppcompilerdialog.cpp" line="358"/>
+        <source>e.g. -x  (prints every command)  or  -e -u -o pipefail</source>
+        <translation>e.g. -x  (prints every command)  or  -e -u -o pipefail</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="310"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="359"/>
+        <source>Passed to %1 before the script. Split like in a shell: &apos;...&apos;, &quot;...&quot; and \ work</source>
+        <translation>Passed to %1 before the script. Split like in a shell: &apos;...&apos;, "..." and \ work</translation>
+    </message>
+    <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="364"/>
+        <source>Result of the syntax check (%1)</source>
+        <translation>Result of the syntax check (%1)</translation>
+    </message>
+    <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="730"/>
+        <source>Failed to start %1. Is it installed and available in PATH?</source>
+        <translation>Failed to start %1. Is it installed and available in PATH?</translation>
+    </message>
+    <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="362"/>
         <source>Run the script after a successful syntax check</source>
         <translation>Run the script after a successful syntax check</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="311"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="363"/>
         <source>Run (F5)</source>
         <translation>Run (F5)</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="312"/>
-        <source>Result of the syntax check (python3 -m py_compile)</source>
-        <translation>Result of the syntax check (python3 -m py_compile)</translation>
-    </message>
-    <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="313"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="365"/>
         <source>Output of the script</source>
         <translation>Output of the script</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="314"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="366"/>
         <source>Time of the syntax check</source>
         <translation>Time of the syntax check</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="315"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="367"/>
         <source>Execution time of the script</source>
         <translation>Execution time of the script</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="355"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="420"/>
         <source>Compilation</source>
         <translation>Compilation</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="388"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="453"/>
         <source>Failed to create a temporary directory.</source>
         <translation>Failed to create a temporary directory.</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="395"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="460"/>
         <source>Failed to create the temporary source file.</source>
         <translation>Failed to create the temporary source file.</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="413"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="478"/>
         <source>Compiling...</source>
         <translation>Compiling...</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="424"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="493"/>
         <source>Checking the syntax...</source>
         <translation>Checking the syntax...</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="444"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="514"/>
         <source>Running the script...</source>
         <translation>Running the script...</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="449"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="519"/>
         <source>Running the program...</source>
         <translation>Running the program...</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="606"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="676"/>
         <source>The script</source>
         <translation>The script</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="606"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="676"/>
         <source>The program</source>
         <translation>The program</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="612"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="682"/>
         <source>%1 was stopped.</source>
         <translation>%1 was stopped.</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="617"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="687"/>
         <source>%1 took longer than %2 s and was killed.</source>
         <translation>%1 took longer than %2 s and was killed.</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="621"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="691"/>
         <source>%1 printed more than 1 MiB, it was killed and the output is truncated.</source>
         <translation>%1 printed more than 1 MiB, it was killed and the output is truncated.</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="625"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="695"/>
         <source>%1 crashed.</source>
         <translation>%1 crashed.</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="631"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="701"/>
         <source>Syntax check failed (exit code %1).</source>
         <translation>Syntax check failed (exit code %1).</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="632"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="702"/>
         <source>Compilation failed (exit code %1).</source>
         <translation>Compilation failed (exit code %1).</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="642"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="712"/>
         <source>The syntax is correct.</source>
         <translation>The syntax is correct.</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="642"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="712"/>
         <source>Compilation succeeded.</source>
         <translation>Compilation succeeded.</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="647"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="717"/>
         <source>The script finished, exit code %1.</source>
         <translation>The script finished, exit code %1.</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="647"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="717"/>
         <source>The program finished, exit code %1.</source>
         <translation>The program finished, exit code %1.</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="661"/>
-        <source>Failed to start python3. Is it installed and available in PATH?</source>
-        <translation>Failed to start python3. Is it installed and available in PATH?</translation>
-    </message>
-    <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="662"/>
-        <source>Failed to start g++. Is it installed and available in PATH?</source>
-        <translation>Failed to start g++. Is it installed and available in PATH?</translation>
-    </message>
-    <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="663"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="732"/>
         <source>Failed to start the compiled program.</source>
         <translation>Failed to start the compiled program.</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="703"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="772"/>
         <source>The code in the article has been replaced.</source>
         <translation>The code in the article has been replaced.</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="739"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="808"/>
         <source>The compiler log has been inserted below the code.</source>
         <translation>The compiler log has been inserted below the code.</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="745"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="814"/>
         <source>The program output has been inserted below the code.</source>
         <translation>The program output has been inserted below the code.</translation>
     </message>
@@ -1916,17 +2037,17 @@ Currently unsaved changes would be declined.</translation>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="53"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="77"/>
         <source>%1 us</source>
         <translation>%1 us</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="55"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="79"/>
         <source>%1 ms</source>
         <translation>%1 ms</translation>
     </message>
     <message>
-        <location filename="../ui/cppcompilerdialog.cpp" line="56"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="80"/>
         <source>%1 s</source>
         <translation>%1 s</translation>
     </message>

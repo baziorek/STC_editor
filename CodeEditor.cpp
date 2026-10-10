@@ -505,7 +505,7 @@ bool CodeEditor::noUnsavedChanges() const
     }
     catch (const std::exception& e)
     {
-        QMessageBox::warning(const_cast<CodeEditor*>(this), "Checking if no unsaved changes failed!", e.what());
+        QMessageBox::warning(const_cast<CodeEditor*>(this), tr("Checking if no unsaved changes failed!"), e.what());
         return false;
     }
 }
@@ -892,17 +892,17 @@ void CodeEditor::addLinkActionsIfApplicable(QMenu* menu)
     bool hasNonEmptyLink = !hrefValue.trimmed().isEmpty();
 
     // Add "Copy link" action
-    QAction* copyLinkAction = menu->addAction("Copy link", this, &CodeEditor::copyLinkToClipboard);
+    QAction* copyLinkAction = menu->addAction(tr("Copy link"), this, &CodeEditor::copyLinkToClipboard);
     copyLinkAction->setIcon(QIcon::fromTheme("edit-copy"));
     copyLinkAction->setEnabled(hasNonEmptyLink);
 
     // Add "Remove link" action
-    QAction* removeLinkAction = menu->addAction("Remove link", this, &CodeEditor::removeLink);
+    QAction* removeLinkAction = menu->addAction(tr("Remove link"), this, &CodeEditor::removeLink);
     removeLinkAction->setIcon(QIcon::fromTheme("edit-clear"));
     removeLinkAction->setEnabled(hasNonEmptyLink);
 
     // Add "Select link" action
-    QAction* selectLinkAction = menu->addAction("Select link", this, &CodeEditor::selectLink);
+    QAction* selectLinkAction = menu->addAction(tr("Select link"), this, &CodeEditor::selectLink);
     selectLinkAction->setIcon(QIcon::fromTheme("edit-select-all"));
     selectLinkAction->setEnabled(hasNonEmptyLink);
 }
@@ -1485,7 +1485,7 @@ void CodeEditor::addCaseConversionActions(QMenu* menu, const QTextCursor& select
 
     if (!text.isUpper())
     {
-        QAction* upper = new QAction(QIcon::fromTheme("format-text-uppercase"), "To UPPER CASE", this);
+        QAction* upper = new QAction(QIcon::fromTheme("format-text-uppercase"), tr("To UPPER CASE"), this);
         connect(upper, &QAction::triggered, this, [this]() {
             auto cursor = textCursor();
             cursor.insertText(cursor.selectedText().toUpper());
@@ -1495,7 +1495,7 @@ void CodeEditor::addCaseConversionActions(QMenu* menu, const QTextCursor& select
 
     if (!text.isLower())
     {
-        QAction* lower = new QAction(QIcon::fromTheme("format-text-lowercase"), "To lower case", this);
+        QAction* lower = new QAction(QIcon::fromTheme("format-text-lowercase"), tr("To lower case"), this);
         connect(lower, &QAction::triggered, this, [this]() {
             auto cursor = textCursor();
             cursor.insertText(cursor.selectedText().toLower());
@@ -1511,7 +1511,7 @@ void CodeEditor::addWordFormatActions(QMenu* menu, const QTextCursor& selection)
 
     if (text.contains('_'))
     {
-        QAction* toCamel = new QAction(QIcon::fromTheme("format-text-italic"), "To camelCase", this);
+        QAction* toCamel = new QAction(QIcon::fromTheme("format-text-italic"), tr("To camelCase"), this);
         connect(toCamel, &QAction::triggered, this, [this, text]() {
             QStringList parts = text.split('_', Qt::SkipEmptyParts);
             for (int i = 1; i < parts.size(); ++i)
@@ -1522,7 +1522,7 @@ void CodeEditor::addWordFormatActions(QMenu* menu, const QTextCursor& selection)
     }
     else
     {
-        QAction* toSnake = new QAction(QIcon::fromTheme("format-text-bold"), "To snake_case", this);
+        QAction* toSnake = new QAction(QIcon::fromTheme("format-text-bold"), tr("To snake_case"), this);
         connect(toSnake, &QAction::triggered, this, [this, text]() {
             QString result;
             for (QChar ch : text)
@@ -1566,7 +1566,7 @@ void CodeEditor::addMultiLineSelectionActions(QMenu* menu, const QTextCursor& se
     }
     else //if (!selectionHasLineNumbering(selection))
     {
-        QAction* numbered = new QAction(QIcon::fromTheme("format-list-ordered"), "Add numeration: 1., 2., 3. ...", this);
+        QAction* numbered = new QAction(QIcon::fromTheme("format-list-ordered"), tr("Add numeration: 1., 2., 3. ..."), this);
         connect(numbered, &QAction::triggered, this, [=, this]() {
             QTextCursor c = textCursor();
             ScopedEditBlock _(c);
@@ -1595,7 +1595,7 @@ void CodeEditor::addMultiLineSelectionActions(QMenu* menu, const QTextCursor& se
 
     if (!selectionHasBullets(selection))
     {
-        QAction* bulleted = new QAction(QIcon::fromTheme("format-list-unordered"), "Add bullet points", this);
+        QAction* bulleted = new QAction(QIcon::fromTheme("format-list-unordered"), tr("Add bullet points"), this);
         connect(bulleted, &QAction::triggered, this, [=, this]() {
             QTextCursor c = textCursor();
             ScopedEditBlock _(c);
@@ -1622,7 +1622,7 @@ void CodeEditor::addMultiLineSelectionActions(QMenu* menu, const QTextCursor& se
         menu->addAction(bulleted);
     }
 
-    QAction* joinLines = new QAction(QIcon::fromTheme("insert-text"), "Join lines with space", this);
+    QAction* joinLines = new QAction(QIcon::fromTheme("insert-text"), tr("Join lines with space"), this);
     connect(joinLines, &QAction::triggered, this, [this]() {
         auto c = textCursor();
         QString joined = c.selectedText().replace(QChar::ParagraphSeparator, " ");
@@ -1631,14 +1631,14 @@ void CodeEditor::addMultiLineSelectionActions(QMenu* menu, const QTextCursor& se
     menu->addAction(joinLines);
 
     // Sort ascending
-    QAction* sortAsc = new QAction(QIcon::fromTheme("view-sort-ascending"), "Sort lines ascending", this);
+    QAction* sortAsc = new QAction(QIcon::fromTheme("view-sort-ascending"), tr("Sort lines ascending"), this);
     connect(sortAsc, &QAction::triggered, this, [this, startLine, endLine]() {
         sortLinesInRange(startLine, endLine, /*ascending=*/true);
     });
     menu->addAction(sortAsc);
 
     // Sort descending
-    QAction* sortDesc = new QAction(QIcon::fromTheme("view-sort-descending"), "Sort lines descending", this);
+    QAction* sortDesc = new QAction(QIcon::fromTheme("view-sort-descending"), tr("Sort lines descending"), this);
     connect(sortDesc, &QAction::triggered, this, [this, startLine, endLine]() {
         sortLinesInRange(startLine, endLine, /*ascending=*/false);
     });
@@ -1857,7 +1857,7 @@ void CodeEditor::addTagRemovalActionIfInsideTag(QMenu* menu)
             QRegularExpressionMatch m = it.next();
             if (offset >= m.capturedStart(1) && offset <= m.capturedEnd(1))
             {
-                QAction* remove = new QAction(QIcon::fromTheme("edit-delete"), QString("Remove [%1]").arg(tag), this);
+                QAction* remove = new QAction(QIcon::fromTheme("edit-delete"), tr("Remove [%1]").arg(tag), this);
                 connect(remove, &QAction::triggered, this, [=, this]() {
                     QTextCursor c = textCursor();
                     ScopedEditBlock _(c);
@@ -1894,7 +1894,7 @@ void CodeEditor::addCodeBlockActionsIfApplicable(QMenu* menu, const QPoint& pos)
 
         menu->addSeparator();
 
-        QAction* selectAll = new QAction(QIcon::fromTheme("edit-select-all"), "Select this source code", this);
+        QAction* selectAll = new QAction(QIcon::fromTheme("edit-select-all"), tr("Select this source code"), this);
         connect(selectAll, &QAction::triggered, this, [=, this]() {
             setTextCursor(cursor);
         });
@@ -1908,20 +1908,20 @@ void CodeEditor::addCodeBlockActionsIfApplicable(QMenu* menu, const QPoint& pos)
 
         if (tag == "cpp")
         {
-            QAction* format = new QAction(QIcon::fromTheme("tools-wizard"), "Format C++ with clang-format", this);
+            QAction* format = new QAction(QIcon::fromTheme("tools-wizard"), tr("Format C++ with clang-format"), this);
             connect(format, &QAction::triggered, this, [=, this]() mutable {
                 QString raw = cursor.selectedText().replace(QChar::ParagraphSeparator, '\n');
                 QString formatted = formatCppWithClang(raw);
                 if (!formatted.isEmpty())
                     cursor.insertText(formatted.replace(QChar::LineSeparator, "\n"));
                 else
-                    QMessageBox::warning(this, "clang-format", "Formatting failed or clang-format not available.");
+                    QMessageBox::warning(this, "clang-format", tr("Formatting failed or clang-format not available."));
             });
             menu->addAction(format);
 
             addCompileAction(menu, *maybeBlock); // a [cpp] block is always compilable
 
-            QAction* removeComments = new QAction(QIcon::fromTheme("edit-clear"), "Remove C++ Comments", this);
+            QAction* removeComments = new QAction(QIcon::fromTheme("edit-clear"), tr("Remove C++ Comments"), this);
             connect(removeComments, &QAction::triggered, this, [=, this]() mutable {
                 QString code = cursor.selectedText().replace(QChar::ParagraphSeparator, '\n');
                 QString stripped = removeCppComments(code);
@@ -1934,7 +1934,7 @@ void CodeEditor::addCodeBlockActionsIfApplicable(QMenu* menu, const QPoint& pos)
             });
             menu->addAction(removeComments);
             
-            QAction* cleanWhitespace = new QAction(QIcon::fromTheme("edit-clear-locationbar-rtl"), "Clean Up Empty Lines", this);
+            QAction* cleanWhitespace = new QAction(QIcon::fromTheme("edit-clear-locationbar-rtl"), tr("Clean Up Empty Lines"), this);
             connect(cleanWhitespace, &QAction::triggered, this, [=, this]() mutable {
                 QString code = cursor.selectedText().replace(QChar::ParagraphSeparator, '\n');
                 QString cleaned = removeExcessiveEmptyLines(code);
@@ -1958,14 +1958,33 @@ void CodeEditor::addCodeBlockActionsIfApplicable(QMenu* menu, const QPoint& pos)
 void CodeEditor::addCompileAction(QMenu* menu, const CodeBlock& codeOnlyBlock)
 {
     // `codeOnlyBlock.cursor` selects just the code, without the opening and the closing tag
-    const bool isPython = codeOnlyBlock.isPython();
-    auto* compile = new QAction(QIcon::fromTheme("applications-development"),
-                                isPython ? tr("Check and run Python (python3)") : tr("Compile C++ with g++"), menu);
-    connect(compile, &QAction::triggered, this, [codeOnlyBlock, this]() {
-        CppCompilerDialog dialog(codeOnlyBlock, this);
-        dialog.exec();
-    });
-    menu->addAction(compile);
+    const auto language = codeOnlyBlock.runnableLanguage();
+    if (!language)
+        return;
+
+    auto addEntry = [&](const QString& text, CppCompilerDialog::StartMode startMode) {
+        auto* action = new QAction(QIcon::fromTheme("applications-development"), text, menu);
+        connect(action, &QAction::triggered, this, [codeOnlyBlock, startMode, this]() {
+            CppCompilerDialog dialog(codeOnlyBlock, this, startMode);
+            dialog.exec();
+        });
+        menu->addAction(action);
+    };
+
+    switch (*language)
+    {
+    case RunnableLanguage::Cpp:
+        addEntry(tr("Compile C++ with g++"), CppCompilerDialog::StartMode::FromSettings);
+        break;
+    case RunnableLanguage::Python:
+        addEntry(tr("Check the syntax (python3), do not run"), CppCompilerDialog::StartMode::CheckOnly);
+        addEntry(tr("Check the syntax and run (python3)"), CppCompilerDialog::StartMode::CheckAndRun);
+        break;
+    case RunnableLanguage::Bash:
+        addEntry(tr("Check the syntax (bash -n), do not run"), CppCompilerDialog::StartMode::CheckOnly);
+        addEntry(tr("Check the syntax and run (bash)"), CppCompilerDialog::StartMode::CheckAndRun);
+        break;
+    }
 }
 
 QString CodeEditor::formatCppWithClang(const QString& code) const
@@ -2487,7 +2506,7 @@ void CodeEditor::fileChanged(const QString &path)
         }
         catch (const std::exception& e)
         {
-            QMessageBox::warning(const_cast<CodeEditor*>(this), "Checking if no unsaved changes failed!", e.what());
+            QMessageBox::warning(const_cast<CodeEditor*>(this), tr("Checking if no unsaved changes failed!"), e.what());
             return;
         }
 
@@ -3009,7 +3028,7 @@ void CodeEditor::addHeaderTagActionsIfApplicable(QMenu* menu, const QPoint& pos)
                     QString newTag = QString("h%1").arg(i);
                     if (newTag == currentTag)
                         continue;
-                    QString actionText = QString("Convert to [%1]").arg(newTag);
+                    QString actionText = tr("Convert to [%1]").arg(newTag);
                     QAction* act = new QAction(actionText, this);
                     connect(act, &QAction::triggered, this, [=, this]() {
                         QTextCursor c = textCursor();

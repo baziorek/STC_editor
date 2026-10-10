@@ -22,7 +22,8 @@ class QTimer;
 
 /// Compiles (and optionally runs) the C++ code of an STC `[cpp]` or `[code]` block with g++.
 /// For a `[py]` block the same window checks the syntax of the Python code (`python3 -m py_compile`) and optionally
-/// runs it (`python3`): the check takes the place of the compilation, the compiler flags are the interpreter flags.
+/// runs it (`python3`), for a `[code]` block (a console session) it checks the syntax with `bash -n` and optionally
+/// runs it with `bash`: the check takes the place of the compilation, the compiler flags are the interpreter flags.
 ///
 /// The dialog shows:
 ///  - the code in an editor with the same C++ highlighting and line numbers as the main window
@@ -38,7 +39,15 @@ class CppCompilerDialog : public QDialog
 public:
     /// `block.cursor` has to select only the code (between `[cpp]` and `[/cpp]`) in the document of the main editor,
     /// that is what `CodeEditor::selectEnclosingCodeBlock()` returns.
-    explicit CppCompilerDialog(const CodeBlock& block, QWidget* parent = nullptr);
+    /// What the "run after a successful compilation / syntax check" checkbox is at the start
+    enum class StartMode
+    {
+        FromSettings, ///< as the user left it the last time
+        CheckOnly,    ///< only the syntax check / compilation, nothing is run
+        CheckAndRun,  ///< the check, then the run
+    };
+
+    explicit CppCompilerDialog(const CodeBlock& block, QWidget* parent = nullptr, StartMode startMode = StartMode::FromSettings);
     ~CppCompilerDialog() override;
 
 private slots:
@@ -59,7 +68,9 @@ private:
     enum class Stage { Idle, Compiling, Running };
 
     void buildUi();
-    void adaptUiToPython();
+    void applyStartMode(StartMode startMode);
+    void adaptUiToScript();
+    bool isScript() const { return language_ != RunnableLanguage::Cpp; }
     void loadSettings();
     void saveSettings() const;
 
@@ -68,8 +79,8 @@ private:
     /// Creates the temporary directory with the source file; says in the status what went wrong
     bool writeSourceFile();
     void startGppCompilation();
-    void startPythonSyntaxCheck();
-    QStringList pythonRunArguments() const;
+    void startScriptSyntaxCheck();
+    QStringList scriptRunArguments() const;
     /// "Compilation" or "Syntax check"
     QString compilationName() const;
 
@@ -111,7 +122,8 @@ private:
 
     QTextCursor articleCodeCursor_; ///< selects the code in the main editor (follows its edits)
     QString tag_;                   ///< "cpp", "code" or "py"
-    bool isPython_ = false;         ///< a `[py]` block
+    RunnableLanguage language_ = RunnableLanguage::Cpp;
+    bool persistRunAfterCheck_ = true; ///< false when the menu entry has decided about it, until the user clicks the checkbox
 
     Stage stage_ = Stage::Idle;
     QProcess* process_ = nullptr;

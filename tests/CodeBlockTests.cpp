@@ -1,4 +1,4 @@
-// CodeBlock: which compiler window handles a block. (main() is in EditHistoryTests.cpp.)
+// CodeBlock: which program handles a block in the compiler window. (main() is in EditHistoryTests.cpp.)
 #include <gtest/gtest.h>
 
 #include "types/CodeBlock.h"
@@ -16,10 +16,10 @@ CodeBlock block(const QString& tag, const QString& language = QString())
 
 TEST(CodeBlock, CppBlocksAreCompiledWithGpp)
 {
-    for (const CodeBlock& b : { block("cpp"), block("code"), block("code", "c++"), block("code", "cpp") })
+    for (const CodeBlock& b : { block("cpp"), block("code", "c++"), block("code", "cpp") })
     {
-        EXPECT_TRUE(b.isCpp()) << b.tag.toStdString() << " " << b.language.toStdString();
-        EXPECT_FALSE(b.isPython());
+        ASSERT_TRUE(b.runnableLanguage().has_value()) << b.tag.toStdString() << " " << b.language.toStdString();
+        EXPECT_EQ(*b.runnableLanguage(), RunnableLanguage::Cpp);
         EXPECT_TRUE(b.canBeCompiled());
     }
 }
@@ -28,14 +28,24 @@ TEST(CodeBlock, PythonBlocksAreCheckedWithPython)
 {
     for (const CodeBlock& b : { block("py"), block("code", "python"), block("code", "py") })
     {
-        EXPECT_TRUE(b.isPython()) << b.tag.toStdString() << " " << b.language.toStdString();
-        EXPECT_FALSE(b.isCpp());
-        EXPECT_TRUE(b.canBeCompiled());
+        ASSERT_TRUE(b.runnableLanguage().has_value()) << b.tag.toStdString() << " " << b.language.toStdString();
+        EXPECT_EQ(*b.runnableLanguage(), RunnableLanguage::Python);
     }
 }
 
-TEST(CodeBlock, OtherLanguagesCannotBeCompiled)
+TEST(CodeBlock, PlainCodeBlocksAreCheckedWithBashNotCompiledAsCpp)
 {
-    for (const CodeBlock& b : { block("code", "bash"), block("code", "xml"), block("log") })
+    // [code] without src= is a console session, not C++
+    for (const CodeBlock& b : { block("code"), block("code", "bash"), block("code", "sh"), block("code", "shell") })
+    {
+        ASSERT_TRUE(b.runnableLanguage().has_value()) << b.tag.toStdString() << " " << b.language.toStdString();
+        EXPECT_EQ(*b.runnableLanguage(), RunnableLanguage::Bash);
+        EXPECT_FALSE(b.isCpp());
+    }
+}
+
+TEST(CodeBlock, OtherLanguagesCannotBeRun)
+{
+    for (const CodeBlock& b : { block("code", "xml"), block("code", "json"), block("log") })
         EXPECT_FALSE(b.canBeCompiled()) << b.tag.toStdString() << " " << b.language.toStdString();
 }
