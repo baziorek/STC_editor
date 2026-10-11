@@ -2,11 +2,14 @@
 
 #include <QRegularExpression>
 #include <QStringList>
+#include <QXmlStreamAttributes>
 #include <QXmlStreamReader>
 #include <optional>
 
 namespace
 {
+constexpr int maxShownNames = 10;
+
 bool isItemElement(const QString& name)
 {
     static const QStringList names = { "item", "entry", "news", "newsitem", "news_item", "post", "article", "topic",
@@ -14,10 +17,19 @@ bool isItemElement(const QString& name)
     return names.contains(name, Qt::CaseInsensitive);
 }
 
-bool isThreadIdElement(const QString& name)
+bool isThreadIdName(const QString& name)
 {
     static const QStringList names = { "id", "thread", "thread_id", "topic", "topic_id", "nr", "guid" };
     return names.contains(name, Qt::CaseInsensitive);
+}
+
+std::optional<int> numberIn(const QString& text)
+{
+    bool numeric = false;
+    const int value = text.trimmed().toInt(&numeric);
+    if (!numeric)
+        return std::nullopt;
+    return value;
 }
 
 std::optional<int> threadIdFromLink(const QString& link)
@@ -29,20 +41,42 @@ std::optional<int> threadIdFromLink(const QString& link)
     return match.captured(1).toInt();
 }
 
-std::optional<int> numberInText(const QString& text)
+/// The thread number as an attribute of the entry element itself, e.g. <Topic Id="29289" ...>
+std::optional<int> threadIdFromAttributes(const QXmlStreamAttributes& attributes)
 {
-    bool numeric = false;
-    const int value = text.trimmed().toInt(&numeric);
-    if (!numeric)
-        return std::nullopt;
-    return value;
+    for (const QXmlStreamAttribute& attribute : attributes)
+    {
+        if (!isThreadIdName(attribute.qualifiedName().toString()))
+            continue;
+        if (const auto id = numberIn(attribute.value().toString()))
+            return id;
+    }
+    return std::nullopt;
 }
 
-/// Reads the entry whose start element was just read; stops after its end element
-NewsItem readItem(QXmlStreamReader& reader, const QString& elementName)
+/// What was read from one entry, besides the entry itself: the names are for the diagnostic only
+struct ItemReading
 {
     NewsItem item;
-    std::optional<int> threadId;
+    QStringList attributeNames;
+    QStringList childNames;
+};
+
+/// Reads the entry whose start element was just read; stops after its end element
+ItemReading readItem(QXmlStreamReader& reader, const QString& elementName)
+{
+    ItemReading reading;
+
+    // the attributes are only available while the start element is current
+    const QXmlStreamAttributes attributes = reader.attributes();
+    for (const QXmlStreamAttribute& attribute : attributes)
+    {
+        if (reading.attributeNames.size() < maxShownNames)
+            reading.attributeNames << attribute.qualifiedName().toString();
+    }
+
+    std::optional<int> threadId = threadIdFromAttributes(attributes);
+    std::optional<int> elementThreadId;
     QString link;
 
     while (!reader.atEnd())
@@ -55,27 +89,38 @@ NewsItem readItem(QXmlStreamReader& reader, const QString& elementName)
 
         // copied: a QStringView from the reader is not valid after the next readNext()
         const QString child = reader.name().toString();
-        if (child == QLatin1String("title"))
+        if (!reading.childNames.contains(child) && reading.childNames.size() < maxShownNames)
+            reading.childNames << child;
+
+        if (child.compare(QStringLiteral("title"), Qt::CaseInsensitive) == 0)
         {
-            item.title = reader.readElementText().trimmed();
+            reading.item.title = reader.readElementText().trimmed();
         }
-        else if (child == QLatin1String("link"))
+        else if (child.compare(QStringLiteral("link"), Qt::CaseInsensitive) == 0)
         {
             // Atom keeps the address in an attribute, RSS in the text
             const QString href = reader.attributes().value(QLatin1String("href")).toString();
             const QString text = reader.readElementText().trimmed();
             link = href.isEmpty() ? text : href;
         }
-        else if (isThreadIdElement(child) && !threadId)
+        else if (isThreadIdName(child) && !elementThreadId)
         {
-            threadId = numberInText(reader.readElementText());
+            elementThreadId = numberIn(reader.readElementText());
         }
     }
 
     if (!threadId)
+        threadId = elementThreadId;
+    if (!threadId)
         threadId = threadIdFromLink(link);
-    item.threadId = threadId.value_or(0);
-    return item;
+    reading.item.threadId = threadId.value_or(0);
+    return reading;
+}
+
+QString describeItem(const QString& elementName, const ItemReading& reading)
+{
+    return QStringLiteral("item <%1>; attributes: %2; elements: %3")
+        .arg(elementName, reading.attributeNames.join(QLatin1Char(' ')), reading.childNames.join(QLatin1Char(' ')));
 }
 } // namespace
 
@@ -104,14 +149,16 @@ NewsFeed parseNewsFeed(const QByteArray& xml)
         const QString name = reader.name().toString();
         if (depth == 1 && rootName.isEmpty())
             rootName = name;
-        else if (depth == 2 && !childNames.contains(name) && childNames.size() < 10)
+        else if (depth == 2 && !childNames.contains(name) && childNames.size() < maxShownNames)
             childNames.append(name);
 
         if (isItemElement(name))
         {
-            const NewsItem item = readItem(reader, name);
-            if (item.threadId > 0)
-                feed.items.append(item);
+            const ItemReading reading = readItem(reader, name);
+            if (feed.itemShape.isEmpty())
+                feed.itemShape = describeItem(name, reading);
+            if (reading.item.threadId > 0)
+                feed.items.append(reading.item);
             --depth; // readItem() has read the end element of the entry
         }
     }

@@ -118,7 +118,10 @@ void CppNewsWidget::onReplyFinished(QNetworkReply* reply)
     }
     if (feed.items.isEmpty())
     {
-        statusLabel->setText(tr("No news found in the feed. Structure: %1").arg(feed.structure));
+        QString shape = feed.structure;
+        if (!feed.itemShape.isEmpty())
+            shape += QStringLiteral(" | ") + feed.itemShape;
+        statusLabel->setText(tr("No news found in the feed. Structure: %1").arg(shape));
         statusLabel->setToolTip(QString());
         return;
     }

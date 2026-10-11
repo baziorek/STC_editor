@@ -26,7 +26,56 @@ const QByteArray atomFeed = R"(<?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <entry><title>Atom thread</title><link href="https://cpp0x.pl/forum/temat/?id=123"/></entry>
 </feed>)";
+// The feed of cpp0x.pl as the site gives it (cut to four threads): the number of the thread is the Id attribute of
+// Topic, and its title is in a Title element with a capital letter
+const QByteArray forumFeed = R"(<?xml version="1.0" encoding="UTF-8" ?>
+<CodeDesk>
+    <Information>Materials from this application come from cpp0x.pl.</Information>
+    <Forum>
+        <TopicContainer>
+            <Topic Id="29289" ParentId="2" AccessId="0" CreateUserId="22490" CreateUserNick="czerwonymoskit" LastUserId="22490" LastUserNick="czerwonymoskit" CreateDT="2026-09-24 17:34:20" UpdateDT="2026-09-27 11:34:03" PostCount="18" OrderKey="0" IsOpen="1" Visited="0" FakeVisited="0" LastPageNo="1">
+                <Title>C++, Dziwne zachowanie zmiennych globalnych</Title>
+            </Topic>
+            <Topic Id="29272" ParentId="12" AccessId="0" CreateUserId="24438" CreateUserNick="tBane" LastUserId="24438" LastUserNick="tBane" CreateDT="2026-08-21 20:45:55" UpdateDT="2026-09-09 13:07:26" PostCount="7" OrderKey="0" IsOpen="1" Visited="0" FakeVisited="0" LastPageNo="1">
+                <Title>Filmy o AI</Title>
+            </Topic>
+            <Topic Id="29262" ParentId="3" AccessId="0" CreateUserId="24438" CreateUserNick="tBane" LastUserId="24438" LastUserNick="tBane" CreateDT="2026-06-02 14:31:18" UpdateDT="2026-06-02 15:32:33" PostCount="2" OrderKey="0" IsOpen="0" Visited="0" FakeVisited="0" LastPageNo="1">
+                <Title>[SFML 3.0] Ramka z podpisem</Title>
+            </Topic>
+            <Topic Id="29253" ParentId="2" AccessId="0" CreateUserId="24438" CreateUserNick="tBane" LastUserId="24438" LastUserNick="tBane" CreateDT="2026-04-04 18:59:42" UpdateDT="2026-04-06 23:21:58" PostCount="10" OrderKey="0" IsOpen="0" Visited="0" FakeVisited="0" LastPageNo="1">
+                <Title>Destruktor i Try .. Catch</Title>
+            </Topic>
+        </TopicContainer>
+    </Forum>
+</CodeDesk>
+)";
 } // namespace
+
+TEST(CppNewsParseTest, ForumFeedGivesTheThreadNumberFromTheIdAttribute)
+{
+    const NewsFeed feed = parseNewsFeed(forumFeed);
+
+    ASSERT_TRUE(feed.wellFormed);
+    ASSERT_EQ(feed.items.size(), 4);
+    EXPECT_EQ(feed.items[0].threadId, 29289);
+    EXPECT_EQ(feed.items[0].title, "C++, Dziwne zachowanie zmiennych globalnych");
+    EXPECT_EQ(feed.items[1].threadId, 29272);
+    EXPECT_EQ(feed.items[2].threadId, 29262);
+    EXPECT_EQ(feed.items[3].threadId, 29253);
+    EXPECT_EQ(feed.items[3].title, "Destruktor i Try .. Catch");
+    EXPECT_EQ(forumThreadUrl(feed.items[0].threadId), "https://cpp0x.pl/forum/temat/?id=29289");
+}
+
+TEST(CppNewsParseTest, AnEntryWithoutANumberIsShownInTheDiagnostic)
+{
+    const NewsFeed feed = parseNewsFeed(
+        QByteArray("<CodeDesk><Forum><Topic Name=\"x\"><Title>t</Title></Topic></Forum></CodeDesk>"));
+
+    EXPECT_TRUE(feed.wellFormed);
+    EXPECT_TRUE(feed.items.isEmpty());
+    EXPECT_EQ(feed.structure, "<CodeDesk>: <Forum>");
+    EXPECT_EQ(feed.itemShape, "item <Topic>; attributes: Name; elements: Title");
+}
 
 TEST(CppNewsParseTest, RssItemsKeepTheirOrderAndNumberOfThread)
 {

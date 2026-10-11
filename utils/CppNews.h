@@ -17,11 +17,14 @@ struct NewsFeed
     bool wellFormed = false; ///< the answer is XML at all (an HTML page or an error text is not)
     /// The root element and the elements in it, to see the shape of the feed: "<cpp0x>: <news> <title>"
     QString structure;
+    /// The first entry in the feed with its attributes and elements, for the diagnostic only
+    QString itemShape;
 };
 
 /// Reads the feed. An entry is an element named item, entry, news, post, article, topic, thread (or their Polish
-/// names). Its title is in the title element; its thread number in the first of: an element named id, thread,
-/// thread_id, topic, topic_id, nr or guid with a number as text, else "id=<number>" in its link.
+/// names). Its title is in a title element (any case). Its thread number is the first of: an attribute of the entry
+/// named id, thread, thread_id, topic, topic_id, nr or guid (e.g. <Topic Id="29289">); an element of that name with a
+/// number as text; "id=<number>" in its link.
 NewsFeed parseNewsFeed(const QByteArray& xml);
 
 /// The page of the forum thread
