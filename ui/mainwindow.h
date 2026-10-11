@@ -108,7 +108,8 @@ protected:
     void restoreLastSession();
     void connectShortcutsFromCodeWidget();
     bool closeApplicationReturningIfClosed();
-    bool operationWhichDiscardsChangesRequestedReturningIfDiscarded(const QString &dialogTitle, const QString &dialogMessage);
+    bool operationWhichDiscardsChangesRequestedReturningIfDiscarded(const QString &dialogTitle, const QString &dialogMessage,
+                                                                    bool restoreEditorAfterwards = true);
     bool saveEntireContent2File(QString fileName);
     void updateWindowTitle(QString fileName="", QString suffix="");
 

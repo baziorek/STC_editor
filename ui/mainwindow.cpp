@@ -584,7 +584,8 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     if (operationWhichDiscardsChangesRequestedReturningIfDiscarded(
-            tr("Close without saving?"), tr("Do You really want to close the editor without saving unsaved changes?")))
+            tr("Close without saving?"), tr("Do You really want to close the editor without saving unsaved changes?"),
+            /*restoreEditorAfterwards=*/false))
     {
         QWidget::closeEvent(event);
     }
@@ -594,7 +595,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
     }
 }
 
-bool MainWindow::operationWhichDiscardsChangesRequestedReturningIfDiscarded(const QString &dialogTitle, const QString &dialogMessage)
+bool MainWindow::operationWhichDiscardsChangesRequestedReturningIfDiscarded(const QString &dialogTitle, const QString &dialogMessage,
+                                                                            bool restoreEditorAfterwards)
 {
     if (!ui->textEditor->noUnsavedChanges())
     {
@@ -606,7 +608,9 @@ bool MainWindow::operationWhichDiscardsChangesRequestedReturningIfDiscarded(cons
             case DiffReviewDialog::Save:
                 if (onSavePressed())
                 {
-                    ui->textEditor->restoreStateWhichDoesNotRequireSaving(/*discardChanges=*/true);
+                    // The file is saved, so there is nothing to bring back; the editor content is replaced (or closed) next anyway
+                    if (restoreEditorAfterwards)
+                        ui->textEditor->restoreStateWhichDoesNotRequireSaving(/*discardChanges=*/true);
                     return true;
                 }
                 else // saving failed
@@ -615,7 +619,10 @@ bool MainWindow::operationWhichDiscardsChangesRequestedReturningIfDiscarded(cons
                 }
                 break;
             case DiffReviewDialog::Discard:
-                ui->textEditor->restoreStateWhichDoesNotRequireSaving(/*discardChanges=*/true);
+                if (restoreEditorAfterwards)
+                    ui->textEditor->restoreStateWhichDoesNotRequireSaving(/*discardChanges=*/true);
+                else
+                    ui->textEditor->discardUnsavedChanges(); // no reload from disk: the caller throws the content away anyway
                 break;
             case DiffReviewDialog::Cancel:
             default:
@@ -633,13 +640,8 @@ bool MainWindow::operationWhichDiscardsChangesRequestedReturningIfDiscarded(cons
 
 bool MainWindow::closeApplicationReturningIfClosed()
 {
-    if (operationWhichDiscardsChangesRequestedReturningIfDiscarded(
-            tr("Close without saving?"), tr("Do You really want to close the editor without saving unsaved changes?")))
-    {
-        close();
-        return true;
-    }
-    return false;
+    // closeEvent() asks about the unsaved changes
+    return close();
 }
 
 void MainWindow::onNewFilePressed()
@@ -648,7 +650,8 @@ void MainWindow::onNewFilePressed()
     ui->contextTableWidget->clear();
 
     if (operationWhichDiscardsChangesRequestedReturningIfDiscarded(
-            tr("Confirm discarding current file content?"), tr("Do You really want to lose currently unsaved changes and create new file")))
+            tr("Confirm discarding current file content?"), tr("Do You really want to lose currently unsaved changes and create new file"),
+            /*restoreEditorAfterwards=*/false))
     {
         ui->textEditor->newEmptyFile();
         updateWindowTitle();
@@ -765,7 +768,8 @@ void MainWindow::onReloadFilePressed()
 
     if (! operationWhichDiscardsChangesRequestedReturningIfDiscarded(
         tr("Confirm reloading and loosing unsaved content"), tr("Do You really want to reload the currently opened file?\n"
-                                                                "Currently unsaved changes would be declined.")))
+                                                                "Currently unsaved changes would be declined."),
+        /*restoreEditorAfterwards=*/false))
     {
         return;
     }

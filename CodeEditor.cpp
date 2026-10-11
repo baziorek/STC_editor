@@ -51,6 +51,19 @@ namespace
 {
 constexpr int spacesPerTab = 4;
 
+/// Sets the flag for the time of the scope (also when it is left by an exception)
+class ScopedFlag
+{
+public:
+    explicit ScopedFlag(bool& flag) : flag(flag) { flag = true; }
+    ~ScopedFlag() { flag = false; }
+    ScopedFlag(const ScopedFlag&) = delete;
+    ScopedFlag& operator=(const ScopedFlag&) = delete;
+
+private:
+    bool& flag;
+};
+
 
 class ScopedEditBlock
 {
@@ -391,7 +404,11 @@ void CodeEditor::setSyntaxMode(SyntaxMode mode, bool rehighlightNow)
 
 void CodeEditor::newEmptyFile()
 {
-    clear();
+    {
+        // everything is thrown away: the blocks of code are not looked for in the content which is going away
+        ScopedFlag replacingContent(replacingWholeContent);
+        clear();
+    }
     setFileName("");
 
     document()->setModified(false);
@@ -405,6 +422,7 @@ void CodeEditor::newEmptyFile()
     currentLine = -1;
 
     codeBlocks = {};
+    emit codeBlocksChanged();
 
     fileEncodingHandler = std::make_unique<FileEncodingHandler>();
 
@@ -662,7 +680,11 @@ bool CodeEditor::loadFileContentDistargingCurrentContent(const QString& fileName
         if (fileName != getFileName())
             setSyntaxMode(syntaxModeForFile(fileName).value_or(SyntaxMode::Stc), /*rehighlightNow=*/false);
 
-        setPlainText(fileContent);
+        {
+            // the blocks of code are looked for once, below, not after each part of the new text
+            ScopedFlag replacingContent(replacingWholeContent);
+            setPlainText(fileContent);
+        }
 
         document()->setModified(false);
 
@@ -2032,11 +2054,27 @@ QString CodeEditor::formatCppWithClang(const QString& code) const
     return QString::fromUtf8(clang.readAllStandardOutput()).trimmed();
 }
 
+void CodeEditor::discardUnsavedChanges()
+{
+    // No periodic backups of what is being thrown away, and the backup which was already made is not needed either
+    backupTimer->stop();
+
+    const QString fileName = getFileName();
+    if (!fileName.isEmpty())
+    {
+        BackupManager::deleteBackup(fileName);
+    }
+}
+
 void CodeEditor::restoreStateWhichDoesNotRequireSaving(bool discardChanges)
 {
     if (getFileName().isEmpty())
     {
-        clear();
+        {
+            ScopedFlag replacingContent(replacingWholeContent);
+            clear();
+        }
+        analizeEntireDocumentDetectingCodeBlocks();
         emit contentReloaded();
     }
     else
@@ -2861,6 +2899,27 @@ void CodeEditor::decreaseFontSize()
     QToolTip::showText(globalPos, QString("Font size: %1pt").arg(f.pointSize()), this);
 }
 
+namespace
+{
+/// The pattern which cuts the STC tags off a block of code of the given tag (`cpp`, `code`, `py`, `log`).
+/// It is built once for each tag: compiling it (PCRE JIT) takes much longer than matching, and it was done for every
+/// block of code each time the table of the blocks was filled - seconds for an article with hundreds of them.
+const QRegularExpression& enclosingBlockPattern(const QString& tag)
+{
+    static QHash<QString, QRegularExpression> patterns;
+
+    auto found = patterns.find(tag);
+    if (found == patterns.end())
+    {
+        found = patterns.insert(tag, QRegularExpression(QString(R"(^\[%1(?:\s+src\s*=\s*"[^"]*")?\](.*)\[/\s*%1\s*\]$)")
+                                                            .arg(QRegularExpression::escape(tag)),
+                                                        QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption));
+    }
+    return found.value();
+}
+
+} // namespace
+
 std::optional<CodeBlock> CodeEditor::selectEnclosingCodeBlock(int cursorPos)
 {
     if (auto codeInfo = getCodeTagAtPosition(cursorPos))
@@ -2875,11 +2934,7 @@ std::optional<CodeBlock> CodeEditor::selectEnclosingCodeBlock(int cursorPos)
 
                 // Detecting code by removing STC tags:
                 // The opening tag may have attributes: [code src="python"]
-                const QRegularExpression tagPattern(QString(R"(^\[%1(?:\s+src\s*=\s*"[^"]*")?\](.*)\[/\s*%1\s*\]$)")
-                    .arg(QRegularExpression::escape(block.tag)),
-                    QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption);
-
-                auto match = tagPattern.match(blockText);
+                auto match = enclosingBlockPattern(block.tag).match(blockText);
                 if (match.hasMatch())
                 {
                     QTextCursor codeCursor = block.cursor;
@@ -3150,6 +3205,11 @@ void CodeEditor::onContentsChange(int position, int charsRemoved, int charsAdded
 
 void CodeEditor::handleCodeBlockDetectionOnChange(int position) // emit codeBlocksChanged
 {
+    if (replacingWholeContent)
+    {
+        return; // the caller looks for the blocks when the new content is there
+    }
+
     QTextBlock block = document()->findBlock(position);
     if (!block.isValid())
     {

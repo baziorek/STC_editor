@@ -90,6 +90,10 @@ public:
 
     void restoreStateWhichDoesNotRequireSaving(bool discardChanges=false);
 
+    /// The user has decided to throw the unsaved changes away and the document is going to be closed or replaced
+    /// anyway: only the automatic backup of the changes is removed (and no new one is made), the file is not read again.
+    void discardUnsavedChanges();
+
     auto linesCount() const
     {
         return std::max<decltype(blockCount())>(1, blockCount());
@@ -301,6 +305,10 @@ private slots:
 
 private:
     QWidget *lineNumberArea;
+
+    /// True while the whole content is being replaced (clear / load): the code blocks are analyzed once afterwards,
+    /// not on every change reported by the document
+    bool replacingWholeContent = false;
 
     EditHistory* editHistory = nullptr; // watches the document; child of this widget
     QPointer<EditHistoryDialog> editHistoryDialog;
