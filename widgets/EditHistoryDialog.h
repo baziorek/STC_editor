@@ -25,6 +25,7 @@ public:
         LineNumbersColumn,
         CharsColumn,
         SavedColumn,
+        BackupColumn,
         ColumnCount
     };
 

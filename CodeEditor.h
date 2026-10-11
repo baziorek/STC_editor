@@ -102,6 +102,14 @@ public:
     bool loadFileContentDistargingCurrentContent(const QString& fileName);
     bool saveEntireContent2File(const QString& fileName);
 
+    /// The encoding the file is saved in: the one it was read in, or the one chosen by the user (see setSaveEncoding())
+    QString saveEncoding() const;
+    /// Chooses the encoding the file is saved in. The text is kept; the file on disk gets the encoding when it is saved.
+    void setSaveEncoding(const QString& encodingName);
+    /// Reads the file again in the given encoding, when the detection was wrong. The unsaved changes are discarded:
+    /// the caller has asked about them. Returns false if nothing was reloaded (the user declined).
+    bool reloadFileWithEncoding(const QString& encodingName);
+
     QMultiMap<QString, QKeySequence> listOfShortcuts() const;
 
     void markAsSaved();

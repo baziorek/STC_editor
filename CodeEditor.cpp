@@ -519,7 +519,9 @@ bool CodeEditor::noUnsavedChanges() const
 
     try
     {
-        const auto fileContent = fileEncodingHandler->loadFile(getFileName());
+        // the encoding the file is on disk in (not a new detection: the user may have chosen it), and no change of
+        // the encoding the file is saved in
+        const auto fileContent = FileEncodingHandler::decodeFile(getFileName(), fileEncodingHandler->lastDetectedEncoding());
         return fileContent == currentlyVisibleText;
     }
     catch (const std::exception& e)
@@ -711,8 +713,79 @@ bool CodeEditor::loadFileContentDistargingCurrentContent(const QString& fileName
     }
 }
 
+bool CodeEditor::reloadFileWithEncoding(const QString& encodingName)
+{
+    const QString fileName = getFileName();
+    if (fileName.isEmpty())
+        return false;
+
+    bool valid = true;
+    QString content;
+    try
+    {
+        content = FileEncodingHandler::decodeFile(fileName, encodingName, &valid);
+    }
+    catch (const std::exception& e)
+    {
+        QMessageBox::warning(this, tr("Loading file error"), QString::fromStdString(e.what()));
+        return false;
+    }
+
+    if (!valid)
+    {
+        const auto answer = QMessageBox::question(
+            this,
+            tr("Not valid in the encoding"),
+            tr("The file contains bytes which are not valid in the encoding %1. They will be shown as replacement "
+               "characters.\n\nOpen anyway?").arg(encodingName),
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        if (answer != QMessageBox::Yes)
+            return false;
+    }
+
+    // the unsaved changes are gone (the backup of them is not needed, and no new one is made until the next change)
+    discardUnsavedChanges();
+    fileEncodingHandler->rememberFileEncoding(encodingName);
+
+    const QTextCursor cursorBefore = textCursor();
+    const int lineBefore = cursorBefore.blockNumber();
+    const int columnBefore = cursorBefore.positionInBlock();
+    {
+        // as when the file is loaded: the blocks of code are looked for once, below
+        ScopedFlag replacingContent(replacingWholeContent);
+        setPlainText(content);
+    }
+    document()->setModified(false);
+    trackOriginalVersionOfFile(fileName);
+    analizeEntireDocumentDetectingCodeBlocks();
+    emit contentReloaded();
+
+    QTextCursor cursor = cursor4Line(lineBefore + 1);
+    cursor.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, columnBefore);
+    setTextCursor(cursor);
+    ensureCursorVisible();
+
+    backupTimer->start();
+    return true;
+}
+
 bool CodeEditor::saveEntireContent2File(const QString &fileName)
 {
+    // The text is written in the encoding of the file (the one it was read in, or the one the user has chosen)
+    bool lossless = true;
+    const QByteArray bytes = fileEncodingHandler->encode(exactText(), &lossless);
+    if (!lossless)
+    {
+        const auto answer = QMessageBox::question(
+            this,
+            tr("Characters not in the encoding"),
+            tr("Some characters cannot be written in the encoding %1. They will be saved as '?'.\n\nSave anyway?")
+                .arg(saveEncoding()),
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        if (answer != QMessageBox::Yes)
+            return false;
+    }
+
     QFile outputFile(fileName);
     if (!outputFile.open(QIODeviceBase::WriteOnly))
     {
@@ -720,13 +793,31 @@ bool CodeEditor::saveEntireContent2File(const QString &fileName)
     }
     setFileName(fileName);
 
-    auto savedNumberOfBytes = outputFile.write(exactText().toUtf8());
+    auto savedNumberOfBytes = outputFile.write(bytes);
     if (savedNumberOfBytes > -1)
     {
+        fileEncodingHandler->noteWrittenInTargetEncoding();
         markAsSaved();
         return true;
     }
     return false;
+}
+
+QString CodeEditor::saveEncoding() const
+{
+    return fileEncodingHandler->targetEncoding();
+}
+
+void CodeEditor::setSaveEncoding(const QString& encodingName)
+{
+    if (encodingName.compare(saveEncoding(), Qt::CaseInsensitive) == 0)
+        return;
+
+    fileEncodingHandler->setTargetEncoding(encodingName);
+
+    // The file on disk is still in the old encoding: until it is saved, the document counts as changed
+    if (encodingName.compare(fileEncodingHandler->lastDetectedEncoding(), Qt::CaseInsensitive) != 0)
+        document()->setModified(true);
 }
 void CodeEditor::trackOriginalVersionOfFile(const QString& fileName)
 {
@@ -2589,7 +2680,7 @@ void CodeEditor::dropEvent(QDropEvent *event)
         // 1. Handle text files
         if (fileEncodingHandler->isProbablyTextFile(localPath))
         {
-            const QString fileContent = fileEncodingHandler->loadFile(localPath).trimmed();
+            const QString fileContent = FileEncodingHandler::readFile(localPath).trimmed();
             const QStringList cppExtensions = {"c", "cpp", "h", "hpp", "cc", "cxx", "hxx"};
             if (cppExtensions.contains(fileInfo.suffix().toLower()))
             {
@@ -3373,7 +3464,8 @@ void CodeEditor::onBackupTimerTimeout()
     if (!fileName.isEmpty() && isContentModified())
     {
         qDebug() << "Creating automatic backup for:" << fileName;
-        BackupManager::createBackup(fileName, exactText());
+        if (BackupManager::createBackup(fileName, exactText()))
+            editHistory->noteBackup(BackupManager::getBackupFilePath(fileName));
         // Timer continues running for periodic backups
     }
     else

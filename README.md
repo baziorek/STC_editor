@@ -114,6 +114,8 @@ Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wyb
     - Zmiany mają również pokazane różnicę w numerach poszczególnych znaków, wtedy możemy lepiej odróżnić znaki, które "na oko" są takie same.
 13. **Ukrywalne widgety**: wszystko poza edytorem tekstu można ukryć, dzięki temu pewne funkcje są wyłączone i edytowanie działa szybciej.
 14. **Obsługa różnych kodowań pliku tekstowego**: Nie tylko UTF-8. Jest to dzięki bibliotece [uchardet](https://gitlab.freedesktop.org/uchardet/uchardet).
+    - Można zmienić kodowania pliku
+    - Można przeładować z innym kodowaniem
 15. **Stoper pracy**: stoper, który odpala się po uruchomieniu edytora i liczy zarówno czas kiedy edytor jest włączony, jak i czas pracy w edytorze (wykrywa naciśnięcia klawiszy, gdy ich długo nie ma to się zatrzymuje)
 16. **Obsługa wielu języków**: Obsługuje język angielski i polski.
 17. **Tryby składni całego pliku**: Menu `Składnia` pozwala przełączać między trybami: STC, Zwykły tekst, C++, Python, XML i JSON. Przy otwieraniu pliku tryb jest dobierany po rozszerzeniu (np. `.py` → Python, `.cpp`/`.h`/`.hpp` → C++, `.xml`/`.svg`/`.ui`/`.qrc` → XML, `.json` → JSON, `.md`/`.rst` → zwykły tekst), a dla pozostałych rozszerzeń, w tym `.txt` (w którym zapisywane są artykuły STC), używany jest tryb STC. Tryb wybrany ręcznie z menu jest zapamiętywany dla danego pliku, więc np. notatka `.txt` otwiera się następnym razem jako zwykły tekst. W trybach kodu edytor używa czcionki o stałej szerokości i nie interpretuje znaczników STC, więc `[b]` w kodzie Pythona pozostaje zwykłym indeksowaniem. Tryb **Zwykły tekst** nie ma żadnych znaczników: działa w nim sprawdzanie pisowni, a linki (`https://...`, `www....`) i adresy e-mail są kolorowane i podkreślane (ich fragmenty nie są zgłaszane jako błędy pisowni). Dialog otwierania ma filtry: pliki `.txt`, pliki kodu i danych oraz wszystkie pliki.
@@ -141,7 +143,7 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 
 
 ## Planowane funkcjonalności
-1. Wyświetlanie kodowania i konwersja na różne formaty - bo chyba mam do tego bibliotekę.
+1. 
 2. FindWidget - aby aktualizował pozycje w tekście na bieżąco przy dodawaniu/usuwaniu linii.
 3. Pobieranie aktualizacji przez https://cpp0x.pl/xml/
 4. Podpięcie sztucznej inteligencji np. [Ollama](https://ollama.com) lub llama.cpp

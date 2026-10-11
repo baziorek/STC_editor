@@ -1,6 +1,8 @@
 #include "EditHistoryDialog.h"
 
 #include <QApplication>
+#include <QDir>
+#include <QFileInfo>
 #include <QFontMetrics>
 #include <QHeaderView>
 
@@ -28,6 +30,8 @@ QString displayText(const Info& info, int column)
         return info.number == 0 ? QStringLiteral("–") : EditHistoryFormat::charsPlain(info);
     case EditHistoryModel::SavedColumn:
         return info.saves.isEmpty() ? QString() : EditHistoryFormat::time(info.saves.last());
+    case EditHistoryModel::BackupColumn:
+        return info.backups.isEmpty() ? QString() : EditHistoryFormat::time(info.backups.last().time);
     }
     return {};
 }
@@ -69,6 +73,21 @@ QString savedToolTip(const Info& info)
     return times.join(QLatin1Char('\n'));
 }
 
+/// The copies made by the automatic backup in this state, each with the path of its backup file
+QString backupToolTip(const Info& info)
+{
+    QStringList lines;
+    for (const EditHistory::BackupMark& backup : info.backups)
+    {
+        QString line = EditHistoryModel::tr("Backup written at %1\nFile: %2")
+                           .arg(EditHistoryFormat::time(backup.time), QDir::toNativeSeparators(backup.path));
+        if (!QFileInfo::exists(backup.path))
+            line += QLatin1Char('\n') + EditHistoryModel::tr("(the file is no longer there: it was removed after saving)");
+        lines << line;
+    }
+    return lines.join(QLatin1String("\n\n"));
+}
+
 QString toolTipText(const Info& info, int column)
 {
     switch (column)
@@ -91,6 +110,8 @@ QString toolTipText(const Info& info, int column)
                                      : QString();
     case EditHistoryModel::SavedColumn:
         return savedToolTip(info);
+    case EditHistoryModel::BackupColumn:
+        return backupToolTip(info);
     }
     return {};
 }
@@ -105,6 +126,7 @@ QString headerText(int section)
     case EditHistoryModel::LineNumbersColumn: return EditHistoryModel::tr("Line numbers");
     case EditHistoryModel::CharsColumn:       return EditHistoryModel::tr("Characters");
     case EditHistoryModel::SavedColumn:       return EditHistoryModel::tr("Saved");
+    case EditHistoryModel::BackupColumn:      return EditHistoryModel::tr("Backup");
     }
     return {};
 }
@@ -125,6 +147,9 @@ QString headerToolTip(int section)
         return EditHistoryModel::tr("Characters inserted (+) and removed (−), line breaks included");
     case EditHistoryModel::SavedColumn:
         return EditHistoryModel::tr("When the file was written while the document was in this state");
+    case EditHistoryModel::BackupColumn:
+        return EditHistoryModel::tr("When the automatic backup was written while the document was in this state.\n"
+                                    "Hover over the cell to see the path of the backup file.");
     }
     return {};
 }
@@ -161,6 +186,7 @@ int alignment(int column)
     case EditHistoryModel::LinesColumn:
     case EditHistoryModel::TimeColumn:
     case EditHistoryModel::SavedColumn:
+    case EditHistoryModel::BackupColumn:
         return Qt::AlignCenter;
     case EditHistoryModel::CharsColumn:
         return Qt::AlignRight | Qt::AlignVCenter;

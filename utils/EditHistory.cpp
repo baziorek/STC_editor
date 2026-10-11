@@ -209,6 +209,16 @@ void EditHistory::noteSaved()
     emit changed();
 }
 
+void EditHistory::noteBackup(const QString& path)
+{
+    // Backups made again in the same state (nothing was undone or typed in between) only move the time of the last one
+    if (!backups.isEmpty() && backups.last().state == current && backups.last().path == path && !backups.last().stateDiscarded)
+        backups.last().time = QDateTime::currentDateTime();
+    else
+        backups.append({ current, QDateTime::currentDateTime(), path, false });
+    emit changed();
+}
+
 void EditHistory::setTextBudget(qint64 characters)
 {
     budget = std::max<qint64>(characters, 0);
@@ -231,6 +241,7 @@ void EditHistory::resync(const char* reason)
     current = 0;
     touches.clear();
     saves.clear();
+    backups.clear();
     newStepPending = false;
     operationEvents = 0;
     placeholderIds = false;
@@ -498,6 +509,11 @@ void EditHistory::dropRedoBranch()
         if (mark.state > current)
             mark.stateDiscarded = true;
     }
+    for (BackupMark& mark : backups)
+    {
+        if (mark.state > current)
+            mark.stateDiscarded = true;
+    }
 }
 
 void EditHistory::finishOperation()
@@ -677,6 +693,11 @@ EditHistory::StepInfo EditHistory::stepInfo(int number) const
     {
         if (!mark.stateDiscarded && mark.state == number)
             info.saves.append(mark.time);
+    }
+    for (const BackupMark& mark : backups)
+    {
+        if (!mark.stateDiscarded && mark.state == number)
+            info.backups.append(mark);
     }
     return info;
 }

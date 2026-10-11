@@ -45,6 +45,15 @@ public:
         int last = 0;
     };
 
+    /// A copy of the document written to the backup file (made every 30 seconds while there are unsaved changes)
+    struct BackupMark
+    {
+        int state = 0;                 ///< the state of the document (number of applied steps) which was copied
+        QDateTime time;                ///< when the copy was last written while the document was in that state
+        QString path;                  ///< the backup file
+        bool stateDiscarded = false;   ///< that state is gone: new edits were made after an undo
+    };
+
     /// Everything the table of edits says about one step
     struct StepInfo
     {
@@ -63,6 +72,7 @@ public:
         int charsRemoved = 0;
         bool charsApproximate = false;
         QList<QDateTime> saves;        ///< the file was written while the document was in exactly this state
+        QList<BackupMark> backups;     ///< the backup file was written while the document was in exactly this state
         bool detailsDiscarded = false; ///< the text of the step was dropped to save memory (the numbers are still here)
 
         int changedLines() const { return modifiedLines + addedLines + removedLines; }
@@ -144,6 +154,9 @@ public:
 
     /// The file was written to disk while the document was in the current state
     void noteSaved();
+
+    /// The backup of the document was written to `path` while the document was in the current state
+    void noteBackup(const QString& path);
 
     int stepCount() const { return static_cast<int>(steps.size()); }
     int currentIndex() const { return current; }
@@ -261,6 +274,7 @@ private:
     bool placeholderIds = false;       ///< some lines have no identity yet (-1): undo/redo is being applied
     QHash<int, QList<int>> touches;    ///< line id -> numbers of the steps which changed it (ascending)
     QList<SaveMark> saves;
+    QList<BackupMark> backups;
     QDateTime baseline;
     qint64 budget = defaultTextBudget;
     qint64 retained = 0;

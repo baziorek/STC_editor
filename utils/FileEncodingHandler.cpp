@@ -15,34 +15,11 @@
 
 #include "FileEncodingHandler.h"
 
-struct FileEncodingHandler::Impl
+namespace
 {
-    QString encodingName;
-};
-
-FileEncodingHandler::FileEncodingHandler()
-    : impl(std::make_unique<Impl>())
-{}
-
-FileEncodingHandler::~FileEncodingHandler() = default;
-
-QString FileEncodingHandler::lastDetectedEncoding() const
+/// The encoding uchardet finds in the data; UTF-8 when it finds none
+QString detectEncoding(const QByteArray& data)
 {
-    return impl->encodingName;
-}
-
-QString FileEncodingHandler::loadFile(const QString& filePath)
-{
-    QFile file(filePath);
-    if (!file.open(QFile::ReadOnly))
-    {
-        throw std::runtime_error(("Cannot open file: " + filePath).toStdString());
-    }
-
-    QByteArray data = file.readAll();
-    file.close();
-
-    // uchardet setup
     uchardet_t detector = uchardet_new();
 
     if (uchardet_handle_data(detector, data.constData(), data.size()) != 0)
@@ -64,24 +41,128 @@ QT_WARNING_DISABLE_CLANG("-Wdeprecated-declarations")
     const char* charset = uchardet_get_charset(detector);
 QT_WARNING_POP
 
-    // If detection failed, fallback to UTF-8
-    if (!charset || strlen(charset) == 0)
-    {
-        impl->encodingName = "UTF-8";
-    }
-    else
-    {
-        impl->encodingName = QString::fromUtf8(charset);
-    }
-
+    const QString name = charset ? QString::fromUtf8(charset).trimmed() : QString();
     uchardet_delete(detector);
 
-    // Decode using detected encoding
-    QStringDecoder decoder(impl->encodingName.toUtf8());
+    return name.isEmpty() ? QStringLiteral("UTF-8") : name;
+}
+} // namespace
+
+struct FileEncodingHandler::Impl
+{
+    QString encodingName;    ///< the encoding of the file on disk
+    QString targetEncoding;  ///< the encoding the file is saved in
+};
+
+FileEncodingHandler::FileEncodingHandler()
+    : impl(std::make_unique<Impl>())
+{}
+
+FileEncodingHandler::~FileEncodingHandler() = default;
+
+QString FileEncodingHandler::lastDetectedEncoding() const
+{
+    return impl->encodingName;
+}
+
+QString FileEncodingHandler::targetEncoding() const
+{
+    return impl->targetEncoding;
+}
+
+void FileEncodingHandler::setTargetEncoding(const QString& encodingName)
+{
+    impl->targetEncoding = encodingName;
+}
+
+void FileEncodingHandler::noteWrittenInTargetEncoding()
+{
+    impl->encodingName = impl->targetEncoding;
+}
+
+QString FileEncodingHandler::readFile(const QString& filePath, QString* detectedEncoding)
+{
+    QFile file(filePath);
+    if (!file.open(QFile::ReadOnly))
+    {
+        throw std::runtime_error(("Cannot open file: " + filePath).toStdString());
+    }
+
+    QByteArray data = file.readAll();
+    file.close();
+
+    QString encodingName = detectEncoding(data);
+
+    // Plain ASCII is a part of UTF-8: a file which has no national characters yet is saved as UTF-8, so that the first
+    // Polish letter typed into it does not make saving ask about characters which cannot be written
+    if (encodingName.compare(QLatin1String("ASCII"), Qt::CaseInsensitive) == 0
+        || encodingName.compare(QLatin1String("US-ASCII"), Qt::CaseInsensitive) == 0)
+    {
+        encodingName = QStringLiteral("UTF-8");
+    }
+
+    // If the encoding is unknown to Qt, fallback to UTF-8 (and say so, so that the menu does not show a name that is not used)
+    QStringDecoder decoder(encodingName.toUtf8());
+    if (!decoder.isValid())
+    {
+        decoder = QStringDecoder(QStringDecoder::Utf8);
+        encodingName = QStringLiteral("UTF-8");
+    }
+
+    if (detectedEncoding)
+        *detectedEncoding = encodingName;
+
+    return decoder.decode(data);
+}
+
+QString FileEncodingHandler::decodeFile(const QString& filePath, const QString& encodingName, bool* valid)
+{
+    QFile file(filePath);
+    if (!file.open(QFile::ReadOnly))
+    {
+        throw std::runtime_error(("Cannot open file: " + filePath).toStdString());
+    }
+
+    const QByteArray data = file.readAll();
+    file.close();
+
+    QStringDecoder decoder(encodingName.toUtf8());
     if (!decoder.isValid())
         decoder = QStringDecoder(QStringDecoder::Utf8);
 
-    return decoder.decode(data);
+    QString text = decoder.decode(data);
+    if (valid)
+        *valid = !decoder.hasError();
+    return text;
+}
+
+void FileEncodingHandler::rememberFileEncoding(const QString& encodingName)
+{
+    impl->encodingName = encodingName;
+    impl->targetEncoding = encodingName;
+}
+
+QString FileEncodingHandler::loadFile(const QString& filePath)
+{
+    QString encodingName;
+    QString content = readFile(filePath, &encodingName);
+
+    impl->encodingName = encodingName;
+    impl->targetEncoding = encodingName;
+
+    return content;
+}
+
+QByteArray FileEncodingHandler::encode(const QString& content, bool* lossless) const
+{
+    QStringEncoder encoder(impl->targetEncoding.toUtf8());
+    if (!encoder.isValid())
+        encoder = QStringEncoder(QStringEncoder::Utf8);
+
+    QByteArray bytes = encoder.encode(content);
+    if (lossless)
+        *lossless = !encoder.hasError();
+    return bytes;
 }
 
 bool FileEncodingHandler::saveFile(const QString& filePath, const QString& content)
@@ -90,11 +171,10 @@ bool FileEncodingHandler::saveFile(const QString& filePath, const QString& conte
     if (!file.open(QFile::WriteOnly))
         return false;
 
-    QStringEncoder encoder(impl->encodingName.toUtf8());
-    QByteArray encoded = encoder.encode(content);
-
-    file.write(encoded);
+    file.write(encode(content));
     file.close();
+
+    noteWrittenInTargetEncoding();
     return true;
 }
 

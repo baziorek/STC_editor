@@ -7,6 +7,8 @@
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
+class QActionGroup;
+class QMenu;
 QT_END_NAMESPACE
 
 class QTextCursor;
@@ -88,6 +90,15 @@ public slots:
     /// syntax menu (the mode is also changed by opening a file, so it comes from the editor):
     void onSyntaxModeChanged(SyntaxMode mode);
 
+    /// encoding menu: the entries are made each time a submenu is opened, so they show the state of the open file
+    void updateEncodingMenuHeader();
+    void rebuildSaveEncodingMenu();
+    void rebuildReloadEncodingMenu();
+    /// asks whether the file should be converted to the chosen encoding and does it
+    void onEncodingChosen(const QString& encodingName);
+    /// asks whether the unsaved changes may be lost and reads the file again in the chosen encoding
+    void onReloadWithEncodingChosen(const QString& encodingName);
+
 protected:
     void setDisabledMenuActionsDependingOnOpenedFile(bool disabled=true);
 
@@ -95,6 +106,10 @@ protected:
 
     /// every entry of the "Syntax" menu with the mode it selects
     QList<std::pair<QAction*, SyntaxMode>> syntaxMenuActions() const;
+
+    void setUpEncodingMenu();
+    /// the encodings offered in the "Encoding" menu, in the order of the menu
+    QStringList offeredEncodings() const;
 
     void putTextBackToCursorPosition(QTextCursor &cursor, QString divClass, QString selectedText,
                                      QString textEnding, QString modifiedText);
@@ -130,6 +145,12 @@ private: // members
     Ui::MainWindow *ui;
 
     QString lastDirectory;
+
+    QMenu* encodingMenu = nullptr;
+    QAction* encodingCurrentAction = nullptr; // "Current encoding: ..." (disabled)
+    QMenu* saveEncodingMenu = nullptr;
+    QMenu* reloadEncodingMenu = nullptr;
+    QActionGroup* encodingActions = nullptr; // exactly one encoding of the "Save in encoding" menu is checked
 
     /// true for a moment after a click in the preview moved the editor (see onPreviewClicked)
     bool previewClickInProgress = false;

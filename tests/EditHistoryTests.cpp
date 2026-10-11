@@ -747,3 +747,33 @@ int main(int argc, char** argv)
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
+
+TEST_F(EditHistoryTest, BackupIsRememberedInTheStateItWasMadeIn)
+{
+    type(QStringLiteral("hello world"));
+    history.noteBackup(QStringLiteral("/tmp/x/.stc_backups/file.txt.backup"));
+
+    ASSERT_EQ(history.stepInfo(1).backups.size(), 1);
+    EXPECT_EQ(history.stepInfo(1).backups[0].path, QStringLiteral("/tmp/x/.stc_backups/file.txt.backup"));
+    EXPECT_TRUE(history.stepInfo(0).backups.isEmpty());
+
+    // The same state again, the same file: only the time of the last backup moves, no second row
+    history.noteBackup(QStringLiteral("/tmp/x/.stc_backups/file.txt.backup"));
+    EXPECT_EQ(history.stepInfo(1).backups.size(), 1);
+}
+
+TEST_F(EditHistoryTest, BackupOfAnUndoneStateIsDroppedWhenNewEditsReplaceIt)
+{
+    type(QStringLiteral("first"));
+    history.noteBackup(QStringLiteral("/tmp/x/b.backup"));
+    {
+        EditHistory::UndoRedoScope scope(history, EditHistory::UndoRedoScope::Kind::Undo);
+        edit.undo();
+    }
+    EXPECT_EQ(history.currentIndex(), 0);
+    // undone, but still known: the redo may still come
+    EXPECT_EQ(history.stepInfo(1).backups.size(), 1);
+
+    type(QStringLiteral("other"));
+    EXPECT_TRUE(history.stepInfo(1).backups.isEmpty());
+}

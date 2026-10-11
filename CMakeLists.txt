@@ -504,6 +504,17 @@ if(NOT WIN32)
     )
     add_test(NAME ${PROJECT_NAME}EditHistoryTests COMMAND ${PROJECT_NAME}EditHistoryTests)
     set_tests_properties(${PROJECT_NAME}EditHistoryTests PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+    # Encoding of the file being edited (detected, kept for reading) and the encoding it is saved in. Core + uchardet.
+    add_executable(${PROJECT_NAME}FileEncodingTests
+        tests/FileEncodingTests.cpp
+        utils/FileEncodingHandler.cpp
+    )
+    target_include_directories(${PROJECT_NAME}FileEncodingTests PRIVATE ${PROJECT_SOURCE_DIR} ${UCHARDET_INCLUDE_DIR})
+    target_link_libraries(${PROJECT_NAME}FileEncodingTests PRIVATE
+        Qt${QT_VERSION_MAJOR}::Core ${UCHARDET_LIB_NAME} ${GTEST_LIBRARIES} pthread gtest_main
+    )
+    add_test(NAME ${PROJECT_NAME}FileEncodingTests COMMAND ${PROJECT_NAME}FileEncodingTests)
 endif()
 
 # ------------------ AddressSanitizer: static runtime (avoid LD_PRELOAD ordering issues) ------------------

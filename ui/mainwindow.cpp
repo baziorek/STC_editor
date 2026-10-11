@@ -11,6 +11,9 @@
 #include <QTranslator>
 #include <QAction>
 #include <QActionGroup>
+#include <QMenu>
+#include <QMenuBar>
+#include <algorithm>
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "ui/shortcutsdialog.h"
@@ -171,6 +174,8 @@ void MainWindow::connectSignals2Slots()
     }
     connect(ui->textEditor, &CodeEditor::syntaxModeChanged, this, &MainWindow::onSyntaxModeChanged);
     onSyntaxModeChanged(ui->textEditor->syntaxMode());
+
+    setUpEncodingMenu();
 
     ui->breadcrumbTextBrowser->setTextEditor(ui->textEditor);
     ui->breadcrumbTextBrowser->setHeaderTable(ui->contextTableWidget);
@@ -1228,6 +1233,103 @@ void MainWindow::onSyntaxModeChanged(SyntaxMode mode)
 
     // checking whether the STC tags are closed makes no sense when there are no STC tags
     ui->actioncheck_if_tags_are_closed->setEnabled(syntaxmode::usesStcMarkup(mode));
+}
+
+void MainWindow::setUpEncodingMenu()
+{
+    encodingMenu = new QMenu(tr("Encoding"), this);
+    encodingCurrentAction = encodingMenu->addAction(QString());
+    encodingCurrentAction->setEnabled(false);
+    encodingMenu->addSeparator();
+    saveEncodingMenu = encodingMenu->addMenu(tr("Save in encoding"));
+    reloadEncodingMenu = encodingMenu->addMenu(tr("Reload with encoding"));
+    encodingActions = new QActionGroup(this);
+    encodingActions->setExclusive(true);
+    menuBar()->insertMenu(ui->menuLanguage->menuAction(), encodingMenu);
+
+    connect(encodingMenu, &QMenu::aboutToShow, this, &MainWindow::updateEncodingMenuHeader);
+    connect(saveEncodingMenu, &QMenu::aboutToShow, this, &MainWindow::rebuildSaveEncodingMenu);
+    connect(reloadEncodingMenu, &QMenu::aboutToShow, this, &MainWindow::rebuildReloadEncodingMenu);
+}
+
+QStringList MainWindow::offeredEncodings() const
+{
+    return { "UTF-8", "UTF-16LE", "UTF-16BE", "windows-1250", "ISO-8859-2", "windows-1252", "ISO-8859-15", "IBM852" };
+}
+
+void MainWindow::updateEncodingMenuHeader()
+{
+    encodingCurrentAction->setText(tr("Current encoding: %1").arg(ui->textEditor->saveEncoding()));
+    // a new document has nothing on disk to read again
+    reloadEncodingMenu->setEnabled(!ui->textEditor->getFileName().isEmpty());
+}
+
+void MainWindow::rebuildSaveEncodingMenu()
+{
+    // the entries of the previous opening are deleted with the menu; the group forgets them by itself
+    saveEncodingMenu->clear();
+
+    const QString current = ui->textEditor->saveEncoding();
+
+    QStringList encodings = offeredEncodings();
+    // the file may be in an encoding which is not on the list (e.g. one found by detection): it is shown too
+    if (!std::any_of(encodings.cbegin(), encodings.cend(),
+                     [&current](const QString& name) { return name.compare(current, Qt::CaseInsensitive) == 0; }))
+    {
+        encodings.prepend(current);
+    }
+
+    for (const QString& name : std::as_const(encodings))
+    {
+        QAction* action = saveEncodingMenu->addAction(name);
+        action->setCheckable(true);
+        action->setChecked(name.compare(current, Qt::CaseInsensitive) == 0);
+        encodingActions->addAction(action);
+        connect(action, &QAction::triggered, this, [this, name] { onEncodingChosen(name); });
+    }
+}
+
+void MainWindow::rebuildReloadEncodingMenu()
+{
+    reloadEncodingMenu->clear();
+    for (const QString& name : offeredEncodings())
+    {
+        QAction* action = reloadEncodingMenu->addAction(name);
+        connect(action, &QAction::triggered, this, [this, name] { onReloadWithEncodingChosen(name); });
+    }
+}
+
+void MainWindow::onEncodingChosen(const QString& encodingName)
+{
+    const QString current = ui->textEditor->saveEncoding();
+    if (encodingName.compare(current, Qt::CaseInsensitive) == 0)
+        return;
+
+    const auto answer = QMessageBox::question(
+        this,
+        tr("Change encoding"),
+        tr("Change the encoding of the file from %1 to %2?\n\nThe text is converted and the file is saved in %2 "
+           "when you save it.")
+            .arg(current, encodingName),
+        QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+
+    if (answer == QMessageBox::Yes)
+        ui->textEditor->setSaveEncoding(encodingName);
+}
+
+void MainWindow::onReloadWithEncodingChosen(const QString& encodingName)
+{
+    // unsaved changes are asked about (save, discard or cancel); without them nothing is asked
+    if (!operationWhichDiscardsChangesRequestedReturningIfDiscarded(
+            tr("Reload the file?"),
+            tr("Do You really want to read the file again in the encoding %1 and lose the unsaved changes?")
+                .arg(encodingName),
+            /*restoreEditorAfterwards=*/false))
+    {
+        return;
+    }
+
+    ui->textEditor->reloadFileWithEncoding(encodingName);
 }
 
 void MainWindow::restoreLastSession()
