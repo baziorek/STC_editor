@@ -65,9 +65,6 @@
           <property name="alternatingRowColors">
            <bool>false</bool>
           </property>
-          <property name="cornerButtonEnabled">
-           <bool>false</bool>
-          </property>
          </widget>
         </item>
        </layout>
@@ -252,6 +249,7 @@
     <addaction name="actionShort_conspect"/>
     <addaction name="actionGo_to_line"/>
     <addaction name="actionRight_panel"/>
+    <addaction name="actionCpp0x_news"/>
     <addaction name="actionStc_Preview_account_at_Cpp0x_pl_required"/>
     <addaction name="actionCopy_preview_html"/>
     <addaction name="actionStop_watch_uptime_and_working_time"/>
@@ -479,6 +477,17 @@
    </property>
    <property name="text">
     <string>File statistics</string>
+   </property>
+  </action>
+  <action name="actionCpp0x_news">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>cpp0x.pl news ☐</string>
    </property>
   </action>
   <action name="actionShort_conspect">

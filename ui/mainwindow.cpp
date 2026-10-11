@@ -23,6 +23,7 @@
 #include "errorlist.h"
 #include "types/documentstatistics.h"
 #include "widgets/LoginDialog.h"
+#include "widgets/CppNewsWidget.h"
 #include "widgets/DiffReviewDialog.h"
 #include "widgets/PastedTextDiffDialog.h"
 #include "widgets/RenameFileDialog.h"
@@ -120,6 +121,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->contextTableWidget->setTextEditor(ui->textEditor);
     ui->codesListTableWidget->setTextEditor(ui->textEditor);
     ui->todosTableWidget->setTextEditor(ui->textEditor);
+
+    // the news of cpp0x.pl: a tab of the right panel, shown from the View menu
+    cppNewsWidget = new CppNewsWidget(this);
+    cppNewsTabIndex = ui->contextsTabWidget->addTab(cppNewsWidget, tr("cpp0x.pl news"));
+    ui->contextsTabWidget->setTabVisible(cppNewsTabIndex, false);
+    connect(ui->actionCpp0x_news, &QAction::toggled, this, &MainWindow::onCppNewsShowChanged);
 
     connectSignals2Slots();
     connectShortcutsFromCodeWidget();
@@ -871,6 +878,13 @@ void MainWindow::onContextShowChanged(bool visible)
     ui->contextTableWidget->setVisible(visible);
 }
 
+void MainWindow::onCppNewsShowChanged(bool visible)
+{
+    ui->contextsTabWidget->setTabVisible(cppNewsTabIndex, visible);
+    if (visible)
+        ui->contextsTabWidget->setCurrentIndex(cppNewsTabIndex);
+}
+
 void MainWindow::onGoToLineShowChanged(bool visible)
 {
     ui->goToLineGroupBox->setVisible(visible);
@@ -920,6 +934,7 @@ void MainWindow::onViewMenuAboutToShow()
     changeCheckedState(ui->actionSTC_Tags_buttons);
     changeCheckedState(ui->actionShort_conspect);
     changeCheckedState(ui->actionRight_panel);
+    changeCheckedState(ui->actionCpp0x_news);
     changeCheckedState(ui->actionStc_Preview_account_at_Cpp0x_pl_required);
     changeCheckedState(ui->actionStop_watch_uptime_and_working_time);
 }

@@ -3,39 +3,49 @@
 #include <QToolTip>
 #include <QAction>
 #include <QMenu>
+#include <algorithm>
+#include <limits>
 #include "FilteredTagTableWidget.h"
 #include "CodeEditor.h"
+#include "utils/HeaderNesting.h"
 
 
 namespace
 {
 enum ColumnIndices
 {
-    COLUMN_LINE = 0,
+    COLUMN_TEXT = 0,   // the tree: the header is indented under its parent
+    COLUMN_LINE,
     COLUMN_TAG,
-    COLUMN_TEXT,
     COLUMN_COUNT
 };
+
+/// h1 => 1 ... h6 => 6
+int levelOf(const QString& tagName)
+{
+    return std::clamp(tagName.mid(1).toInt(), 1, 6);
+}
 }
 
 
 FilteredTagTableWidget::FilteredTagTableWidget(QWidget* parent)
-    : QTableWidget(parent),
+    : QTreeWidget(parent),
     tagFilterMenu(new QMenu(this))
 {
     setColumnCount(COLUMN_COUNT);
-    setHorizontalHeaderLabels({ "Line", "Tag ▾", "Text" });
-    horizontalHeader()->setSectionResizeMode(COLUMN_LINE, QHeaderView::ResizeToContents);
-    horizontalHeader()->setSectionResizeMode(COLUMN_TAG, QHeaderView::ResizeToContents);
-    horizontalHeader()->setSectionResizeMode(COLUMN_TEXT, QHeaderView::Stretch);
+    setHeaderLabels({ tr("Text"), tr("Line"), tr("Tag ▾") });
+    header()->setSectionResizeMode(COLUMN_LINE, QHeaderView::ResizeToContents);
+    header()->setSectionResizeMode(COLUMN_TAG, QHeaderView::ResizeToContents);
+    header()->setSectionResizeMode(COLUMN_TEXT, QHeaderView::Stretch);
     setSelectionBehavior(QAbstractItemView::SelectRows);
     setSelectionMode(QAbstractItemView::NoSelection); // ❗️Disable default selection
     setEditTriggers(QAbstractItemView::NoEditTriggers);
-    verticalHeader()->setVisible(false);
     setAlternatingRowColors(true);
+    setRootIsDecorated(true);
+    setUniformRowHeights(true);
 
-    connect(this, &QTableWidget::cellClicked, this, &FilteredTagTableWidget::onCellSingleClicked);
-    connect(horizontalHeader(), &QHeaderView::sectionClicked, this, &FilteredTagTableWidget::onHeaderSectionClicked);
+    connect(this, &QTreeWidget::itemClicked, this, &FilteredTagTableWidget::onItemClicked);
+    connect(header(), &QHeaderView::sectionClicked, this, &FilteredTagTableWidget::onHeaderSectionClicked);
 }
 
 FilteredTagTableWidget::~FilteredTagTableWidget() = default;
@@ -60,7 +70,7 @@ void FilteredTagTableWidget::setTextEditor(CodeEditor* newTextEditor)
 
 void FilteredTagTableWidget::showEvent(QShowEvent* event)
 {
-    QTableWidget::showEvent(event);
+    QTreeWidget::showEvent(event);
     if (isVisible())
         rebuildAllHeaders();
 }
@@ -119,49 +129,15 @@ void FilteredTagTableWidget::clear()
 {
     cachedHeaders.clear();
     clearHeaderTable();
-    highlightedRow = -1;
+    highlightedHeader = -1;
 }
 
 void FilteredTagTableWidget::clearHeaderTable()
 {
-    setRowCount(0);
+    QTreeWidget::clear();
+    itemOfHeader.clear();
     tagVisibility.clear();
     updateFilterMenu();
-}
-
-void FilteredTagTableWidget::insertOrUpdateHeader(const HeaderInfo& info)
-{
-    const int lineDisplay = info.startingTagCursor.blockNumber() + 1;
-
-    int row = 0;
-    for (; row < rowCount(); ++row)
-    {
-        auto* item = this->item(row, COLUMN_LINE);
-        if (item && item->text().toInt() > lineDisplay)
-            break;
-    }
-    insertRow(row);
-
-    auto* lineItem = new QTableWidgetItem(QString::number(lineDisplay));
-    lineItem->setFlags(lineItem->flags() & ~Qt::ItemIsEditable);
-
-    auto* tagItem = new QTableWidgetItem(info.tagName);
-    tagItem->setFlags(tagItem->flags() & ~Qt::ItemIsEditable);
-    tagItem->setData(Qt::UserRole, info.tagName);
-
-    auto* textItem = new QTableWidgetItem(info.textInside);
-    textItem->setFlags(textItem->flags() & ~Qt::ItemIsEditable);
-    textItem->setToolTip(info.textInside);
-
-    setItem(row, COLUMN_LINE, lineItem);
-    setItem(row, COLUMN_TAG, tagItem);
-    setItem(row, COLUMN_TEXT, textItem);
-
-    if (!tagVisibility.contains(info.tagName))
-    {
-        tagVisibility[info.tagName] = true;
-        updateFilterMenu();
-    }
 }
 
 void FilteredTagTableWidget::onTextChanged(int pos, int charsRemoved, int charsAdded)
@@ -275,33 +251,71 @@ void FilteredTagTableWidget::onTextChanged(int pos, int charsRemoved, int charsA
 
 void FilteredTagTableWidget::refreshHeaderTable()
 {
-    setRowCount(0);
-
+    bool newTagAppeared = false;
     for (const auto& info : cachedHeaders)
     {
-        insertOrUpdateHeader(info);
+        if (!tagVisibility.contains(info.tagName))
+        {
+            tagVisibility[info.tagName] = true;
+            newTagAppeared = true;
+        }
     }
+    if (newTagAppeared)
+        updateFilterMenu();
 
-    applyTagFilter();
-
-    highlightedRow = -1;
+    rebuildTree();
     highlightCurrentTagInContextTable();
 }
 
+void FilteredTagTableWidget::rebuildTree()
+{
+    QTreeWidget::clear();
+    itemOfHeader.clear();
+    highlightedHeader = -1;
+
+    // only the headers whose tags are shown take part in the tree
+    QList<int> shownHeaders;
+    std::vector<int> levels;
+    for (int index = 0; index < cachedHeaders.size(); ++index)
+    {
+        if (tagVisibility.value(cachedHeaders[index].tagName, true))
+        {
+            shownHeaders.append(index);
+            levels.push_back(levelOf(cachedHeaders[index].tagName));
+        }
+    }
+
+    const std::vector<int> parents = headerParents(levels);
+    QList<QTreeWidgetItem*> items;
+
+    for (int position = 0; position < shownHeaders.size(); ++position)
+    {
+        const int index = shownHeaders[position];
+        const HeaderInfo& info = cachedHeaders[index];
+
+        auto* item = new QTreeWidgetItem();
+        item->setText(COLUMN_TEXT, info.textInside);
+        item->setToolTip(COLUMN_TEXT, info.textInside);
+        item->setText(COLUMN_LINE, QString::number(info.startingTagCursor.blockNumber() + 1));
+        item->setText(COLUMN_TAG, info.tagName);
+
+        const int parent = parents[position];
+        if (parent < 0)
+            addTopLevelItem(item);
+        else
+            items[parent]->addChild(item);
+
+        items.append(item);
+        itemOfHeader.insert(index, item);
+    }
+
+    expandAll();
+}
 
 void FilteredTagTableWidget::applyTagFilter()
 {
-    const int totalRows = rowCount();
-    for (int row = 0; row < totalRows; ++row)
-    {
-        QTableWidgetItem* tagItem = item(row, COLUMN_TAG);
-        if (!tagItem)
-            continue;
-
-        QString tag = tagItem->data(Qt::UserRole).toString();
-        bool visible = tagVisibility.value(tag, true);
-        setRowHidden(row, !visible);
-    }
+    rebuildTree();
+    highlightCurrentTagInContextTable();
 }
 
 void FilteredTagTableWidget::updateFilterMenu()
@@ -344,15 +358,15 @@ void FilteredTagTableWidget::updateFilterMenu()
     }
 }
 
-void FilteredTagTableWidget::onCellSingleClicked(int row, int)
+void FilteredTagTableWidget::onItemClicked(QTreeWidgetItem* item, int)
 {
-    if (auto* item = this->item(row, COLUMN_LINE))
-    {
-        bool ok = false;
-        int line = item->text().toInt(&ok);
-        if (ok)
-            emit goToLineClicked(line);
-    }
+    if (!item)
+        return;
+
+    bool ok = false;
+    int line = item->text(COLUMN_LINE).toInt(&ok);
+    if (ok)
+        emit goToLineClicked(line);
 }
 
 void FilteredTagTableWidget::onHeaderSectionClicked(int logicalIndex)
@@ -360,113 +374,83 @@ void FilteredTagTableWidget::onHeaderSectionClicked(int logicalIndex)
     if (logicalIndex != COLUMN_TAG)
         return;
 
-    int x = horizontalHeader()->sectionPosition(logicalIndex);
-    int y = horizontalHeader()->height();
-    QPoint globalPos = horizontalHeader()->mapToGlobal(QPoint(x, y));
+    int x = header()->sectionPosition(logicalIndex);
+    int y = header()->height();
+    QPoint globalPos = header()->mapToGlobal(QPoint(x, y));
     tagFilterMenu->exec(globalPos);
 }
 
 /*
- * ─────────────────────────────────────────────────────────────────────────────
- * Known Issue & Rationale for Custom Highlighting:
- *
- * In certain scenarios — such as inserting characters (especially special ones
- * like @, !, ?, etc.) or newlines near tag boundaries — the built-in Qt
- * selection system (via selectRow / selectionModel) may fail to visually
- * update the current context row.
- *
- * This behavior is caused by the way QPlainTextEdit and QTextDocument manage
- * text blocks and cursor updates:
- *
- *   - When text is edited, especially near QTextBlock boundaries,
- *     the internal layout engine may temporarily place the cursor at a block
- *     not yet fully updated.
- *
- *   - Even if our context detection logic returns the correct row, calling
- *     selectRow(bestRow) will not result in a visible highlight unless the
- *     table has focus or the selection model deems the selection “active”.
- *
- *   - Additionally, selection may be auto-cleared by Qt focus changes or
- *     other UI events.
- *
- * Therefore, we implement our own visual row highlighting by directly
- * modifying item background/foreground colors instead of relying on the
- * built-in selection system.
- *
- * This avoids visual flicker and ensures context highlighting always reflects
- * the current cursor position in the editor — regardless of focus state or
- * Qt internals.
- *
- * Note: standard row selection (selectRow/clearSelection) is still disabled
- * to prevent duplicate visual indicators.
- * ─────────────────────────────────────────────────────────────────────────────
+ * The current header is shown with the colours of a selection, drawn by hand: the built-in selection of the view does
+ * not show up reliably while the text is being edited (the cursor is still at a block which is not fully updated),
+ * and it is cleared by focus changes. Standard selection stays disabled, so there is one indicator only.
  */
 void FilteredTagTableWidget::highlightCurrentTagInContextTable()
 {
     if (!textEditor || isHidden() || cachedHeaders.isEmpty())
         return;
 
-    auto bestRow = findHeaderForCursor(textEditor->textCursor());
-    if (bestRow >= 0 && bestRow != highlightedRow)
+    // the header the cursor is in; if its tag is switched off, the closest shown header above it
+    int headerIndex = findHeaderForCursor(textEditor->textCursor());
+    while (headerIndex >= 0 && !itemOfHeader.contains(headerIndex))
+        --headerIndex;
+
+    if (headerIndex >= 0 && headerIndex != highlightedHeader)
     {
-        clearHighlightedRow();
-        highlightRow(bestRow);
-        scrollToItem(item(bestRow, 0), QAbstractItemView::PositionAtCenter);
+        clearHighlightedHeader();
+        highlightHeader(headerIndex);
+        scrollToItem(itemOfHeader.value(headerIndex), QAbstractItemView::PositionAtCenter);
     }
 }
+
 int FilteredTagTableWidget::findHeaderForCursor(const QTextCursor &cursor) const
 {
     const int cursorBlock = cursor.block().blockNumber();
 
-    for (int row = 0; row < cachedHeaders.size(); ++row)
+    for (int index = 0; index < cachedHeaders.size(); ++index)
     {
-        int startLine = cachedHeaders[row].startingTagCursor.block().blockNumber();
-        int endLine = (row + 1 < cachedHeaders.size())
-                          ? cachedHeaders[row + 1].startingTagCursor.block().blockNumber()
+        int startLine = cachedHeaders[index].startingTagCursor.block().blockNumber();
+        int endLine = (index + 1 < cachedHeaders.size())
+                          ? cachedHeaders[index + 1].startingTagCursor.block().blockNumber()
                           : std::numeric_limits<int>::max(); // last header goes to EOF
 
         if (cursorBlock >= startLine && cursorBlock < endLine)
         {
-            return row;
+            return index;
         }
     }
     return -1;
 }
 
-void FilteredTagTableWidget::highlightRow(int row)
+void FilteredTagTableWidget::highlightHeader(int headerIndex)
 {
-    highlightedRow = row;
-    const QColor backgroundColor = palette().highlight().color();
-    const QColor textColor = palette().highlightedText().color();
+    highlightedHeader = headerIndex;
+
+    QTreeWidgetItem* item = itemOfHeader.value(headerIndex, nullptr);
+    if (!item)
+        return;
 
     for (int col = 0; col < columnCount(); ++col)
     {
-        QTableWidgetItem* item = this->item(row, col);
-        if (item)
-        {
-            item->setBackground(backgroundColor);
-            item->setForeground(textColor);
-        }
+        item->setBackground(col, palette().highlight());
+        item->setForeground(col, palette().highlightedText());
     }
 }
 
-void FilteredTagTableWidget::clearHighlightedRow()
+void FilteredTagTableWidget::clearHighlightedHeader()
 {
-    if (highlightedRow < 0 || highlightedRow >= rowCount())
+    if (highlightedHeader < 0)
         return;
 
-    const QColor backgroundColor = palette().base().color();
-    const QColor textColor = palette().text().color();
-
-    for (int col = 0; col < columnCount(); ++col)
+    // back to what the view paints by itself (alternating colours included)
+    if (QTreeWidgetItem* item = itemOfHeader.value(highlightedHeader, nullptr))
     {
-        QTableWidgetItem* item = this->item(highlightedRow, col);
-        if (item)
+        for (int col = 0; col < columnCount(); ++col)
         {
-            item->setBackground(backgroundColor);
-            item->setForeground(textColor);
+            item->setData(col, Qt::BackgroundRole, QVariant());
+            item->setData(col, Qt::ForegroundRole, QVariant());
         }
     }
 
-    highlightedRow = -1;
+    highlightedHeader = -1;
 }

@@ -9,6 +9,7 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 class QActionGroup;
 class QMenu;
+class CppNewsWidget;
 QT_END_NAMESPACE
 
 class QTextCursor;
@@ -73,6 +74,8 @@ public slots:
     /// view menu:
     void onViewMenuAboutToShow();
     void onContextShowChanged(bool visible);
+    /// View menu: the news of cpp0x.pl are a tab of the right panel, shown or hidden
+    void onCppNewsShowChanged(bool visible);
     void onGoToLineShowChanged(bool visible);
     void onBreadcrumbVisibilityChanged(bool visible);
     void onRightPanelVisibilityChanged(bool visible);
@@ -145,6 +148,9 @@ private: // members
     Ui::MainWindow *ui;
 
     QString lastDirectory;
+
+    CppNewsWidget* cppNewsWidget = nullptr;
+    int cppNewsTabIndex = -1;
 
     QMenu* encodingMenu = nullptr;
     QAction* encodingCurrentAction = nullptr; // "Current encoding: ..." (disabled)

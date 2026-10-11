@@ -1,15 +1,19 @@
 #pragma once
 
-#include <QTableWidget>
+#include <QHash>
 #include <QMap>
 #include <QTextCursor>
+#include <QTreeWidget>
 
 class QMenu;
 class QRegularExpression;
 
 class CodeEditor;
 
-class FilteredTagTableWidget : public QTableWidget
+/// The conspect of the document: its headers ([h1]...[h6]) as a tree. A header is a child of the closest header above
+/// it with a smaller level, so [h2] sections sit under their [h1] section, and so on.
+/// Tags which are switched off in the filter menu are left out of the tree; the headers under them are moved up.
+class FilteredTagTableWidget : public QTreeWidget
 {
     Q_OBJECT
 
@@ -45,7 +49,7 @@ public slots:
 
 private slots:
     void onHeaderSectionClicked(int logicalIndex);
-    void onCellSingleClicked(int row, int column);
+    void onItemClicked(QTreeWidgetItem* item, int column);
     void updateFilterMenu();
     void applyTagFilter();
     void onTextChanged(int pos, int charsRemoved, int charsAdded);
@@ -56,14 +60,13 @@ protected:
     void showEvent(QShowEvent* event) override;
 
     void refreshHeaderTable();
-
-    void insertOrUpdateHeader(const HeaderInfo& info);
+    void rebuildTree();
     void clearHeaderTable();
 
     int findHeaderForCursor(const QTextCursor &cursor) const;
 
-    void highlightRow(int row);
-    void clearHighlightedRow();
+    void highlightHeader(int headerIndex);
+    void clearHighlightedHeader();
 
 private:
     QMenu* tagFilterMenu = {};
@@ -72,5 +75,7 @@ private:
 
     QList<HeaderInfo> cachedHeaders;
 
-    int highlightedRow = -1;
+    /// the item of every header which is in the tree (the headers switched off are not)
+    QHash<int, QTreeWidgetItem*> itemOfHeader;
+    int highlightedHeader = -1;
 };

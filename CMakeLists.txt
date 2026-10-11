@@ -175,6 +175,9 @@ set(PROJECT_SOURCES
     widgets/LineNumberArea.h widgets/LineNumberArea.cpp
     widgets/DocumentationBrowserDialog.h widgets/DocumentationBrowserDialog.cpp
     widgets/FilteredTagTableWidget.h widgets/FilteredTagTableWidget.cpp
+    utils/HeaderNesting.h utils/HeaderNesting.cpp
+    utils/CppNews.h utils/CppNews.cpp
+    widgets/CppNewsWidget.h widgets/CppNewsWidget.cpp
     widgets/CodeBlocksTableWidget.h widgets/CodeBlocksTableWidget.cpp
     widgets/TodosTrackerTableWidget.h widgets/TodosTrackerTableWidget.cpp
     widgets/LoginDialog.h widgets/LoginDialog.cpp
@@ -515,6 +518,24 @@ if(NOT WIN32)
         Qt${QT_VERSION_MAJOR}::Core ${UCHARDET_LIB_NAME} ${GTEST_LIBRARIES} pthread gtest_main
     )
     add_test(NAME ${PROJECT_NAME}FileEncodingTests COMMAND ${PROJECT_NAME}FileEncodingTests)
+
+    # Tree of the headers of the conspect (which header is the parent of which). No widget.
+    add_executable(${PROJECT_NAME}HeaderNestingTests
+        tests/HeaderNestingTests.cpp
+        utils/HeaderNesting.cpp
+    )
+    target_include_directories(${PROJECT_NAME}HeaderNestingTests PRIVATE ${PROJECT_SOURCE_DIR})
+    target_link_libraries(${PROJECT_NAME}HeaderNestingTests PRIVATE ${GTEST_LIBRARIES} pthread gtest_main)
+    add_test(NAME ${PROJECT_NAME}HeaderNestingTests COMMAND ${PROJECT_NAME}HeaderNestingTests)
+
+    # The news feed of cpp0x.pl: parsing and which threads are new. Only QtCore.
+    add_executable(${PROJECT_NAME}CppNewsTests
+        tests/CppNewsTests.cpp
+        utils/CppNews.cpp
+    )
+    target_include_directories(${PROJECT_NAME}CppNewsTests PRIVATE ${PROJECT_SOURCE_DIR})
+    target_link_libraries(${PROJECT_NAME}CppNewsTests PRIVATE Qt${QT_VERSION_MAJOR}::Core ${GTEST_LIBRARIES} pthread gtest_main)
+    add_test(NAME ${PROJECT_NAME}CppNewsTests COMMAND ${PROJECT_NAME}CppNewsTests)
 endif()
 
 # ------------------ AddressSanitizer: static runtime (avoid LD_PRELOAD ordering issues) ------------------
