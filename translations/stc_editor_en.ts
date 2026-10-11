@@ -623,17 +623,22 @@ Do you want to reload it?</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/CppNewsWidget.cpp" line="114"/>
-        <source>The news feed could not be read</source>
+        <location filename="../widgets/CppNewsWidget.cpp" line="115"/>
+        <source>The answer is not an XML feed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/CppNewsWidget.cpp" line="123"/>
-        <source>Checked at %1</source>
+        <location filename="../widgets/CppNewsWidget.cpp" line="121"/>
+        <source>No news found in the feed. Structure: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../widgets/CppNewsWidget.cpp" line="133"/>
+        <source>Checked at %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/CppNewsWidget.cpp" line="143"/>
         <source>New thread</source>
         <translation type="unfinished"></translation>
     </message>
@@ -981,12 +986,12 @@ Double click to go to the line.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/FilteredTagTableWidget.cpp" line="343"/>
+        <location filename="../widgets/FilteredTagTableWidget.cpp" line="348"/>
         <source>Deselect all</source>
         <translation>Deselect all</translation>
     </message>
     <message>
-        <location filename="../widgets/FilteredTagTableWidget.cpp" line="351"/>
+        <location filename="../widgets/FilteredTagTableWidget.cpp" line="356"/>
         <source>Select all</source>
         <translation>Select all</translation>
     </message>

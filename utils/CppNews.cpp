@@ -7,6 +7,13 @@
 
 namespace
 {
+bool isItemElement(const QString& name)
+{
+    static const QStringList names = { "item", "entry", "news", "newsitem", "news_item", "post", "article", "topic",
+                                       "thread", "wpis", "temat", "artykul", "aktualnosc" };
+    return names.contains(name, Qt::CaseInsensitive);
+}
+
 bool isThreadIdElement(const QString& name)
 {
     static const QStringList names = { "id", "thread", "thread_id", "topic", "topic_id", "nr", "guid" };
@@ -30,71 +37,94 @@ std::optional<int> numberInText(const QString& text)
         return std::nullopt;
     return value;
 }
-} // namespace
 
-QList<NewsItem> parseNewsFeed(const QByteArray& xml, bool* ok)
+/// Reads the entry whose start element was just read; stops after its end element
+NewsItem readItem(QXmlStreamReader& reader, const QString& elementName)
 {
-    QList<NewsItem> items;
-    QXmlStreamReader reader(xml);
-    bool sawFeed = false;
+    NewsItem item;
+    std::optional<int> threadId;
+    QString link;
 
     while (!reader.atEnd())
     {
         reader.readNext();
+        if (reader.isEndElement() && reader.name().toString() == elementName)
+            break;
         if (!reader.isStartElement())
             continue;
 
         // copied: a QStringView from the reader is not valid after the next readNext()
-        const QString name = reader.name().toString();
-        if (name == QLatin1String("rss") || name == QLatin1String("feed") || name == QLatin1String("channel"))
-            sawFeed = true;
-
-        if (name != QLatin1String("item") && name != QLatin1String("entry"))
-            continue;
-
-        NewsItem item;
-        std::optional<int> threadId;
-        QString link;
-
-        // the children of the entry, up to its end
-        while (!reader.atEnd())
+        const QString child = reader.name().toString();
+        if (child == QLatin1String("title"))
         {
-            reader.readNext();
-            if (reader.isEndElement() && reader.name().toString() == name)
-                break;
-            if (!reader.isStartElement())
-                continue;
-
-            const QString child = reader.name().toString();
-            if (child == QLatin1String("title"))
-            {
-                item.title = reader.readElementText().trimmed();
-            }
-            else if (child == QLatin1String("link"))
-            {
-                // Atom keeps the address in an attribute, RSS in the text
-                const QString href = reader.attributes().value(QLatin1String("href")).toString();
-                const QString text = reader.readElementText().trimmed();
-                link = href.isEmpty() ? text : href;
-            }
-            else if (isThreadIdElement(child) && !threadId)
-            {
-                threadId = numberInText(reader.readElementText());
-            }
+            item.title = reader.readElementText().trimmed();
         }
-
-        // no number as an element: the id in the address of the thread
-        if (!threadId)
-            threadId = threadIdFromLink(link);
-
-        item.threadId = threadId.value_or(0);
-        if (item.threadId > 0)
-            items.append(item);
+        else if (child == QLatin1String("link"))
+        {
+            // Atom keeps the address in an attribute, RSS in the text
+            const QString href = reader.attributes().value(QLatin1String("href")).toString();
+            const QString text = reader.readElementText().trimmed();
+            link = href.isEmpty() ? text : href;
+        }
+        else if (isThreadIdElement(child) && !threadId)
+        {
+            threadId = numberInText(reader.readElementText());
+        }
     }
 
-    if (ok)
-        *ok = !reader.hasError() && sawFeed;
-    return items;
+    if (!threadId)
+        threadId = threadIdFromLink(link);
+    item.threadId = threadId.value_or(0);
+    return item;
+}
+} // namespace
+
+NewsFeed parseNewsFeed(const QByteArray& xml)
+{
+    NewsFeed feed;
+    QXmlStreamReader reader(xml);
+
+    QString rootName;
+    QStringList childNames; // the elements directly in the root, once each
+    int depth = 0;
+
+    while (!reader.atEnd())
+    {
+        reader.readNext();
+
+        if (reader.isEndElement())
+        {
+            --depth;
+            continue;
+        }
+        if (!reader.isStartElement())
+            continue;
+
+        ++depth;
+        const QString name = reader.name().toString();
+        if (depth == 1 && rootName.isEmpty())
+            rootName = name;
+        else if (depth == 2 && !childNames.contains(name) && childNames.size() < 10)
+            childNames.append(name);
+
+        if (isItemElement(name))
+        {
+            const NewsItem item = readItem(reader, name);
+            if (item.threadId > 0)
+                feed.items.append(item);
+            --depth; // readItem() has read the end element of the entry
+        }
+    }
+
+    feed.wellFormed = !reader.hasError() && !rootName.isEmpty();
+    if (!rootName.isEmpty())
+    {
+        QStringList shownChildren;
+        for (const QString& child : std::as_const(childNames))
+            shownChildren << QStringLiteral("<%1>").arg(child);
+        feed.structure = QStringLiteral("<%1>: %2").arg(rootName, shownChildren.join(QLatin1Char(' ')));
+    }
+    return feed;
 }
 
 QString forumThreadUrl(int threadId)

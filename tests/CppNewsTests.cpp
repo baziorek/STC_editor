@@ -30,31 +30,41 @@ const QByteArray atomFeed = R"(<?xml version="1.0" encoding="utf-8"?>
 
 TEST(CppNewsParseTest, RssItemsKeepTheirOrderAndNumberOfThread)
 {
-    bool ok = false;
-    const auto items = parseNewsFeed(rssFeed, &ok);
+    const NewsFeed feed = parseNewsFeed(rssFeed);
 
-    ASSERT_TRUE(ok);
-    ASSERT_EQ(items.size(), 2);
-    EXPECT_EQ(items[0].title, "Newest thread");
-    EXPECT_EQ(items[0].threadId, 29300); // from the <id> element
-    EXPECT_EQ(items[1].threadId, 29289); // no element: from the link
+    ASSERT_TRUE(feed.wellFormed);
+    ASSERT_EQ(feed.items.size(), 2);
+    EXPECT_EQ(feed.items[0].title, "Newest thread");
+    EXPECT_EQ(feed.items[0].threadId, 29300); // from the <id> element
+    EXPECT_EQ(feed.items[1].threadId, 29289); // no element: from the link
 }
 
 TEST(CppNewsParseTest, AtomEntriesGiveTheNumberFromTheHrefOfTheLink)
 {
-    bool ok = false;
-    const auto items = parseNewsFeed(atomFeed, &ok);
+    const NewsFeed feed = parseNewsFeed(atomFeed);
 
-    ASSERT_TRUE(ok);
-    ASSERT_EQ(items.size(), 1);
-    EXPECT_EQ(items[0].threadId, 123);
+    ASSERT_TRUE(feed.wellFormed);
+    ASSERT_EQ(feed.items.size(), 1);
+    EXPECT_EQ(feed.items[0].threadId, 123);
 }
 
-TEST(CppNewsParseTest, NotAFeedIsReportedAndGivesNothing)
+TEST(CppNewsParseTest, AnyRootWithNewsElementsIsRead)
 {
-    bool ok = true;
-    EXPECT_TRUE(parseNewsFeed("<html><body>Login</body></html>", &ok).isEmpty());
-    EXPECT_FALSE(ok);
+    // the root is not rss/feed: the news are still found, and the structure says what the feed holds
+    const NewsFeed feed = parseNewsFeed(
+        QByteArray("<cpp0x><news><title>Thread</title><nr>77</nr></news><news><title>Other</title></news></cpp0x>"));
+
+    EXPECT_TRUE(feed.wellFormed);
+    ASSERT_EQ(feed.items.size(), 1); // the one without a number is left out
+    EXPECT_EQ(feed.items[0].threadId, 77);
+    EXPECT_EQ(feed.structure, "<cpp0x>: <news>");
+}
+
+TEST(CppNewsParseTest, PlainTextIsNotAFeed)
+{
+    const NewsFeed feed = parseNewsFeed("Access denied");
+    EXPECT_FALSE(feed.wellFormed);
+    EXPECT_TRUE(feed.items.isEmpty());
 }
 
 TEST(CppNewsParseTest, ForumAddressOfAThread)

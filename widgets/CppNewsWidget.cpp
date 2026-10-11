@@ -105,21 +105,31 @@ void CppNewsWidget::onReplyFinished(QNetworkReply* reply)
         return;
     }
 
-    bool ok = false;
-    const QList<NewsItem> fresh = parseNewsFeed(reply->readAll(), &ok);
+    const QByteArray body = reply->readAll();
     reply->deleteLater();
 
-    if (!ok)
+    const NewsFeed feed = parseNewsFeed(body);
+    if (!feed.wellFormed)
     {
-        statusLabel->setText(tr("The news feed could not be read"));
+        // not XML at all (a page of the site, an error text): the start of the answer is in the tooltip to see what it is
+        statusLabel->setText(tr("The answer is not an XML feed"));
+        statusLabel->setToolTip(QString::fromUtf8(body.left(300)));
+        return;
+    }
+    if (feed.items.isEmpty())
+    {
+        statusLabel->setText(tr("No news found in the feed. Structure: %1").arg(feed.structure));
+        statusLabel->setToolTip(QString());
         return;
     }
 
+    const QList<NewsItem> fresh = feed.items;
     readState.update(fresh);
     items = fresh;
     showItems();
     saveState();
 
+    statusLabel->setToolTip(QString());
     statusLabel->setText(tr("Checked at %1").arg(QTime::currentTime().toString(QStringLiteral("HH:mm"))));
 }
 

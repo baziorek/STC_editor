@@ -628,17 +628,26 @@ Czy chcesz wczytać go ponownie?</translation>
         <translation>Nie udało się sprawdzić aktualności: %1</translation>
     </message>
     <message>
-        <location filename="../widgets/CppNewsWidget.cpp" line="114"/>
-        <source>The news feed could not be read</source>
-        <translation>Nie udało się odczytać kanału aktualności</translation>
+        <location filename="../widgets/CppNewsWidget.cpp" line="115"/>
+        <source>The answer is not an XML feed</source>
+        <translation>Odpowiedź nie jest kanałem XML</translation>
     </message>
     <message>
-        <location filename="../widgets/CppNewsWidget.cpp" line="123"/>
+        <location filename="../widgets/CppNewsWidget.cpp" line="121"/>
+        <source>No news found in the feed. Structure: %1</source>
+        <translation>W kanale nie znaleziono aktualności. Struktura: %1</translation>
+    </message>
+    <message>
+        <source>The news feed could not be read</source>
+        <translation type="vanished">Nie udało się odczytać kanału aktualności</translation>
+    </message>
+    <message>
+        <location filename="../widgets/CppNewsWidget.cpp" line="133"/>
         <source>Checked at %1</source>
         <translation>Sprawdzono o %1</translation>
     </message>
     <message>
-        <location filename="../widgets/CppNewsWidget.cpp" line="133"/>
+        <location filename="../widgets/CppNewsWidget.cpp" line="143"/>
         <source>New thread</source>
         <translation>Nowy wątek</translation>
     </message>
@@ -988,12 +997,12 @@ Dwuklik przenosi do linii.</translation>
         <translation>Znacznik ▾</translation>
     </message>
     <message>
-        <location filename="../widgets/FilteredTagTableWidget.cpp" line="343"/>
+        <location filename="../widgets/FilteredTagTableWidget.cpp" line="348"/>
         <source>Deselect all</source>
         <translation>Deselect all</translation>
     </message>
     <message>
-        <location filename="../widgets/FilteredTagTableWidget.cpp" line="351"/>
+        <location filename="../widgets/FilteredTagTableWidget.cpp" line="356"/>
         <source>Select all</source>
         <translation>Select all</translation>
     </message>

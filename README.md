@@ -143,25 +143,25 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 
 
 ## Planowane funkcjonalności
-1. 
-2. FindWidget - aby aktualizował pozycje w tekście na bieżąco przy dodawaniu/usuwaniu linii.
-3. Pobieranie aktualizacji przez https://cpp0x.pl/xml/
-4. Podpięcie sztucznej inteligencji np. [Ollama](https://ollama.com) lub llama.cpp
-5. Podgląd terminala np. przez https://github.com/lxqt/qtermwidget - tylko czy mi to nie zrobi GPLa?
-6. Zastąpienie listy kontekstu widżetem drzewiastym.
-7. Kreator tabel dla znaczników STC.
+1. FindWidget - aby aktualizował pozycje w tekście na bieżąco przy dodawaniu/usuwaniu linii.
+2. Podgląd terminala np. przez https://github.com/lxqt/qtermwidget - tylko czy mi to nie zrobi GPLa?
+3. Kreator tabel dla znaczników STC.
+4. Podpięcie sztucznej inteligencji np. llama.cpp do komentowania kodu i artykułu. Z możliwością edycji promptu.
+5. Wyszukiwanie wielu słów w tej samej linii niezależnie od kolejności.
+6. Cmake: podpiąć sanitizery
+7. Cmake: podpiąć IWYU ale za wyjątkiem bibliotek zewnętrznych.
 8. Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
 9. Zwijanie nagłówków i kodu (jak funkcje w środowiskach programistycznych)
-10. Wyszukiwanie wielu słów w tej samej linii niezależnie od kolejności.
+10. Rozważyć użycie tej samej biblioteki do porównywania zarówno linii jak i znaków np. https://github.com/google/diff-match-patch
 11. Szukanie tylko w kodzie
 12. Może AI mi podzieli CodeEditor aby nie był GodObject
-13. IWYU podpiąć pod CMake'a
+13. Obsługa markdown
 14. Ctrl + V gdy mamy obrazek w schowku - wtedy powinno zaproponować umieszczenie obrazka w odpowiednim katalogu
 15. Gdy wyświetlamy diffa, ale linie są długie to pojawia się scrolling area, a nie powinna.
-16. Rozważyć użycie tej samej biblioteki do porównywania zarówno linii jak i znaków np. https://github.com/google/diff-match-patch
+16. Pobieranie aktualizacji przez https://cpp0x.pl/xml/
 17. Rozważenie integracji Scintilla wraz z Lexillą jako silnika edycji i kolorowania składni (zamiast obecnego QCodeEditor). Dzięki temu możliwe byłoby uzyskanie znacznie bogatszego podświetlania składni C++ (oraz wielu innych języków), składania kodu (code folding), lepszej obsługi dużych plików oraz bardziej profesjonalnego wyglądu edytora, przy zachowaniu dobrej wydajności.
 18. Precompiled headers dla CodeEditor.h i moduły
-19. Podpiąć santizery
+19. 
 20. Wyświetlanie statystyk zmian w czasie rzeczywistym (liczba linii, znaków, rozmiar pliku, linia i kolumna).
 21. Integracja dokumentacji cppreference (jak w `cppman` lub QtCreator).
 22. Blokowanie pliku, który się edytuje.

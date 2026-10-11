@@ -14,9 +14,9 @@ namespace
 {
 enum ColumnIndices
 {
-    COLUMN_TEXT = 0,   // the tree: the header is indented under its parent
-    COLUMN_LINE,
+    COLUMN_LINE = 0,
     COLUMN_TAG,
+    COLUMN_TEXT,       // the tree: the header is indented under its parent (see setTreePosition)
     COLUMN_COUNT
 };
 
@@ -33,10 +33,15 @@ FilteredTagTableWidget::FilteredTagTableWidget(QWidget* parent)
     tagFilterMenu(new QMenu(this))
 {
     setColumnCount(COLUMN_COUNT);
-    setHeaderLabels({ tr("Text"), tr("Line"), tr("Tag ▾") });
+    setHeaderLabels({ tr("Line"), tr("Tag ▾"), tr("Text") });
+    // the tree (indentation, expander) is drawn in the text column, which is the last one: the line and the tag take
+    // what they need and the text takes the rest of the width
+    setTreePosition(COLUMN_TEXT);
     header()->setSectionResizeMode(COLUMN_LINE, QHeaderView::ResizeToContents);
     header()->setSectionResizeMode(COLUMN_TAG, QHeaderView::ResizeToContents);
     header()->setSectionResizeMode(COLUMN_TEXT, QHeaderView::Stretch);
+    // a header of a tree view is not clickable unless asked for: the click on "Tag" opens the filter
+    header()->setSectionsClickable(true);
     setSelectionBehavior(QAbstractItemView::SelectRows);
     setSelectionMode(QAbstractItemView::NoSelection); // ❗️Disable default selection
     setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -294,10 +299,10 @@ void FilteredTagTableWidget::rebuildTree()
         const HeaderInfo& info = cachedHeaders[index];
 
         auto* item = new QTreeWidgetItem();
-        item->setText(COLUMN_TEXT, info.textInside);
-        item->setToolTip(COLUMN_TEXT, info.textInside);
         item->setText(COLUMN_LINE, QString::number(info.startingTagCursor.blockNumber() + 1));
         item->setText(COLUMN_TAG, info.tagName);
+        item->setText(COLUMN_TEXT, info.textInside);
+        item->setToolTip(COLUMN_TEXT, info.textInside);
 
         const int parent = parents[position];
         if (parent < 0)

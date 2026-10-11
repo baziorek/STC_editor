@@ -10,10 +10,19 @@ struct NewsItem
     QString title;
 };
 
-/// Reads the feed (RSS: <item>, Atom: <entry>) in its order. `ok` (if given) is false when the data is not an XML feed.
-/// The thread number is taken from the first of: a child element named id, thread, thread_id, topic, topic_id,
-/// nr or guid with a number as text; otherwise from "id=<number>" in the link.
-QList<NewsItem> parseNewsFeed(const QByteArray& xml, bool* ok = nullptr);
+/// What was found in the answer of the feed
+struct NewsFeed
+{
+    QList<NewsItem> items;   ///< in the order of the feed
+    bool wellFormed = false; ///< the answer is XML at all (an HTML page or an error text is not)
+    /// The root element and the elements in it, to see the shape of the feed: "<cpp0x>: <news> <title>"
+    QString structure;
+};
+
+/// Reads the feed. An entry is an element named item, entry, news, post, article, topic, thread (or their Polish
+/// names). Its title is in the title element; its thread number in the first of: an element named id, thread,
+/// thread_id, topic, topic_id, nr or guid with a number as text, else "id=<number>" in its link.
+NewsFeed parseNewsFeed(const QByteArray& xml);
 
 /// The page of the forum thread
 QString forumThreadUrl(int threadId);
