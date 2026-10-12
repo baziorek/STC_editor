@@ -8,6 +8,11 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Developer tooling: sanitizers (ASan+UBSan) and include-what-you-use, see cmake/*.cmake.
+# Both are applied per target to OUR targets only - never to libs/ or fetched dependencies.
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/StcSanitizers.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/StcIwyu.cmake)
+
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets WebView WebEngineWidgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets WebEngineWidgets)
 
@@ -148,77 +153,76 @@ if(NOT Nuspell_FOUND)
     endif()
 endif()
 
+# ------------------ Source auto-discovery ------------------
+# Adding/removing a .cpp/.h/.ui no longer needs a manual CMake re-run. Every glob below uses
+# CONFIGURE_DEPENDS: the generated build system re-checks the globs on each build and re-runs
+# CMake by itself when the set of files changed (checked at build time; modifying the CONTENT
+# of an existing file does not trigger a reconfigure, nor does it need to).
+#
+# Directories NOT scanned (third-party code, tests with their own explicit target lists,
+# build output, assets): see _stc_excluded_dir_regex. A new top-level directory with sources
+# is picked up automatically, since the list of top-level directories is itself globbed.
+set(_stc_excluded_dir_regex
+    "^(libs|tests|docs|_docs|screens|resources|dictionaries|translations|qt-runtime|cmake|build.*|cmake-build.*|\\..*)$")
+
+function(stc_collect_sources out_var)
+    set(_patterns "*.cpp" "*.h" "*.ui")
+    set(_found "")
+
+    # Files directly in the project root
+    set(_root_globs "")
+    foreach(_pat IN LISTS _patterns)
+        list(APPEND _root_globs "${PROJECT_SOURCE_DIR}/${_pat}")
+    endforeach()
+    file(GLOB _root_files LIST_DIRECTORIES false CONFIGURE_DEPENDS
+        RELATIVE "${PROJECT_SOURCE_DIR}" ${_root_globs})
+    list(APPEND _found ${_root_files})
+
+    # Everything below each non-excluded top-level directory
+    file(GLOB _children LIST_DIRECTORIES true CONFIGURE_DEPENDS
+        RELATIVE "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/*")
+    foreach(_child IN LISTS _children)
+        if(NOT IS_DIRECTORY "${PROJECT_SOURCE_DIR}/${_child}")
+            continue()
+        endif()
+        if(_child MATCHES "${_stc_excluded_dir_regex}")
+            continue()
+        endif()
+        # In-source build directory with an arbitrary name (e.g. -B out)
+        cmake_path(IS_PREFIX PROJECT_BINARY_DIR "${PROJECT_SOURCE_DIR}/${_child}" NORMALIZE _is_build_dir)
+        if(_is_build_dir)
+            continue()
+        endif()
+        set(_child_globs "")
+        foreach(_pat IN LISTS _patterns)
+            list(APPEND _child_globs "${PROJECT_SOURCE_DIR}/${_child}/${_pat}")
+        endforeach()
+        file(GLOB_RECURSE _child_files LIST_DIRECTORIES false CONFIGURE_DEPENDS
+            RELATIVE "${PROJECT_SOURCE_DIR}" ${_child_globs})
+        list(APPEND _found ${_child_files})
+    endforeach()
+
+    list(SORT _found)
+    set(${out_var} ${_found} PARENT_SCOPE)
+endfunction()
+
 # ------------------ Project Sources ------------------
 include_directories(${PROJECT_SOURCE_DIR}) # for .ui files
 
-set(PROJECT_SOURCES
-    main.cpp
-    CodeEditor.h CodeEditor.cpp
-    stcSyntaxPatterns.h stcSyntaxPatterns.cpp
+stc_collect_sources(PROJECT_SOURCES)
+list(LENGTH PROJECT_SOURCES _stc_sources_count)
+message(STATUS "Discovered ${_stc_sources_count} source/header/ui files for ${PROJECT_NAME}")
 
-    ui/mainwindow.h ui/mainwindow.cpp ui/mainwindow.ui
-    ui/finddialog.h ui/finddialog.ui ui/finddialog.cpp
-    ui/errorlist.h ui/errorlist.cpp ui/errorlist.ui
-    ui/gotolinewidget.h ui/gotolinewidget.cpp ui/gotolinewidget.ui
-    ui/stctagsbuttons.h ui/stctagsbuttons.cpp ui/stctagsbuttons.ui
-    ui/shortcutsdialog.h ui/shortcutsdialog.cpp
-    ui/highlightdelegate.h ui/highlightdelegate.cpp
-    ui/cppcompilerdialog.h ui/cppcompilerdialog.cpp
-    ui/WorkAwareStopwatch.h ui/WorkAwareStopwatch.cpp ui/WorkAwareStopwatch.ui
-
-    checkers/PairedTagsChecker.h checkers/PairedTagsChecker.cpp
-
-    types/stcTags.h types/stcTags.cpp
-    types/CodeBlock.h
-    types/documentstatistics.h types/documentstatistics.cpp
-
-    widgets/LineNumberArea.h widgets/LineNumberArea.cpp
-    widgets/DocumentationBrowserDialog.h widgets/DocumentationBrowserDialog.cpp
-    widgets/FilteredTagTableWidget.h widgets/FilteredTagTableWidget.cpp
-    utils/HeaderNesting.h utils/HeaderNesting.cpp
-    utils/CppNews.h utils/CppNews.cpp
-    widgets/CppNewsWidget.h widgets/CppNewsWidget.cpp
-    widgets/CodeBlocksTableWidget.h widgets/CodeBlocksTableWidget.cpp
-    widgets/TodosTrackerTableWidget.h widgets/TodosTrackerTableWidget.cpp
-    widgets/LoginDialog.h widgets/LoginDialog.cpp
-    widgets/StcPreview.h widgets/StcPreview.cpp
-    widgets/HtmlSourceDialog.h widgets/HtmlSourceDialog.cpp
-    widgets/DiffViewerWidget.h widgets/DiffViewerWidget.cpp
-    widgets/EditHistoryDialog.h widgets/EditHistoryDialog.cpp widgets/EditHistoryDialog.ui
-    widgets/EditHistoryFormat.h widgets/EditHistoryFormat.cpp
-    widgets/LineHistoryDialog.h widgets/LineHistoryDialog.cpp widgets/LineHistoryDialog.ui
-    widgets/RichTextDelegate.h widgets/RichTextDelegate.cpp
-    widgets/DiffReviewDialog.h widgets/DiffReviewDialog.cpp
-    widgets/PastedTextDiffDialog.h widgets/PastedTextDiffDialog.cpp
-    widgets/BreadcrumbTextBrowser.h widgets/BreadcrumbTextBrowser.cpp
-    widgets/RenameFileDialog.h widgets/RenameFileDialog.cpp widgets/RenameFileDialog.ui
-    widgets/StcTablesCreator.h widgets/StcTablesCreator.cpp widgets/StcTablesCreator.ui
-    widgets/BackupRecoveryDialog.h widgets/BackupRecoveryDialog.cpp
-
-    utils/DiffCalculation.h utils/DiffCalculation.cpp
-    utils/EditHistory.h utils/EditHistory.cpp
-    utils/FileEncodingHandler.h utils/FileEncodingHandler.cpp
-    utils/STCSyntaxHighlighter.h utils/STCSyntaxHighlighter.cpp
-    utils/SyntaxMode.h utils/SyntaxMode.cpp
-    utils/SyntaxModeMemory.h utils/SyntaxModeMemory.cpp
-    utils/LinkDetection.h utils/LinkDetection.cpp
-    utils/CodeLanguageHighlighting.h utils/CodeLanguageHighlighting.cpp
-    utils/AnsiTextWriter.h utils/AnsiTextWriter.cpp
-    utils/StcTagRegions.h utils/StcTagRegions.cpp
-    utils/PreviewSyncMap.h utils/PreviewSyncMap.cpp
-    utils/HtmlPrettyPrinter.h utils/HtmlPrettyPrinter.cpp
-    utils/SpellChecker.h utils/SpellChecker.cpp
-    utils/BackupManager.h utils/BackupManager.cpp
+# Not compiled - only listed so that IDEs show them in the project tree.
+file(GLOB _stc_text_files LIST_DIRECTORIES false CONFIGURE_DEPENDS
+    RELATIVE "${PROJECT_SOURCE_DIR}"
+    "${PROJECT_SOURCE_DIR}/*.md"
+    "${PROJECT_SOURCE_DIR}/.github/workflows/*.yml"
+    "${PROJECT_SOURCE_DIR}/.github/workflows/*.md"
 )
-
 set(TEXT_FILES
     LICENSE
-    README.md
-    README_ang.md
-    .github/workflows/release-ubuntu22.04.yml
-    .github/workflows/release-windows.yml
-    .github/workflows/test-linux.yml
-    .github/workflows/README.md
+    ${_stc_text_files}
     dictionaries/pl/pl_PL.aff
     dictionaries/pl/pl_PL.dic
     dictionaries/pl/README_en.txt
@@ -537,6 +541,26 @@ if(NOT WIN32)
     target_link_libraries(${PROJECT_NAME}CppNewsTests PRIVATE Qt${QT_VERSION_MAJOR}::Core ${GTEST_LIBRARIES} pthread gtest_main)
     add_test(NAME ${PROJECT_NAME}CppNewsTests COMMAND ${PROJECT_NAME}CppNewsTests)
 endif()
+
+# ------------------ Wire sanitizers + IWYU to OUR targets ------------------
+# Everything defined in THIS directory whose name starts with the project name: the app and
+# the test executables. Vendored/fetched code (QCodeEditor, StripCppComments, uchardet, nuspell)
+# is deliberately not touched.
+get_directory_property(_stc_own_targets BUILDSYSTEM_TARGETS)
+foreach(_stc_tgt IN LISTS _stc_own_targets)
+    if(_stc_tgt MATCHES "^${PROJECT_NAME}")
+        get_target_property(_stc_tgt_type ${_stc_tgt} TYPE)
+        if(_stc_tgt_type STREQUAL "EXECUTABLE")
+            stc_enable_sanitizers(${_stc_tgt})
+        endif()
+    endif()
+endforeach()
+stc_sanitizers_test_environment()
+
+# IWYU only on the application itself (the test executables recompile the same sources
+# and pull in gtest macros, which only adds noise). Add more targets here if wanted:
+#   stc_enable_iwyu(${PROJECT_NAME}Tests)
+stc_enable_iwyu(${PROJECT_NAME})
 
 # ------------------ AddressSanitizer: static runtime (avoid LD_PRELOAD ordering issues) ------------------
 # When ASan is enabled - e.g. via Qt Creator's Projects > Build Settings > "Sanitizers"

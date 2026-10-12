@@ -77,6 +77,7 @@ Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://c
 27. **Czteroklik na tekście**: Czwarte kliknięcie na tekście powoduje:
     - Jeśli jesteśmy w między tagami `[x]...[/x]` to zaznacza cały tekst między tagami.
     - Jeśli klikamy w przestrzeni na artybut `[y atr="..."]` to zaznaczany jest cały tekst atrybutu.
+28. **Feed Cpp0x.pl**: Widget wyświetlający aktualności na stronie [cpp0x.pl](https://cpp0x.pl).
 
 ## Ogólne funkcje edytora
 Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wybrane funkcjonalności, których brakuje mi w zwykłych edytorach:
@@ -143,34 +144,30 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 
 
 ## Planowane funkcjonalności
-1. FindWidget - aby aktualizował pozycje w tekście na bieżąco przy dodawaniu/usuwaniu linii.
-2. Podgląd terminala np. przez https://github.com/lxqt/qtermwidget - tylko czy mi to nie zrobi GPLa?
-3. Kreator tabel dla znaczników STC.
-4. Podpięcie sztucznej inteligencji np. llama.cpp do komentowania kodu i artykułu. Z możliwością edycji promptu.
-5. Wyszukiwanie wielu słów w tej samej linii niezależnie od kolejności.
-6. Cmake: podpiąć sanitizery
-7. Cmake: podpiąć IWYU ale za wyjątkiem bibliotek zewnętrznych.
+1. Podgląd terminala np. przez https://github.com/lxqt/qtermwidget - tylko czy mi to nie zrobi GPLa?
+2. Kreator tabel dla znaczników STC.
+3. Podpięcie sztucznej inteligencji np. llama.cpp do komentowania kodu i artykułu. Z możliwością edycji promptu.
+4. Rozważyć użycie tej samej biblioteki do porównywania zarówno linii jak i znaków np. https://github.com/google/diff-match-patch
+5. Obsługa markdown
+6. Pobieranie aktualizacji przez https://cpp0x.pl/xml/ - poprawki wizualne
+7. Dodać widget edytujący obrazki - link z podglądem, opis, tekst alternatywny i jeszcze jest tam checkbox z autofit
 8. Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
 9. Zwijanie nagłówków i kodu (jak funkcje w środowiskach programistycznych)
-10. Rozważyć użycie tej samej biblioteki do porównywania zarówno linii jak i znaków np. https://github.com/google/diff-match-patch
+10. Wyświetlanie statystyk zmian w czasie rzeczywistym (liczba linii, znaków, rozmiar pliku, linia i kolumna).
 11. Szukanie tylko w kodzie
 12. Może AI mi podzieli CodeEditor aby nie był GodObject
-13. Obsługa markdown
+13. Optymalizacja wydajności edytora przy szybkim pisaniu.
 14. Ctrl + V gdy mamy obrazek w schowku - wtedy powinno zaproponować umieszczenie obrazka w odpowiednim katalogu
 15. Gdy wyświetlamy diffa, ale linie są długie to pojawia się scrolling area, a nie powinna.
-16. Pobieranie aktualizacji przez https://cpp0x.pl/xml/
+16. Precompiled headers dla CodeEditor.h i moduły
 17. Rozważenie integracji Scintilla wraz z Lexillą jako silnika edycji i kolorowania składni (zamiast obecnego QCodeEditor). Dzięki temu możliwe byłoby uzyskanie znacznie bogatszego podświetlania składni C++ (oraz wielu innych języków), składania kodu (code folding), lepszej obsługi dużych plików oraz bardziej profesjonalnego wyglądu edytora, przy zachowaniu dobrej wydajności.
-18. Precompiled headers dla CodeEditor.h i moduły
-19. 
-20. Wyświetlanie statystyk zmian w czasie rzeczywistym (liczba linii, znaków, rozmiar pliku, linia i kolumna).
 21. Integracja dokumentacji cppreference (jak w `cppman` lub QtCreator).
 22. Blokowanie pliku, który się edytuje.
 23. A może do szukania błędów (niezamkniętych tagów) zaprzędz analizator składniowy: https://www.antlr.org/ ?
-24. Optymalizacja wydajności edytora przy szybkim pisaniu.
 25. W danej linii da się wpisać dane np.: `QTextBlockUserData` i potem `block.setUserData(data);` - może da się to wykorzystać w optymalizacji
 26. Sensowne funkcjonalności z innych podobnych edytorów np. [Scribe-Text-Editor](https://github.com/AleksandrHovhannisyan/Scribe-Text-Editor)
 27. Podgląd strony internetowej po najechaniu myszką
-28. Wsparcie dla MD na bazie: https://github.com/Qt-Widgets/notes
+28. Wsparcie dla MD na bazie: https://github.com/Qt-Widgets/notes https://github.com/nuttyartist/notes
 29. W linijce gradient ostatnio używanych linii z numerami ile temu
 30. Ukrycie tagów, nie licząc otaczających (rich text editor)
 31. Możliwość wyłączenia poszczególnych aspektów kolorowania składni.

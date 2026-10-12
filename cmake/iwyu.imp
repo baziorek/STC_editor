@@ -1,0 +1,14 @@
+# Mapping for include-what-you-use (see cmake/StcIwyu.cmake).
+# Teaches IWYU that these libstdc++ internal headers are private and that the
+# public header to include is <functional> / <format> (needed with C++23).
+# Based on config/iwyu.imp from dmacri/OOpenCal-Viewer.
+[
+  { "include": ["<bits/mofunc_impl.h>", "private", "<functional>", "public"] },
+  { "include": ["\"bits/mofunc_impl.h\"", "private", "<functional>", "public"] },
+  { "include": ["<bits/unicode-data.h>", "private", "<format>", "public"] },
+  { "include": ["\"bits/unicode-data.h\"", "private", "<format>", "public"] },
+  { "include": ["@<bits/mofunc_impl.h>", "private", "<functional>", "public"] },
+  { "include": ["@<bits/unicode-data.h>", "private", "<format>", "public"] },
+  { "include": ["@\"/usr/include/c++/.*/bits/mofunc_impl.h\"", "private", "<functional>", "public"] },
+  { "include": ["@\"/usr/include/c++/.*/bits/unicode-data.h\"", "private", "<format>", "public"] }
+]
