@@ -1,7 +1,11 @@
-# Mapping for include-what-you-use (see cmake/StcIwyu.cmake).
-# Teaches IWYU that these libstdc++ internal headers are private and that the
-# public header to include is <functional> / <format> (needed with C++23).
-# Based on config/iwyu.imp from dmacri/OOpenCal-Viewer.
+# Hand-maintained mapping for include-what-you-use (see cmake/StcIwyu.cmake).
+# The bulk of the Qt mapping (<qstring.h> -> <QString> and so on) is GENERATED at configure
+# time from the Qt in use (build/iwyu-qt.imp). Only what cannot be derived is listed here.
+#
+# 1) libstdc++ internals that are private; the public header is <functional> / <format>
+#    (needed with C++23). Based on config/iwyu.imp from dmacri/OOpenCal-Viewer.
+# 2) Qt headers that have no forwarding header of their own, or are shared by many of them
+#    (so the generator cannot pick one), mapped to the header one is supposed to include.
 [
   { "include": ["<bits/mofunc_impl.h>", "private", "<functional>", "public"] },
   { "include": ["\"bits/mofunc_impl.h\"", "private", "<functional>", "public"] },
@@ -10,5 +14,19 @@
   { "include": ["@<bits/mofunc_impl.h>", "private", "<functional>", "public"] },
   { "include": ["@<bits/unicode-data.h>", "private", "<format>", "public"] },
   { "include": ["@\"/usr/include/c++/.*/bits/mofunc_impl.h\"", "private", "<functional>", "public"] },
-  { "include": ["@\"/usr/include/c++/.*/bits/unicode-data.h\"", "private", "<format>", "public"] }
+  { "include": ["@\"/usr/include/c++/.*/bits/unicode-data.h\"", "private", "<format>", "public"] },
+
+  # Qt: Q_OBJECT / signals / slots, connect() internals, Qt:: enums, export macros.
+  # Qt 6 spreads <QtGlobal> over several small headers, and the same header can show up
+  # under two names (<qglobal.h> via -isystem .../QtCore, <QtCore/qglobal.h> via -isystem .../qt6),
+  # so both spellings are listed.
+  { "include": ["@[\"<](QtCore/)?qtmetamacros\\.h[\">]", "private", "<QObject>", "public"] },
+  { "include": ["@[\"<](QtCore/)?qobjectdefs\\.h[\">]", "private", "<QObject>", "public"] },
+  { "include": ["@[\"<](QtCore/)?qobjectdefs_impl\\.h[\">]", "private", "<QObject>", "public"] },
+  { "include": ["@[\"<](QtCore/)?qnamespace\\.h[\">]", "private", "<Qt>", "public"] },
+  { "include": ["@[\"<](QtCore/)?qglobal\\.h[\">]", "private", "<QtGlobal>", "public"] },
+  { "include": ["@[\"<](QtCore/)?qtcoreexports\\.h[\">]", "private", "<QtGlobal>", "public"] },
+  { "include": ["<QtCore/qobjectdefs.h>", "private", "<QObject>", "public"] },
+  { "include": ["<QtCore/qglobal.h>", "private", "<QtGlobal>", "public"] },
+  { "include": ["<QtCore/qtcoreexports.h>", "private", "<QtGlobal>", "public"] }
 ]
