@@ -21,7 +21,12 @@ If you want to use this editor for writing content for [cpp0x.pl](https://cpp0x.
 
 1. **Syntax Highlighting**: Colorizes STC markup for better readability.
     - Python code inside `[py]...[/py]` tags (block and inline) is highlighted too, including multi-line `"""..."""` strings. The rules are built on the word lists and colors of QCodeEditor.
-2. **Tag Closure Validation**: Checks if all STC tags are properly closed.
+2. **Tag Validation**: Checks if all STC tags are properly closed and properly used:
+    - unclosed tags, closing a tag that was not opened (a separate message for a never-opened tag and for a badly nested one), and closing one-sided tags (`[a]`, `[img]`, `[doc]`...),
+    - only known STC tags (an unknown one, e.g. `array[idx]`, gets a single message and does not cause an additional "not closed" error),
+    - allowed attributes for every tag (e.g. `href`/`name` for `[a]`, `src`/`alt`/`opis`/`autofit` for `[img]`, `ext`/`extended`/`header` for `[csv]`), values in double quotes, non-empty values (except `alt` and `opis`), required attributes (e.g. `href` in `[a]`) and attributes given twice,
+    - `[run]` must be inside `[pkt ext]` or `[csv ext]`: it is reported outside `[pkt]`/`[csv]` and inside `[pkt]`/`[csv]` without `ext`.
+    - Tags inside `[cpp]`, `[py]` and `[code]` are skipped. The results are shown in the error list with the line number and the position in the line.
 3. **Text Transformation**: Convert selected text to lowercase, uppercase, camelCase to snake_case, or vice versa.
 4. **Document Context View**:
    - Detects tags (e.g., `[h1]Header[/h1]`), their line numbers, and content (e.g., "Header").
@@ -124,6 +129,44 @@ You can download the latest compiled version of **STC_editor** from the most rec
 📦 [⬇️ Download the latest release](https://github.com/baziorek/STC_editor/releases/latest)  
 *No published releases are currently available. They will appear here when released.*
 
+## Building from Source
+
+Requirements: a C++23 compiler (GCC 13+ or equivalent), CMake 3.20+, Qt 6 (Widgets, WebEngineWidgets) and Git with submodule support (the libraries in `libs/` are submodules).
+
+```bash
+git clone --recurse-submodules https://github.com/baziorek/STC_editor.git
+cd STC_editor
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel
+```
+
+### Dependencies
+
+On Ubuntu 24.04 you need the packages from the CI workflow ([`test-linux.yml`](.github/workflows/test-linux.yml)) plus `libicu-dev`:
+
+```bash
+sudo apt install -y \
+  build-essential cmake ninja-build git \
+  qt6-base-dev qt6-base-dev-tools qt6-tools-dev qt6-tools-dev-tools \
+  qt6-webengine-dev qt6-webengine-dev-tools libqt6webenginecore6-bin \
+  libgl-dev libglu1-mesa-dev libxkbcommon-dev mesa-common-dev \
+  libuchardet-dev libgtest-dev \
+  libicu-dev
+```
+
+- `libicu-dev` is required because [Nuspell](https://nuspell.github.io/) (spell checking) is built from source when it is not installed system-wide, and without ICU its configuration fails (`Failed to find all ICU components`).
+- If `libuchardet-dev` is installed it is used; otherwise `uchardet` is downloaded and built automatically (this needs internet access during the first configuration, just like Nuspell).
+- `libgtest-dev` is only needed for the tests (Linux).
+
+### Tests
+
+```bash
+cd build
+QT_QPA_PLATFORM=offscreen ctest --output-on-failure
+```
+
+`QT_QPA_PLATFORM=offscreen` lets the Qt-based tests run on a machine without a display (e.g. on a CI server).
+
 ## Planned Features
 
 1. Built-in STC course within the application.
@@ -172,14 +215,10 @@ You can download the latest compiled version of **STC_editor** from the most rec
 51. Show diff for external file changes.
 52. Fix scrolling area appearing for long lines in diff views.
 53. Display command results in the editor.
-54. Validation Checks:
-    - Ensure `[run]` tags are nested within `[pkt]` tags.
-    - Verify all tags are closed (e.g., check for new tags after line edits).
-    - Validate tag attributes (e.g., proper quoting, allowed attributes).
-    - Ensure only valid STC tags are used.
+54. Validation Checks (remaining; `[run]` placement, tag attributes, valid STC tags and closing unopened tags are done - see the tag validation description above):
+    - Run the validation automatically after leaving an edited line (e.g., check for new tags) - currently it is started manually.
     - Check if links exist.
-    - Prevent closing unopened tags.
-    - Ensure `[run]` tags are within `[csv]` or `[pkt]`.
+    - Suggest that `[img]` has `alt` (for visually impaired readers).
 
 ## Mini Bugs
 

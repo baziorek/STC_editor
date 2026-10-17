@@ -20,7 +20,12 @@ Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://c
  1. **Kolorowanie składni**: Podświetlanie znaczników STC dla lepszej czytelności.
     - Kolorowanie składni C++ w ramach znaczników `[cpp]...[/cpp]`. Jest to zaimplementowane przy wykorzystaniu [QCodeEditor](https://github.com/Megaxela/QCodeEditor) (autorstwa [Megaxela](https://github.com/Megaxela), bazując na [forku ArsMasiuk](https://github.com/ArsMasiuk/QCodeEditor)).
     - Kolorowanie składni Pythona w ramach znaczników `[py]...[/py]` (zarówno blokowo, jak i w linii), łącznie z wieloliniowymi łańcuchami `"""..."""`. Reguły są oparte na słownikach i kolorach z [QCodeEditor](https://github.com/Megaxela/QCodeEditor).
- 2. **Weryfikacja zamknięcia znaczników**: Sprawdza, czy wszystkie znaczniki STC są poprawnie zamknięte.
+ 2. **Weryfikacja znaczników**: Sprawdza, czy wszystkie znaczniki STC są poprawnie zamknięte i poprawnie użyte:
+    - niezamknięte znaczniki, zamykanie znacznika, który nie był otwarty (osobny komunikat dla znacznika nigdy nieotwartego i dla źle zagnieżdżonego) oraz zamykanie znaczników jednostronnych (`[a]`, `[img]`, `[doc]`...),
+    - tylko znane znaczniki STC (nieznany, np. `tablica[idx]`, jest zgłaszany jednym komunikatem i nie powoduje dodatkowego błędu „niezamknięty”),
+    - dozwolone atrybuty dla każdego znacznika (np. `href`/`name` dla `[a]`, `src`/`alt`/`opis`/`autofit` dla `[img]`, `ext`/`extended`/`header` dla `[csv]`), wartości w podwójnym cudzysłowie, niepuste wartości (poza `alt` i `opis`), wymagane atrybuty (np. `href` w `[a]`) i atrybuty podane dwa razy,
+    - `[run]` musi być w `[pkt ext]` lub `[csv ext]`: zgłaszane jest użycie poza `[pkt]`/`[csv]` oraz wewnątrz `[pkt]`/`[csv]` bez `ext`.
+    - Znaczniki wewnątrz `[cpp]`, `[py]` i `[code]` są pomijane. Wyniki są pokazywane w liście błędów wraz z numerem linii i pozycją w linii.
  3. **Transformacja tekstu**: Zmiana zaznaczonego tekstu na małe litery, wielkie litery, camelCase na snake_case lub odwrotnie.
  4. **Podgląd kontekstu dokumentu**:
     - Wykrywa znaczniki (np. `[h1]Nagłówek[/h1]`), ich numery linii oraz zawartość (np. „Nagłówek”).
@@ -145,6 +150,44 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 *Aktualnie brak opublikowanych wydań (release). Gdy się pojawią — będą dostępne tutaj.*
 
 
+## Budowanie ze źródeł
+
+Wymagane: kompilator z obsługą C++23 (GCC 13+ lub odpowiednik), CMake 3.20+, Qt 6 (Widgets, WebEngineWidgets) oraz Git z obsługą submodułów (biblioteki z katalogu `libs/` są submodułami).
+
+```bash
+git clone --recurse-submodules https://github.com/baziorek/STC_editor.git
+cd STC_editor
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel
+```
+
+### Zależności
+
+Na Ubuntu 24.04 potrzebne są pakiety z workflow CI ([`test-linux.yml`](.github/workflows/test-linux.yml)) oraz dodatkowo `libicu-dev`:
+
+```bash
+sudo apt install -y \
+  build-essential cmake ninja-build git \
+  qt6-base-dev qt6-base-dev-tools qt6-tools-dev qt6-tools-dev-tools \
+  qt6-webengine-dev qt6-webengine-dev-tools libqt6webenginecore6-bin \
+  libgl-dev libglu1-mesa-dev libxkbcommon-dev mesa-common-dev \
+  libuchardet-dev libgtest-dev \
+  libicu-dev
+```
+
+- `libicu-dev` jest potrzebny, bo [Nuspell](https://nuspell.github.io/) (sprawdzanie pisowni) jest budowany ze źródeł, gdy nie ma go w systemie, a bez ICU jego konfiguracja kończy się błędem (`Failed to find all ICU components`).
+- Jeśli w systemie jest `libuchardet-dev`, zostanie użyty; w przeciwnym razie `uchardet` zostanie pobrany i zbudowany automatycznie (wymaga dostępu do internetu przy pierwszej konfiguracji, tak samo jak Nuspell).
+- `libgtest-dev` jest potrzebny tylko do testów (Linux).
+
+### Testy
+
+```bash
+cd build
+QT_QPA_PLATFORM=offscreen ctest --output-on-failure
+```
+
+`QT_QPA_PLATFORM=offscreen` pozwala uruchomić testy używające Qt na maszynie bez środowiska graficznego (np. na serwerze CI).
+
 ## Planowane funkcjonalności
 1. Podgląd terminala np. przez https://github.com/lxqt/qtermwidget - tylko czy mi to nie zrobi GPLa?
 2. Kreator tabel dla znaczników STC.
@@ -185,14 +228,10 @@ Możesz pobrać najnowszą skompilowaną wersję **STC_editor**, z ostatniego po
 41. Otwieranie wielu plików jednocześnie.
 42. Widok sąsiadujący do porównywania plików.
 43. Konsolidacja obrazów do jednego katalogu z aktualizacją ścieżek w znacznikach STC.
-44. Sprawdzania:
-     - Sprawdzanie, czy znaczniki `[run]` znajdują się wewnątrz `[pkt]`.
-     - Weryfikacja, czy wszystkie znaczniki są zamknięte (np. po opuszczeniu linijki sprawdzamy czy są tam zmiany, jak tak, to czy jest tam nowy tag)
-     - Weryfikacja odpowiednich atrybutów w tagach (czy w cudzysłowiu, czy tylko dozwole atrubytu)
-     - Weryfikacja czy wprowadzono tylko legalne tagi STC
+44. Sprawdzania (reszta; `[run]`, atrybuty, legalne tagi i zamykanie nieotwartych tagów są już zrobione - patrz opis weryfikacji znaczników wyżej):
+     - Automatyczne uruchamianie weryfikacji po opuszczeniu linijki ze zmianami (np. czy jest tam nowy tag) - obecnie weryfikacja jest uruchamiana ręcznie
      - Sprawdzenie czy link istnieje
-     - Dodać check: czy nie zamykam nieotwartego tagu?
-     - Sprawdzenie czy Run nie jest poza csv lub pkt
+     - Sugestia, żeby `[img]` miał `alt` (ze względu na osoby niewidzące)
 
 ## Min Bugi (czyli wcale nie trzebaich poprawiać):
 1. Zmiana wielkości czcionki powinna też wpłynąć na czcionkę w ramach numeracji linii

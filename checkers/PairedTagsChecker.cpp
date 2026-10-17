@@ -1,21 +1,31 @@
 #include <algorithm>
-#include <vector>
-#include <regex>
+#include <cctype>
 #include <format>
-#include <stack>
+#include <regex>
+#include <string_view>
+#include <vector>
 #include "PairedTagsChecker.h"
+#include "StcTagRules.h"
 using namespace std;
 
 namespace
 {
-const std::regex tagRegex{R"(\[/?([[:alpha:]][[:alnum:]]*)([^\]]*?)\])"};
-} // namespace
+const std::regex tagRegex{R"(\[/?([[:alpha:]][[:alnum:]_]*)([^\]]*?)\])"};
+
+struct Attribute
+{
+    std::string name;
+    std::string value;
+    char quote{};             ///< '"' or '\'' when the value is quoted, 0 otherwise
+    bool hasValue{};          ///< there was a '=' after the name
+    bool unterminatedQuote{}; ///< the opening quote has no closing one
+};
 
 struct Tag
 {
     std::string tagShortname;
     std::string tagFull;
-    std::vector<std::string> attributes;
+    std::vector<Attribute> attributes;
     unsigned line{}, startingPositionInLine{};
 
     std::string toString() const
@@ -27,7 +37,7 @@ struct Tag
         std::string attributesAsString;
         for (const auto& attribute : attributes)
         {
-            attributesAsString += ">" + attribute + "< ";
+            attributesAsString += ">" + attribute.name + (attribute.hasValue ? "=" + attribute.value : "") + "< ";
         }
         return attributesAsString;
     }
@@ -40,7 +50,94 @@ struct Tag
     {
         return tagFull[1] == '/'; // TODO: consider using regex
     }
+    bool hasAttribute(std::string_view name) const
+    {
+        return std::ranges::any_of(attributes, [name](const Attribute& attribute) { return attribute.name == name; });
+    }
+    /// Tag as the user sees it in the text, e.g. "[b]" or "[/b]"
+    std::string displayName() const
+    {
+        return format("[{}{}]", isClosing() ? "/" : "", tagShortname);
+    }
 };
+
+bool isSpace(char character)
+{
+    return std::isspace(static_cast<unsigned char>(character)) != 0;
+}
+
+void skipSpaces(std::string_view text, std::size_t& position)
+{
+    while (position < text.size() && isSpace(text[position]))
+    {
+        ++position;
+    }
+}
+
+/// Reads the value after '=': in quotes (double or single) or a bare word until the next space
+void readAttributeValue(std::string_view text, std::size_t& position, Attribute& attribute)
+{
+    if (position < text.size() && (text[position] == '"' || text[position] == '\''))
+    {
+        attribute.quote = text[position];
+        const auto closingQuote = text.find(attribute.quote, position + 1);
+        if (closingQuote == std::string_view::npos)
+        {
+            attribute.unterminatedQuote = true;
+            attribute.value = text.substr(position + 1);
+            position = text.size();
+        }
+        else
+        {
+            attribute.value = text.substr(position + 1, closingQuote - position - 1);
+            position = closingQuote + 1;
+        }
+        return;
+    }
+
+    const auto valueStart = position;
+    while (position < text.size() && !isSpace(text[position]))
+    {
+        ++position;
+    }
+    attribute.value = text.substr(valueStart, position - valueStart);
+}
+
+/// Splits the text after the tag name (e.g. ` href="x" name="y" ext`) into attributes - flags, quoted and bare values
+std::vector<Attribute> parseAttributes(std::string_view text)
+{
+    std::vector<Attribute> attributes;
+    std::size_t position = 0;
+
+    while (true)
+    {
+        skipSpaces(text, position);
+        if (position >= text.size())
+        {
+            break;
+        }
+
+        Attribute attribute;
+        const auto nameStart = position;
+        while (position < text.size() && !isSpace(text[position]) && text[position] != '=')
+        {
+            ++position;
+        }
+        attribute.name = text.substr(nameStart, position - nameStart);
+
+        skipSpaces(text, position);
+        if (position < text.size() && text[position] == '=')
+        {
+            ++position;
+            skipSpaces(text, position);
+            attribute.hasValue = true;
+            readAttributeValue(text, position, attribute);
+        }
+        attributes.emplace_back(std::move(attribute));
+    }
+
+    return attributes;
+}
 
 std::vector<std::string_view> splitLines(const std::string& text)
 {
@@ -62,7 +159,7 @@ std::vector<Tag> extractTags(const std::vector<std::string_view>& lines)
 {
     std::vector<Tag> tags;
 
-    for (int lineNumber = 0; lineNumber < lines.size(); ++lineNumber)
+    for (std::size_t lineNumber = 0; lineNumber < lines.size(); ++lineNumber)
     {
         std::string lineStr{lines[lineNumber]};
         auto searchStart = lineStr.cbegin();
@@ -75,20 +172,9 @@ std::vector<Tag> extractTags(const std::vector<std::string_view>& lines)
                 Tag tag;
                 tag.tagFull = match[0];
                 tag.tagShortname = match[1];
-
-                std::string attributesStr = match[2];
-                std::regex attrRegex{R"(\s*([[:alpha:]]+)=['"]?([^'"]+)['"]?)"};
-                std::smatch attrMatch;
-
-                auto attrSearchStart = attributesStr.cbegin();
-                while (std::regex_search(attrSearchStart, attributesStr.cend(), attrMatch, attrRegex))
-                {
-                    tag.attributes.emplace_back(attrMatch[1].str() + "=" + attrMatch[2].str());
-                    attrSearchStart = attrMatch.suffix().first;
-                }
-
+                tag.attributes = parseAttributes(match[2].str());
                 tag.line = lineNumber + 1;
-                tag.startingPositionInLine = match.position(0);
+                tag.startingPositionInLine = std::distance(lineStr.cbegin(), match[0].first);
                 tags.emplace_back(std::move(tag));
 
                 searchStart = match.suffix().first;
@@ -103,59 +189,113 @@ std::vector<Tag> extractTags(const std::vector<std::string_view>& lines)
     return tags;
 }
 
-std::vector<PairedTagsChecker::TagError> checkIfAllTagsAreClosed(const std::vector<Tag>& tags)
+bool isNumber(std::string_view text)
 {
-    std::vector<PairedTagsChecker::TagError> errorPerLine;
-    errorPerLine.reserve(tags.size());
+    return !text.empty() && std::ranges::all_of(text, [](char character) { return character >= '0' && character <= '9'; });
+}
 
-    std::stack<Tag> openTags;
-    bool insideRun = false, insideCpp = false, insideCode = false, insidePython = false;
-
-    for (const auto& tag : tags)
+/// Walks through the tags of the document keeping track of open tags, and reports everything that is wrong with them
+class TagsAnalyzer
+{
+public:
+    std::vector<PairedTagsChecker::TagError> analyze(const std::vector<Tag>& tags)
     {
-        if (insideCpp && tag.tagShortname != "cpp")
+        for (const auto& tag : tags)
         {
-            continue; // warning? tags inside cpp will not work, but it can be array indexing
+            processTag(tag);
         }
-        else if (insideCode && tag.tagShortname != "code")
+        reportUnclosedTags();
+
+        std::sort(begin(errors), end(errors));
+        return std::move(errors);
+    }
+
+private:
+    void processTag(const Tag& tag)
+    {
+        if (isHiddenByCodeBlock(tag))
         {
-            // cout << "! Tags inside [code] will not work! Current tag: " << tag.toString() << endl;
-            continue;
+            return;
         }
-        else if (insidePython && tag.tagShortname != "py")
+
+        const auto* rule = StcTagRules::findRule(tag.tagShortname);
+        if (rule == nullptr)
         {
-            continue; // warning? tags inside python will not work, but it can be array indexing
+            addError(tag, format("{} is not an STC tag (unknown tag).", tag.displayName()));
+            return;
         }
 
         if (tag.isOpening())
         {
-            if (tag.tagShortname == "img"
-                || tag.tagShortname == "a")
-            {
-                continue; // those tags don't have to be closed
-            }
-            openTags.emplace(tag);
+            processOpeningTag(tag, *rule);
         }
-        else // isClosingTag
+        else if (!processClosingTag(tag, *rule))
         {
-            if (openTags.empty())
-            {
-                auto errorText = std::format("{} is not opened! No tags are opened! You are trying to close the tag in line {} in position {}!", tag.tagShortname, tag.line, tag.startingPositionInLine);
-                errorPerLine.emplace_back(tag.line, tag.startingPositionInLine, errorText);
-                continue;
-            }
-            if (openTags.top().tagShortname == tag.tagShortname)
-            {
-                openTags.pop();
-            }
-            else
-            {
-                auto errorText = std::format("{} is not closing in line {} in position {} is not closing! Maybe you want to close {}",
-                                             tag.tagShortname, tag.line, tag.startingPositionInLine, openTags.top().tagShortname);
-                errorPerLine.emplace_back(tag.line, tag.startingPositionInLine, errorText);
-            }
+            return;
+        }
+        toggleCodeBlockState(tag);
+    }
+
+    /// Tags inside [cpp], [code] and [py] are not interpreted (it can be e.g. array indexing)
+    bool isHiddenByCodeBlock(const Tag& tag) const
+    {
+        return (insideCpp && tag.tagShortname != "cpp")
+               || (insideCode && tag.tagShortname != "code")
+               || (insidePython && tag.tagShortname != "py");
+    }
+
+    void processOpeningTag(const Tag& tag, const StcTagRules::TagRule& rule)
+    {
+        checkAttributes(tag, rule);
+
+        if (rule.closing == StcTagRules::Closing::OneSided)
+        {
+            return; // those tags don't have to be closed
+        }
+        if (tag.tagShortname == "run")
+        {
+            checkRunPlacement(tag);
+        }
+        openTags.push_back(tag);
+    }
+
+    /// @return false when nothing more should be done with the tag (it closed nothing)
+    bool processClosingTag(const Tag& tag, const StcTagRules::TagRule& rule)
+    {
+        if (rule.closing == StcTagRules::Closing::OneSided)
+        {
+            addError(tag, format("{} is a one-sided tag, it must not be closed.", tag.displayName()));
+            return false;
+        }
+        if (openTags.empty())
+        {
+            auto errorText = std::format("{} is not opened! No tags are opened! You are trying to close the tag in line {} in position {}!", tag.tagShortname, tag.line, tag.startingPositionInLine);
+            addError(tag, std::move(errorText));
+            return false;
         }
 
+        const auto& innermostOpen = openTags.back();
+        if (innermostOpen.tagShortname == tag.tagShortname)
+        {
+            openTags.pop_back();
+        }
+        else if (isOpen(tag.tagShortname))
+        {
+            auto errorText = std::format("{} in line {} in position {} does not close the innermost open tag. Maybe you want to close {}",
+                                         tag.tagShortname, tag.line, tag.startingPositionInLine, innermostOpen.tagShortname);
+            addError(tag, std::move(errorText));
+        }
+        else
+        {
+            auto errorText = std::format("{} in line {} in position {} closes a tag that was never opened. The innermost open tag is {}",
+                                         tag.tagShortname, tag.line, tag.startingPositionInLine, innermostOpen.tagShortname);
+            addError(tag, std::move(errorText));
+        }
+        return true;
+    }
+
+    void toggleCodeBlockState(const Tag& tag)
+    {
         if (tag.tagShortname == "code")
         {
             insideCode = !insideCode;
@@ -170,29 +310,160 @@ std::vector<PairedTagsChecker::TagError> checkIfAllTagsAreClosed(const std::vect
         }
     }
 
-    while (!openTags.empty())
+    bool isOpen(std::string_view tagName) const
     {
-        const auto& tag = openTags.top();
-        auto errorText = std::format("{} starting in line {} in position {} is not closing!", tag.tagShortname, tag.line, tag.startingPositionInLine);
-        errorPerLine.emplace_back(tag.line, tag.startingPositionInLine, errorText);
-        openTags.pop();
+        return std::ranges::any_of(openTags, [tagName](const Tag& open) { return open.tagShortname == tagName; });
     }
-    std::sort(begin(errorPerLine), end(errorPerLine));
-    return errorPerLine;
-}
+
+    /// [run] works only in the extended mode of [pkt] or [csv]: [pkt ext] / [csv ext]
+    void checkRunPlacement(const Tag& runTag)
+    {
+        const auto container = std::find_if(openTags.rbegin(), openTags.rend(), [](const Tag& open)
+        {
+            return open.tagShortname == "pkt" || open.tagShortname == "csv";
+        });
+
+        if (container == openTags.rend())
+        {
+            addError(runTag, "[run] is outside of [pkt] and [csv]. It works only inside [pkt ext] or [csv ext].");
+        }
+        else if (!container->hasAttribute("ext") && !container->hasAttribute("extended"))
+        {
+            addError(runTag, format("[run] inside [{0}] without the ext attribute will not work. Use [{0} ext].", container->tagShortname));
+        }
+    }
+
+    void checkAttributes(const Tag& tag, const StcTagRules::TagRule& rule)
+    {
+        for (const auto& attribute : tag.attributes)
+        {
+            checkAttribute(tag, attribute, rule);
+        }
+        checkRequiredAttributes(tag, rule);
+        checkDuplicatedAttributes(tag);
+    }
+
+    void checkAttribute(const Tag& tag, const Attribute& attribute, const StcTagRules::TagRule& rule)
+    {
+        const auto attributeRule = std::ranges::find(rule.attributes, attribute.name, &StcTagRules::AttributeRule::name);
+        if (attributeRule == rule.attributes.end())
+        {
+            addError(tag, format("Tag {} has an unknown attribute \"{}\". {}", tag.displayName(), attribute.name, describeKnownAttributes(rule)));
+            return;
+        }
+
+        using enum StcTagRules::ValueKind;
+        switch (attributeRule->kind)
+        {
+        case Flag:
+            if (attribute.hasValue)
+            {
+                addError(tag, format("Attribute {} in tag {} is a flag, it takes no value.", attribute.name, tag.displayName()));
+            }
+            break;
+        case NumberOrQuoted:
+            if (attribute.hasValue && attribute.quote == 0 && isNumber(attribute.value))
+            {
+                break;
+            }
+            [[fallthrough]];
+        case QuotedText:
+            checkQuotedValue(tag, attribute, *attributeRule);
+            break;
+        }
+    }
+
+    void checkQuotedValue(const Tag& tag, const Attribute& attribute, const StcTagRules::AttributeRule& rule)
+    {
+        if (!attribute.hasValue || (attribute.quote == 0 && attribute.value.empty()))
+        {
+            addError(tag, format("Attribute {0} in tag {1} needs a value in double quotes: {0}=\"...\".", attribute.name, tag.displayName()));
+        }
+        else if (attribute.unterminatedQuote)
+        {
+            addError(tag, format("Attribute {} in tag {} has no closing quotation mark.", attribute.name, tag.displayName()));
+        }
+        else if (attribute.quote != '"')
+        {
+            addError(tag, format("Value of attribute {0} in tag {1} must be in double quotes: {0}=\"...\".", attribute.name, tag.displayName()));
+        }
+        else if (attribute.value.empty() && !rule.mayBeEmpty)
+        {
+            addError(tag, format("Attribute {} in tag {} is empty.", attribute.name, tag.displayName()));
+        }
+    }
+
+    void checkRequiredAttributes(const Tag& tag, const StcTagRules::TagRule& rule)
+    {
+        for (const auto& attributeRule : rule.attributes)
+        {
+            if (attributeRule.required && !tag.hasAttribute(attributeRule.name))
+            {
+                addError(tag, format("Tag {} needs the attribute {}.", tag.displayName(), attributeRule.name));
+            }
+        }
+    }
+
+    void checkDuplicatedAttributes(const Tag& tag)
+    {
+        for (std::size_t index = 1; index < tag.attributes.size(); ++index)
+        {
+            const auto& name = tag.attributes[index].name;
+            const auto previousEnd = tag.attributes.begin() + index;
+            if (std::ranges::any_of(tag.attributes.begin(), previousEnd, [&name](const Attribute& previous) { return previous.name == name; }))
+            {
+                addError(tag, format("Attribute {} is given twice in tag {}.", name, tag.displayName()));
+            }
+        }
+    }
+
+    static std::string describeKnownAttributes(const StcTagRules::TagRule& rule)
+    {
+        if (rule.attributes.empty())
+        {
+            return "This tag takes no attributes.";
+        }
+
+        std::string known;
+        for (const auto& attributeRule : rule.attributes)
+        {
+            known += (known.empty() ? "" : ", ");
+            known += attributeRule.name;
+        }
+        return "Known attributes: " + known + ".";
+    }
+
+    void reportUnclosedTags()
+    {
+        while (!openTags.empty())
+        {
+            const auto& tag = openTags.back();
+            auto errorText = std::format("{} starting in line {} in position {} is not closing!", tag.tagShortname, tag.line, tag.startingPositionInLine);
+            addError(tag, std::move(errorText));
+            openTags.pop_back();
+        }
+    }
+
+    void addError(const Tag& tag, std::string errorText)
+    {
+        errors.emplace_back(tag.line, tag.startingPositionInLine, std::move(errorText));
+    }
+
+    std::vector<PairedTagsChecker::TagError> errors;
+    std::vector<Tag> openTags; // the innermost tag is the last one
+    bool insideCpp{}, insideCode{}, insidePython{};
+};
+} // namespace
 
 std::vector<PairedTagsChecker::TagError> PairedTagsChecker::checkTags(const std::string& text)
 {
     const auto lines = splitLines(text);
     const auto tags = extractTags(lines);
 
-    return checkIfAllTagsAreClosed(tags);
+    return TagsAnalyzer{}.analyze(tags);
 }
 
 /*
  * TODO: checks:
- * 1. czy sa cudzyslowia
- * 2. czy atrybuty sa niepuste
- * 3. czy jak mamy run to jestesmy w ramach "ext"
- * 4. jak img nie ma alt to sugestia aby zawieral ze wzgledu na osoby niewidzace
+ * 1. jak img nie ma alt to sugestia aby zawieral ze wzgledu na osoby niewidzace
  */
