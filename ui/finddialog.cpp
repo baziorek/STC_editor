@@ -1,10 +1,27 @@
-#include <QMessageBox>
-#include <QTextBlock>
-#include <QTextDocument>
-#include <QTextCursor>
-#include <QLineEdit>
+#include <QCheckBox>
+#include <QColor>
+#include <QComboBox>
+#include <QCoreApplication>
+#include <QElapsedTimer>
+#include <QEvent>
+#include <QFlags>
+#include <QFontMetrics>
 #include <QKeyEvent>
+#include <QLabel>
+#include <QLineEdit>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QSignalBlocker>
+#include <QTextBlock>
+#include <QTextCharFormat>
+#include <QTextCursor>
+#include <QTextDocument>
+#include <QTextEdit>
+#include <QTextFormat>
 #include <QTreeWidget>
+#include <QTreeWidgetItem>
+#include <QVariant>
+#include <QtGlobal>
 #include <algorithm>
 #include "finddialog.h"
 #include "ui_finddialog.h"
@@ -12,21 +29,139 @@
 #include "highlightdelegate.h"
 
 
+namespace
+{
+// The data kept by the items of the list of results
+constexpr int LineNumberRole = Qt::UserRole;        // column 0
+constexpr int OffsetInLineRole = Qt::UserRole;      // column 1
+constexpr int DocumentStartRole = Qt::UserRole + 2; // column 0
+constexpr int LengthRole = Qt::UserRole + 3;        // column 0
+constexpr int FoundTextRole = Qt::UserRole + 4;     // column 0
+
+// A refresh after an edit waits until the editing pauses. After a slow search it waits longer, so a refresh
+// of a huge document never blocks the typing again and again.
+constexpr int MinRefreshDelayMs = 150;
+constexpr int MaxRefreshDelayMs = 3000;
+constexpr int SlowSearchFactor = 4;
+
+/// One row of the list of results
+struct ResultRow
+{
+    int lineNumber = 0;     ///< counted from 1
+    int offsetInLine = 0;   ///< where a click on the row goes
+    int documentStart = 0;  ///< the same place counted from the beginning of the document
+    int length = 0;
+    QString foundText;      ///< as it stands in the document
+    QString context;        ///< the part of the line which the list shows
+};
+
+QTreeWidgetItem* makeResultItem(const ResultRow& row)
+{
+    auto *item = new QTreeWidgetItem();
+    item->setText(0, QCoreApplication::translate("FindDialog", "Line %1").arg(row.lineNumber));
+    item->setText(1, QString::number(row.offsetInLine));
+    item->setData(0, LineNumberRole, row.lineNumber);
+    item->setData(1, OffsetInLineRole, row.offsetInLine);
+    item->setData(0, DocumentStartRole, row.documentStart);
+    item->setData(0, LengthRole, row.length);
+    item->setData(0, FoundTextRole, row.foundText);
+    item->setData(2, Qt::DisplayRole, row.context);
+    return item;
+}
+
+/// In the replace mode every row has a check box: the ticked rows are replaced
+void makeCheckable(QTreeWidgetItem& item, bool checked)
+{
+    item.setFlags(item.flags() | Qt::ItemIsUserCheckable);
+    item.setCheckState(0, checked ? Qt::Checked : Qt::Unchecked);
+}
+
+/// The part of the line which the list shows: the place [start, end) with as much text around it as fits
+QString contextAround(const QString& line, int start, int end, int maxLength)
+{
+    const int contextHalf = std::max(0, (maxLength - (end - start)) / 2);
+    const qsizetype startContext = std::max<qsizetype>(0, start - contextHalf);
+    const qsizetype endContext = std::min<qsizetype>(line.length(), end + contextHalf);
+
+    QString visibleText = line.mid(startContext, endContext - startContext);
+    if (startContext > 0)
+        visibleText.prepend("…");
+    if (endContext < line.length())
+        visibleText.append("…");
+    return visibleText;
+}
+
+/// Where the context of a line with several words ends: after the last word, but not further than the list is wide
+int contextEndOfWords(const QList<LineSearch::Occurrence>& places, int maxLength)
+{
+    int end = 0;
+    for (const LineSearch::Occurrence& place : places)
+        end = std::max(end, place.end());
+    return std::min(end, places.first().start + maxLength);
+}
+
+QTextEdit::ExtraSelection makeHighlight(QTextDocument* document, int start, int length)
+{
+    QTextEdit::ExtraSelection selection;
+    selection.cursor = QTextCursor(document);
+    selection.cursor.setPosition(start);
+    selection.cursor.setPosition(start + length, QTextCursor::KeepAnchor);
+    selection.format.setBackground(QColor(255, 255, 0, 80));
+    selection.format.setProperty(QTextFormat::FullWidthSelection, true);
+    return selection;
+}
+
+/// A cursor which follows the edits of the document. The position may come from before the last edit, so it is limited.
+QTextCursor cursorAt(QTextDocument* document, int position)
+{
+    QTextCursor cursor(document);
+    cursor.setPosition(std::clamp(position, 0, document->characterCount() - 1));
+    return cursor;
+}
+
+void countPlace(FindDialog::MatchStats& stats, const LineSearch::Occurrence& place)
+{
+    ++stats.insensitive;
+    if (place.wholeWord)
+        ++stats.insensitiveWhole;
+    if (place.sameCase)
+    {
+        ++stats.sensitive;
+        if (place.wholeWord)
+            ++stats.sensitiveWhole;
+    }
+}
+} // namespace
+
+
+/// Everything one search produces. The list and the highlights are filled in when the search is done.
+struct FindDialog::SearchOutcome
+{
+    MatchStats stats;
+    QList<QTreeWidgetItem*> items;
+    QList<QTextEdit::ExtraSelection> highlights;
+};
+
+
 FindDialog::FindDialog(QWidget *parent)
     : QWidget(parent), ui(new Ui::FindDialog)
 {
     ui->setupUi(this);
 
-    auto delegate = new HighlightDelegate(this);
-    ui->foundTextsTreeWidget->setItemDelegateForColumn(2, delegate);
+    resultsDelegate = new HighlightDelegate(this);
+    ui->foundTextsTreeWidget->setItemDelegateForColumn(2, resultsDelegate);
 
     connect(ui->foundTextsTreeWidget, &QTreeWidget::itemClicked, this, &FindDialog::onResultItemClicked);
     connect(ui->foundTextsTreeWidget, &QTreeWidget::itemChanged, this, &FindDialog::onResultItemChanged);
+    connect(ui->foundTextsTreeWidget, &QTreeWidget::currentItemChanged, this, &FindDialog::rememberCurrentMatch);
     connect(ui->replaceTextField, &QComboBox::currentTextChanged, this, &FindDialog::onReplacementCriteriaChanged);
     connect(ui->skipAlreadyReplacedCheckBox, &QCheckBox::toggled, this, &FindDialog::onReplacementCriteriaChanged);
     connect(ui->selectAllMatchesButton, &QPushButton::clicked, this, &FindDialog::onSelectAllMatchesPressed);
     connect(ui->deselectAllMatchesButton, &QPushButton::clicked, this, &FindDialog::onDeselectAllMatchesPressed);
     connect(ui->replaceSelectedMatchesButton, &QPushButton::clicked, this, &FindDialog::onReplaceSelectedMatchesPressed);
+
+    refreshTimer.setSingleShot(true);
+    connect(&refreshTimer, &QTimer::timeout, this, &FindDialog::refreshResults);
 
     installEventFilter2HandleMovingBetweenOccurences();
     setReplaceMode(false);
@@ -41,8 +176,8 @@ void FindDialog::installEventFilter2HandleMovingBetweenOccurences()
 
 void FindDialog::onResultItemClicked(QTreeWidgetItem* item, int column)
 {
-    int line = item->data(0, Qt::UserRole).toInt();
-    int offset = item->data(1, Qt::UserRole).toInt();
+    int line = item->data(0, LineNumberRole).toInt();
+    int offset = item->data(1, OffsetInLineRole).toInt();
 
     emit jumpToLocationRequested(line, offset);
 }
@@ -51,6 +186,7 @@ void FindDialog::setReplaceMode(bool enabled)
 {
     replaceMode = enabled;
     ui->replaceOptionsWidget->setVisible(enabled);
+    ui->anyOrderCheckBox->setEnabled(!enabled); // words scattered over a line have no single place to replace
 
     const QString searchText = ui->textSearchField->currentText();
     if (!searchText.isEmpty())
@@ -191,6 +327,15 @@ FindDialog::~FindDialog()
 
 void FindDialog::currentTextChanged(QString newText)
 {
+    // A new text or new options mean a new list of candidates, so nothing is remembered from the previous one
+    forgetUncheckedMatches();
+    currentMatchStart = QTextCursor();
+
+    rebuildResults(newText);
+}
+
+void FindDialog::rebuildResults(const QString& newText)
+{
     if (!codeEditor)
     {
         QMessageBox::warning(this, "Uninitialised widget!", "It should never happen!");
@@ -199,137 +344,163 @@ void FindDialog::currentTextChanged(QString newText)
 
     if (newText.isEmpty())
     {
-        ui->occurencesLabel->setText("Occurrences: (empty text)");
+        ui->occurencesLabel->setText(tr("Occurrences: (empty text)"));
 
         ui->foundTextsTreeWidget->clear();
         updateReplacementControls();
 
         codeEditor->setSearchHighlights({});
+        return;
     }
-    else
-    {
-        const MatchStats stats = showOccurences(newText);
-        QString occurencesCountAsText;
-        if (stats.isZero())
-        {
-            occurencesCountAsText = QString("Occurrences: 0");
-        }
-        else
-        {
-            occurencesCountAsText = QString("Occurrences: %1 (%2)/%3 (%4)")
-            .arg(stats.sensitive).arg(stats.sensitiveWhole)
-                .arg(stats.insensitive).arg(stats.insensitiveWhole);
-        }
 
-        if (isReplaceMode())
-        {
-            occurencesCountAsText += tr(" | Replace candidates: %1")
-                .arg(ui->foundTextsTreeWidget->topLevelItemCount());
-        }
-        ui->occurencesLabel->setText(occurencesCountAsText);
-        updateReplacementControls();
+    QElapsedTimer stopwatch;
+    stopwatch.start();
+    const MatchStats stats = showOccurences(newText);
+    lastSearchMs = static_cast<int>(stopwatch.elapsed());
+
+    QString occurencesCountAsText = occurrencesLabelText(stats);
+    if (isReplaceMode())
+    {
+        occurencesCountAsText += tr(" | Replace candidates: %1")
+            .arg(ui->foundTextsTreeWidget->topLevelItemCount());
     }
+    ui->occurencesLabel->setText(occurencesCountAsText);
+
+    rememberUncheckedMatches();
+    updateReplacementControls();
+}
+
+QString FindDialog::occurrencesLabelText(const MatchStats& stats) const
+{
+    if (stats.anyOrder)
+        return tr("Lines: %1").arg(stats.lines);
+
+    if (stats.isZero())
+        return tr("Occurrences: 0");
+
+    return tr("Occurrences: %1 (%2)/%3 (%4)")
+        .arg(stats.sensitive).arg(stats.sensitiveWhole)
+        .arg(stats.insensitive).arg(stats.insensitiveWhole);
+}
+
+LineSearch::Criteria FindDialog::currentCriteria() const
+{
+    return { ui->matchCasesCheckBox->isChecked(), ui->wholeWordsCheckBox->isChecked() };
+}
+
+bool FindDialog::isAnyOrderSearch() const
+{
+    // Replacing needs one place to replace, so then the text is always searched as it is
+    return ui->anyOrderCheckBox->isChecked() && !isReplaceMode();
+}
+
+int FindDialog::maxContextLength() const
+{
+    const int columnWidth = ui->foundTextsTreeWidget->columnWidth(2);
+    QFontMetrics fm(ui->foundTextsTreeWidget->font());
+    const int charWidth = fm.horizontalAdvance('x');
+    return std::max(10, columnWidth / charWidth);
 }
 
 FindDialog::MatchStats FindDialog::showOccurences(const QString &searchText)
 {
-    const bool caseSensitiveRequired = ui->matchCasesCheckBox->isChecked();
-    const bool wholeWordRequired = ui->wholeWordsCheckBox->isChecked();
-
     ui->foundTextsTreeWidget->clear();
     if (searchText.isEmpty() || !codeEditor)
     {
         return {};
     }
 
-    if (auto* delegate = qobject_cast<HighlightDelegate*>(ui->foundTextsTreeWidget->itemDelegateForColumn(2)))
-        delegate->setSearchTerm(searchText);
+    // With "Any order" the text is split into words: several of them are looked for in lines, one is looked for as it is
+    const QStringList words = isAnyOrderSearch() ? LineSearch::splitIntoWords(searchText) : QStringList{};
+    resultsDelegate->setSearchTerms(words.isEmpty() ? QStringList{ searchText } : words);
 
-    QTextDocument* doc = codeEditor->document();
-    const QString documentText = doc->toPlainText();
-    QTextCursor cursor(doc);
-    MatchStats stats;
+    SearchOutcome outcome;
+    outcome.stats.anyOrder = words.size() > 1;
+    if (outcome.stats.anyOrder)
+        collectLinesWithAllWords(words, outcome);
+    else
+        collectExactOccurrences(words.isEmpty() ? searchText : words.first(), outcome);
 
-    const int columnWidth = ui->foundTextsTreeWidget->columnWidth(2);
-    QFontMetrics fm(ui->foundTextsTreeWidget->font());
-    const int charWidth = fm.horizontalAdvance('x');
-    const int maxContextLength = std::max(10, columnWidth / charWidth);
-
-    while (!cursor.isNull() && !cursor.atEnd())
-    {
-        cursor = doc->find(searchText, cursor); // default: case insensitive
-        if (cursor.isNull())
-        {
-            break;
-        }
-
-        QString blockText = cursor.block().text();
-        int startInDoc = cursor.selectionStart();
-        int endInDoc = cursor.selectionEnd();
-        int blockPosition = cursor.block().position();
-        int startInBlock = startInDoc - blockPosition;
-        int endInBlock = endInDoc - blockPosition;
-
-        QString foundText = blockText.mid(startInBlock, endInBlock - startInBlock);
-        bool isCaseSensitive = (foundText == searchText);
-
-        bool leftBoundary = startInBlock == 0 || !blockText[startInBlock - 1].isLetterOrNumber();
-        bool rightBoundary = endInBlock >= blockText.length() || !blockText[endInBlock].isLetterOrNumber();
-        bool isWholeWord = leftBoundary && rightBoundary;
-
-        stats.insensitive++;
-        if (isWholeWord)
-            stats.insensitiveWhole++;
-        if (isCaseSensitive)
-        {
-            stats.sensitive++;
-            if (isWholeWord)
-                stats.sensitiveWhole++;
-        }
-
-        // Pokaż tylko jeśli pasuje do opcji użytkownika
-        if ((caseSensitiveRequired && !isCaseSensitive) ||
-            (wholeWordRequired && !isWholeWord))
-            continue;
-
-        if (isReplaceMode() && ui->skipAlreadyReplacedCheckBox->isChecked() &&
-            isMatchAlreadyReplacement(documentText, startInDoc, endInDoc - startInDoc))
-            continue;
-
-        int lineNumber = cursor.blockNumber() + 1;
-        int contextHalf = (maxContextLength - searchText.length()) / 2;
-        auto startContext = std::max<qsizetype>(0, startInBlock - contextHalf);
-        auto endContext = std::min<qsizetype>(blockText.length(), endInBlock + contextHalf);
-
-        QString visibleText = blockText.mid(startContext, endContext - startContext);
-        if (startContext > 0)
-            visibleText.prepend("…");
-        if (endContext < blockText.length())
-            visibleText.append("…");
-
-        auto *item = new QTreeWidgetItem();
-        item->setText(0, QString("Line %1").arg(lineNumber));
-        item->setText(1, QString::number(startInBlock));
-        item->setData(0, Qt::UserRole, lineNumber);
-        item->setData(1, Qt::UserRole, startInBlock);
-        item->setData(0, Qt::UserRole + 2, startInDoc);
-        item->setData(0, Qt::UserRole + 3, endInDoc - startInDoc);
-        item->setData(0, Qt::UserRole + 4, foundText);
-        item->setData(2, Qt::DisplayRole, visibleText);
-        if (isReplaceMode())
-        {
-            item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-            item->setCheckState(0, Qt::Checked);
-        }
-        ui->foundTextsTreeWidget->addTopLevelItem(item);
-    }
-
+    ui->foundTextsTreeWidget->addTopLevelItems(outcome.items);
     ui->foundTextsTreeWidget->setColumnCount(3);
-    ui->foundTextsTreeWidget->setHeaderLabels({ "Line", "Offset", "Context" });
+    ui->foundTextsTreeWidget->setHeaderLabels({ tr("Line"), tr("Offset"), tr("Context") });
 
     // Highlight all matches in the editor.
-    updateHighlights();
-    return stats;
+    codeEditor->setSearchHighlights(outcome.highlights);
+    return outcome.stats;
+}
+
+void FindDialog::collectExactOccurrences(const QString& searchText, SearchOutcome& outcome)
+{
+    QTextDocument* doc = codeEditor->document();
+    const LineSearch::Criteria criteria = currentCriteria();
+    const int contextLength = maxContextLength();
+    const QSet<int> unchecked = uncheckedMatchPositions();
+
+    const bool skipAlreadyReplaced = isReplaceMode() && ui->skipAlreadyReplacedCheckBox->isChecked();
+    const QString documentText = skipAlreadyReplaced ? doc->toPlainText() : QString();
+
+    for (QTextBlock block = doc->begin(); block.isValid(); block = block.next())
+    {
+        const QString line = block.text();
+        for (const LineSearch::Occurrence& place : LineSearch::findOccurrences(line, searchText))
+        {
+            countPlace(outcome.stats, place);
+
+            // Show only if it fits the options of the user
+            if (!place.fits(criteria))
+                continue;
+
+            const int startInDoc = block.position() + place.start;
+            outcome.highlights.append(makeHighlight(doc, startInDoc, place.length));
+
+            if (skipAlreadyReplaced && isMatchAlreadyReplacement(documentText, startInDoc, place.length))
+                continue;
+
+            ResultRow row;
+            row.lineNumber = block.blockNumber() + 1;
+            row.offsetInLine = place.start;
+            row.documentStart = startInDoc;
+            row.length = place.length;
+            row.foundText = line.mid(place.start, place.length);
+            row.context = contextAround(line, place.start, place.end(), contextLength);
+
+            QTreeWidgetItem* item = makeResultItem(row);
+            if (isReplaceMode())
+                makeCheckable(*item, !unchecked.contains(startInDoc));
+            outcome.items.append(item);
+        }
+    }
+}
+
+void FindDialog::collectLinesWithAllWords(const QStringList& words, SearchOutcome& outcome)
+{
+    QTextDocument* doc = codeEditor->document();
+    const LineSearch::Criteria criteria = currentCriteria();
+    const int contextLength = maxContextLength();
+
+    for (QTextBlock block = doc->begin(); block.isValid(); block = block.next())
+    {
+        const QString line = block.text();
+        const QList<LineSearch::Occurrence> places = LineSearch::findAllWords(line, words, criteria);
+        if (places.isEmpty())
+            continue;
+
+        // One row for the whole line, which leads to the first of its words
+        const LineSearch::Occurrence& first = places.first();
+        const int startInDoc = block.position() + first.start;
+        ++outcome.stats.lines;
+        outcome.highlights.append(makeHighlight(doc, startInDoc, first.length));
+
+        ResultRow row;
+        row.lineNumber = block.blockNumber() + 1;
+        row.offsetInLine = first.start;
+        row.documentStart = startInDoc;
+        row.length = first.length;
+        row.foundText = line.mid(first.start, first.length);
+        row.context = contextAround(line, first.start, contextEndOfWords(places, contextLength), contextLength);
+        outcome.items.append(makeResultItem(row));
+    }
 }
 
 bool FindDialog::isMatchAlreadyReplacement(const QString& documentText, int matchStart, int matchLength) const
@@ -361,52 +532,120 @@ bool FindDialog::isMatchAlreadyReplacement(const QString& documentText, int matc
     return false;
 }
 
-
-void FindDialog::updateHighlights()
-{
-    if (!codeEditor)
-        return;
-
-    QList<QTextEdit::ExtraSelection> highlights;
-    if (ui->textSearchField->currentText().isEmpty())
-    {
-        codeEditor->setSearchHighlights({});
-        return;
-    }
-    QTextDocument* doc = codeEditor->document();
-    QTextCursor cursor(doc);
-    QTextDocument::FindFlags flags;
-    if (ui->matchCasesCheckBox->isChecked())
-        flags |= QTextDocument::FindCaseSensitively;
-    if (ui->wholeWordsCheckBox->isChecked())
-        flags |= QTextDocument::FindWholeWords;
-    while (!cursor.isNull() && !cursor.atEnd())
-    {
-        cursor = doc->find(ui->textSearchField->currentText(), cursor, flags);
-        if (!cursor.isNull())
-        {
-            QTextEdit::ExtraSelection sel;
-            sel.cursor = cursor;
-            sel.format.setBackground(QColor(255, 255, 0, 80));
-            sel.format.setProperty(QTextFormat::FullWidthSelection, true);
-            highlights.append(sel);
-        }
-    }
-    codeEditor->setSearchHighlights(highlights);
-}
-
 void FindDialog::showEvent(QShowEvent* event)
 {
     QWidget::showEvent(event);
-    if (! ui->textSearchField->currentText().isEmpty())
-        updateHighlights();
+
+    // The document could change while the widget was hidden, so the places are searched again
+    startFollowingDocument();
+    refreshResults();
 }
 
 void FindDialog::hideEvent(QHideEvent* event)
 {
     QWidget::hideEvent(event);
+
+    // Nobody sees the places now, so they are not kept up to date
+    stopFollowingDocument();
     if (codeEditor)
         codeEditor->setSearchHighlights({});
+}
+
+void FindDialog::startFollowingDocument()
+{
+    if (!codeEditor)
+        return;
+
+    stopFollowingDocument();
+    documentChangesConnection = connect(codeEditor->document(), &QTextDocument::contentsChanged,
+                                        this, &FindDialog::scheduleRefresh);
+}
+
+void FindDialog::stopFollowingDocument()
+{
+    disconnect(documentChangesConnection);
+    refreshTimer.stop();
+}
+
+void FindDialog::scheduleRefresh()
+{
+    // Every edit restarts the waiting, so a series of edits makes one refresh
+    if (!ui->textSearchField->currentText().isEmpty())
+        refreshTimer.start(refreshDelayMs());
+}
+
+int FindDialog::refreshDelayMs() const
+{
+    return std::clamp(lastSearchMs * SlowSearchFactor, MinRefreshDelayMs, MaxRefreshDelayMs);
+}
+
+void FindDialog::refreshResults()
+{
+    refreshTimer.stop();
+
+    const QString searchText = ui->textSearchField->currentText();
+    if (!codeEditor || searchText.isEmpty())
+        return;
+
+    // Same search as when the user types, but what the user did with the results is kept
+    rebuildResults(searchText);
+    restoreCurrentResult();
+}
+
+void FindDialog::rememberCurrentMatch(QTreeWidgetItem* current)
+{
+    // Clearing the list "changes" the current item to nothing, but then the old place is the one to keep
+    if (!current || !codeEditor)
+        return;
+
+    currentMatchStart = cursorAt(codeEditor->document(), current->data(0, DocumentStartRole).toInt());
+}
+
+void FindDialog::restoreCurrentResult()
+{
+    if (currentMatchStart.isNull())
+        return;
+
+    // The match which the user went to last. When it is gone, the closest one before it, so "next" goes on from there.
+    const int position = currentMatchStart.position();
+    QTreeWidgetItem* closest = nullptr;
+    for (int index = 0; index < ui->foundTextsTreeWidget->topLevelItemCount(); ++index)
+    {
+        QTreeWidgetItem* item = ui->foundTextsTreeWidget->topLevelItem(index);
+        if (item->data(0, DocumentStartRole).toInt() > position)
+            break;
+        closest = item;
+    }
+
+    if (closest)
+        ui->foundTextsTreeWidget->setCurrentItem(closest);
+}
+
+void FindDialog::rememberUncheckedMatches()
+{
+    uncheckedMatchStarts.clear();
+    if (!isReplaceMode() || !codeEditor)
+        return;
+
+    for (int index = 0; index < ui->foundTextsTreeWidget->topLevelItemCount(); ++index)
+    {
+        const QTreeWidgetItem* item = ui->foundTextsTreeWidget->topLevelItem(index);
+        if (item->checkState(0) == Qt::Unchecked)
+            uncheckedMatchStarts.append(cursorAt(codeEditor->document(), item->data(0, DocumentStartRole).toInt()));
+    }
+}
+
+void FindDialog::forgetUncheckedMatches()
+{
+    uncheckedMatchStarts.clear();
+}
+
+QSet<int> FindDialog::uncheckedMatchPositions() const
+{
+    QSet<int> positions;
+    for (const QTextCursor& start : uncheckedMatchStarts)
+        positions.insert(start.position());
+    return positions;
 }
 
 void FindDialog::focusInput(bool preferReplacementField)
@@ -428,22 +667,34 @@ void FindDialog::focusInput(bool preferReplacementField)
 
 void FindDialog::onSelectAllMatchesPressed()
 {
-    for (int index = 0; index < ui->foundTextsTreeWidget->topLevelItemCount(); ++index)
-        ui->foundTextsTreeWidget->topLevelItem(index)->setCheckState(0, Qt::Checked);
-    updateReplacementControls();
+    setCheckStateOfAllMatches(Qt::Checked);
 }
 
 void FindDialog::onDeselectAllMatchesPressed()
 {
-    for (int index = 0; index < ui->foundTextsTreeWidget->topLevelItemCount(); ++index)
-        ui->foundTextsTreeWidget->topLevelItem(index)->setCheckState(0, Qt::Unchecked);
+    setCheckStateOfAllMatches(Qt::Unchecked);
+}
+
+void FindDialog::setCheckStateOfAllMatches(Qt::CheckState state)
+{
+    {
+        // One update at the end instead of one for each of the items
+        const QSignalBlocker blocker(ui->foundTextsTreeWidget);
+        for (int index = 0; index < ui->foundTextsTreeWidget->topLevelItemCount(); ++index)
+            ui->foundTextsTreeWidget->topLevelItem(index)->setCheckState(0, state);
+    }
+
+    rememberUncheckedMatches();
     updateReplacementControls();
 }
 
 void FindDialog::onResultItemChanged(QTreeWidgetItem* item, int column)
 {
     if (column == 0 && isReplaceMode())
+    {
+        rememberUncheckedMatches();
         updateReplacementControls();
+    }
 }
 
 void FindDialog::updateReplacementControls()
@@ -481,9 +732,9 @@ void FindDialog::onReplaceSelectedMatchesPressed()
         if (item->checkState(0) == Qt::Checked)
         {
             selectedMatches.append({
-                item->data(0, Qt::UserRole + 2).toInt(),
-                item->data(0, Qt::UserRole + 3).toInt(),
-                item->data(0, Qt::UserRole + 4).toString()
+                item->data(0, DocumentStartRole).toInt(),
+                item->data(0, LengthRole).toInt(),
+                item->data(0, FoundTextRole).toString()
             });
         }
     }
@@ -525,5 +776,6 @@ void FindDialog::onReplaceSelectedMatchesPressed()
             ui->replaceTextField->addItem(replacementText);
     }
 
-    currentTextChanged(ui->textSearchField->currentText());
+    // The matches which the user did not tick are still in the document, so they stay unticked
+    refreshResults();
 }

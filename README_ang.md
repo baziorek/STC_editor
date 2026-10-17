@@ -90,6 +90,8 @@ The editor is also suitable for general document editing. Here are some standout
     - `Enter` and `Shift+Enter` navigate to the next/previous match.
     - Up/down arrows navigate matches without shifting focus to the text editor.
     - All matches are highlighted in the text.
+    - **Any order** option (on by default): the words typed in the search field are looked for in a line regardless of their order, e.g. `Ala ma koty` finds the line `Ale lubi ryby i koty ta Ala co ma psa`. The list then has one row per line and the counter shows the number of lines. The case and whole-word options apply to every word separately. When the option is unticked, the text is searched exactly as typed (with spaces). It is switched off in replace mode (`Ctrl+R`).
+    - The list of results and the highlights are updated live while the text is edited (after a short pause in typing), but only while the find widget is visible. While it is hidden nothing is updated, and when it is shown again the results are refreshed at once. The current result and the unticked rows of replace mode are kept.
     - `Ctrl+R` enables replacement mode, where every match has a checkbox so only selected locations are changed.
     - **Skip already replaced** excludes matches that are already part of the replacement text, e.g. `cout` within `std::cout`.
 9. **Font Scaling**: Increase/decrease font size with `Ctrl++`, `Ctrl+-`, or `Ctrl+Mouse Scroll`.
@@ -126,13 +128,11 @@ You can download the latest compiled version of **STC_editor** from the most rec
 
 1. Built-in STC course within the application.
 2. Context menu HELP section.
-3. Multi-word search on the same line, regardless of order.
 6. Integration of a C++ syntax analyzer (e.g., [flex](https://github.com/westes/flex)).
 7. Dedicated C++ code formatting.
 9. Real-time change statistics (line count, character count, file size, cursor line/column).
 11. Faster application exit without prompting for unchanged states.
 12. Integration of cppreference documentation (similar to `cppman` or QtCreator).
-13. FindWidget: Update match positions in real-time when adding/removing lines.
 14. Search only within code blocks.
 15. Refactor CodeEditor to avoid being a God Object, possibly with AI assistance.
 16. Pasting images from the clipboard (`Ctrl+V`) with a prompt to save them to a directory.

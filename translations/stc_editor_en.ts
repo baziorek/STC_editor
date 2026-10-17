@@ -1000,83 +1000,123 @@ Double click to go to the line.</translation>
     <name>FindDialog</name>
     <message>
         <source>Form</source>
-        <translation type="vanished">Form</translation>
+        <translation>Form</translation>
     </message>
     <message>
         <source>line</source>
-        <translation type="vanished">line</translation>
+        <translation>line</translation>
     </message>
     <message>
         <source>position</source>
-        <translation type="vanished">position</translation>
+        <translation>position</translation>
     </message>
     <message>
         <source>text</source>
-        <translation type="vanished">text</translation>
+        <translation>text</translation>
     </message>
     <message>
         <source>Text to find</source>
-        <translation type="vanished">Text to find</translation>
+        <translation>Text to find</translation>
     </message>
     <message>
         <source>Next</source>
-        <translation type="vanished">Next</translation>
+        <translation>Next</translation>
     </message>
     <message>
         <source>Previous</source>
-        <translation type="vanished">Previous</translation>
+        <translation>Previous</translation>
     </message>
     <message>
         <source>Match cases</source>
-        <translation type="vanished">Match cases</translation>
+        <translation>Match cases</translation>
     </message>
     <message>
         <source>Whole words</source>
-        <translation type="vanished">Whole words</translation>
+        <translation>Whole words</translation>
+    </message>
+    <message>
+        <source>Find the lines which contain all the typed words, in any order. Switch it off to search the text as it is, with the spaces. It is not used when replacing.</source>
+        <translation>Find the lines which contain all the typed words, in any order. Switch it off to search the text as it is, with the spaces. It is not used when replacing.</translation>
+    </message>
+    <message>
+        <source>Any order</source>
+        <translation>Any order</translation>
     </message>
     <message>
         <source>Occurrence count in format: case sensitive (case sensitive whole word) / case insensitive (case insensitive whole word)</source>
-        <translation type="vanished">Occurrence count in format: case sensitive (case sensitive whole word) / case insensitive (case insensitive whole word)</translation>
+        <translation>Occurrence count in format: case sensitive (case sensitive whole word) / case insensitive (case insensitive whole word)</translation>
     </message>
     <message>
         <source>Occurrences:</source>
-        <translation type="vanished">Occurrences:</translation>
+        <translation>Occurrences:</translation>
     </message>
     <message>
         <source>Replace with:</source>
-        <translation type="vanished">Replace with:</translation>
+        <translation>Replace with:</translation>
     </message>
     <message>
         <source>Replacement text</source>
-        <translation type="vanished">Replacement text</translation>
+        <translation>Replacement text</translation>
     </message>
     <message>
         <source>Skip a match when it is already part of the replacement text. For example, skip &quot;cout&quot; in &quot;std::cout&quot;.</source>
-        <translation type="vanished">Skip a match when it is already part of the replacement text. For example, skip &quot;cout&quot; in &quot;std::cout&quot;.</translation>
+        <translation>Skip a match when it is already part of the replacement text. For example, skip &quot;cout&quot; in &quot;std::cout&quot;.</translation>
     </message>
     <message>
         <source>Skip already replaced</source>
-        <translation type="vanished">Skip already replaced</translation>
+        <translation>Skip already replaced</translation>
     </message>
     <message>
         <source>Select all</source>
-        <translation type="vanished">Select all</translation>
+        <translation>Select all</translation>
     </message>
     <message>
         <source>Deselect all</source>
-        <translation type="vanished">Deselect all</translation>
+        <translation>Deselect all</translation>
     </message>
     <message>
         <source>Replace selected</source>
-        <translation type="vanished">Replace selected</translation>
+        <translation>Replace selected</translation>
+    </message>
+    <message>
+        <source>Line %1</source>
+        <translation>Line %1</translation>
+    </message>
+    <message>
+        <source>Line</source>
+        <translation>Line</translation>
+    </message>
+    <message>
+        <source>Offset</source>
+        <translation>Offset</translation>
+    </message>
+    <message>
+        <source>Context</source>
+        <translation>Context</translation>
+    </message>
+    <message>
+        <source>Occurrences: (empty text)</source>
+        <translation>Occurrences: (empty text)</translation>
     </message>
     <message>
         <source> | Replace candidates: %1</source>
-        <translation type="vanished"> | Replace candidates: %1</translation>
+        <translation> | Replace candidates: %1</translation>
+    </message>
+    <message>
+        <source>Lines: %1</source>
+        <translation>Lines: %1</translation>
+    </message>
+    <message>
+        <source>Occurrences: 0</source>
+        <translation>Occurrences: 0</translation>
+    </message>
+    <message>
+        <source>Occurrences: %1 (%2)/%3 (%4)</source>
+        <translation>Occurrences: %1 (%2)/%3 (%4)</translation>
     </message>
     <message>
         <source>Replace selected (%1)</source>
-        <translation type="vanished">Replace selected (%1)</translation>
+        <translation>Replace selected (%1)</translation>
     </message>
 </context>
 <context>

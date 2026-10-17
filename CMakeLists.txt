@@ -479,6 +479,15 @@ if(NOT WIN32)
     target_link_libraries(${PROJECT_NAME}TagRegionsTests PRIVATE Qt${QT_VERSION_MAJOR}::Core ${GTEST_LIBRARIES} pthread gtest_main)
     add_test(NAME ${PROJECT_NAME}TagRegionsTests COMMAND ${PROJECT_NAME}TagRegionsTests)
 
+    # Searching a line for one word or for several words in any order (the find widget). Only QtCore.
+    add_executable(${PROJECT_NAME}LineSearchTests
+        tests/LineSearchTests.cpp
+        utils/LineSearch.cpp
+    )
+    target_include_directories(${PROJECT_NAME}LineSearchTests PRIVATE ${PROJECT_SOURCE_DIR})
+    target_link_libraries(${PROJECT_NAME}LineSearchTests PRIVATE Qt${QT_VERSION_MAJOR}::Core ${GTEST_LIBRARIES} pthread gtest_main)
+    add_test(NAME ${PROJECT_NAME}LineSearchTests COMMAND ${PROJECT_NAME}LineSearchTests)
+
     # Mapping of the lines of the source to the places of the HTML preview (scroll synchronization). Only QtCore.
     add_executable(${PROJECT_NAME}PreviewSyncTests
         tests/PreviewSyncMapTests.cpp

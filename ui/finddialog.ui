@@ -80,6 +80,19 @@
       </widget>
      </item>
      <item>
+      <widget class="QCheckBox" name="anyOrderCheckBox">
+       <property name="toolTip">
+        <string>Find the lines which contain all the typed words, in any order. Switch it off to search the text as it is, with the spaces. It is not used when replacing.</string>
+       </property>
+       <property name="text">
+        <string>Any order</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QLabel" name="occurencesLabel">
        <property name="toolTip">
         <string>Occurrence count in format: case sensitive (case sensitive whole word) / case insensitive (case insensitive whole word)</string>
@@ -207,6 +220,22 @@
    <hints>
     <hint type="sourcelabel">
      <x>519</x>
+     <y>26</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>764</x>
+     <y>32</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>anyOrderCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>FindDialog</receiver>
+   <slot>odCheckboxMatchCasesChanged(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>600</x>
      <y>26</y>
     </hint>
     <hint type="destinationlabel">

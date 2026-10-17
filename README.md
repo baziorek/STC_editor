@@ -105,6 +105,8 @@ Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wyb
     - ENTER i SHIFT+ENTER odpowiednio przesuwają do kolejnego/poprzedniego wystąpienia z tabeli
     - Strzałki dół/góra dzialają jak powyższe, ale nie przeskakują z focusem do edytora tekstu
     - Wyszukiwania podświetlają wszystkie wystąpienia w tekście
+    - Opcja **Dowolna kolejność** (domyślnie włączona): słowa wpisane w polu wyszukiwania są szukane w linii niezależnie od kolejności, np. `Ala ma koty` znajdzie linię `Ale lubi ryby i koty ta Ala co ma psa`. Lista ma wtedy jedną pozycję na linię, a licznik pokazuje liczbę linii. Opcje wielkości liter i całych słów działają dla każdego słowa osobno. Po odznaczeniu opcji tekst jest szukany dokładnie tak, jak go wpisano (ze spacjami). W trybie zamiany (`Ctrl+R`) opcja jest wyłączona.
+    - Lista wyników i podświetlenia odświeżają się na bieżąco podczas edycji tekstu (po krótkiej przerwie w pisaniu), ale tylko wtedy, gdy okno wyszukiwania jest widoczne. Po schowaniu okna nic się nie aktualizuje, a po ponownym pokazaniu wyniki odświeżają się od razu. Aktualnie wybrana pozycja i odznaczone pola w trybie zamiany zostają zachowane.
     - `Ctrl+R` włącza tryb zamiany: każde znalezione miejsce ma checkbox, dzięki czemu można wybrać dokładnie te wystąpienia, które mają zostać zmienione.
     - Opcja **Skip already replaced** pomija wyniki będące już częścią tekstu zastępującego, np. nie zamieni `cout` wewnątrz `std::cout`.
  9. **Skalowanie czcionki**: Powiększanie/pomniejszanie czcionki za pomocą `Ctrl++` i `Ctrl+-` lub `Ctrl+MOUSE_SCROLL`.

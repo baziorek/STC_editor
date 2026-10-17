@@ -1,15 +1,76 @@
+#include <QFlags>
+#include <QModelIndex>
 #include <QPainter>
+#include <QPalette>
+#include <QPointF>
+#include <QRect>
+#include <QString>
+#include <QStyle>
+#include <QTextCharFormat>
 #include <QTextLayout>
+#include <QTextLine>
+#include <QTextOption>
+#include <QVariant>
+#include <Qt>
+#include <QtGlobal>
+#include <algorithm>
 #include "highlightdelegate.h"
+
+
+namespace
+{
+struct Span
+{
+    int start;
+    int length;
+};
+
+/// Places of all the terms in the text (ignoring the case), from left to right. Places which overlap or touch each other
+/// (the terms `ala` and `al` in `Ala`) make one span, so the formats given to the layout never overlap.
+QList<Span> spansOfTerms(const QString& text, const QStringList& terms)
+{
+    QList<Span> spans;
+    for (const QString& term : terms)
+    {
+        if (term.isEmpty())
+            continue;
+
+        for (qsizetype idx = text.indexOf(term, 0, Qt::CaseInsensitive); idx >= 0;
+             idx = text.indexOf(term, idx + term.length(), Qt::CaseInsensitive))
+        {
+            spans.append({ static_cast<int>(idx), static_cast<int>(term.length()) });
+        }
+    }
+
+    std::sort(spans.begin(), spans.end(), [](const Span& left, const Span& right) {
+        return left.start < right.start;
+    });
+
+    QList<Span> merged;
+    for (const Span& span : spans)
+    {
+        if (!merged.isEmpty() && span.start <= merged.last().start + merged.last().length)
+        {
+            Span& previous = merged.last();
+            previous.length = std::max(previous.length, span.start + span.length - previous.start);
+        }
+        else
+        {
+            merged.append(span);
+        }
+    }
+    return merged;
+}
+} // namespace
 
 
 HighlightDelegate::HighlightDelegate(QObject *parent)
     : QStyledItemDelegate(parent)
 {}
 
-void HighlightDelegate::setSearchTerm(const QString& term)
+void HighlightDelegate::setSearchTerms(const QStringList& terms)
 {
-    searchTerm = term;
+    searchTerms = terms;
 }
 
 void HighlightDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
@@ -26,23 +87,12 @@ void HighlightDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt
     // Find all occurences to make more visible:
     QList<QTextLayout::FormatRange> formats;
 
-    if (!searchTerm.isEmpty())
-    {
-        int idx = text.indexOf(searchTerm, 0, Qt::CaseInsensitive);
-        while (idx >= 0) {
-            QTextLayout::FormatRange r;
-            r.start = idx;
-            r.length = searchTerm.length();
-
-            QTextCharFormat f;
-            f.setBackground(Qt::yellow);
-            f.setForeground(Qt::black);
-            f.setFontUnderline(true);
-            formats.append({ idx, static_cast<int>(searchTerm.length()), f });
-
-            idx = text.indexOf(searchTerm, idx + searchTerm.length(), Qt::CaseInsensitive);
-        }
-    }
+    QTextCharFormat highlight;
+    highlight.setBackground(Qt::yellow);
+    highlight.setForeground(Qt::black);
+    highlight.setFontUnderline(true);
+    for (const Span& span : spansOfTerms(text, searchTerms))
+        formats.append({ span.start, span.length, highlight });
 
     // Building text layout:
     QTextOption textOption;
