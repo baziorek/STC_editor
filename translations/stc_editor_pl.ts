@@ -108,6 +108,11 @@ Zapisać mimo to?</translation>
         <translation>Kopiuj link</translation>
     </message>
     <message>
+        <location filename="../CodeEditor.cpp" line="1035"/>
+        <source>Preview the page when hovering the link</source>
+        <translation>Podgląd strony po najechaniu na link</translation>
+    </message>
+    <message>
         <location filename="../CodeEditor.cpp" line="1014"/>
         <source>Remove link</source>
         <translation>Usuń link</translation>
@@ -2562,6 +2567,19 @@ Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy na
     <message>
         <source>Idle time treshold [minutes]: </source>
         <translation type="vanished">Idle time treshold [minutes]: </translation>
+    </message>
+</context>
+<context>
+    <name>LinkPreviewPopup</name>
+    <message>
+        <location filename="../widgets/LinkPreviewPopup.cpp" line="128"/>
+        <source>Could not load the page</source>
+        <translation>Nie udało się wczytać strony</translation>
+    </message>
+    <message>
+        <location filename="../widgets/LinkPreviewPopup.cpp" line="132"/>
+        <source>Loading…</source>
+        <translation>Wczytywanie…</translation>
     </message>
 </context>
 </TS>

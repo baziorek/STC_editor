@@ -104,6 +104,11 @@ Save anyway?</source>
         <translation>Copy link</translation>
     </message>
     <message>
+        <location filename="../CodeEditor.cpp" line="1035"/>
+        <source>Preview the page when hovering the link</source>
+        <translation>Preview the page when hovering the link</translation>
+    </message>
+    <message>
         <location filename="../CodeEditor.cpp" line="1014"/>
         <source>Remove link</source>
         <translation>Remove link</translation>
@@ -2548,6 +2553,19 @@ The text is converted and the file is saved in %2 when you save it.</source>
     <message>
         <source>Idle time treshold [minutes]: </source>
         <translation type="vanished">Idle time treshold [minutes]: </translation>
+    </message>
+</context>
+<context>
+    <name>LinkPreviewPopup</name>
+    <message>
+        <location filename="../widgets/LinkPreviewPopup.cpp" line="128"/>
+        <source>Could not load the page</source>
+        <translation>Could not load the page</translation>
+    </message>
+    <message>
+        <location filename="../widgets/LinkPreviewPopup.cpp" line="132"/>
+        <source>Loading…</source>
+        <translation>Loading…</translation>
     </message>
 </context>
 </TS>

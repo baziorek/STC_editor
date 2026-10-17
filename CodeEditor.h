@@ -18,6 +18,7 @@ class EditHistory;
 class EditHistoryDialog;
 class FileEncodingHandler;
 class LineHistoryDialog;
+class LinkPreviewController;
 class QPainter;
 class STCSyntaxHighlighter;
 class QNetworkAccessManager;
@@ -287,6 +288,8 @@ protected:
     void addCodeBlockActionsIfApplicable(QMenu *menu, const QPoint &pos);
     void addCppReferenceSearchActionIfApplicable(QMenu *menu, const QTextCursor& clickCursor);
     void addStcDocumentationActionIfApplicable(QMenu *menu, const QTextCursor& clickCursor);
+    /// On a link: the switch of the preview of its page shown when the mouse rests on it
+    void addLinkPreviewToggleAction(QMenu *menu, const QTextCursor& clickCursor);
     void addImgTagActionsIfApplicable(QMenu *menu);
     QString removeCppComments(const QString& code) const;
     QString removeExcessiveEmptyLines(const QString& code) const;
@@ -318,6 +321,7 @@ private:
     /// not on every change reported by the document
     bool replacingWholeContent = false;
 
+    LinkPreviewController* linkPreview = nullptr; // preview of the page of the link under the mouse; child of this widget
     EditHistory* editHistory = nullptr; // watches the document; child of this widget
     QPointer<EditHistoryDialog> editHistoryDialog;
     QPointer<LineHistoryDialog> lineHistoryDialog;

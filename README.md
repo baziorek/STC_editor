@@ -57,6 +57,7 @@ Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://c
     - Dostępne są również statystyki: ile danych wysłano i pobrano, widoczne po najechaniu myszką na obszar renderujący
 15. **Śledzenie TODO w dokumencie**: W podglądzie dokumentu widać komentarze `TODO: ` wraz z tekstem na prawo od tego, są one klikalne i wtedy przechodzą do danej pozycji.
 16. **Klikalne linki**: wewnątrz tagów z linkiem `[a href="..."]` lub `[a href="..." name="..."]` możemy przytrzymać CTRL + lewy przycisk myszy i nam się otworzy dany link
+    - **Podgląd strony po najechaniu na link**: gdy mysz chwilę (ok. pół sekundy) spoczywa na `[a href="..."]` (w trybie „Zwykły tekst” także na adresie wpisanym w tekście), obok kursora pojawia się okno z podglądem strony (QtWebEngine, większe niż podgląd obrazków). Znika po zjechaniu myszą z linku, kliknięciu, przewijaniu i naciśnięciu klawisza. Podglądane są tylko strony `http` i `https`. Strona ładuje się w osobnym profilu bez zapisu na dysku (bez ciasteczek i historii), bez wtyczek, okienek, pobierania i dźwięku. Ponieważ podgląd pobiera strony z internetu, można go wyłączyć: prawy przycisk myszy na linku → **Podgląd strony po najechaniu na link** (wybór jest zapamiętywany).
 17. **Wklejane linki wklejane w odpowiedni sposób**: jak wklejamy przez CTRL+V, a w schowku jest link to otacza linka tagami linka `[a href="link"]`
     - Po chwili zostanie pobrana z linka i dodana jako kolejny atrybut nazwa strony, czyli zamiast `[a href="link"]` będzie `[a href="link" name="Nazwa strony dla linka"]`
     - Jeśli jest zaznaczony tekst to "podlinkowuje go" przez otoczenie: `[a href="link" name="Zaznaczony wcześniej tekst"]`
@@ -211,7 +212,6 @@ QT_QPA_PLATFORM=offscreen ctest --output-on-failure
 23. A może do szukania błędów (niezamkniętych tagów) zaprzędz analizator składniowy: https://www.antlr.org/ ?
 25. W danej linii da się wpisać dane np.: `QTextBlockUserData` i potem `block.setUserData(data);` - może da się to wykorzystać w optymalizacji
 26. Sensowne funkcjonalności z innych podobnych edytorów np. [Scribe-Text-Editor](https://github.com/AleksandrHovhannisyan/Scribe-Text-Editor)
-27. Podgląd strony internetowej po najechaniu myszką
 28. Wsparcie dla MD na bazie: https://github.com/Qt-Widgets/notes https://github.com/nuttyartist/notes
 29. W linijce gradient ostatnio używanych linii z numerami ile temu
 30. Ukrycie tagów, nie licząc otaczających (rich text editor)

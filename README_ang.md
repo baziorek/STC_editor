@@ -54,6 +54,7 @@ If you want to use this editor for writing content for [cpp0x.pl](https://cpp0x.
     - Text selected in the preview can be copied with `Ctrl+C` (clicking the preview gives it the focus).
 15. **TODO Tracking**: Displays `TODO:` comments in the document context view, clickable to jump to their position.
 16. **Clickable Links**: Hold `Ctrl` and left-click inside `[a href="..."]` or `[a href="..." name="..."]` tags to open the link.
+    - **Page preview on hover over a link**: when the mouse rests for a moment (about half a second) on an `[a href="..."]` tag (in "Plain text" mode also on an address written in the text), a window with a preview of the page (QtWebEngine, bigger than the image preview) appears next to the cursor. It disappears when the mouse leaves the link, on a click, scrolling or a key press. Only `http` and `https` pages are previewed. The page is loaded in a separate profile which stores nothing on the disk (no cookies, no history), with no plug-ins, pop-up windows, downloads or sound. Because the preview fetches pages from the Internet, it can be switched off: right-click on a link → **Preview the page when hovering the link** (the choice is remembered).
 17. **Smart Link Pasting**: Pasting a URL via `Ctrl+V` wraps it in `[a href="link"]` tags:
     - After a moment, the page title is fetched and added as a `name` attribute (e.g., `[a href="link" name="Page title"]`).
     - If text is selected, it becomes the link's name (e.g., `[a href="link" name="Selected text"]`).
@@ -198,7 +199,6 @@ QT_QPA_PLATFORM=offscreen ctest --output-on-failure
 34. Toggle specific syntax highlighting aspects.
 35. Next/Previous Change: Buttons to navigate through document changes.
 36. Features inspired by other editors, e.g., [Scribe-Text-Editor](https://github.com/AleksandrHovhannisyan/Scribe-Text-Editor).
-37. Webpage preview on hover.
 38. Markdown support based on [Qt-Widgets/notes](https://github.com/Qt-Widgets/notes).
 39. Additional widgets, e.g., [SlidingStackedWidget](https://github.com/Qt-Widgets/SlidingStackedWidget-1) or [Qwt](https://qwt.sourceforge.io/index.html).
 40. Document scanning in a separate thread for better performance.

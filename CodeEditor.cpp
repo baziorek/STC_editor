@@ -33,6 +33,7 @@
 #include "utils/ExactText.h"
 #include "widgets/EditHistoryDialog.h"
 #include "widgets/LineHistoryDialog.h"
+#include "widgets/LinkPreviewController.h"
 #include "utils/STCSyntaxHighlighter.h"
 #include "ui/cppcompilerdialog.h"
 #include "utils/DiffCalculation.h"
@@ -342,6 +343,9 @@ CodeEditor::CodeEditor(QWidget *parent)
     highlightCurrentLine();
 
     syntaxHighlighter = new STCSyntaxHighlighter(document()); // it does not leak: the document owns it
+
+    // In plain text mode the addresses written in the text are links, in the other modes only the [a href] tag is
+    linkPreview = new LinkPreviewController(this, [this] { return syntaxMode() == SyntaxMode::PlainText; });
 }
 
 SyntaxMode CodeEditor::syntaxMode() const
@@ -909,6 +913,7 @@ void CodeEditor::contextMenuEvent(QContextMenuEvent* event)
     else
     {
         addLinkActionsIfApplicable(menu);
+        addLinkPreviewToggleAction(menu, clickCursor);
         addTagRemovalActionIfInsideTag(menu);
         addCodeBlockActionsIfApplicable(menu, event->pos());
         addImgTagActionsIfApplicable(menu);
@@ -1019,6 +1024,18 @@ void CodeEditor::addLinkActionsIfApplicable(QMenu* menu)
     QAction* selectLinkAction = menu->addAction(tr("Select link"), this, &CodeEditor::selectLink);
     selectLinkAction->setIcon(QIcon::fromTheme("edit-select-all"));
     selectLinkAction->setEnabled(hasNonEmptyLink);
+}
+
+void CodeEditor::addLinkPreviewToggleAction(QMenu* menu, const QTextCursor& clickCursor)
+{
+    if (linkPreview == nullptr || !linkPreview->targetAt(clickCursor))
+        return;
+
+    menu->addSeparator();
+    QAction* toggle = menu->addAction(tr("Preview the page when hovering the link"));
+    toggle->setCheckable(true);
+    toggle->setChecked(linkPreview->isEnabled());
+    connect(toggle, &QAction::toggled, linkPreview, &LinkPreviewController::setEnabled);
 }
 
 void CodeEditor::copyLinkToClipboard()

@@ -479,6 +479,17 @@ if(NOT WIN32)
     target_link_libraries(${PROJECT_NAME}TagRegionsTests PRIVATE Qt${QT_VERSION_MAJOR}::Core ${GTEST_LIBRARIES} pthread gtest_main)
     add_test(NAME ${PROJECT_NAME}TagRegionsTests COMMAND ${PROJECT_NAME}TagRegionsTests)
 
+    # Which link (and which web page) is under the cursor, for the preview shown when the mouse rests on a link. Only QtCore.
+    add_executable(${PROJECT_NAME}LinkPreviewTargetTests
+        tests/LinkPreviewTargetTests.cpp
+        utils/LinkPreviewTarget.cpp
+        utils/LinkDetection.cpp
+        stcSyntaxPatterns.cpp
+    )
+    target_include_directories(${PROJECT_NAME}LinkPreviewTargetTests PRIVATE ${PROJECT_SOURCE_DIR})
+    target_link_libraries(${PROJECT_NAME}LinkPreviewTargetTests PRIVATE Qt${QT_VERSION_MAJOR}::Core ${GTEST_LIBRARIES} pthread gtest_main)
+    add_test(NAME ${PROJECT_NAME}LinkPreviewTargetTests COMMAND ${PROJECT_NAME}LinkPreviewTargetTests)
+
     # Searching a line for one word or for several words in any order (the find widget). Only QtCore.
     add_executable(${PROJECT_NAME}LineSearchTests
         tests/LineSearchTests.cpp
