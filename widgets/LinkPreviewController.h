@@ -13,6 +13,7 @@ class LinkPreviewPopup;
 class QMouseEvent;
 class QPlainTextEdit;
 class QTextCursor;
+class QWidget;
 
 /** @brief Shows a preview of the web page when the mouse stays over a link in the editor.
  *
@@ -50,6 +51,7 @@ private:
     void hidePreview();
 
     QPlainTextEdit* editor_;
+    QPointer<QWidget> viewport_; // the part of the editor which receives the mouse; kept to compare it with the watched object
     BareUrlsAreLinks bareUrlsAreLinks_;
     bool enabled_ = true;
 

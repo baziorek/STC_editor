@@ -490,6 +490,23 @@ if(NOT WIN32)
     target_link_libraries(${PROJECT_NAME}LinkPreviewTargetTests PRIVATE Qt${QT_VERSION_MAJOR}::Core ${GTEST_LIBRARIES} pthread gtest_main)
     add_test(NAME ${PROJECT_NAME}LinkPreviewTargetTests COMMAND ${PROJECT_NAME}LinkPreviewTargetTests)
 
+    # The hover preview of links watches the editor with an event filter, also while the editor is destroyed. Widgets + WebEngine
+    # (the popup class is linked in, no page is loaded); own main() with QApplication.
+    add_executable(${PROJECT_NAME}LinkPreviewControllerTests
+        tests/LinkPreviewControllerTests.cpp
+        widgets/LinkPreviewController.cpp
+        widgets/LinkPreviewPopup.cpp
+        utils/LinkPreviewTarget.cpp
+        utils/LinkDetection.cpp
+        stcSyntaxPatterns.cpp
+    )
+    target_include_directories(${PROJECT_NAME}LinkPreviewControllerTests PRIVATE ${PROJECT_SOURCE_DIR})
+    target_link_libraries(${PROJECT_NAME}LinkPreviewControllerTests PRIVATE
+        Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::WebEngineWidgets ${GTEST_LIBRARIES} pthread
+    )
+    add_test(NAME ${PROJECT_NAME}LinkPreviewControllerTests COMMAND ${PROJECT_NAME}LinkPreviewControllerTests)
+    set_tests_properties(${PROJECT_NAME}LinkPreviewControllerTests PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
     # Searching a line for one word or for several words in any order (the find widget). Only QtCore.
     add_executable(${PROJECT_NAME}LineSearchTests
         tests/LineSearchTests.cpp

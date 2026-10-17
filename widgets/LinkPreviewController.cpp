@@ -22,8 +22,9 @@ LinkPreviewController::LinkPreviewController(QPlainTextEdit* editor, BareUrlsAre
     hoverTimer_.setInterval(kHoverDelayMs);
     connect(&hoverTimer_, &QTimer::timeout, this, &LinkPreviewController::showPreviewOfHoveredLink);
 
-    editor_->viewport()->setMouseTracking(true); // the mouse is watched without any button pressed
-    editor_->viewport()->installEventFilter(this);
+    viewport_ = editor_->viewport();
+    viewport_->setMouseTracking(true); // the mouse is watched without any button pressed
+    viewport_->installEventFilter(this);
     editor_->installEventFilter(this);
 }
 
@@ -47,7 +48,9 @@ std::optional<stc::links::PreviewTarget> LinkPreviewController::targetAt(const Q
 
 bool LinkPreviewController::eventFilter(QObject* watched, QEvent* event)
 {
-    if (watched == editor_->viewport())
+    // Only pointers are compared here, no method of the editor is called: while the editor is destroyed it has already
+    // lost its QPlainTextEdit part (it is only a QWidget), but it still sends events (FocusOut, Hide) through this filter.
+    if (watched == viewport_)
     {
         switch (event->type())
         {
