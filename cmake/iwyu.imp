@@ -28,5 +28,8 @@
   { "include": ["@[\"<](QtCore/)?qtcoreexports\\.h[\">]", "private", "<QtGlobal>", "public"] },
   { "include": ["<QtCore/qobjectdefs.h>", "private", "<QObject>", "public"] },
   { "include": ["<QtCore/qglobal.h>", "private", "<QtGlobal>", "public"] },
-  { "include": ["<QtCore/qtcoreexports.h>", "private", "<QtGlobal>", "public"] }
+  { "include": ["<QtCore/qtcoreexports.h>", "private", "<QtGlobal>", "public"] },
+  # QT_BEGIN_NAMESPACE / QT_END_NAMESPACE (Qt 6.11 has no forwarder for this header)
+  { "include": ["@[\"<](QtCore/)?qtconfigmacros\\.h[\">]", "private", "<QtGlobal>", "public"] },
+  { "include": ["<QtCore/qtconfigmacros.h>", "private", "<QtGlobal>", "public"] }
 ]
