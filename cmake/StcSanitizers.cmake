@@ -3,7 +3,7 @@
 # On a crash or an invalid memory access the sanitizer runtime prints the kind of
 # error together with a stack trace (function, file:line) - no gdb needed.
 #
-#   -DSTC_ENABLE_SANITIZERS=OFF   turns it off
+#   -DSTC_ENABLE_SANITIZERS=ON    turns it on (OFF by default: instrumented binaries start and run much slower)
 #
 # Design notes:
 #  * Applied PER TARGET (via the INTERFACE library "stc_sanitizers"), never through
@@ -21,7 +21,7 @@
 include_guard(GLOBAL)
 
 option(STC_ENABLE_SANITIZERS
-    "Build STC_editor and its tests with AddressSanitizer + UBSan (not in Release/MinSizeRel)" ON)
+    "Build STC_editor and its tests with AddressSanitizer + UBSan (not in Release/MinSizeRel)" OFF)
 
 # Link the sanitizer flags into an executable target (no-op when sanitizers are unavailable/disabled).
 function(stc_enable_sanitizers target)
@@ -47,7 +47,7 @@ function(stc_sanitizers_test_environment)
 endfunction()
 
 if(NOT STC_ENABLE_SANITIZERS)
-    message(STATUS "Sanitizers: disabled (STC_ENABLE_SANITIZERS=OFF)")
+    message(STATUS "Sanitizers: disabled (turn on with -DSTC_ENABLE_SANITIZERS=ON)")
     return()
 endif()
 
