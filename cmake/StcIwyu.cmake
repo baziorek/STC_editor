@@ -46,6 +46,19 @@ endif()
 set(STC_IWYU_QT_MODULES Core Gui Widgets Network WebEngineCore WebEngineWidgets WebChannel
     CACHE STRING "Qt modules whose forwarding headers are put into the generated IWYU mapping")
 
+# Qt 5.x/6.4 define all of these in one header, <QtGlobal> (qglobal.h); since Qt 6.5 they live in
+# many small headers that qglobal.h merely includes (qtypes.h, qlogging.h, qminmax.h, ...), each
+# with its own forwarding header (<QtTypes>, <QtLogging>, <QtMinMax>, ...) that exists only in the
+# newer versions. IWYU would suggest those, which makes the code depend on the Qt version and
+# litters it with includes nobody writes by hand. <QtGlobal> is the documented, portable
+# spelling for all of them, so the whole family (headers AND the symbols of their forwarders,
+# e.g. QFlags, QOverload, QTypeInfo) is mapped to it. Verified against Qt 6.11.1: qglobal.h includes
+# every header in this list (qtconfigmacros/qtcoreexports are reached through qtcoreglobal.h).
+set(STC_IWYU_QT_GLOBAL_SATELLITES
+    qglobal qtcoreglobal qtconfigmacros qtcoreexports qtypes qlogging qminmax qswap qnumeric
+    qassert qtresource qtypeinfo qflags qoverload qtpreprocessorsupport qsystemdetection
+    qprocessordetection qcompilerdetection qtdeprecationmarkers qtversion qtversionchecks)
+
 function(stc_generate_qt_iwyu_mapping out_file)
     set(_qt "Qt${QT_VERSION_MAJOR}")
     if(NOT TARGET ${_qt}::Core)
@@ -67,7 +80,7 @@ function(stc_generate_qt_iwyu_mapping out_file)
         return()
     endif()
 
-    set(_sym_tpl [=[  { symbol: [ "@FWD@", "private", "<@FWD@>", "public" ] },
+    set(_sym_tpl [=[  { symbol: [ "@SYM@", "private", "<@TGT@>", "public" ] },
 ]=])
     set(_inc_tpl [=[  { include: [ "@[\"<](@MOD@/)?@BASE@\\.h[\">]", "private", "<@FWD@>", "public" ] },
 ]=])
@@ -104,7 +117,13 @@ function(stc_generate_qt_iwyu_mapping out_file)
             if(NOT _fwd MATCHES "^[A-Za-z0-9_]+$")
                 continue()
             endif()
-            string(REPLACE "@FWD@" "${_fwd}" _sym_line "${_sym_tpl}")
+            list(FIND STC_IWYU_QT_GLOBAL_SATELLITES "${_base}" _sat_idx)
+            set(_sym_target "${_fwd}")
+            if(NOT _sat_idx EQUAL -1)
+                set(_sym_target "QtGlobal")
+            endif()
+            string(REPLACE "@SYM@" "${_fwd}" _sym_line "${_sym_tpl}")
+            string(REPLACE "@TGT@" "${_sym_target}" _sym_line "${_sym_line}")
             string(APPEND _symbols "${_sym_line}")
             list(APPEND _headers "${_base}")
             set(_fwds_of_${_base} ${_fwds_of_${_base}} "${_fwd}")
@@ -112,6 +131,11 @@ function(stc_generate_qt_iwyu_mapping out_file)
         endforeach()
         list(REMOVE_DUPLICATES _headers)
         foreach(_base IN LISTS _headers)
+            list(FIND STC_IWYU_QT_GLOBAL_SATELLITES "${_base}" _sat_idx)
+            if(NOT _sat_idx EQUAL -1)
+                unset(_fwds_of_${_base})
+                continue()   # mapped to <QtGlobal> below
+            endif()
             # Which forwarder is THE public name of this header? Prefer the one named exactly like
             # the header (qstring.h <- QString); else the "Qt" form (qtypes.h <- QtTypes,
             # qlogging.h <- QtLogging, qcompare.h <- QtCompare), which Qt 6 creates next to
@@ -142,6 +166,13 @@ function(stc_generate_qt_iwyu_mapping out_file)
             endif()
             unset(_fwds_of_${_base})
         endforeach()
+    endforeach()
+
+    foreach(_sat IN LISTS STC_IWYU_QT_GLOBAL_SATELLITES)
+        string(REPLACE "@MOD@" "QtCore" _line "${_inc_tpl}")
+        string(REPLACE "@BASE@" "${_sat}" _line "${_line}")
+        string(REPLACE "@FWD@" "QtGlobal" _line "${_line}")
+        string(APPEND _includes "${_line}")
     endforeach()
 
     if(_count EQUAL 0)

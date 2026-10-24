@@ -1,0 +1,18 @@
+# Suggestions that include-what-you-use makes but that nobody should act on.
+# Used by cmake/iwyu-filter.sh. One POSIX extended regular expression per line, matched against a
+# whole suggested line such as:   #include <QtSwap>      // for qt_ptr_swap
+# Lines starting with '#' and empty lines are ignored.
+# (awk's ERE has no \s or \w - use [[:space:]] and [[:alnum:]_].)
+
+# --- Qt internals reached through template instantiation (not meant to be included directly) ---
+^#include <QStringAlgorithms>
+^#include <QByteArrayView>[[:space:]]+// for lengthHelper
+^#include <QMetaType>[[:space:]]+// for qMetaTypeInterfaceForType
+^#include <QtCore/qcompare\.h>
+^#include <QObject>[[:space:]]+// for (FunctionPointer|AreArg|makeCallableObject)
+
+# --- libstdc++ 15 internals reported by IWYU 0.23 - 0.25 (false positives) ---
+^#include <format>[[:space:]]+// for vector
+^#include <ranges>[[:space:]]+// for (pair|__)
+^#include <list>[[:space:]]+// for _List
+^#include <iterator>[[:space:]]+// for data
