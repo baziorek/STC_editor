@@ -1,4 +1,7 @@
+#include <QRegularExpression>
+#include <QString>
 #include "stcSyntaxPatterns.h"
+
 
 namespace stc
 {

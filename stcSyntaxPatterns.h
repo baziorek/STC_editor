@@ -1,5 +1,7 @@
 #pragma once
-#include <QRegularExpression>
+
+class QRegularExpression;
+
 
 namespace stc
 {

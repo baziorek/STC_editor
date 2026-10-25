@@ -1,4 +1,6 @@
 #include "types/stcTags.h"
+#include <QString>  // for QString
+
 using std::make_pair;
 
 using enum StcTags;

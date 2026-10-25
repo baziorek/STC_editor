@@ -1,9 +1,17 @@
 #include "BackupManager.h"
+
 #include <QFile>
 #include <QDir>
 #include <QFileInfo>
 #include <QDateTime>
 #include <QDebug>
+#include <QByteArray>
+#include <QFileInfoList>
+#include <QIODevice>
+#include <QList>
+#include <QStringList>
+#include <QtGlobal>
+#include <compare>
 
 BackupManager::BackupManager()
 {

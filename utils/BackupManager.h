@@ -2,7 +2,6 @@
 
 #include <QString>
 #include <QDateTime>
-#include <QFileInfo>
 
 class BackupManager
 {

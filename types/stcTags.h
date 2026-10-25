@@ -2,7 +2,9 @@
 #include <cstdint>     // std::uint8_t
 #include <type_traits> // std::underlying_type_t
 #include <map>
-#include <QString>
+#include <utility>      // for to_underlying
+
+class QString;
 
 enum class StcTags: std::uint32_t
 {
