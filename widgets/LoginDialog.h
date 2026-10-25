@@ -1,9 +1,12 @@
 #pragma once
 
 #include <QDialog>
+#include <QObject>
+#include <QString>
 
 class QLineEdit;
 class QCheckBox;
+class QWidget;
 
 class LoginDialog : public QDialog
 {

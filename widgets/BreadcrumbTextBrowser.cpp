@@ -2,9 +2,25 @@
 #include <QStack>
 #include <QUrl>
 #include <QTextBlock>
+#include <QChar>
+#include <QFrame>
+#include <QList>
+#include <QMap>
+#include <QPlainTextEdit>
+#include <QRegularExpressionMatch>
+#include <QSet>
+#include <QStringList>
+#include <QTextCursor>
+#include <QTextDocument>
+#include <QtGlobal>
+#include <optional>
+#include <utility>
+
 #include "BreadcrumbTextBrowser.h"
 #include "CodeEditor.h"
 #include "widgets/FilteredTagTableWidget.h"
+
+class QWidget;
 
 
 static const QSet<QString> selfClosingTags2Ignore = { "img", "a" };

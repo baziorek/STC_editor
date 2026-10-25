@@ -4,11 +4,14 @@
 #include <QMap>
 #include <QTextCursor>
 #include <QTreeWidget>
+#include <QList>
+#include <QObject>
+#include <QString>
 
 class QMenu;
 class QRegularExpression;
-
 class CodeEditor;
+class QWidget;
 
 /// The conspect of the document: its headers ([h1]...[h6]) as a tree. A header is a child of the closest header above
 /// it with a smaller level, so [h2] sections sit under their [h1] section, and so on.

@@ -1,16 +1,30 @@
-#include <QLabel>
 #include <QMenu>
 #include <QAction>
 #include <QClipboard>
 #include <QGuiApplication>
 #include <QVBoxLayout>
 #include <QNetworkReply>
-#include <QNetworkReply>
-#include <QEnterEvent>
 #include <QToolTip>
 #include <QCursor>
 #include <QMouseEvent>
 #include <QChildEvent>
+#include <QByteArray>
+#include <QEvent>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonValue>
+#include <QList>
+#include <QNetworkRequest>
+#include <QPointF>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
+#include <QUrlQuery>
+#include <QVariant>
+#include <QVariantList>
+#include <QWebEnginePage>
+#include <Qt>
+#include <functional>
+
 #include "StcPreview.h"
 #include "HtmlSourceDialog.h"
 

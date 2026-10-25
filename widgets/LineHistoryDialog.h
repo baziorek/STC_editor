@@ -4,8 +4,14 @@
 #include <QDialog>
 #include <QPointer>
 #include <QTimer>
+#include <QModelIndex>
+#include <QObject>
+#include <QString>
+#include <Qt>
 
 #include "utils/EditHistory.h"
+
+class QWidget;
 
 namespace Ui {
 class LineHistoryDialog;

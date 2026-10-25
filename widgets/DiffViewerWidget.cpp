@@ -6,6 +6,17 @@
 #include <QLabel>
 #include <algorithm>
 #include <cmath>
+#include <QAbstractItemView>
+#include <QBrush>
+#include <QChar>
+#include <QFont>
+#include <QFrame>
+#include <QSizeF>
+#include <QSizePolicy>
+#include <QTableWidgetItem>
+#include <QWidget>
+#include <Qt>
+
 #include "DiffViewerWidget.h"
 #include "utils/DiffCalculation.h"
 

@@ -1,9 +1,11 @@
 #pragma once
 
-#include <QDateTime>
 #include <QString>
 
 #include "utils/EditHistory.h"
+
+class QDateTime;
+template <typename T> class QList;
 
 /// How the windows of the edit history write down times, line numbers and changes (one place, so both agree)
 namespace EditHistoryFormat

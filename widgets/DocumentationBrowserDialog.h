@@ -1,7 +1,10 @@
 #pragma once
 
 #include <QDialog>
-#include <QUrl>
+#include <QString>
+
+class QUrl;
+class QWidget;
 
 class DocumentationBrowserDialog final : public QDialog
 {

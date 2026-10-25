@@ -1,13 +1,22 @@
 #include <QTableWidget>
-#include <QMap>
 #include <QRegularExpression>
-#include <QShowEvent>
 #include <QTextCursor>
 #include <QTextBlock>
 #include <QHeaderView>
 #include <QTimer>
+#include <QAbstractItemView>
+#include <QChar>
+#include <QRegularExpressionMatch>
+#include <QTableWidgetItem>
+#include <QTextDocument>
+#include <QtGlobal>
+#include <algorithm>
+#include <utility>
+
 #include "CodeEditor.h"
 #include "TodosTrackerTableWidget.h"
+
+class QWidget;
 
 
 namespace

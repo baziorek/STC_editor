@@ -6,7 +6,15 @@
 #include <QDialogButtonBox>
 #include <QLabel>
 #include <QRegularExpression>
-#include <QFileDialog>
+#include <QDateTime>
+#include <QDebug>
+#include <QFile>
+#include <QFileInfo>
+#include <QRegularExpressionMatch>
+#include <QWidget>
+#include <Qt>
+#include <QtGlobal>
+
 #include "RenameFileDialog.h"
 #include "CodeEditor.h"
 #include "ui_RenameFileDialog.h"

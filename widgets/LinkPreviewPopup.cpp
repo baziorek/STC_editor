@@ -12,6 +12,13 @@
 #include <QWebEngineSettings>
 #include <QWebEngineView>
 #include <algorithm>
+#include <QColor>
+#include <QRect>
+#include <QSizePolicy>
+#include <QStringLiteral>
+#include <Qt>
+
+class QWidget;
 
 namespace
 {

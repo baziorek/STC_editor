@@ -3,7 +3,10 @@
 #include <QCheckBox>
 #include <QLabel>
 #include <QDialogButtonBox>
+
 #include "LoginDialog.h"
+
+class QWidget;
 
 
 LoginDialog::LoginDialog(QWidget *parent) : QDialog(parent)

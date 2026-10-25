@@ -10,6 +10,10 @@
 #include <QVBoxLayout>
 #include <QWebEnginePage>
 #include <QWebEngineView>
+#include <QIcon>
+#include <Qt>
+
+class QWidget;
 
 DocumentationBrowserDialog::DocumentationBrowserDialog(const QUrl& initialUrl, const QString& windowTitle,
                                                        QWidget* parent)

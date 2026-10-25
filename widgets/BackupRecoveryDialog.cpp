@@ -5,10 +5,18 @@
 #include <QFileInfo>
 #include <QFont>
 #include <QDateTime>
+#include <QChar>
+#include <QList>
+#include <QStringList>
+#include <compare>
+
 #include "BackupRecoveryDialog.h"
 #include "CodeEditor.h"
 #include "utils/DiffCalculation.h"
 #include "utils/BackupManager.h"
+#include "widgets/DiffViewerWidget.h"
+
+class QWidget;
 
 BackupRecoveryDialog::BackupRecoveryDialog(CodeEditor* editor, const QString& originalFilePath, 
                                            const QString& backupContent, QWidget* parent)

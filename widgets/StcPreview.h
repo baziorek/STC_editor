@@ -3,14 +3,14 @@
 #include <QWidget>
 #include <QWebEngineView>
 #include <QNetworkAccessManager>
-#include <QTimer>
-#include <QJsonDocument>
-#include <QJsonArray>
-#include <QUrlQuery>
-#include <QRegularExpression>
 #include <QPoint>
 #include <QPointer>
 #include <optional>
+#include <QObject>
+#include <QString>
+#include <QUrl>
+#include <QtGlobal>
+
 #include "utils/PreviewSyncMap.h"
 
 /**

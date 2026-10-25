@@ -1,8 +1,13 @@
 #pragma once
 
+#include <stddef.h>
 #include <QDialog>
 #include <QTimer>
 #include <vector>
+#include <QList>
+#include <QObject>
+#include <QString>
+
 #include "utils/DiffCalculation.h"
 #include "DiffViewerWidget.h"
 
@@ -10,6 +15,7 @@ class QLabel;
 class QPlainTextEdit;
 class QPushButton;
 class CodeEditor;
+class QWidget;
 
 /**
  * @class PastedTextDiffDialog

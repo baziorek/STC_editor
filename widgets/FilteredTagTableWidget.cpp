@@ -1,13 +1,27 @@
 #include <QTextBlock>
 #include <QHeaderView>
-#include <QToolTip>
 #include <QAction>
 #include <QMenu>
 #include <algorithm>
 #include <limits>
+#include <QAbstractItemView>
+#include <QPalette>
+#include <QPoint>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
+#include <QRegularExpressionMatchIterator>
+#include <QTextDocument>
+#include <QTreeWidgetItem>
+#include <QVariant>
+#include <Qt>
+#include <QtGlobal>
+#include <vector>
+
 #include "FilteredTagTableWidget.h"
 #include "CodeEditor.h"
 #include "utils/HeaderNesting.h"
+
+class QWidget;
 
 
 namespace

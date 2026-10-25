@@ -2,9 +2,16 @@
 #include <QTimer>
 #include <QDebug>
 #include <QTranslator>
-#include <QLocale>
 #include <QLibraryInfo>
 #include <QSettings>
+#include <QFileInfo>
+#include <QIcon>
+#include <QList>
+#include <QString>
+#include <QStringList>
+#include <QVariant>
+#include <QtGlobal>
+
 #include "ui/mainwindow.h"
 
 

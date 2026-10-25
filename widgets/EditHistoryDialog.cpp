@@ -5,10 +5,34 @@
 #include <QFileInfo>
 #include <QFontMetrics>
 #include <QHeaderView>
+#include <QAbstractItemView>
+#include <QBrush>
+#include <QChar>
+#include <QColor>
+#include <QDateTime>
+#include <QFont>
+#include <QItemSelectionModel>
+#include <QLabel>
+#include <QLatin1Char>
+#include <QLatin1String>
+#include <QList>
+#include <QPalette>
+#include <QSplitter>
+#include <QStringList>
+#include <QStringLiteral>
+#include <QTableView>
+#include <QVariant>
+#include <QtGlobal>
+#include <algorithm>
+#include <initializer_list>
 
 #include "EditHistoryFormat.h"
 #include "RichTextDelegate.h"
 #include "ui_EditHistoryDialog.h"
+#include "utils/DiffCalculation.h"
+#include "widgets/DiffViewerWidget.h"
+
+class QWidget;
 
 namespace
 {

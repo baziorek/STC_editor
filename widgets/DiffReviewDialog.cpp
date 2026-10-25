@@ -6,9 +6,18 @@
 #include <QFont>
 #include <QDateTime>
 #include <QTextBlock>
+#include <QChar>
+#include <QTextCursor>
+#include <QTextDocument>
+#include <Qt>
+#include <algorithm>
+
 #include "DiffReviewDialog.h"
 #include "CodeEditor.h"
 #include "utils/DiffCalculation.h"
+#include "widgets/DiffViewerWidget.h"
+
+class QWidget;
 
 
 DiffReviewDialog::DiffReviewDialog(CodeEditor* editor, const QString &dialogTitle, const QString &dialogMessage, QWidget* parent)

@@ -4,12 +4,16 @@
 #include <QSize>
 #include <QString>
 #include <QUrl>
+#include <QObject>
+#include <QPoint>
+#include <QtGlobal>
 
 class QLabel;
 class QVBoxLayout;
 class QWebEnginePage;
 class QWebEngineProfile;
 class QWebEngineView;
+class QWidget;
 
 /** @brief A small window with a preview of the web page which the link under the mouse leads to.
  *

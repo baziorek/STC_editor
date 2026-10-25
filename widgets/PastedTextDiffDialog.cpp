@@ -3,7 +3,6 @@
 #include <QHash>
 #include <QPair>
 #include <QHBoxLayout>
-#include <QHeaderView>
 #include <QLabel>
 #include <QPlainTextEdit>
 #include <QPushButton>
@@ -14,6 +13,14 @@
 #include <QTextDocument>
 #include <QVBoxLayout>
 #include <algorithm>
+#include <QChar>
+#include <QStringList>
+#include <QTableWidgetItem>
+#include <QWidget>
+#include <Qt>
+#include <QtGlobal>
+#include <utility>
+
 #include "PastedTextDiffDialog.h"
 #include "DiffViewerWidget.h"
 #include "CodeEditor.h"

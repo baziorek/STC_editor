@@ -2,10 +2,24 @@
 
 #include <QApplication>
 #include <QHeaderView>
+#include <QAbstractItemView>
+#include <QBrush>
+#include <QColor>
+#include <QDateTime>
+#include <QFont>
+#include <QLabel>
+#include <QList>
+#include <QPalette>
+#include <QStringLiteral>
+#include <QTableView>
+#include <QVariant>
+#include <QtGlobal>
 
 #include "EditHistoryFormat.h"
 #include "RichTextDelegate.h"
 #include "ui_LineHistoryDialog.h"
+
+class QWidget;
 
 namespace
 {

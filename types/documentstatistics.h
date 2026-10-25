@@ -2,6 +2,7 @@
 
 #include <QString>
 #include <QDateTime>
+#include <QtGlobal>
 
 class CodeEditor;
 

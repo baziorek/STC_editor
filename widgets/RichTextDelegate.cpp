@@ -6,6 +6,20 @@
 #include <cmath>
 #include <QPainter>
 #include <QTextDocument>
+#include <QBrush>
+#include <QColor>
+#include <QModelIndex>
+#include <QPalette>
+#include <QRect>
+#include <QSize>
+#include <QSizeF>
+#include <QString>
+#include <QStyle>
+#include <QStyleOptionViewItem>
+#include <QVariant>
+#include <QWidget>
+#include <QtGlobal>
+#include <algorithm>
 
 namespace
 {

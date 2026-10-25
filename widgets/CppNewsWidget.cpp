@@ -7,11 +7,15 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QSettings>
-#include <QShowEvent>
-#include <QHideEvent>
 #include <QTime>
 #include <QUrl>
 #include <QVBoxLayout>
+#include <QByteArray>
+#include <QListWidgetItem>
+#include <QStringLiteral>
+#include <QVariant>
+#include <QVariantList>
+#include <Qt>
 
 namespace
 {

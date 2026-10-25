@@ -2,6 +2,8 @@
 
 #include <string>
 #include <vector>
+#include <compare>
+#include <tuple>
 
 namespace PairedTagsChecker
 {

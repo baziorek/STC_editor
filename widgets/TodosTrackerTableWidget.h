@@ -1,10 +1,14 @@
 #pragma once
 
 #include <QTableWidget>
-#include <QMap>
 #include <QTextCursor>
+#include <QList>
+#include <QObject>
+#include <QRegularExpression>
+#include <QString>
 
 class CodeEditor;
+class QWidget;
 
 
 class TodoTrackerTableWidget : public QTableWidget

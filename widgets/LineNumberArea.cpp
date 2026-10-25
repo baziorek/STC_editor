@@ -1,5 +1,8 @@
 /// the code of the class is copied from: https://doc.qt.io/qt-6.2/qtwidgets-widgets-codeeditor-example.html
 #include "LineNumberArea.h"
+
+#include <QSize>
+
 #include "../CodeEditor.h"
 
 

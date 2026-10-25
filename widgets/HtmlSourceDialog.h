@@ -1,9 +1,12 @@
 #pragma once
 
 #include <QDialog>
+#include <QObject>
+#include <QString>
 
 class QCodeEditor;
 class QLabel;
+class QWidget;
 
 /// A window with the HTML which cpp0x.pl returned for the text, formatted (HtmlPrettyPrinter) and highlighted
 /// (QCodeEditor with its XML highlighter - there is no HTML one, but XML tags, attributes and values are colored the same way).

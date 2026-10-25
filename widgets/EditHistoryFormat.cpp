@@ -2,6 +2,15 @@
 
 #include <QCoreApplication>
 #include <QDate>
+#include <QChar>
+#include <QDateTime>
+#include <QLatin1Char>
+#include <QList>
+#include <QStringList>
+#include <QStringLiteral>
+#include <initializer_list>
+
+#include "utils/DiffCalculation.h"
 
 namespace
 {

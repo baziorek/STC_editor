@@ -25,6 +25,55 @@
 #include <QUrlQuery>
 #include <QHash>
 #include <QFontDatabase>
+#include <QIcon>
+#include <QBrush>
+#include <QByteArray>
+#include <QChar>
+#include <QColor>
+#include <QContextMenuEvent>
+#include <QDate>
+#include <QDebug>
+#include <QDialog>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QFile>
+#include <QFontMetrics>
+#include <QIODevice>
+#include <QIODeviceBase>
+#include <QImage>
+#include <QKeyEvent>
+#include <QLatin1Char>
+#include <QLatin1String>
+#include <QMap>
+#include <QMouseEvent>
+#include <QNetworkRequest>
+#include <QPaintEvent>
+#include <QPen>
+#include <QPixmap>
+#include <QPointF>
+#include <QPolygon>
+#include <QRect>
+#include <QRectF>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
+#include <QRegularExpressionMatchIterator>
+#include <QSize>
+#include <QStringLiteral>
+#include <QSyntaxHighlighter>
+#include <QTextBlock>
+#include <QTextCharFormat>
+#include <QTextFormat>
+#include <QUrl>
+#include <QVariant>
+#include <QWheelEvent>
+#include <QWidget>
+#include <Qt>
+#include <cmath>
+#include <exception>
+#include <initializer_list>
+#include <iterator>
+#include <utility>
+
 #include "CodeEditor.h"
 #include "utils/SyntaxModeMemory.h"
 #include "utils/StcTagRegions.h"
@@ -46,7 +95,8 @@
 #include "widgets/DocumentationBrowserDialog.h"
 #include "utils/BackupManager.h"
 #include "widgets/BackupRecoveryDialog.h"
-#include <QIcon>
+#include "utils/LinkPreviewTarget.h"
+#include "utils/SpellChecker.h"
 
 namespace
 {

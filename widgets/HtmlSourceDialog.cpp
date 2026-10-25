@@ -9,10 +9,16 @@
 #include <QPushButton>
 #include <QScrollBar>
 #include <QVBoxLayout>
-#include <QCodeEditor>      // from QCodeEditor
-#include <QSyntaxStyle>     // from QCodeEditor
-#include <QXMLHighlighter>  // from QCodeEditor
+#include <QTextDocument>
+#include <QTextEdit>
+#include <Qt>
+
 #include "utils/HtmlPrettyPrinter.h"
+#include "internal/QCodeEditor.hpp"
+#include "internal/QSyntaxStyle.hpp"
+#include "internal/QXMLHighlighter.hpp"
+
+class QWidget;
 
 HtmlSourceDialog::HtmlSourceDialog(QWidget *parent) : QDialog(parent), editor(new QCodeEditor(this)), statistics(new QLabel(this))
 {

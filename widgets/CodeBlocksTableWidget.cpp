@@ -1,7 +1,20 @@
 #include <QHeaderView>
 #include <QAction>
-#include <QTextBlock>
 #include <QToolTip>
+#include <QAbstractItemView>
+#include <QChar>
+#include <QEvent>
+#include <QHelpEvent>
+#include <QList>
+#include <QMenu>
+#include <QPoint>
+#include <QTableWidgetItem>
+#include <QTextCursor>
+#include <QWidget>
+#include <Qt>
+#include <QtGlobal>
+#include <optional>
+
 #include "widgets/CodeBlocksTableWidget.h"
 #include "CodeEditor.h"
 #include "types/CodeBlock.h"

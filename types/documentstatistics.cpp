@@ -1,5 +1,10 @@
 #include <QRegularExpression>
 #include <QFileInfo>
+#include <QChar>
+#include <QList>
+#include <QStringLiteral>
+#include <Qt>
+
 #include "documentstatistics.h"
 #include "CodeEditor.h"
 

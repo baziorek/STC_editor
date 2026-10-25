@@ -1,12 +1,14 @@
 #pragma once
 
 #include <QTableWidget>
-#include <QMenu>
 #include <QString>
 #include <QMap>
+#include <QObject>
 
 class CodeEditor;
 class CodeBlock;
+class QMenu;
+class QWidget;
 
 class CodeBlocksTableWidget : public QTableWidget
 {

@@ -4,8 +4,14 @@
 #include <regex>
 #include <string_view>
 #include <vector>
+#include <cstddef>
+#include <iterator>
+#include <span>
+#include <utility>
+
 #include "PairedTagsChecker.h"
 #include "StcTagRules.h"
+
 using namespace std;
 
 namespace

@@ -1,12 +1,20 @@
 #pragma once
 
 #include <QDialog>
-#include "DiffViewerWidget.h"
+#include <QList>
+#include <QObject>
+#include <QString>
+#include <QStringList>
 
 class QLabel;
 class QVBoxLayout;
-
 class CodeEditor;
+class DiffViewerWidget;
+class QDateTime;
+class QWidget;
+namespace DiffCalculation {
+struct LineDiffResult;
+}  // namespace DiffCalculation
 
 class DiffReviewDialog : public QDialog
 {

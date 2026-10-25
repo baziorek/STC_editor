@@ -10,10 +10,28 @@
 #include <QFileSystemWatcher>
 #include <QDateTime>
 #include <QString>
-#include <QTimer>
-#include "utils/SyntaxMode.h"
+#include <QAction>
+#include <QFont>
+#include <QKeySequence>
+#include <QList>
+#include <QMultiMap>
+#include <QObject>
+#include <QPair>
+#include <QPoint>
+#include <QSet>
+#include <QStringList>
+#include <QTextCursor>
+#include <QTextEdit>
+#include <QVector>
+#include <QtGlobal>
+#include <algorithm>
+#include <functional>
+#include <memory>
+#include <optional>
 
-class CodeBlock;
+#include "utils/SyntaxMode.h"
+#include "types/CodeBlock.h"
+
 class EditHistory;
 class EditHistoryDialog;
 class FileEncodingHandler;
@@ -22,6 +40,11 @@ class LinkPreviewController;
 class QPainter;
 class STCSyntaxHighlighter;
 class QNetworkAccessManager;
+class QMenu;
+class QRect;
+class QTimer;
+class QWidget;
+template <class Key, class T> class QMultiMap;
 
 /** @brief Text editor widget with line numbers and support for STC markup.
  *

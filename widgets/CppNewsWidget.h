@@ -4,6 +4,8 @@
 #include <QNetworkAccessManager>
 #include <QTimer>
 #include <QWidget>
+#include <QObject>
+#include <QString>
 
 #include "utils/CppNews.h"
 

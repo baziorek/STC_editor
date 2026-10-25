@@ -3,16 +3,35 @@
 #include <QDebug>
 #include <QMenu>
 #include <QAction>
-#include <QBoxLayout>
 #include <QInputDialog>
 #include <QMouseEvent>
-#include <QDrag>
-#include <QMimeData>
-#include <QPainter>
 #include <QClipboard>
 #include <QTimer>
+#include <QAbstractItemView>
+#include <QApplication>
+#include <QBrush>
+#include <QChar>
+#include <QCheckBox>
+#include <QColor>
+#include <QEvent>
+#include <QHeaderView>
+#include <QIcon>
+#include <QLineEdit>
+#include <QList>
+#include <QModelIndex>
+#include <QPushButton>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
+#include <QTableWidget>
+#include <QTableWidgetItem>
+#include <QWidget>
+#include <Qt>
+#include <QtGlobal>
+
 #include "StcTablesCreator.h"
 #include "ui_StcTablesCreator.h"
+
+class QAbstractButton;
 
 
 StcTablesCreator::StcTablesCreator(const QString& tableContent, QWidget *parent)

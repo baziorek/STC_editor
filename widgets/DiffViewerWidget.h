@@ -4,6 +4,10 @@
 #include <QTableWidget>
 #include <QTimer>
 #include <QVector>
+#include <QObject>
+#include <QString>
+
+class QWidget;
 
 namespace DiffCalculation
 {

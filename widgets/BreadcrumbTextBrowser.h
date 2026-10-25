@@ -1,11 +1,19 @@
 #pragma once
 
 #include <QTextBrowser>
-#include <QTextCursor>
 #include <QPointer>
+#include <QObject>
+#include <QPair>
+#include <QStack>
+#include <QString>
 
 class CodeEditor;
 class FilteredTagTableWidget;
+class QTextCursor;
+class QTextDocument;
+class QUrl;
+class QWidget;
+template <class Key, class T> class QMap;
 
 class BreadcrumbTextBrowser : public QTextBrowser
 {

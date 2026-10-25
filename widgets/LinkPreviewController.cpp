@@ -6,6 +6,13 @@
 #include <QSettings>
 #include <QTextBlock>
 #include <QTextCursor>
+#include <QPointF>
+#include <QVariant>
+#include <QWidget>
+#include <Qt>
+#include <QtGlobal>
+#include <utility>
+
 #include "widgets/LinkPreviewPopup.h"
 
 namespace

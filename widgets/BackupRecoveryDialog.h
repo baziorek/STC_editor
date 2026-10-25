@@ -1,13 +1,14 @@
 #pragma once
 
 #include <QDialog>
-#include "DiffViewerWidget.h"
+#include <QObject>
+#include <QString>
 
 class QLabel;
 class QVBoxLayout;
-class QPushButton;
-
 class CodeEditor;
+class DiffViewerWidget;
+class QWidget;
 
 class BackupRecoveryDialog : public QDialog
 {

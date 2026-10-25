@@ -2,8 +2,15 @@
 #pragma once
 
 #include <QDialog>
+#include <QObject>
+#include <QPoint>
+#include <QString>
+#include <QStringList>
 
 class QTableWidgetItem;
+class QAction;
+class QMenu;
+class QWidget;
 
 namespace Ui
 {
