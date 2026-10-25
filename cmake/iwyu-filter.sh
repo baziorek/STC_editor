@@ -30,13 +30,26 @@ rc=$?
 grep -v -E ': warning: no private include name for @headername mapping$' "$raw" > "$base"
 
 if [ "$rc" -ne 0 ] && [ -r "$ignore" ] && [ -r "$dir/iwyu-filter.awk" ]; then
-    awk -v ignore="$ignore" -f "$dir/iwyu-filter.awk" "$base" > "$out"
-    case $? in
+    if command -v awk >/dev/null 2>&1; then
+        awk -v ignore="$ignore" -f "$dir/iwyu-filter.awk" "$base" > "$out" 2> "$base.err"
+        ar=$?
+    else
+        ar=127
+        echo "awk: command not found" > "$base.err"
+    fi
+    case $ar in
         0)  rc=0 ;;                      # nothing left to report
         10) cat -s "$out" >&2 ;;
-        *)  cat "$base" >&2 ;;           # awk problem: show the unfiltered report
+        *)  # awk problem: say so, then show the unfiltered report
+            echo "iwyu-filter.sh: awk failed (exit $ar): $(head -n 1 "$base.err") - showing the unfiltered IWYU report" >&2
+            cat "$base" >&2 ;;
     esac
+    rm -f "$base.err"
 else
+    if [ "$rc" -ne 0 ]; then
+        [ -r "$ignore" ] || echo "iwyu-filter.sh: ignore list not readable: $ignore - report not filtered" >&2
+        [ -r "$dir/iwyu-filter.awk" ] || echo "iwyu-filter.sh: $dir/iwyu-filter.awk not readable - report not filtered" >&2
+    fi
     cat "$base" >&2
 fi
 

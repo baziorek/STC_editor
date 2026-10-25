@@ -16,3 +16,7 @@
 ^#include <ranges>[[:space:]]+// for (pair|__)
 ^#include <list>[[:space:]]+// for _List
 ^#include <iterator>[[:space:]]+// for data
+
+# --- forward declarations IWYU adds although the class is already declared by <QWidget>/<QObject> ---
+^class (QEvent|QMouseEvent|QPaintEvent|QKeyEvent|QWheelEvent|QResizeEvent|QFocusEvent|QCloseEvent|QShowEvent|QHideEvent|QContextMenuEvent|QDragEnterEvent|QDragMoveEvent|QDropEvent|QEnterEvent|QHelpEvent);
+^class QXmlStream(Attribute|Attributes|Reader);

@@ -28,6 +28,9 @@ elseif(NOT STC_IWYU_PATH)
     message(STATUS "IWYU: include-what-you-use not found - skipping (install it, e.g. `sudo apt install iwyu`)")
 else()
     message(STATUS "IWYU: found ${STC_IWYU_PATH}; will be run on our own targets only")
+    # cmake/iwyu-fix.sh needs compile_commands.json (Qt Creator does not ask for it by default).
+    # Must be set before the targets are created; harmless otherwise (one JSON file in the build dir).
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 endif()
 
 # ------------------ Qt mapping (generated) ------------------

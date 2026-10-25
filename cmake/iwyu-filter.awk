@@ -2,7 +2,7 @@
 #
 #   awk -v ignore=<patterns file> -f iwyu-filter.awk <iwyu output>
 #
-# Removes suggested "#include" lines that match a pattern from the ignore file - both from the
+# Removes suggested lines ("#include ..." or forward declarations) that match a pattern from the ignore file - both from the
 # "should add" list and from the "full include-list" - and drops the whole report of a file that
 # has nothing left to do ("has correct #includes" files and files whose only suggestions were
 # ignored). Everything outside the per-file reports (compiler warnings, ...) is passed through.
@@ -42,7 +42,7 @@ function flush(    i) {
 
 state == "add" {
     if ($0 == "") { buf[nbuf++] = $0; next }
-    if ($0 ~ /^#include/ && noisy($0)) next
+    if (noisy($0)) next
     buf[nbuf++] = $0; kept_add++; next
 }
 state == "rm" {
@@ -50,7 +50,7 @@ state == "rm" {
     buf[nbuf++] = $0; kept_rm++; next
 }
 state == "full" {
-    if ($0 ~ /^#include/ && noisy($0)) next
+    if (noisy($0)) next
     buf[nbuf++] = $0; next
 }
 
