@@ -9,9 +9,7 @@
 #include <QRegularExpressionMatch>
 #include <QTableWidgetItem>
 #include <QTextDocument>
-#include <QtGlobal>
 #include <algorithm>
-#include <utility>
 
 #include "CodeEditor.h"
 #include "TodosTrackerTableWidget.h"

@@ -14,7 +14,6 @@
 #include <QTreeWidgetItem>
 #include <QVariant>
 #include <Qt>
-#include <QtGlobal>
 #include <vector>
 
 #include "FilteredTagTableWidget.h"

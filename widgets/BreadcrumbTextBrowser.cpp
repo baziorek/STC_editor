@@ -12,7 +12,6 @@
 #include <QStringList>
 #include <QTextCursor>
 #include <QTextDocument>
-#include <QtGlobal>
 #include <optional>
 #include <utility>
 

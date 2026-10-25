@@ -44,7 +44,6 @@ class QMenu;
 class QRect;
 class QTimer;
 class QWidget;
-template <class Key, class T> class QMultiMap;
 
 /** @brief Text editor widget with line numbers and support for STC markup.
  *
