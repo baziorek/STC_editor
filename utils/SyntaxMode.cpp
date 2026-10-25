@@ -1,8 +1,11 @@
 #include "SyntaxMode.h"
 
 #include <QFileInfo>
-#include <QHash>
 #include <QMap>
+#include <QLatin1String>
+#include <QList>
+#include <QStringLiteral>
+#include <utility>
 
 namespace syntaxmode
 {

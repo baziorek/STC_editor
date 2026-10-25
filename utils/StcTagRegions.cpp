@@ -3,6 +3,13 @@
 #include <algorithm>
 #include <optional>
 #include <QRegularExpression>
+#include <QChar>
+#include <QLatin1Char>
+#include <QLatin1String>
+#include <QRegularExpressionMatch>
+#include <QStringLiteral>
+#include <compare>
+#include <utility>
 
 namespace
 {

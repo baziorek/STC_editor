@@ -6,8 +6,19 @@
 #include <QVector>
 #include <QString>
 #include <QRegularExpression>
+#include <QColor>
+#include <QList>
+#include <QMap>
+#include <QObject>
+#include <QPair>
+#include <Qt>
+#include <cstdint>
+#include <utility>
+
 #include "utils/SpellChecker.h"
 #include "utils/SyntaxMode.h"
+
+class QTextDocument;
 
 
 /// class inspired with: https://doc.qt.io/qt-6.2/qtwidgets-richtext-syntaxhighlighter-example.html

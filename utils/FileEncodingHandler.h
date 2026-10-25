@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <QString>
+#include <QByteArray>
 
 class FileEncodingHandler
 {
@@ -48,5 +49,6 @@ public:
 
 private:
     struct Impl;
+
     std::unique_ptr<Impl> impl;
 };

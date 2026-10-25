@@ -3,6 +3,8 @@
 #include <QSet>
 #include <QList>
 #include <QStringList>
+#include <QString>
+#include <vector>
 
 namespace DiffCalculation // problems with linking for Windows
 {

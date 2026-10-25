@@ -4,6 +4,11 @@
 #include <QSet>
 #include <algorithm>
 #include <vector>
+#include <QChar>
+#include <QLatin1String>
+#include <QRegularExpressionMatch>
+#include <QStringLiteral>
+#include <utility>
 
 namespace HtmlPrettyPrinter
 {

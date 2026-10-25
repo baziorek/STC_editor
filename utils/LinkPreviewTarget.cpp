@@ -1,6 +1,11 @@
 #include "LinkPreviewTarget.h"
 
 #include <QRegularExpression>
+#include <QList>
+#include <QRegularExpressionMatch>
+#include <QRegularExpressionMatchIterator>
+#include <Qt>
+
 #include "LinkDetection.h"
 #include "stcSyntaxPatterns.h"
 

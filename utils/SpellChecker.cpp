@@ -1,9 +1,13 @@
+#include <nuspell/dictionary.hxx>
 #include <vector>
 #include <string>
 #include <stdexcept>
 #include <QString>
 #include <QStringList>
-#include <nuspell/dictionary.hxx>
+#include <QList>
+#include <QStringLiteral>
+#include <filesystem>
+
 #include "SpellChecker.h"
 
 #ifndef DICTIONARY_PATH

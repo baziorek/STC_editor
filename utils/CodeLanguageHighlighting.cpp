@@ -1,11 +1,20 @@
 #include "CodeLanguageHighlighting.h"
 
 #include <QFile>
-#include <QLanguage>    // from QCodeEditor
 #include <QRegularExpression>
 #include <QSet>
-#include <QSyntaxStyle> // from QCodeEditor
 #include <utility>
+#include <QChar>
+#include <QIODevice>
+#include <QLatin1String>
+#include <QList>
+#include <QRegularExpressionMatch>
+#include <QtGlobal>
+#include <algorithm>
+#include <initializer_list>
+
+#include "internal/QLanguage.hpp"
+#include "internal/QSyntaxStyle.hpp"
 
 // Q_INIT_RESOURCE declares a function, so it has to be used outside of any namespace.
 static void initQCodeEditorResources()

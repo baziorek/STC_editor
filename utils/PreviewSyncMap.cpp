@@ -7,6 +7,12 @@
 #include <optional>
 #include <utility>
 #include <unordered_map>
+#include <QChar>
+#include <QList>
+#include <QRegularExpressionMatch>
+#include <compare>
+#include <cstddef>
+#include <initializer_list>
 
 namespace PreviewSync
 {

@@ -2,6 +2,12 @@
 
 #include <QRegularExpression>
 #include <algorithm>
+#include <QChar>
+#include <QLatin1String>
+#include <QList>
+#include <QRegularExpressionMatch>
+#include <QRegularExpressionMatchIterator>
+#include <Qt>
 
 namespace stc::links
 {

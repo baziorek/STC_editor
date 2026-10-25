@@ -3,6 +3,11 @@
 #include <QFileInfo>
 #include <QSettings>
 #include <QStringList>
+#include <QChar>
+#include <QList>
+#include <QStringView>
+#include <QVariant>
+#include <iterator>
 
 namespace syntaxmode::memory
 {

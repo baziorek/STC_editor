@@ -1,13 +1,27 @@
 #include <QDebug>
 #include <QRegularExpression>
-#include <QLanguage>    // from QCodeEditor
-#include <QSyntaxStyle> // from QCodeEditor
 #include <QFile>
+#include <QBrush>
+#include <QFont>
+#include <QIODevice>
+#include <QRegularExpressionMatch>
+#include <QRegularExpressionMatchIterator>
+#include <QStringLiteral>
+#include <QVariant>
+#include <QtGlobal>
+#include <algorithm>
+#include <map>
+#include <stdexcept>
+
 #include "STCSyntaxHighlighter.h"
 #include "CodeLanguageHighlighting.h"
 #include "LinkDetection.h"
 #include "../stcSyntaxPatterns.h"
 #include "../types/stcTags.h"
+#include "internal/QLanguage.hpp"
+#include "internal/QSyntaxStyle.hpp"
+
+class QTextDocument;
 
 
 namespace

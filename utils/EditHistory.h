@@ -5,9 +5,9 @@
 #include <QList>
 #include <QObject>
 #include <QString>
-
 #include <optional>
 #include <vector>
+#include <QtGlobal>
 
 #include "utils/DiffCalculation.h"
 

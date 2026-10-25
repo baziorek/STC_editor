@@ -1,13 +1,17 @@
+#include <stddef.h>
 #include <algorithm>
 #include <string>
 #include <vector>
 #include <QSet>
 #include <QStringList>
+#include <QChar>
+#include <QStringView>
+#include <QtGlobal>
+#include <cctype>
+#include <utility>
 
 #include "DiffCalculation.h"
-
 #include "pydifflib-cpp/difflib.hpp" /// it uses https://github.com/dominicprice/pydifflib-cpp
-
 #include "diff-match-patch-cpp-stl/diff_match_patch.h" /// it uses https://github.com/leutloff/diff-match-patch-cpp-stl/
 
 

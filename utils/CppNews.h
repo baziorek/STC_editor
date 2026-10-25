@@ -3,6 +3,8 @@
 #include <QList>
 #include <QString>
 
+class QByteArray;
+
 /// One entry of the news feed of cpp0x.pl
 struct NewsItem
 {

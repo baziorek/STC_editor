@@ -4,7 +4,15 @@
 #include <QFont>
 #include <QPlainTextEdit>
 #include <QTextCursor>
-#include <QTextDocument>
+#include <QBrush>
+#include <QChar>
+#include <QLatin1Char>
+#include <QList>
+#include <QPalette>
+#include <QRgb>
+#include <QStringList>
+#include <QStringLiteral>
+#include <QtGlobal>
 
 namespace
 {

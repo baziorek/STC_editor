@@ -3,6 +3,16 @@
 #include <QStringDecoder>
 #include <QStringEncoder>
 #include <stdexcept>
+#include <QAnyStringView>
+#include <QChar>
+#include <QIODevice>
+#include <QLatin1String>
+#include <QList>
+#include <QStringList>
+#include <QStringLiteral>
+#include <Qt>
+#include <QtGlobal>
+#include <string>
 
 // https://gitlab.freedesktop.org/uchardet/uchardet
 #if __has_include(<uchardet.h>) // when installing with FetchContent_Declare from CMakeLists.txt

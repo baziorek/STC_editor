@@ -2,6 +2,9 @@
 
 #include <QStringView>
 #include <algorithm>
+#include <QChar>
+#include <Qt>
+#include <QtGlobal>
 
 namespace LineSearch
 {

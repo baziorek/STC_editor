@@ -5,6 +5,17 @@
 #include <QXmlStreamAttributes>
 #include <QXmlStreamReader>
 #include <optional>
+#include <QChar>
+#include <QLatin1Char>
+#include <QLatin1String>
+#include <QRegularExpressionMatch>
+#include <QStringLiteral>
+#include <QStringView>
+#include <QXmlStreamAttribute>
+#include <Qt>
+#include <utility>
+
+class QByteArray;
 
 namespace
 {

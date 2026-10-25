@@ -1,7 +1,8 @@
 #pragma once
 
-#include <QString>
 #include <nuspell/dictionary.hxx>
+#include <QString>
+#include <QStringList>
 
 
 class SpellChecker

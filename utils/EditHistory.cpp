@@ -3,9 +3,13 @@
 #include <QSet>
 #include <QTextBlock>
 #include <QTextDocument>
-
 #include <algorithm>
 #include <numeric>
+#include <QChar>
+#include <QLatin1Char>
+#include <QStringList>
+#include <QStringLiteral>
+#include <utility>
 
 namespace
 {
