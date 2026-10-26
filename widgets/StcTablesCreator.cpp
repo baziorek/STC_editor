@@ -28,7 +28,14 @@
 #include <Qt>
 #include <QtGlobal>
 
+#include <QLabel>
+#include <QPlainTextEdit>
+#include <QSignalBlocker>
+#include <QToolButton>
 #include "StcTablesCreator.h"
+#include "StcCellDelegate.h"
+#include "StcInlineTagToggle.h"
+#include "ui/stctagsbuttons.h"
 #include "ui_StcTablesCreator.h"
 
 class QAbstractButton;
@@ -56,6 +63,7 @@ void StcTablesCreator::initializeUI()
     setupButtons();
     setupCheckBoxes();
     connectSignalsAndSlots();
+    setupCellEditing();
 }
 
 void StcTablesCreator::setupTableWidget()
@@ -75,9 +83,6 @@ void StcTablesCreator::setupTableWidget()
     ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tableWidget->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tableWidget->verticalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
-
-    // Connect header double-click to edit functionality
-    connect(ui->tableWidget->horizontalHeader(), &QHeaderView::sectionDoubleClicked, this, &StcTablesCreator::onHeaderDoubleClicked);
 
     // Setup drag and drop functionality
     setupDragAndDrop();
@@ -114,7 +119,7 @@ bool StcTablesCreator::eventFilter(QObject* obj, QEvent* event)
                 {
                     m_dragSourceRow = item->row();
                     m_dragSourceColumn = item->column();
-                    m_draggedContent = item->text();
+                    m_draggedContent = cellToStc(m_dragSourceRow, m_dragSourceColumn);
                     m_isDragging = false;
 
                     qDebug() << "Mouse press - stored content:" << m_draggedContent
@@ -196,43 +201,16 @@ void StcTablesCreator::finishCustomDrag(const QPoint& dropPosition)
 
 void StcTablesCreator::performCellSwap(int targetRow, int targetColumn)
 {
-    // Get target content BEFORE any modifications
-    QTableWidgetItem* targetItem = ui->tableWidget->item(targetRow, targetColumn);
-    QString targetContent = targetItem ? targetItem->text() : QString();
-
-    // Store source content (we already have it, but let's be explicit)
-    QString sourceContent = m_draggedContent;
+    // The STC form carries the "formatted" flag too, so it travels with the text
+    const QString targetContent = cellToStc(targetRow, targetColumn);
+    const QString sourceContent = m_draggedContent;
 
     qDebug() << "Performing swap:"
              << QString("Source (%1,%2): '%3'").arg(m_dragSourceRow).arg(m_dragSourceColumn).arg(sourceContent)
              << QString("Target (%1,%2): '%3'").arg(targetRow).arg(targetColumn).arg(targetContent);
 
-    // Get or create source item
-    QTableWidgetItem* sourceItem = ui->tableWidget->item(m_dragSourceRow, m_dragSourceColumn);
-    if (!sourceItem)
-    {
-        sourceItem = new QTableWidgetItem();
-        ui->tableWidget->setItem(m_dragSourceRow, m_dragSourceColumn, sourceItem);
-    }
-
-    // Create target item if it doesn't exist
-    if (!targetItem)
-    {
-        targetItem = new QTableWidgetItem();
-        ui->tableWidget->setItem(targetRow, targetColumn, targetItem);
-    }
-
-    // Temporarily disconnect itemChanged signal
-    disconnect(ui->tableWidget, &QTableWidget::itemChanged, this, &StcTablesCreator::onItemChanged);
-
-    // Perform the actual swap
-    sourceItem->setText(targetContent);  // Put target content in source position
-    targetItem->setText(sourceContent);  // Put source content in target position
-
-    // Reconnect the signal
-    connect(ui->tableWidget, &QTableWidget::itemChanged, this, &StcTablesCreator::onItemChanged);
-
-    qDebug() << "Swap completed successfully";
+    setCellFromStc(m_dragSourceRow, m_dragSourceColumn, targetContent);
+    setCellFromStc(targetRow, targetColumn, sourceContent);
 }
 
 void StcTablesCreator::resetDragState()
@@ -246,45 +224,21 @@ void StcTablesCreator::resetDragState()
 
 void StcTablesCreator::onItemChanged(QTableWidgetItem* item)
 {
-    // This slot can be used for additional processing when items change
-    // For now, we just ensure the change is registered
-    Q_UNUSED(item)
-}
-
-void StcTablesCreator::onHeaderDoubleClicked(int logicalIndex)
-{    
-    // Get current header text
-    QTableWidgetItem* headerItem = ui->tableWidget->horizontalHeaderItem(logicalIndex);
-    QString currentText = headerItem ?
-        headerItem->text() : QString("Kolumna %1").arg(logicalIndex + 1);
-
-    bool ok;
-    // Show input dialog to edit header text
-    QString newText = QInputDialog::getText(this,
-                                          tr("Edycja nagłówka kolumny"),
-                                          tr("Wprowadź nowy tekst nagłówka:"),
-                                          QLineEdit::Normal,
-                                          currentText,
-                                          &ok);
-
-    if (ok && !newText.trimmed().isEmpty())
+    if (!item)
     {
-        // Create new header item if it doesn't exist
-        if (!headerItem)
-        {
-            headerItem = new QTableWidgetItem(newText);
-            ui->tableWidget->setHorizontalHeaderItem(logicalIndex, headerItem);
-        }
-        else
-        {
-            headerItem->setText(newText);
-        }
+        return;
     }
-    else if (ok)
     {
-        // Show warning for empty header
-        QMessageBox::warning(this, tr("Błąd"), tr("Nagłówek nie może być pusty!"));
+        QSignalBlocker blocker(ui->tableWidget);
+        if (stc::tablecell::isWrappedInRun(item->text()))
+        {
+            // typed or pasted `[run]...[/run]` around the whole cell means "formatted cell"
+            item->setText(stc::tablecell::decode(item->text()).inner);
+            item->setCheckState(Qt::Checked);
+        }
+        refreshItemDiagnostics(item);
     }
+    updatePaletteState();
 }
 
 void StcTablesCreator::setupContextMenus()
@@ -368,7 +322,7 @@ void StcTablesCreator::connectSignalsAndSlots()
     connect(ui->addRowButton, &QPushButton::clicked, this, &StcTablesCreator::onAddRowBelow);
 
     // Connect checkboxes with lambda functions for state updates
-    connect(ui->headerCheckBox, &QCheckBox::toggled, this, [this](bool checked) { m_hasHeader = checked; });
+    connect(ui->headerCheckBox, &QCheckBox::toggled, this, [this](bool checked) { m_hasHeader = checked; applyHeaderStyle(); });
     connect(ui->extendedCheckBox, &QCheckBox::toggled, this, [this](bool checked) { m_isExtended = checked; });
 
     // Connect dialog buttons
@@ -444,7 +398,8 @@ void StcTablesCreator::copyCellContent()
 
     // Get cell content
     QTableWidgetItem* item = ui->tableWidget->item(m_contextCellRow, m_contextCellColumn);
-    QString cellContent = item ? item->text() : QString();
+    // The STC form: a formatted cell is copied together with its [run]...[/run]
+    QString cellContent = cellToStc(m_contextCellRow, m_contextCellColumn);
 
     // Copy to clipboard
     QClipboard* clipboard = QApplication::clipboard();
@@ -485,8 +440,7 @@ void StcTablesCreator::pasteCellContent()
     }
 
     // Get current cell content
-    QTableWidgetItem* item = ui->tableWidget->item(m_contextCellRow, m_contextCellColumn);
-    QString currentContent = item ? item->text().trimmed() : QString();
+    QString currentContent = cellToStc(m_contextCellRow, m_contextCellColumn).trimmed();
 
     // If cell is not empty, show confirmation dialog
     if (!currentContent.isEmpty()) {
@@ -526,35 +480,30 @@ void StcTablesCreator::showPasteConfirmationDialog(const QString& currentContent
 
     QAbstractButton* clickedButton = msgBox.clickedButton();
 
+    // Join the texts without their [run] wrappers; the result is formatted when any of the parts is
+    const auto current = stc::tablecell::decode(currentContent);
+    const auto clipboard = stc::tablecell::decode(clipboardContent);
+    const bool formatted = current.formatted || clipboard.formatted;
+
     if (clickedButton == replaceButton) {
         performPaste(clipboardContent);
     } else if (clickedButton == appendButton) {
-        performPaste(currentContent + clipboardContent);
+        performPaste(stc::tablecell::encode(current.inner + clipboard.inner, formatted));
     } else if (clickedButton == prependButton) {
-        performPaste(clipboardContent + currentContent);
+        performPaste(stc::tablecell::encode(clipboard.inner + current.inner, formatted));
     }
     // If cancel or closed, do nothing
 }
 
 void StcTablesCreator::performPaste(const QString& content)
 {
-    // Get or create the target item
+    // `content` is in the STC form: [run]...[/run] around the whole text makes the cell formatted
+    setCellFromStc(m_contextCellRow, m_contextCellColumn, content);
     QTableWidgetItem* item = ui->tableWidget->item(m_contextCellRow, m_contextCellColumn);
-    if (!item) {
-        item = new QTableWidgetItem();
-        ui->tableWidget->setItem(m_contextCellRow, m_contextCellColumn, item);
+    if (!item)
+    {
+        return;
     }
-
-    // Temporarily disconnect itemChanged signal
-    disconnect(ui->tableWidget, &QTableWidget::itemChanged,
-               this, &StcTablesCreator::onItemChanged);
-
-    // Set the content
-    item->setText(content);
-
-    // Reconnect the signal
-    connect(ui->tableWidget, &QTableWidget::itemChanged,
-            this, &StcTablesCreator::onItemChanged);
 
     // Visual feedback
     QColor originalColor = item->background().color();
@@ -585,6 +534,7 @@ void StcTablesCreator::setHeaderEnabled(bool enabled)
     {
         ui->headerCheckBox->setChecked(enabled);
     }
+    applyHeaderStyle();
 }
 
 void StcTablesCreator::setExtendedEnabled(bool enabled)
@@ -763,9 +713,7 @@ void StcTablesCreator::setupTable(const QString& content)
         return;
     }
 
-    // Analyze content structure
-    bool hasHeader = detectHeaderFromFirstLine(processedLines);
-    m_hasHeader = hasHeader;
+    // Analyze content structure (the header is simply the first row; `header` attribute says it is one)
     int maxColumns = calculateMaxColumnCount(processedLines);
 
     if (maxColumns == 0) {
@@ -775,7 +723,6 @@ void StcTablesCreator::setupTable(const QString& content)
 
     // Configure and populate table
     configureTableDimensions(maxColumns, processedLines.size());
-    setupTableHeaders(processedLines, maxColumns);
     populateTableWithData(processedLines, maxColumns);
     finalizeTableAppearance();
 }
@@ -872,12 +819,6 @@ QStringList StcTablesCreator::processAndTrimLines(const QStringList& rawLines)
     return processedLines;
 }
 
-bool StcTablesCreator::detectHeaderFromFirstLine(const QStringList& lines)
-{
-    // Check for header based on the first line not starting with ';'
-    return !lines.isEmpty() && !lines.first().trimmed().startsWith(';');
-}
-
 int StcTablesCreator::calculateMaxColumnCount(const QStringList& lines)
 {
     int maxColumns = 0;
@@ -925,21 +866,6 @@ void StcTablesCreator::configureTableDimensions(int maxColumns, int rowCount)
     ui->tableWidget->setRowCount(rowCount);
 }
 
-void StcTablesCreator::setupTableHeaders(const QStringList& lines, int maxColumns)
-{
-    if (!m_hasHeader || lines.isEmpty()) {
-        return;
-    }
-
-    QStringList headers = parseLineIntoCells(lines.first());
-
-    // Set header items for each column
-    for (int col = 0; col < headers.size() && col < maxColumns; ++col)
-    {
-        ui->tableWidget->setHorizontalHeaderItem(col, new QTableWidgetItem(headers[col]));
-    }
-}
-
 void StcTablesCreator::populateTableWithData(const QStringList& dataLines, int maxColumns)
 {
     for (int row = 0; row < dataLines.size(); ++row)
@@ -947,11 +873,10 @@ void StcTablesCreator::populateTableWithData(const QStringList& dataLines, int m
         const QString& line = dataLines[row];
         QStringList cells = parseLineIntoCells(line);
 
-        // Fill the row with parsed cell data
-        for (int col = 0; col < cells.size() && col < maxColumns; ++col)
+        // Fill the row with parsed cell data (every cell gets an item - the check box shows if it is formatted)
+        for (int col = 0; col < maxColumns; ++col)
         {
-            QTableWidgetItem* item = new QTableWidgetItem(cells[col]);
-            ui->tableWidget->setItem(row, col, item);
+            setCellFromStc(row, col, col < cells.size() ? cells[col] : QString());
         }
     }
 }
@@ -1008,6 +933,9 @@ QStringList StcTablesCreator::parseLineIntoCells(const QString& line)
 
 void StcTablesCreator::finalizeTableAppearance()
 {
+    fillMissingItems();
+    applyHeaderStyle();
+
     // Resize columns to fit content optimally
     ui->tableWidget->resizeColumnsToContents();
 }
@@ -1019,50 +947,30 @@ QString StcTablesCreator::generateTableContent() const
 
 QString StcTablesCreator::generateTableContentImpl() const
 {
-    // Build CSV attributes
+    // `[run]` works only in the extended tables
     QStringList attributes;
     if (m_hasHeader) attributes << "header";
-    if (m_isExtended) attributes << "extended";
+    if (m_isExtended || hasFormattedCells()) attributes << "extended";
 
     QString result = "[csv";
     if (!attributes.isEmpty())
     {
         result += " " + attributes.join(" ");
     }
-    result += "]";
+    result += "]\n";
 
-    // Add header if present
-    if (m_hasHeader)
-    {
-        QStringList headers;
-        for (int col = 0; col < ui->tableWidget->columnCount(); ++col)
-        {
-            QTableWidgetItem *header = ui->tableWidget->horizontalHeaderItem(col);
-            headers.append(header ? header->text() : QString());
-        }
-        result += headers.join(";") + "\n";
-    }
-    else
-    {
-        result += "\n";
-    }
-
-    // Add table content
+    // The header is the first row of the table, so every row is written the same way
+    QStringList lines;
     for (int row = 0; row < ui->tableWidget->rowCount(); ++row)
     {
         QStringList rowData;
         for (int col = 0; col < ui->tableWidget->columnCount(); ++col)
         {
-            QTableWidgetItem *item = ui->tableWidget->item(row, col);
-            QString cellContent = item ? item->text() : QString();
-            rowData.append(cellContent);
+            rowData.append(cellToStc(row, col));
         }
-        result += rowData.join(";");
-        if (row < ui->tableWidget->rowCount() - 1)
-        {
-            result += "\n";
-        }
+        lines.append(rowData.join(";"));
     }
+    result += lines.join("\n");
 
     result += "\n[/csv]";
     return result;
@@ -1070,9 +978,266 @@ QString StcTablesCreator::generateTableContentImpl() const
 
 void StcTablesCreator::accept()
 {
+    // An edit which is still open (OK pressed from the keyboard) must not be lost
+    if (m_activeEditor)
+    {
+        emit m_cellDelegate->commitData(m_activeEditor);
+        emit m_cellDelegate->closeEditor(m_activeEditor, QAbstractItemDelegate::NoHint);
+    }
+
     // Store the generated content before accepting
     m_generatedContent = generateTableContentImpl();
 
     // Call the base class accept() to close the dialog
     QDialog::accept();
+}
+
+// ------------------------------------------------------------------------------------------------
+// Formatted ([run]) cells
+// ------------------------------------------------------------------------------------------------
+
+void StcTablesCreator::setupCellEditing()
+{
+    QTableWidget* table = ui->tableWidget;
+
+    // Items created by the view itself (editing an empty cell) get the check box as well
+    table->setItemPrototype(new StcCellItem);
+
+    m_cellDelegate = new StcCellDelegate(this);
+    table->setItemDelegate(m_cellDelegate);
+
+    // first line: is the current cell formatted ([run])?
+    m_formattedButton = new QToolButton(this);
+    m_formattedButton->setText(tr("[run] formatted cell"));
+    m_formattedButton->setToolTip(tr("Formatted cell: the text is wrapped in [run]...[/run] and the STC tags work in it.\n"
+                                     "Not formatted cell: plain text, tags are shown as they are written.\n"
+                                     "The same as the check box in the cell."));
+    m_formattedButton->setCheckable(true);
+    m_formattedButton->setFocusPolicy(Qt::NoFocus); // the cell editor has to keep the focus
+    ui->gridLayout->addWidget(m_formattedButton, 0, 0, 1, 2);
+
+    auto* hint = new QLabel(tr("Enter - accept, Shift+Enter - new line"), this);
+    ui->gridLayout->addWidget(hint, 0, 2);
+
+    // on the right: the same buttons of the tags as in the main window (without [csv] and [run])
+    m_tagsButtons = new StcTagsButtons(this);
+    m_tagsButtons->useInTableCell();
+    m_tagsButtons->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+    ui->gridLayout->addWidget(m_tagsButtons, 0, 5, 4, 1, Qt::AlignTop);
+
+    connect(m_cellDelegate, &StcCellDelegate::cellEditorCreated, this,
+            [this](QPlainTextEdit* editor, bool) { onCellEditorCreated(editor); });
+    connect(m_tagsButtons, &StcTagsButtons::buttonPressed, this, &StcTablesCreator::onPaletteTagRequested);
+    connect(m_formattedButton, &QToolButton::clicked, this, &StcTablesCreator::onFormattedToggled);
+    connect(table, &QTableWidget::currentCellChanged, this, [this] { onCurrentCellChanged(); });
+
+    // New rows / columns (the buttons and the menus) get the cells with the check box
+    auto refill = [this] {
+        fillMissingItems();
+        applyHeaderStyle();
+    };
+    connect(table->model(), &QAbstractItemModel::rowsInserted, this, refill);
+    connect(table->model(), &QAbstractItemModel::columnsInserted, this, refill);
+    connect(table->model(), &QAbstractItemModel::rowsRemoved, this, [this] { applyHeaderStyle(); });
+
+    fillMissingItems();
+    applyHeaderStyle();
+    updatePaletteState();
+}
+
+void StcTablesCreator::fillMissingItems()
+{
+    QSignalBlocker blocker(ui->tableWidget);
+    for (int row = 0; row < ui->tableWidget->rowCount(); ++row)
+    {
+        for (int col = 0; col < ui->tableWidget->columnCount(); ++col)
+        {
+            if (!ui->tableWidget->item(row, col))
+            {
+                ui->tableWidget->setItem(row, col, new StcCellItem);
+            }
+        }
+    }
+}
+
+void StcTablesCreator::applyHeaderStyle()
+{
+    if (!ui)
+    {
+        return;
+    }
+    QSignalBlocker blocker(ui->tableWidget);
+    for (int row = 0; row < ui->tableWidget->rowCount(); ++row)
+    {
+        // with the header the first row is called "header" and the numbering starts from the next one
+        const QString label = m_hasHeader ? (row == 0 ? QStringLiteral("header") : QString::number(row)) : QString::number(row + 1);
+        QTableWidgetItem* rowLabel = ui->tableWidget->verticalHeaderItem(row);
+        if (!rowLabel)
+        {
+            rowLabel = new QTableWidgetItem;
+            ui->tableWidget->setVerticalHeaderItem(row, rowLabel);
+        }
+        rowLabel->setText(label);
+        QFont labelFont = ui->tableWidget->verticalHeader()->font();
+        labelFont.setBold(m_hasHeader && row == 0);
+        rowLabel->setFont(labelFont);
+
+        for (int col = 0; col < ui->tableWidget->columnCount(); ++col)
+        {
+            if (QTableWidgetItem* item = ui->tableWidget->item(row, col))
+            {
+                QFont font = ui->tableWidget->font();
+                font.setBold(m_hasHeader && row == 0);
+                item->setFont(font);
+            }
+        }
+    }
+}
+
+void StcTablesCreator::refreshItemDiagnostics(QTableWidgetItem* item)
+{
+    const bool formatted = item->checkState() == Qt::Checked;
+
+    QStringList problems;
+    if (stc::tablecell::hasRunInsideUnwrapped(item->text(), formatted))
+    {
+        problems << tr("There is [run] inside of the text. Tick the box to make the whole cell formatted instead.");
+    }
+    if (stc::tablecell::separatorsInText(item->text()) > 0)
+    {
+        problems << tr("There is ';' outside of a tag - it would split this cell in two.");
+    }
+
+    QSignalBlocker blocker(ui->tableWidget);
+    if (problems.isEmpty())
+    {
+        item->setData(Qt::ToolTipRole, QVariant());
+        item->setData(Qt::DecorationRole, QVariant());
+        item->setData(Qt::ForegroundRole, QVariant());
+    }
+    else
+    {
+        item->setData(Qt::ToolTipRole, problems.join("\n"));
+        item->setData(Qt::DecorationRole, QIcon::fromTheme("dialog-warning"));
+        item->setData(Qt::ForegroundRole, QBrush(QColor(200, 60, 0)));
+    }
+}
+
+void StcTablesCreator::setCellFromStc(int row, int column, const QString& stc)
+{
+    const auto decoded = stc::tablecell::decode(stc);
+    // plain cells are one line (a line break would start a new row)
+    const QString inner = decoded.formatted ? decoded.inner : stc::tablecell::encode(decoded.inner, false);
+
+    QSignalBlocker blocker(ui->tableWidget);
+    QTableWidgetItem* item = ui->tableWidget->item(row, column);
+    if (!item)
+    {
+        item = new StcCellItem;
+        ui->tableWidget->setItem(row, column, item);
+    }
+    item->setText(inner);
+    item->setCheckState(decoded.formatted ? Qt::Checked : Qt::Unchecked);
+    refreshItemDiagnostics(item);
+}
+
+QString StcTablesCreator::cellToStc(int row, int column) const
+{
+    const QTableWidgetItem* item = ui->tableWidget->item(row, column);
+    if (!item)
+    {
+        return {};
+    }
+    return stc::tablecell::encode(item->text(), item->checkState() == Qt::Checked);
+}
+
+bool StcTablesCreator::hasFormattedCells() const
+{
+    for (int row = 0; row < ui->tableWidget->rowCount(); ++row)
+    {
+        for (int col = 0; col < ui->tableWidget->columnCount(); ++col)
+        {
+            const QTableWidgetItem* item = ui->tableWidget->item(row, col);
+            if (item && item->checkState() == Qt::Checked && !item->text().isEmpty())
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+void StcTablesCreator::onCellEditorCreated(QPlainTextEdit* editor)
+{
+    m_activeEditor = editor;
+    connect(editor, &QObject::destroyed, this, [this] { updatePaletteState(); });
+    updatePaletteState();
+}
+
+void StcTablesCreator::onCurrentCellChanged()
+{
+    updatePaletteState();
+}
+
+void StcTablesCreator::updatePaletteState()
+{
+    if (!m_tagsButtons)
+    {
+        return;
+    }
+    const QTableWidgetItem* item = ui->tableWidget->currentItem();
+    const bool formatted = item && item->checkState() == Qt::Checked;
+    m_formattedButton->setEnabled(item != nullptr);
+    {
+        QSignalBlocker blocker(m_formattedButton);
+        m_formattedButton->setChecked(formatted);
+    }
+    m_tagsButtons->setEnabled(formatted); // tags are interpreted only in the formatted cells
+}
+
+void StcTablesCreator::onPaletteTagRequested(StcTags tag)
+{
+    QTableWidgetItem* item = ui->tableWidget->currentItem();
+    if (!item || item->checkState() != Qt::Checked)
+    {
+        return;
+    }
+
+    bool openedNow = false;
+    if (!m_activeEditor)
+    {
+        // no editor yet: open it, the tag then goes around the whole text of the cell
+        ui->tableWidget->editItem(item);
+        openedNow = true;
+    }
+    if (!m_activeEditor)
+    {
+        return;
+    }
+    if (openedNow)
+    {
+        m_activeEditor->selectAll();
+    }
+    stcApplyTag(m_activeEditor, tag);
+    m_activeEditor->setFocus();
+}
+
+void StcTablesCreator::onFormattedToggled(bool formatted)
+{
+    QTableWidgetItem* item = ui->tableWidget->currentItem();
+    if (!item)
+    {
+        return;
+    }
+    // finish the edit first, so that what was typed is not lost and the editor gets rebuilt next time
+    if (m_activeEditor)
+    {
+        emit m_cellDelegate->commitData(m_activeEditor);
+        emit m_cellDelegate->closeEditor(m_activeEditor, QAbstractItemDelegate::NoHint);
+    }
+    if (!formatted)
+    {
+        item->setText(stc::tablecell::encode(item->text(), false)); // plain cell = one line
+    }
+    item->setCheckState(formatted ? Qt::Checked : Qt::Unchecked); // itemChanged refreshes the rest
 }

@@ -125,6 +125,12 @@ QString format2String(const QTextCharFormat &format)
 } // namespace
 
 
+const SpellChecker& STCSyntaxHighlighter::sharedSpellChecker()
+{
+    static const SpellChecker instance;
+    return instance;
+}
+
 STCSyntaxHighlighter::STCSyntaxHighlighter(QTextDocument *parent)
     : QSyntaxHighlighter(parent)
 {

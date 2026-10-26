@@ -120,7 +120,11 @@ private:
     QVector<QPair<int, int>> _codeRangesThisLine;     // position start and length
     QVector<QPair<int, int>> _noFormatRangesThisLine; // position start and length
 
-    SpellChecker spellChecker;
+    /// The dictionary is loaded once per process: highlighters are created also for the cells of the
+    /// table editor, loading the dictionary for each of them would be slow.
+    static const SpellChecker& sharedSpellChecker();
+
+    const SpellChecker& spellChecker = sharedSpellChecker();
 
     SyntaxMode _mode = SyntaxMode::Stc;
     int _languageStateBits = 0; // what the code highlighting of this line wants the next line to know

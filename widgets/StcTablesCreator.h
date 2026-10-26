@@ -6,11 +6,17 @@
 #include <QPoint>
 #include <QString>
 #include <QStringList>
+#include <QPointer>
+#include "types/stcTags.h"
 
+class QPlainTextEdit;
 class QTableWidgetItem;
 class QAction;
 class QMenu;
 class QWidget;
+class StcCellDelegate;
+class StcTagsButtons;
+class QToolButton;
 
 namespace Ui
 {
@@ -48,7 +54,6 @@ private slots:
     void deleteSelectedColumns();
     void insertColumnLeft();
     void insertColumnRight();
-    void onHeaderDoubleClicked(int logicalIndex);
 
     // Drag & Drop functionality
     void onItemChanged(QTableWidgetItem* item);
@@ -56,6 +61,13 @@ private slots:
     // Cell clipboard operations
     void copyCellContent();
     void pasteCellContent();
+
+    // Formatted ([run]) cells and the palette of the tags
+    void onCellEditorCreated(QPlainTextEdit* editor);
+    void onPaletteTagRequested(StcTags tag);
+    void onFormattedToggled(bool formatted);
+    void onCurrentCellChanged();
+    void updatePaletteState();
 
 protected:
     void accept() override;
@@ -75,6 +87,7 @@ private:
     void createColumnContextMenu();
     void setupButtons();
     void setupCheckBoxes();
+    void setupCellEditing();
     void connectSignalsAndSlots();
     void performPaste(const QString& content);
 
@@ -84,12 +97,18 @@ private:
     QString normalizeLineEndings(const QString& content);
     QStringList splitContentIntoLines(const QString& normalizedContent);
     QStringList processAndTrimLines(const QStringList& rawLines);
-    bool detectHeaderFromFirstLine(const QStringList& lines);
     int calculateMaxColumnCount(const QStringList& lines);
     void configureTableDimensions(int maxColumns, int rowCount);
-    void setupTableHeaders(const QStringList& lines, int maxColumns);
     void populateTableWithData(const QStringList& dataLines, int maxColumns);
     void finalizeTableAppearance();
+
+    // Cells: the text of an item is the inner text, the check state says whether it is wrapped in [run]
+    void fillMissingItems();
+    void applyHeaderStyle(); // bold first row + labels of the rows ("header", 1, 2...)
+    void refreshItemDiagnostics(QTableWidgetItem* item);
+    void setCellFromStc(int row, int column, const QString& stc);
+    QString cellToStc(int row, int column) const;
+    bool hasFormattedCells() const;
 
     // CSV parsing helper methods
     QStringList parseLineIntoCells(const QString& line);
@@ -132,7 +151,13 @@ private:
     QPoint m_dragStartPosition;
     int m_dragSourceRow = -1;
     int m_dragSourceColumn = -1;
-    QString m_draggedContent;
+    QString m_draggedContent; // STC form of the cell (with [run] when the cell is formatted)
+
+    // Formatted cells
+    StcCellDelegate *m_cellDelegate = nullptr;
+    StcTagsButtons *m_tagsButtons = nullptr;
+    QToolButton *m_formattedButton = nullptr;
+    QPointer<QPlainTextEdit> m_activeEditor;
 
     // Cell context menu and clipboard
     QMenu *m_cellMenu = nullptr;

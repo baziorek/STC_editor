@@ -1,5 +1,6 @@
 #include "stctagsbuttons.h"
 #include "ui_stctagsbuttons.h"
+#include <QAbstractButton>
 
 
 StcTagsButtons::StcTagsButtons(QWidget *parent)
@@ -107,4 +108,16 @@ QMultiMap<QString, QKeySequence> StcTagsButtons::listOfShortcuts() const
     }
 
     return result;
+}
+
+void StcTagsButtons::useInTableCell()
+{
+    // a table inside of a table cell makes no sense, and the [run] is set by the "formatted cell" button
+    ui->button_csv->hide();
+    ui->button_run->hide();
+
+    for (QAbstractButton* button : findChildren<QAbstractButton*>())
+    {
+        button->setFocusPolicy(Qt::NoFocus);
+    }
 }
