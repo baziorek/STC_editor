@@ -129,7 +129,7 @@ Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wyb
 16. **Obsługa wielu języków**: Obsługuje język angielski i polski.
 17. **Tryby składni całego pliku**: Menu `Składnia` pozwala przełączać między trybami: STC, Zwykły tekst, C++, Python, XML i JSON. Przy otwieraniu pliku tryb jest dobierany po rozszerzeniu (np. `.py` → Python, `.cpp`/`.h`/`.hpp` → C++, `.xml`/`.svg`/`.ui`/`.qrc` → XML, `.json` → JSON, `.md`/`.rst` → zwykły tekst), a dla pozostałych rozszerzeń, w tym `.txt` (w którym zapisywane są artykuły STC), używany jest tryb STC. Tryb wybrany ręcznie z menu jest zapamiętywany dla danego pliku, więc np. notatka `.txt` otwiera się następnym razem jako zwykły tekst. W trybach kodu edytor używa czcionki o stałej szerokości i nie interpretuje znaczników STC, więc `[b]` w kodzie Pythona pozostaje zwykłym indeksowaniem. Tryb **Zwykły tekst** nie ma żadnych znaczników: działa w nim sprawdzanie pisowni, a linki (`https://...`, `www....`) i adresy e-mail są kolorowane i podkreślane (ich fragmenty nie są zgłaszane jako błędy pisowni). Dialog otwierania ma filtry: pliki `.txt`, pliki kodu i danych oraz wszystkie pliki.
 18. **Konsola**: ukrywalny panel na dole okna (menu `Widok` → `Konsola` lub `Ctrl+\``, `Esc` wraca do edytora). Pole polecenia jest kolorowane (polecenie: zielone, gdy program istnieje, czerwone gdy go nie ma, niebieskie dla poleceń wbudowanych powłoki; opcje, napisy, zmienne, operatory, komentarze), ma historię (strzałki góra/dół, zapamiętywaną między uruchomieniami), a wyjście programów jest pokazywane z kolorami ANSI (`\r` nadpisuje linię, więc działają paski postępu). Polecenia uruchamia powłoka (`/bin/sh -c`, na Windowsie `cmd.exe /c`), więc działają potoki, przekierowania i `&&`; `cd` jest obsługiwane przez konsolę (katalog jest pamiętany między poleceniami, `cd -` wraca), `clear`/`Ctrl+L` czyści wyjście, `Ctrl+C` (lub przycisk ■) zatrzymuje polecenie (drugi raz je ubija), a tekst wpisany w trakcie działania programu trafia na jego standardowe wejście (`Ctrl+D` je zamyka). Polecenia widzą zmienne `STC_FILE` (otwarty plik) i `STC_DIR` (jego katalog), np. `g++ "$STC_FILE"` albo `cd $STC_DIR`. To **nie** jest emulator terminala (brak pseudoterminala), więc programy rysujące po ekranie (`vim`, `top`, hasło `sudo`) nie działają. Cały kod jest własny (nie używa qtermwidget, który jest na licencji GPL).
-18. **Historia edycji** (od ostatniego otwarcia pliku; znika po zamknięciu edytora i po otwarciu innego pliku):
+19. **Historia edycji** (od ostatniego otwarcia pliku; znika po zamknięciu edytora i po otwarciu innego pliku):
     - `Ctrl+Z` / `Ctrl+Shift+Z` działają tak jak dotąd - cofają od razu cały fragment wpisanego tekstu (kilka słów), a nie pojedyncze litery. Historia tylko je obserwuje, nie zmienia stosu cofania Qt.
     - Menu kontekstowe → **Historia edycji…**: tabela wszystkich kroków (czas, liczba zmienionych linii i ich numery - zmodyfikowane, `+dodane`, `−usunięte` - liczba zmienionych znaków, czas zapisu pliku). Strzałka `▶` pokazuje bieżący stan dokumentu i przesuwa się przy `Ctrl+Z` / `Ctrl+Shift+Z`; cofnięte kroki są wyszarzone i wracają po `Ctrl+Shift+Z` (znikają dopiero, gdy po cofnięciu wprowadzimy nową zmianę). Kliknięcie kroku pokazuje diff tego, co zmienił; dwuklik przenosi do linii. Okno na bieżąco śledzi dokument.
     - **Historia linii**: linie zmienione w tej sesji mają kółko wokół numeru (kropkowane, gdy wszystkie zmiany tej linii są cofnięte). Kliknięcie numeru (lub menu kontekstowe → **Historia linii…**) pokazuje tabelę zmian tej linii: czas, zmianę w jednej linii (zielone dodane, czerwone usunięte), czas zapisu pliku z tą zmianą oraz bieżący stan.
@@ -191,14 +191,13 @@ QT_QPA_PLATFORM=offscreen ctest --output-on-failure
 `QT_QPA_PLATFORM=offscreen` pozwala uruchomić testy używające Qt na maszynie bez środowiska graficznego (np. na serwerze CI).
 
 ## Planowane funkcjonalności
-1. Kreator tabel dla znaczników STC.
+1. Zwijanie nagłówków i kodu (jak funkcje w środowiskach programistycznych)
 3. Podpięcie sztucznej inteligencji np. llama.cpp do komentowania kodu i artykułu. Z możliwością edycji promptu.
 4. Rozważyć użycie tej samej biblioteki do porównywania zarówno linii jak i znaków np. https://github.com/google/diff-match-patch
 5. Obsługa markdown
 6. Pobieranie aktualizacji przez https://cpp0x.pl/xml/ - poprawki wizualne
 7. Dodać widget edytujący obrazki - link z podglądem, opis, tekst alternatywny i jeszcze jest tam checkbox z autofit
 8. Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
-9. Zwijanie nagłówków i kodu (jak funkcje w środowiskach programistycznych)
 10. Wyświetlanie statystyk zmian w czasie rzeczywistym (liczba linii, znaków, rozmiar pliku, linia i kolumna).
 11. Szukanie tylko w kodzie
 12. Może AI mi podzieli CodeEditor aby nie był GodObject
