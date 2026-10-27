@@ -4,6 +4,7 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QDesktopServices>
+#include <QDockWidget>
 #include <QClipboard>
 #include <QStack>
 #include <QScrollBar>
@@ -23,6 +24,7 @@
 #include "errorlist.h"
 #include "types/documentstatistics.h"
 #include "widgets/LoginDialog.h"
+#include "widgets/ConsoleWidget.h"
 #include "widgets/CppNewsWidget.h"
 #include "widgets/DiffReviewDialog.h"
 #include "widgets/PastedTextDiffDialog.h"
@@ -46,6 +48,7 @@ namespace GeometryNames
     constexpr const char LOGIN_AUTO_LOGIN[] = "login/autoLogin";
     constexpr const char PREVIEW_SCROLL_SYNC[] = "preview/scrollSync";
     constexpr const char PREVIEW_CLICK_SYNC[] = "preview/clickSync";
+    constexpr const char CONSOLE_HISTORY[] = "console/history";
 };
 
 std::pair<QString, QString> extractLink(const QString& text)
@@ -106,12 +109,21 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 {    
     ui->setupUi(this);
 
+    // The console is made before loadSettings(): restoreState() has to find its dock to restore its place and size
+    consoleWidget = new ConsoleWidget(this);
+    consoleWidget->setCurrentFileProvider([this] { return ui->textEditor->getFileName(); });
+    consoleDockWidget = new QDockWidget(tr("Console"), this);
+    consoleDockWidget->setObjectName(QStringLiteral("consoleDockWidget"));
+    consoleDockWidget->setWidget(consoleWidget);
+    addDockWidget(Qt::BottomDockWidgetArea, consoleDockWidget);
+
     loadSettings();
 
     setDisabledMenuActionsDependingOnOpenedFile(/*disabled=*/true);
 
     ui->stcPreviewDockWidget->hide();
     ui->stopwatchGroupBox->hide();
+    consoleDockWidget->hide();
 
     ui->findWidget->hide();
     ui->findDockWidget->hide();
@@ -127,6 +139,18 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     cppNewsTabIndex = ui->contextsTabWidget->addTab(cppNewsWidget, tr("cpp0x.pl news"));
     ui->contextsTabWidget->setTabVisible(cppNewsTabIndex, false);
     connect(ui->actionCpp0x_news, &QAction::toggled, this, &MainWindow::onCppNewsShowChanged);
+
+    // the console: View menu entry (the dock keeps its state), Ctrl+` shows it, Esc in its line goes back to the editor
+    QAction* consoleAction = consoleDockWidget->toggleViewAction();
+    consoleAction->setText(tr("Console"));
+    consoleAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_QuoteLeft));
+    ui->menuView->addSeparator();
+    ui->menuView->addAction(consoleAction);
+    connect(consoleDockWidget, &QDockWidget::visibilityChanged, this, &MainWindow::onConsoleVisibilityChanged);
+    connect(consoleWidget, &ConsoleWidget::leaveRequested, ui->textEditor, qOverload<>(&QWidget::setFocus));
+    connect(consoleWidget, &ConsoleWidget::historyChanged, this, [](const QStringList& history) {
+        QSettings().setValue(GeometryNames::CONSOLE_HISTORY, history);
+    });
 
     connectSignals2Slots();
     connectShortcutsFromCodeWidget();
@@ -903,6 +927,25 @@ void MainWindow::onStopWatchVisibilityChanged(bool visible)
     ui->stopwatchGroupBox->setVisible(visible);
 }
 
+void MainWindow::onConsoleVisibilityChanged(bool visible)
+{
+    if (visible)
+    {
+        if (!consoleDirectoryInitialized)
+        {
+            // starts where the article is (the commands see the file also as $STC_FILE), later the user decides with cd
+            consoleDirectoryInitialized = true;
+            const QString fileName = ui->textEditor->getFileName();
+            consoleWidget->setWorkingDirectory(fileName.isEmpty() ? lastDirectory : QFileInfo(fileName).absolutePath());
+        }
+        consoleWidget->focusInput();
+    }
+    else if (consoleWidget->isAncestorOf(QApplication::focusWidget()))
+    {
+        ui->textEditor->setFocus();
+    }
+}
+
 void MainWindow::onRightPanelVisibilityChanged(bool visible)
 {
     ui->buttonsEmittingStc->setVisible(visible);
@@ -1129,6 +1172,8 @@ void MainWindow::loadSettings()
         recentFilesWithPositions.insert(it.key(), info);
     }
 
+    consoleWidget->setHistory(settings.value(GeometryNames::CONSOLE_HISTORY).toStringList());
+
     bool resumeSession = settings.value(GeometryNames::RESUME_SESSION, true).toBool();
     ui->actionResumeSession->setChecked(resumeSession);
 }
@@ -1227,6 +1272,8 @@ void MainWindow::onLanguageChanged()
     
     // Update dynamically created UI elements
     onRecentRecentFilesMenuOpened();
+    consoleDockWidget->setWindowTitle(tr("Console"));
+    consoleDockWidget->toggleViewAction()->setText(tr("Console"));
 }
 
 QList<std::pair<QAction*, SyntaxMode>> MainWindow::syntaxMenuActions() const

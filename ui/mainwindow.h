@@ -12,6 +12,9 @@ class QMenu;
 class CppNewsWidget;
 QT_END_NAMESPACE
 
+class ConsoleWidget;
+class QDockWidget;
+
 class QTextCursor;
 
 enum class StcTags: std::uint32_t;
@@ -80,6 +83,8 @@ public slots:
     void onBreadcrumbVisibilityChanged(bool visible);
     void onRightPanelVisibilityChanged(bool visible);
     void onStopWatchVisibilityChanged(bool visible);
+    /// View menu: the console (a dock at the bottom), shown with Ctrl+`
+    void onConsoleVisibilityChanged(bool visible);
 
     /// help menu:
     void onStcCoursePressed();
@@ -151,6 +156,10 @@ private: // members
 
     CppNewsWidget* cppNewsWidget = nullptr;
     int cppNewsTabIndex = -1;
+
+    QDockWidget* consoleDockWidget = nullptr;
+    ConsoleWidget* consoleWidget = nullptr;
+    bool consoleDirectoryInitialized = false; ///< the directory of the console is set when it is shown for the first time
 
     QMenu* encodingMenu = nullptr;
     QAction* encodingCurrentAction = nullptr; // "Current encoding: ..." (disabled)

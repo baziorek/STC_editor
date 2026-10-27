@@ -569,6 +569,33 @@ if(NOT WIN32)
     target_link_libraries(${PROJECT_NAME}HeaderNestingTests PRIVATE ${GTEST_LIBRARIES} pthread gtest_main)
     add_test(NAME ${PROJECT_NAME}HeaderNestingTests COMMAND ${PROJECT_NAME}HeaderNestingTests)
 
+    # The console: splitting of the command line into the colored tokens, cd, built-ins. Only QtCore.
+    add_executable(${PROJECT_NAME}ConsoleShellTests
+        tests/ConsoleShellTests.cpp
+        utils/ConsoleShell.cpp
+    )
+    target_include_directories(${PROJECT_NAME}ConsoleShellTests PRIVATE ${PROJECT_SOURCE_DIR})
+    target_link_libraries(${PROJECT_NAME}ConsoleShellTests PRIVATE Qt${QT_VERSION_MAJOR}::Core ${GTEST_LIBRARIES} pthread gtest_main)
+    add_test(NAME ${PROJECT_NAME}ConsoleShellTests COMMAND ${PROJECT_NAME}ConsoleShellTests)
+
+    # The console widget: runs real commands through /bin/sh (colors, cd, Ctrl+C, history, the colored input line).
+    # Widgets + Test (QTest::keyClick); own main() with QApplication.
+    find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Test)
+    add_executable(${PROJECT_NAME}ConsoleWidgetTests
+        tests/ConsoleWidgetTests.cpp
+        widgets/ConsoleWidget.cpp
+        widgets/ConsoleInputEdit.cpp
+        widgets/ConsoleSyntaxHighlighter.cpp
+        utils/ConsoleShell.cpp
+        utils/AnsiTextWriter.cpp
+    )
+    target_include_directories(${PROJECT_NAME}ConsoleWidgetTests PRIVATE ${PROJECT_SOURCE_DIR})
+    target_link_libraries(${PROJECT_NAME}ConsoleWidgetTests PRIVATE
+        Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Test ${GTEST_LIBRARIES} pthread
+    )
+    add_test(NAME ${PROJECT_NAME}ConsoleWidgetTests COMMAND ${PROJECT_NAME}ConsoleWidgetTests)
+    set_tests_properties(${PROJECT_NAME}ConsoleWidgetTests PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
     # The news feed of cpp0x.pl: parsing and which threads are new. Only QtCore.
     add_executable(${PROJECT_NAME}CppNewsTests
         tests/CppNewsTests.cpp
