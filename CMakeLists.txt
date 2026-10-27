@@ -584,6 +584,7 @@ if(NOT WIN32)
     add_executable(${PROJECT_NAME}ConsoleWidgetTests
         tests/ConsoleWidgetTests.cpp
         widgets/ConsoleWidget.cpp
+        widgets/ConsoleOutputEdit.cpp
         widgets/ConsoleInputEdit.cpp
         widgets/ConsoleSyntaxHighlighter.cpp
         utils/ConsoleShell.cpp

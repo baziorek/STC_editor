@@ -3,6 +3,7 @@
 #include <QChar>
 #include <QDir>
 #include <QFileInfo>
+#include <QRegularExpression>
 #include <QSet>
 #include <QStandardPaths>
 #include <QStringView>
@@ -111,6 +112,31 @@ bool isShellBuiltin(const QString& word)
         u"wait"_s,  u"ulimit"_s, u"umask"_s, u"history"_s, u"command"_s, u"dir"_s,   u"copy"_s,    u"del"_s,
         u"move"_s,  u"ren"_s,   u"mkdir"_s, u"rmdir"_s,   u"md"_s,     u"rd"_s,     u"chdir"_s};
     return builtins.contains(word);
+}
+
+struct ListingRow
+{
+    bool directory;
+    qsizetype nameStart;
+};
+
+/// A row of `ls -l` (also `--time-style=long-iso`) or of the `dir` of Windows.
+std::optional<ListingRow> parseListingRow(const QString& line)
+{
+    static const QRegularExpression unixLong(
+        QStringLiteral(R"(^([-dlbcpsDw])[rwxsStT?-]{9}[.+@]?\s+\d+\s+\S+\s+\S+\s+\S+\s+)"
+                       R"((?:\d{4}-\d\d-\d\d\s+\S+|\S+\s+\d+\s+\S+)\s+(.+)$)"));
+    static const QRegularExpression windowsDir(QStringLiteral(R"(^\S+\s+\S+(?:\s+[AaPp][Mm])?\s+(<DIR>|[\d.,\xA0]+)\s+(.+)$)"));
+
+    if (const QRegularExpressionMatch match = unixLong.match(line); match.hasMatch())
+    {
+        const QChar type = match.captured(1).at(0);
+        // a link ("name -> target") is not painted: whether it leads to a directory is not the point of the row
+        return ListingRow{type == QLatin1Char('d'), match.capturedStart(2)};
+    }
+    if (const QRegularExpressionMatch match = windowsDir.match(line); match.hasMatch())
+        return ListingRow{match.captured(1) == QLatin1String("<DIR>"), match.capturedStart(2)};
+    return std::nullopt;
 }
 } // namespace
 
@@ -386,5 +412,145 @@ QString joinPastedLines(const QString& text)
         result += continued ? line.chopped(1).trimmed() : line;
     }
     return result;
+}
+
+QString formatDuration(qint64 milliseconds)
+{
+    if (milliseconds < 0)
+        milliseconds = 0;
+    if (milliseconds < 1000)
+        return QStringLiteral("%1 ms").arg(milliseconds);
+    if (milliseconds < 60'000)
+    {
+        const qint64 tenths = milliseconds / 100; // cut, not rounded: 59.96 s must not become "60.0 s"
+        return QStringLiteral("%1.%2 s").arg(tenths / 10).arg(tenths % 10);
+    }
+    if (milliseconds < 3'600'000)
+    {
+        const qint64 seconds = milliseconds / 1000;
+        return QStringLiteral("%1m %2s").arg(seconds / 60).arg(seconds % 60, 2, 10, QLatin1Char('0'));
+    }
+    const qint64 minutes = milliseconds / 60'000;
+    return QStringLiteral("%1h %2m").arg(minutes / 60).arg(minutes % 60, 2, 10, QLatin1Char('0'));
+}
+
+bool isListingCommand(const QString& line)
+{
+    static const QSet<QString> programs{u"ls"_s, u"dir"_s, u"vdir"_s, u"find"_s, u"fd"_s, u"fdfind"_s, u"eza"_s, u"exa"_s};
+    for (const Token& token : tokenize(line))
+    {
+        if (token.kind != TokenKind::Command)
+            continue;
+        QString name = QFileInfo(splitWords(line.mid(token.start, token.length)).value(0)).fileName().toLower();
+        if (name.endsWith(QLatin1String(".exe")))
+            name.chop(4);
+        if (programs.contains(name))
+            return true;
+    }
+    return false;
+}
+
+QString resolvePath(const QString& baseDirectory, const QString& path)
+{
+    QString resolved = path;
+    if (resolved == QLatin1String("~"))
+        resolved = QDir::homePath();
+    else if (resolved.startsWith(QLatin1String("~/")) || resolved.startsWith(QLatin1String("~\\")))
+        resolved = QDir::homePath() + resolved.mid(1);
+
+    if (QDir::isAbsolutePath(resolved))
+        return QDir::cleanPath(resolved);
+    return QDir::cleanPath(QDir(baseDirectory).filePath(resolved));
+}
+
+QStringList pathCandidatesAt(const QString& line, qsizetype column)
+{
+    QStringList candidates;
+    auto add = [&](const QString& candidate) {
+        const QString trimmed = candidate.trimmed();
+        if (!trimmed.isEmpty() && !candidates.contains(trimmed))
+            candidates << trimmed;
+    };
+
+    const qsizetype size = line.size();
+    if (size == 0 || column < 0)
+        return candidates;
+
+    auto isSeparator = [](QChar c) { return c.isSpace() || QStringView(u"\"'`()<>[]{}|,;=").contains(c); };
+
+    column = qMin(column, size);
+    if (column > 0 && (column >= size || isSeparator(line[column])))
+        --column; // the cursor is just behind the word
+    if (column >= size || isSeparator(line[column]))
+        return candidates;
+
+    qsizetype begin = column;
+    while (begin > 0 && !isSeparator(line[begin - 1]))
+        --begin;
+    qsizetype end = column;
+    while (end < size && !isSeparator(line[end]))
+        ++end;
+
+    QString word = line.mid(begin, end - begin);
+    while (word.size() > 1 && QStringView(u",:;!?").contains(word.back()))
+        word.chop(1);
+    if (word.size() > 2 && word.endsWith(QLatin1Char('.')) && !word.endsWith(QLatin1String("..")))
+        word.chop(1);
+
+    // A plain word of a sentence is not a path, even when a directory of that name exists
+    const bool looksLikePath = word.contains(QLatin1Char('/')) || word.contains(QLatin1Char('\\')) || word == QLatin1String("~");
+    if (looksLikePath)
+    {
+        add(word);
+        static const QRegularExpression lineAndColumn(QStringLiteral(R"((:\d+)+$)")); // file.cpp:12:5
+        QString withoutPosition = word;
+        withoutPosition.remove(lineAndColumn);
+        add(withoutPosition);
+    }
+
+    if (const auto row = parseListingRow(line))
+        add(line.mid(row->nameStart));
+    else
+        add(line); // a name in a listing (`ls` prints one name per line when it is not a terminal)
+
+    return candidates;
+}
+
+std::optional<ListingClassifier::Range> ListingClassifier::directoryRange(const QString& rawLine)
+{
+    QString line = rawLine;
+    if (line.endsWith(QLatin1Char('\r')))
+        line.chop(1);
+    if (line.trimmed().isEmpty())
+        return std::nullopt;
+
+    if (const auto row = parseListingRow(line))
+    {
+        if (!row->directory)
+            return std::nullopt;
+        return Range{row->nameStart, line.size() - row->nameStart};
+    }
+
+    const QString text = line.trimmed();
+    const qsizetype start = line.indexOf(text);
+    const QString contextDirectory = context_.isEmpty() ? baseDirectory_ : resolvePath(baseDirectory_, context_);
+
+    // `ls -R` and `ls a b`: "path:" and then the names which are in it
+    if (text.endsWith(QLatin1Char(':')) && text.size() > 1)
+    {
+        const QString header = text.chopped(1);
+        if (QFileInfo(resolvePath(baseDirectory_, header)).isDir())
+        {
+            context_ = header;
+            return std::nullopt;
+        }
+    }
+
+    QString name = text;
+    while (name.size() > 1 && name.endsWith(QLatin1Char('/'))) // `ls -F`, `find` with a trailing slash
+        name.chop(1);
+    if (QFileInfo(resolvePath(contextDirectory, name)).isDir())
+        return Range{start, text.size()};
+    return std::nullopt;
 }
 } // namespace ConsoleShell

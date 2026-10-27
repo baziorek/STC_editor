@@ -1,7 +1,10 @@
 #include <gtest/gtest.h>
+#include <QDir>
+#include <QFile>
 #include <QProcessEnvironment>
 #include <QString>
 #include <QStringList>
+#include <QTemporaryDir>
 #include "utils/ConsoleShell.h"
 
 using ConsoleShell::Builtin;
@@ -313,3 +316,182 @@ TEST(ConsoleShellPaste, BackslashContinuesTheCommand)
     EXPECT_EQ(ConsoleShell::joinPastedLines("g++ \\\n  -O2 \\\n  main.cpp\nls"), "g++ -O2 main.cpp; ls");
 }
 #endif
+
+// ------------------------------------------------------------------ duration
+
+TEST(ConsoleShellDuration, Formats)
+{
+    EXPECT_EQ(ConsoleShell::formatDuration(-5), "0 ms");
+    EXPECT_EQ(ConsoleShell::formatDuration(0), "0 ms");
+    EXPECT_EQ(ConsoleShell::formatDuration(850), "850 ms");
+    EXPECT_EQ(ConsoleShell::formatDuration(999), "999 ms");
+    EXPECT_EQ(ConsoleShell::formatDuration(1000), "1.0 s");
+    EXPECT_EQ(ConsoleShell::formatDuration(3249), "3.2 s");
+    EXPECT_EQ(ConsoleShell::formatDuration(59999), "59.9 s");
+    EXPECT_EQ(ConsoleShell::formatDuration(60000), "1m 00s");
+    EXPECT_EQ(ConsoleShell::formatDuration(125000), "2m 05s");
+    EXPECT_EQ(ConsoleShell::formatDuration(3599000), "59m 59s");
+    EXPECT_EQ(ConsoleShell::formatDuration(3600000), "1h 00m");
+    EXPECT_EQ(ConsoleShell::formatDuration(3720000), "1h 02m");
+}
+
+// ------------------------------------------------------------------ listings
+
+TEST(ConsoleShellListing, RecognizesListingCommands)
+{
+    EXPECT_TRUE(ConsoleShell::isListingCommand("ls"));
+    EXPECT_TRUE(ConsoleShell::isListingCommand("ls -la src"));
+    EXPECT_TRUE(ConsoleShell::isListingCommand("find . -name '*.cpp'"));
+    EXPECT_TRUE(ConsoleShell::isListingCommand("/usr/bin/ls"));
+    EXPECT_TRUE(ConsoleShell::isListingCommand("cd x && ls"));
+    EXPECT_TRUE(ConsoleShell::isListingCommand("ls | head"));
+    EXPECT_TRUE(ConsoleShell::isListingCommand("DIR /b"));
+    EXPECT_FALSE(ConsoleShell::isListingCommand("make"));
+    EXPECT_FALSE(ConsoleShell::isListingCommand("echo ls"));
+    EXPECT_FALSE(ConsoleShell::isListingCommand("lsblk"));
+    EXPECT_FALSE(ConsoleShell::isListingCommand(""));
+}
+
+TEST(ConsoleShellResolvePath, Resolves)
+{
+    EXPECT_EQ(ConsoleShell::resolvePath("/a/b", "c"), "/a/b/c");
+    EXPECT_EQ(ConsoleShell::resolvePath("/a/b", "./c/../d"), "/a/b/d");
+    EXPECT_EQ(ConsoleShell::resolvePath("/a/b", "/etc/"), "/etc");
+    EXPECT_EQ(ConsoleShell::resolvePath("/a/b", "~"), QDir::cleanPath(QDir::homePath()));
+    EXPECT_EQ(ConsoleShell::resolvePath("/a/b", "~/x"), QDir::cleanPath(QDir::homePath() + "/x"));
+}
+
+TEST(ConsoleShellPathCandidates, PathWordUnderTheCursor)
+{
+    EXPECT_EQ(ConsoleShell::pathCandidatesAt("see src/main.cpp now", 6).first(), "src/main.cpp");
+    EXPECT_EQ(ConsoleShell::pathCandidatesAt("see src/main.cpp now", 4).first(), "src/main.cpp");
+    EXPECT_EQ(ConsoleShell::pathCandidatesAt("see src/main.cpp now", 16).first(), "src/main.cpp"); // just behind the word
+}
+
+TEST(ConsoleShellPathCandidates, PositionOfACompilerMessageIsCutOff)
+{
+    const QStringList candidates = ConsoleShell::pathCandidatesAt("src/main.cpp:12:5: error: oops", 3);
+    ASSERT_GE(candidates.size(), 2);
+    EXPECT_EQ(candidates.at(0), "src/main.cpp:12:5");
+    EXPECT_EQ(candidates.at(1), "src/main.cpp");
+}
+
+TEST(ConsoleShellPathCandidates, TrailingPunctuationIsNotAPartOfThePath)
+{
+    EXPECT_EQ(ConsoleShell::pathCandidatesAt("in /tmp/x/y, then", 5).first(), "/tmp/x/y");
+    EXPECT_EQ(ConsoleShell::pathCandidatesAt("see ../a/b.", 6).first(), "../a/b");
+    EXPECT_EQ(ConsoleShell::pathCandidatesAt("cd ../a/..", 6).first(), "../a/..");
+}
+
+TEST(ConsoleShellPathCandidates, QuotesAndEqualsSeparateWords)
+{
+    EXPECT_EQ(ConsoleShell::pathCandidatesAt("--dir=/tmp/x", 8).first(), "/tmp/x");
+    EXPECT_EQ(ConsoleShell::pathCandidatesAt("open \"/tmp/a b\" now", 7).first(), "/tmp/a");
+}
+
+TEST(ConsoleShellPathCandidates, PlainWordOfASentenceIsNotAPath)
+{
+    // only the whole line is offered (a listing has one name in a line): it must not be "build" alone
+    EXPECT_EQ(ConsoleShell::pathCandidatesAt("the build is ready", 6), (QStringList{"the build is ready"}));
+}
+
+TEST(ConsoleShellPathCandidates, OneNameInALineIsTheWholeLine)
+{
+    EXPECT_EQ(ConsoleShell::pathCandidatesAt("my dir", 1), (QStringList{"my dir"}));
+}
+
+TEST(ConsoleShellPathCandidates, RowOfLsLongOffersTheName)
+{
+    const QString row = "drwxr-xr-x 2 user group 4096 Oct 27 10:00 my dir";
+    EXPECT_EQ(ConsoleShell::pathCandidatesAt(row, 3), (QStringList{"my dir"}));
+}
+
+TEST(ConsoleShellPathCandidates, WhiteSpaceAndEmptyLinesOfferNothing)
+{
+    EXPECT_TRUE(ConsoleShell::pathCandidatesAt("", 0).isEmpty());
+    EXPECT_TRUE(ConsoleShell::pathCandidatesAt("abc", -1).isEmpty());
+}
+
+class ConsoleShellClassifier : public ::testing::Test
+{
+protected:
+    ConsoleShellClassifier()
+    {
+        QDir dir(temporary.path());
+        dir.mkdir("src");
+        dir.mkdir("my dir");
+        dir.mkpath("src/deep");
+        QFile(dir.filePath("file.txt")).open(QIODevice::WriteOnly);
+        QFile(dir.filePath("src/inner.txt")).open(QIODevice::WriteOnly);
+    }
+
+    ConsoleShell::ListingClassifier classifier() const { return ConsoleShell::ListingClassifier(temporary.path()); }
+
+    QTemporaryDir temporary;
+};
+
+TEST_F(ConsoleShellClassifier, PlainNames)
+{
+    auto c = classifier();
+    EXPECT_EQ(c.directoryRange("src"), (ConsoleShell::ListingClassifier::Range{0, 3}));
+    EXPECT_EQ(c.directoryRange("my dir"), (ConsoleShell::ListingClassifier::Range{0, 6}));
+    EXPECT_EQ(c.directoryRange("file.txt"), std::nullopt);
+    EXPECT_EQ(c.directoryRange("missing"), std::nullopt);
+    EXPECT_EQ(c.directoryRange(""), std::nullopt);
+}
+
+TEST_F(ConsoleShellClassifier, FindOutputWithPaths)
+{
+    auto c = classifier();
+    EXPECT_EQ(c.directoryRange("."), (ConsoleShell::ListingClassifier::Range{0, 1}));
+    EXPECT_EQ(c.directoryRange("./src"), (ConsoleShell::ListingClassifier::Range{0, 5}));
+    EXPECT_EQ(c.directoryRange("./src/deep"), (ConsoleShell::ListingClassifier::Range{0, 10}));
+    EXPECT_EQ(c.directoryRange("./src/inner.txt"), std::nullopt);
+    EXPECT_EQ(c.directoryRange(temporary.path() + "/src"), (ConsoleShell::ListingClassifier::Range{0, static_cast<qsizetype>(temporary.path().size() + 4)}));
+}
+
+TEST_F(ConsoleShellClassifier, TrailingSlashAndCarriageReturn)
+{
+    auto c = classifier();
+    EXPECT_EQ(c.directoryRange("src/"), (ConsoleShell::ListingClassifier::Range{0, 4}));
+    EXPECT_EQ(c.directoryRange("src\r"), (ConsoleShell::ListingClassifier::Range{0, 3}));
+}
+
+TEST_F(ConsoleShellClassifier, LongFormatPaintsOnlyTheNameOfADirectory)
+{
+    auto c = classifier();
+    const QString directory = "drwxr-xr-x 3 user group 4096 Oct 27 10:00 src";
+    EXPECT_EQ(c.directoryRange(directory), (ConsoleShell::ListingClassifier::Range{42, 3}));
+
+    EXPECT_EQ(c.directoryRange("-rw-r--r-- 1 user group  120 Oct 27 10:00 file.txt"), std::nullopt);
+    EXPECT_EQ(c.directoryRange("lrwxrwxrwx 1 user group    3 Oct 27 10:00 link -> src"), std::nullopt);
+    EXPECT_EQ(c.directoryRange("total 12"), std::nullopt);
+}
+
+TEST_F(ConsoleShellClassifier, LongFormatWithSpacesInTheNameAndIsoDates)
+{
+    auto c = classifier();
+    const QString spaced = "drwxr-xr-x 2 user group 4096 Oct 27 10:00 my dir";
+    EXPECT_EQ(c.directoryRange(spaced), (ConsoleShell::ListingClassifier::Range{42, 6}));
+
+    const QString iso = "drwxr-xr-x 2 user group 4096 2026-10-27 10:00 src";
+    EXPECT_EQ(c.directoryRange(iso), (ConsoleShell::ListingClassifier::Range{46, 3}));
+}
+
+TEST_F(ConsoleShellClassifier, RecursiveListingNamesAreRelativeToTheHeader)
+{
+    auto c = classifier();
+    EXPECT_EQ(c.directoryRange(".:"), std::nullopt);
+    EXPECT_EQ(c.directoryRange("src"), (ConsoleShell::ListingClassifier::Range{0, 3}));
+    EXPECT_EQ(c.directoryRange(""), std::nullopt);
+    EXPECT_EQ(c.directoryRange("./src:"), std::nullopt); // header: the names below are in src
+    EXPECT_EQ(c.directoryRange("deep"), (ConsoleShell::ListingClassifier::Range{0, 4}));
+    EXPECT_EQ(c.directoryRange("inner.txt"), std::nullopt);
+}
+
+TEST_F(ConsoleShellClassifier, WindowsDir)
+{
+    auto c = classifier();
+    EXPECT_EQ(c.directoryRange("27.10.2026  10:00    <DIR>          src"), (ConsoleShell::ListingClassifier::Range{36, 3}));
+    EXPECT_EQ(c.directoryRange("27.10.2026  10:00             1 234 file.txt"), std::nullopt);
+}

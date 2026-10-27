@@ -148,6 +148,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->menuView->addAction(consoleAction);
     connect(consoleDockWidget, &QDockWidget::visibilityChanged, this, &MainWindow::onConsoleVisibilityChanged);
     connect(consoleWidget, &ConsoleWidget::leaveRequested, ui->textEditor, qOverload<>(&QWidget::setFocus));
+    connect(consoleWidget, &ConsoleWidget::openDirectoryRequested, this, [](const QString& directory) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(directory));
+    });
     connect(consoleWidget, &ConsoleWidget::historyChanged, this, [](const QStringList& history) {
         QSettings().setValue(GeometryNames::CONSOLE_HISTORY, history);
     });

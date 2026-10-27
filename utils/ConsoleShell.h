@@ -5,6 +5,7 @@
 #include <QString>
 #include <QStringList>
 #include <QtGlobal>
+#include <optional>
 
 /// The part of the console (`ConsoleWidget`) which does not need any widget, so it can be tested:
 /// splitting of the line into the highlighted tokens, splitting into words (for the built-in `cd`),
@@ -82,4 +83,43 @@ CommandKind classifyCommand(const QString& word, const QString& workingDirectory
 /// A text pasted into the one-line input as a sequence of commands: empty lines are dropped, the lines are
 /// separated with `; ` (a line ending with a backslash is continued in the same command).
 QString joinPastedLines(const QString& text);
+
+/// The time of a command for the left margin of the console: "850 ms", "3.2 s", "2m 05s", "1h 02m".
+QString formatDuration(qint64 milliseconds);
+
+/// Whether the command line runs a program which lists files (`ls`, `find`, `fd`, `dir`, ...), so its output
+/// is worth looking at for directories (see `ListingClassifier`).
+bool isListingCommand(const QString& line);
+
+/// `path` as an absolute clean path: `~` is the home directory, a relative path starts in `baseDirectory`.
+QString resolvePath(const QString& baseDirectory, const QString& path);
+
+/// What a double click at `column` of one line of the output could mean as a path, the most probable first
+/// (not checked on the disk): the word under the cursor when it looks like a path (`src/a.cpp:12:5` also
+/// without `:12:5`), the name of a row of `ls -l`, the whole line (a name in a listing, spaces allowed).
+QStringList pathCandidatesAt(const QString& line, qsizetype column);
+
+/// Finds the directories in the output of `ls`, `ls -l`, `ls -R`, `find` and `dir`, line by line.
+/// No terminal means no colors from `ls`, and `find` has none at all, so the lines are checked on the disk:
+/// the line is a name (a path) relative to the directory in which the command was started.
+class ListingClassifier
+{
+public:
+    struct Range
+    {
+        qsizetype start;
+        qsizetype length;
+        bool operator==(const Range&) const = default;
+    };
+
+    explicit ListingClassifier(QString baseDirectory = {}) : baseDirectory_(std::move(baseDirectory)) {}
+
+    /// The part of the line which names a directory; nothing for any other line. Lines have to come in the
+    /// order of the output: `ls -R` and `ls a b` print `dir:` before the names in it.
+    std::optional<Range> directoryRange(const QString& line);
+
+private:
+    QString baseDirectory_;
+    QString context_; ///< the directory from the last `dir:` header, relative to the base
+};
 } // namespace ConsoleShell

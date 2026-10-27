@@ -10,6 +10,7 @@
 #include <QLabel>
 #include <QPalette>
 #include <QPlainTextEdit>
+#include <QTimer>
 #include <QProcess>
 #include <QRgb>
 #include <QScrollBar>
@@ -32,6 +33,8 @@
 namespace
 {
 constexpr int kMaxOutputLines = 10000;
+constexpr int kMaxClassifiedLines = 20000; ///< `find /` should not freeze the window
+constexpr int kDurationRefreshMs = 200;
 
 /// Stops the command and everything which it started. On Unix the command is the leader of its own process group
 /// (see `startProcess()`), so one signal reaches the whole pipeline (`make` and the compilers below it).
@@ -60,8 +63,8 @@ ConsoleWidget::ConsoleWidget(QWidget* parent) : QWidget(parent), workingDirector
 {
     const QFont monospace = QFontDatabase::systemFont(QFontDatabase::FixedFont);
 
-    output_ = new QPlainTextEdit(this);
-    output_->setReadOnly(true);
+    output_ = new ConsoleOutputEdit(this);
+    output_->setDefaultDirectory(workingDirectory_);
     output_->setMaximumBlockCount(kMaxOutputLines);
     output_->setLineWrapMode(QPlainTextEdit::WidgetWidth);
     output_->setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
@@ -80,11 +83,19 @@ ConsoleWidget::ConsoleWidget(QWidget* parent) : QWidget(parent), workingDirector
     stopButton_->setAutoRaise(true);
     stopButton_->hide();
 
+    clearButton_ = new QToolButton(this);
+    clearButton_->setAutoRaise(true);
+    clearButton_->setText(QStringLiteral("✕"));
+
+    commandTick_ = new QTimer(this);
+    commandTick_->setInterval(kDurationRefreshMs);
+
     auto* inputRow = new QHBoxLayout;
     inputRow->setContentsMargins(4, 0, 4, 2);
     inputRow->addWidget(prompt_);
     inputRow->addWidget(input_, /*stretch=*/1);
     inputRow->addWidget(stopButton_);
+    inputRow->addWidget(clearButton_);
 
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -106,6 +117,19 @@ ConsoleWidget::ConsoleWidget(QWidget* parent) : QWidget(parent), workingDirector
     });
     connect(input_, &ConsoleInputEdit::leaveRequested, this, &ConsoleWidget::leaveRequested);
     connect(stopButton_, &QToolButton::clicked, this, &ConsoleWidget::interruptCommand);
+    connect(clearButton_, &QToolButton::clicked, this, &ConsoleWidget::clearOutput);
+    connect(output_, &ConsoleOutputEdit::clearRequested, this, &ConsoleWidget::clearOutput);
+    connect(output_, &ConsoleOutputEdit::pathActivated, this, [this](const QString& path) {
+        const QFileInfo info(path);
+        emit openDirectoryRequested(info.isDir() ? path : info.absolutePath());
+    });
+    connect(commandTick_, &QTimer::timeout, this, [this] {
+        if (currentCommand_)
+        {
+            currentCommand_->durationMs = commandTimer_.elapsed();
+            output_->refreshMargin();
+        }
+    });
 
     setFocusProxy(input_);
     updatePrompt();
@@ -134,6 +158,7 @@ void ConsoleWidget::setWorkingDirectory(const QString& directory)
 
     previousDirectory_ = workingDirectory_;
     workingDirectory_ = cleaned;
+    output_->setDefaultDirectory(cleaned);
     input_->setWorkingDirectory(cleaned);
     updatePrompt();
     emit workingDirectoryChanged(cleaned);
@@ -209,11 +234,12 @@ void ConsoleWidget::submit(const QString& rawLine)
         return;
     }
 
-    echoCommand(line);
-    if (builtin.kind == ConsoleShell::BuiltinKind::ChangeDirectory)
+    const bool isBuiltin = builtin.kind == ConsoleShell::BuiltinKind::ChangeDirectory;
+    const std::shared_ptr<ConsoleCommandInfo> info = echoCommand(line, /*showStats=*/!isBuiltin);
+    if (isBuiltin)
         changeDirectory(builtin.argument);
     else
-        startProcess(line);
+        startProcess(line, info);
 }
 
 void ConsoleWidget::changeDirectory(const QString& argument)
@@ -253,12 +279,29 @@ QProcessEnvironment ConsoleWidget::processEnvironment() const
     return environment;
 }
 
-void ConsoleWidget::startProcess(const QString& line)
+void ConsoleWidget::startProcess(const QString& line, const std::shared_ptr<ConsoleCommandInfo>& info)
 {
     writer_.reset();
     decoder_ = QStringDecoder(QStringConverter::System);
     pendingCarriageReturn_ = false;
     interruptCount_ = 0;
+
+    currentCommand_ = info;
+    currentCommand_->running = true;
+    currentCommand_->lineCount = 0;
+    currentCommand_->durationMs = 0;
+    commandTimer_.start();
+    commandTick_->start();
+
+    colorListing_ = ConsoleShell::isListingCommand(line);
+    if (colorListing_)
+    {
+        listing_ = ConsoleShell::ListingClassifier(workingDirectory_);
+        listingCursor_ = QTextCursor(output_->document());
+        listingCursor_.movePosition(QTextCursor::End); // the echo of the command ends with a line break
+        listingCursor_.setKeepPositionOnInsert(true);
+        classifiedLines_ = 0;
+    }
 
     process_ = new QProcess(this);
     process_->setProcessChannelMode(QProcess::MergedChannels);
@@ -306,6 +349,8 @@ void ConsoleWidget::onProcessFinished(int exitCode, int exitStatus)
 {
     readAvailable(); // what the program wrote last
 
+    finishCommandInfo(); // before the status line, which does not belong to the output of the command
+
     QProcess* finished = process_;
     process_ = nullptr;
     finished->deleteLater();
@@ -326,6 +371,8 @@ void ConsoleWidget::onProcessFinished(int exitCode, int exitStatus)
 
 void ConsoleWidget::onProcessFailedToStart(const QString& reason)
 {
+    finishCommandInfo();
+
     QProcess* failed = process_;
     process_ = nullptr;
     failed->deleteLater();
@@ -334,6 +381,22 @@ void ConsoleWidget::onProcessFailedToStart(const QString& reason)
     updateRunningUi();
     emit runningChanged(false);
     emit commandFinished(-1);
+}
+
+void ConsoleWidget::finishCommandInfo()
+{
+    commandTick_->stop();
+    if (currentCommand_)
+    {
+        if (output_->document()->lastBlock().length() > 1) // the last line has no line break
+            ++currentCommand_->lineCount;
+        colorizeListing(/*includeLastLine=*/true);
+        currentCommand_->durationMs = commandTimer_.elapsed();
+        currentCommand_->running = false;
+        currentCommand_.reset();
+    }
+    colorListing_ = false;
+    output_->refreshMargin();
 }
 
 // ------------------------------------------------------------------ output
@@ -387,6 +450,8 @@ void ConsoleWidget::appendOutput(QString text)
         pendingCarriageReturn_ = true;
     }
     text.replace(QLatin1String("\r\n"), QLatin1String("\n"));
+    if (currentCommand_)
+        currentCommand_->lineCount += static_cast<int>(text.count(QLatin1Char('\n')));
 
     QScrollBar* bar = output_->verticalScrollBar();
     const bool followOutput = bar->value() >= bar->maximum() - 2;
@@ -400,8 +465,57 @@ void ConsoleWidget::appendOutput(QString text)
             writer_.append(output_, parts[i]);
     }
 
+    colorizeListing(/*includeLastLine=*/false);
+    output_->refreshMargin();
+
     if (followOutput)
         bar->setValue(bar->maximum());
+}
+
+void ConsoleWidget::colorizeListing(bool includeLastLine)
+{
+    if (!colorListing_)
+        return;
+
+    // the last line of the document is not complete yet (more of it can come), the others are
+    QTextBlock block = listingCursor_.block();
+    while (block.isValid() && (includeLastLine || block.next().isValid()))
+    {
+        if (classifiedLines_ < kMaxClassifiedLines)
+        {
+            colorizeListingLine(block);
+            ++classifiedLines_;
+        }
+        block = block.next();
+    }
+    if (block.isValid())
+        listingCursor_.setPosition(block.position());
+}
+
+void ConsoleWidget::colorizeListingLine(const QTextBlock& block)
+{
+    const QString text = block.text();
+    if (text.isEmpty())
+        return;
+
+    // `ls --color=always` has its own colors: they stay
+    for (QTextBlock::iterator it = block.begin(); !it.atEnd(); ++it)
+    {
+        if (it.fragment().charFormat().hasProperty(QTextFormat::ForegroundBrush))
+            return;
+    }
+
+    const auto range = listing_.directoryRange(text);
+    if (!range)
+        return;
+
+    QTextCursor cursor(output_->document());
+    cursor.setPosition(block.position() + static_cast<int>(range->start));
+    cursor.setPosition(block.position() + static_cast<int>(range->start + range->length), QTextCursor::KeepAnchor);
+    QTextCharFormat format;
+    format.setFontWeight(QFont::Bold);
+    format.setForeground(QColor(darkBackground() ? 0x6cb6ff : 0x1565c0));
+    cursor.mergeCharFormat(format);
 }
 
 void ConsoleWidget::appendStatus(const QString& text, bool error)
@@ -412,7 +526,7 @@ void ConsoleWidget::appendStatus(const QString& text, bool error)
     insertText(text + QLatin1Char('\n'), format);
 }
 
-void ConsoleWidget::echoCommand(const QString& line)
+std::shared_ptr<ConsoleCommandInfo> ConsoleWidget::echoCommand(const QString& line, bool showStats)
 {
     ensureAtLineStart();
 
@@ -424,6 +538,12 @@ void ConsoleWidget::echoCommand(const QString& line)
     QTextCharFormat commandFormat;
     commandFormat.setFontWeight(QFont::Bold);
     insertText(line + QLatin1Char('\n'), commandFormat);
+
+    auto info = std::make_shared<ConsoleCommandInfo>();
+    info->workingDirectory = workingDirectory_;
+    info->showStats = showStats;
+    output_->markCommandLine(info);
+    return info;
 }
 
 void ConsoleWidget::echoStandardInput(const QString& text)
@@ -471,6 +591,7 @@ void ConsoleWidget::updateRunningUi()
 void ConsoleWidget::retranslate()
 {
     stopButton_->setToolTip(tr("Stop the command (Ctrl+C); the second click kills it"));
+    clearButton_->setToolTip(tr("Clear the console (Ctrl+L, or the command clear)"));
     updateRunningUi();
 }
 
