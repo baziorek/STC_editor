@@ -11,8 +11,8 @@ class QMimeData;
 /// The one line of the console in which commands are typed: colored (see `ConsoleSyntaxHighlighter`),
 /// with the history of the commands (Up / Down).
 ///
-/// Enter emits `commandSubmitted()` and clears the line. Ctrl+C (without a selection), Ctrl+L, Ctrl+D (in an empty line)
-/// and Escape are only reported - the owner decides what they mean.
+/// Enter emits `commandSubmitted()` and clears the line. Ctrl+C (without a selection), Ctrl+L, Ctrl+D (in an empty line),
+/// Ctrl+Up / Ctrl+Down and Escape are only reported - the owner decides what they mean.
 class ConsoleInputEdit : public QPlainTextEdit
 {
     Q_OBJECT
@@ -35,6 +35,9 @@ signals:
     void clearOutputRequested();
     void endOfInputRequested();
     void leaveRequested();
+    /// Ctrl+Up / Ctrl+Down: the output scrolls to the previous / next command
+    void previousCommandRequested();
+    void nextCommandRequested();
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;

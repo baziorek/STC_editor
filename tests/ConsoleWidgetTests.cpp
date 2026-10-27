@@ -793,6 +793,239 @@ TEST_F(ConsoleWidgetDoubleClickTest, ThingWhichDoesNotExistIsJustSelected)
     EXPECT_EQ(opened.count(), 0);
 }
 
+// ------------------------------------------------------------------ the margin: numbers of the lines
+
+namespace
+{
+/// The numbers which the margin shows at the lines of the output, from the top (the lines without a number are left out)
+QList<int> shownLineNumbers(ConsoleWidget& console)
+{
+    ConsoleOutputEdit* output = outputOf(console);
+    QList<int> numbers;
+    for (QTextBlock block = output->document()->begin(); block.isValid(); block = block.next())
+    {
+        if (const int number = output->lineNumberOf(block))
+            numbers << number;
+    }
+    return numbers;
+}
+} // namespace
+
+TEST_F(ConsoleWidgetTest, LinesOfTheOutputAreNumberedOneByOne)
+{
+    run(console, "seq 1 4");
+    EXPECT_EQ(shownLineNumbers(console), (QList<int>{1, 2, 3, 4}));
+}
+
+TEST_F(ConsoleWidgetTest, NumbersStartAgainInEveryCommand)
+{
+    run(console, "seq 1 3");
+    run(console, "seq 1 2");
+    EXPECT_EQ(shownLineNumbers(console), (QList<int>{1, 2, 3, 1, 2}));
+}
+
+TEST_F(ConsoleWidgetTest, ALineWhichComesInPiecesIsOneLine)
+{
+    console.runCommand("printf 'a'; sleep 0.3; printf 'b\\nc\\n'");
+    ASSERT_TRUE(waitUntilRunning(console));
+    ASSERT_TRUE(waitUntilIdle(console));
+    EXPECT_EQ(shownLineNumbers(console), (QList<int>{1, 2}));
+    EXPECT_TRUE(resultOf(console).contains("ab\nc"));
+}
+
+TEST_F(ConsoleWidgetTest, RewrittenLineKeepsItsNumber)
+{
+    run(console, R"(printf 'x 10%%\rx 90%%\ndone\n')");
+    EXPECT_EQ(shownLineNumbers(console), (QList<int>{1, 2}));
+}
+
+TEST_F(ConsoleWidgetTest, StatusLineHasNoNumber)
+{
+    run(console, "echo a; exit 2");
+    EXPECT_EQ(shownLineNumbers(console), (QList<int>{1}));
+    EXPECT_TRUE(console.outputText().contains("[exit code 2]"));
+}
+
+TEST_F(ConsoleWidgetTest, TypedLineSentToTheProgramHasNoNumberAndIsNotCounted)
+{
+    console.runCommand("echo first; read line; echo got:$line");
+    ASSERT_TRUE(waitUntilRunning(console));
+    QTest::qWait(300);
+    console.runCommand("typed-text");
+    ASSERT_TRUE(waitUntilIdle(console));
+    EXPECT_EQ(shownLineNumbers(console), (QList<int>{1, 2})); // "first", "got:typed-text"
+}
+
+TEST_F(ConsoleWidgetTest, CommandWithoutOutputHasNoNumbers)
+{
+    run(console, "true");
+    EXPECT_TRUE(shownLineNumbers(console).isEmpty());
+}
+
+// ------------------------------------------------------------------ jumps between the commands
+
+class ConsoleWidgetJumpTest : public ConsoleWidgetTest
+{
+protected:
+    ConsoleWidgetJumpTest()
+    {
+        console.resize(600, 260);
+        console.show();
+        QCoreApplication::processEvents();
+        run(console, "echo c1; seq 1 60");
+        run(console, "echo c2; seq 1 60");
+        run(console, "echo c3; seq 1 60");
+        QCoreApplication::processEvents();
+    }
+
+    QString topLine()
+    {
+        return outputOf(console)->topVisibleBlock().text();
+    }
+
+    void ctrl(Qt::Key key)
+    {
+        QTest::keyClick(inputOf(console), key, Qt::ControlModifier);
+        QCoreApplication::processEvents();
+    }
+};
+
+TEST_F(ConsoleWidgetJumpTest, ControlUpGoesBackThroughTheCommands)
+{
+    ctrl(Qt::Key_Up);
+    EXPECT_TRUE(topLine().endsWith("echo c3; seq 1 60")) << qPrintable(topLine());
+    ctrl(Qt::Key_Up);
+    EXPECT_TRUE(topLine().endsWith("echo c2; seq 1 60")) << qPrintable(topLine());
+    ctrl(Qt::Key_Up);
+    EXPECT_TRUE(topLine().endsWith("echo c1; seq 1 60")) << qPrintable(topLine());
+    ctrl(Qt::Key_Up); // the first one: stays
+    EXPECT_TRUE(topLine().endsWith("echo c1; seq 1 60")) << qPrintable(topLine());
+}
+
+TEST_F(ConsoleWidgetJumpTest, ControlDownGoesForwardAndThenToTheEnd)
+{
+    for (int i = 0; i < 3; ++i)
+        ctrl(Qt::Key_Up);
+    ASSERT_TRUE(topLine().endsWith("echo c1; seq 1 60"));
+
+    ctrl(Qt::Key_Down);
+    EXPECT_TRUE(topLine().endsWith("echo c2; seq 1 60")) << qPrintable(topLine());
+    ctrl(Qt::Key_Down);
+    EXPECT_TRUE(topLine().endsWith("echo c3; seq 1 60")) << qPrintable(topLine());
+
+    QScrollBar* bar = outputOf(console)->verticalScrollBar();
+    ctrl(Qt::Key_Down);
+    EXPECT_EQ(bar->value(), bar->maximum());
+}
+
+TEST_F(ConsoleWidgetJumpTest, ControlUpFromTheMiddleOfAnOutputGoesToItsCommand)
+{
+    outputOf(console)->verticalScrollBar()->setValue(outputOf(console)->verticalScrollBar()->maximum() / 2);
+    QCoreApplication::processEvents();
+    ctrl(Qt::Key_Up);
+    EXPECT_TRUE(topLine().contains("echo c")) << qPrintable(topLine());
+    EXPECT_EQ(outputOf(console)->lineNumberOf(outputOf(console)->topVisibleBlock()), 0);
+}
+
+TEST_F(ConsoleWidgetJumpTest, PlainUpStillWalksThroughTheHistory)
+{
+    QTest::keyClick(inputOf(console), Qt::Key_Up);
+    EXPECT_EQ(inputOf(console)->toPlainText(), "echo c3; seq 1 60");
+}
+
+// ------------------------------------------------------------------ selecting the output from the margin
+
+class ConsoleWidgetMarginClickTest : public ConsoleWidgetTest
+{
+protected:
+    ConsoleWidgetMarginClickTest()
+    {
+        console.resize(600, 400);
+        console.show();
+        QCoreApplication::processEvents();
+        run(console, "echo only-first; seq 1 3");
+        run(console, "echo second");
+    }
+
+    /// The y of a line (viewport and margin start at the same height)
+    int yOfLine(const QString& line)
+    {
+        ConsoleOutputEdit* output = outputOf(console);
+        for (QTextBlock block = output->document()->begin(); block.isValid(); block = block.next())
+        {
+            if (block.text() == line || (block.text().endsWith(line) && block.text().contains(" $ ")))
+            {
+                QTextCursor cursor(block);
+                return output->cursorRect(cursor).center().y();
+            }
+        }
+        return -1;
+    }
+
+    void doubleClickMarginAt(int y)
+    {
+        QTest::mouseDClick(outputOf(console)->marginWidget(), Qt::LeftButton, Qt::NoModifier, QPoint(5, y));
+    }
+
+    QString selection()
+    {
+        return outputOf(console)->textCursor().selectedText().replace(QChar(0x2029), QLatin1Char('\n'));
+    }
+};
+
+TEST_F(ConsoleWidgetMarginClickTest, DoubleClickOnTheCommandSelectsItsWholeOutput)
+{
+    const int y = yOfLine("echo only-first; seq 1 3");
+    ASSERT_GE(y, 0);
+    doubleClickMarginAt(y);
+    EXPECT_EQ(selection(), "only-first\n1\n2\n3");
+}
+
+TEST_F(ConsoleWidgetMarginClickTest, DoubleClickOnALineOfTheOutputSelectsTheOutputOfItsCommand)
+{
+    const int y = yOfLine("2");
+    ASSERT_GE(y, 0);
+    doubleClickMarginAt(y);
+    EXPECT_EQ(selection(), "only-first\n1\n2\n3");
+}
+
+TEST_F(ConsoleWidgetMarginClickTest, TheLastCommandDoesNotTakeTheEmptyLineWhichWaitsForText)
+{
+    const int y = yOfLine("echo second");
+    ASSERT_GE(y, 0);
+    doubleClickMarginAt(y);
+    EXPECT_EQ(selection(), "second");
+}
+
+TEST_F(ConsoleWidgetMarginClickTest, TripleClickAddsTheCommandLine)
+{
+    const int y = yOfLine("echo only-first; seq 1 3");
+    ASSERT_GE(y, 0);
+    doubleClickMarginAt(y);
+    QTest::mouseClick(outputOf(console)->marginWidget(), Qt::LeftButton, Qt::NoModifier, QPoint(5, y));
+
+    const QString text = selection();
+    EXPECT_TRUE(text.contains(" $ echo only-first; seq 1 3\nonly-first\n1\n2\n3")) << qPrintable(text);
+    EXPECT_FALSE(text.contains("second"));
+}
+
+TEST_F(ConsoleWidgetMarginClickTest, ClickBelowTheTextSelectsNothing)
+{
+    outputOf(console)->moveCursor(QTextCursor::Start);
+    doubleClickMarginAt(outputOf(console)->height() - 5);
+    EXPECT_FALSE(outputOf(console)->textCursor().hasSelection());
+}
+
+TEST_F(ConsoleWidgetMarginClickTest, CommandWithoutOutputSelectsNothing)
+{
+    run(console, "true");
+    const int y = yOfLine("true");
+    ASSERT_GE(y, 0);
+    outputOf(console)->moveCursor(QTextCursor::Start);
+    doubleClickMarginAt(y);
+    EXPECT_FALSE(outputOf(console)->textCursor().hasSelection());
+}
+
 int main(int argc, char** argv)
 {
     qputenv("QT_QPA_PLATFORM", "offscreen");

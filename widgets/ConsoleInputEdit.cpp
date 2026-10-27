@@ -109,12 +109,22 @@ void ConsoleInputEdit::keyPressEvent(QKeyEvent* event)
             navigateHistory(-1);
             return;
         }
+        if (control)
+        {
+            emit previousCommandRequested();
+            return;
+        }
         break;
 
     case Qt::Key_Down:
         if (noModifiers)
         {
             navigateHistory(+1);
+            return;
+        }
+        if (control)
+        {
+            emit nextCommandRequested();
             return;
         }
         break;

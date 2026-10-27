@@ -116,6 +116,8 @@ ConsoleWidget::ConsoleWidget(QWidget* parent) : QWidget(parent), workingDirector
             process_->closeWriteChannel();
     });
     connect(input_, &ConsoleInputEdit::leaveRequested, this, &ConsoleWidget::leaveRequested);
+    connect(input_, &ConsoleInputEdit::previousCommandRequested, output_, &ConsoleOutputEdit::jumpToPreviousCommand);
+    connect(input_, &ConsoleInputEdit::nextCommandRequested, output_, &ConsoleOutputEdit::jumpToNextCommand);
     connect(stopButton_, &QToolButton::clicked, this, &ConsoleWidget::interruptCommand);
     connect(clearButton_, &QToolButton::clicked, this, &ConsoleWidget::clearOutput);
     connect(output_, &ConsoleOutputEdit::clearRequested, this, &ConsoleWidget::clearOutput);
@@ -456,6 +458,7 @@ void ConsoleWidget::appendOutput(QString text)
     QScrollBar* bar = output_->verticalScrollBar();
     const bool followOutput = bar->value() >= bar->maximum() - 2;
 
+    const QTextBlock firstNewBlock = output_->document()->lastBlock(); // the lines which come now get the next numbers
     const QStringList parts = text.split(QLatin1Char('\r'));
     for (qsizetype i = 0; i < parts.size(); ++i)
     {
@@ -465,6 +468,8 @@ void ConsoleWidget::appendOutput(QString text)
             writer_.append(output_, parts[i]);
     }
 
+    if (currentCommand_)
+        output_->numberOutputLines(firstNewBlock, *currentCommand_);
     colorizeListing(/*includeLastLine=*/false);
     output_->refreshMargin();
 
@@ -524,6 +529,7 @@ void ConsoleWidget::appendStatus(const QString& text, bool error)
     QTextCharFormat format;
     format.setForeground(error ? QColor(darkBackground() ? 0xff6b68 : 0xc62828) : QColor(darkBackground() ? 0x8a8a8a : 0x757575));
     insertText(text + QLatin1Char('\n'), format);
+    output_->markAnnotationLine();
 }
 
 std::shared_ptr<ConsoleCommandInfo> ConsoleWidget::echoCommand(const QString& line, bool showStats)
@@ -553,6 +559,7 @@ void ConsoleWidget::echoStandardInput(const QString& text)
     format.setFontItalic(true);
     format.setForeground(QColor(darkBackground() ? 0x8a8a8a : 0x757575));
     insertText(text + QLatin1Char('\n'), format);
+    output_->markAnnotationLine();
 }
 
 // ------------------------------------------------------------------ the prompt
@@ -584,7 +591,7 @@ void ConsoleWidget::updateRunningUi()
     const bool running = process_ != nullptr;
     stopButton_->setVisible(running);
     input_->setPlaceholderText(running ? tr("Typed text goes to the program (Ctrl+D ends the input, Ctrl+C stops the program)")
-                                       : tr("Type a command (Enter runs it, Ctrl+C stops it, Ctrl+L clears, Esc goes back to the editor)"));
+                                       : tr("Type a command (Enter runs it, Ctrl+C stops it, Ctrl+L clears, Ctrl+Up/Down jumps between commands, Esc goes back to the editor)"));
     updatePrompt();
 }
 
