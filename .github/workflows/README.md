@@ -1,6 +1,6 @@
 # CI: AppImage Packaging for STC_editor
 
-This repository uses GitHub Actions to automatically build and package `STC_editor` as an AppImage on every push to the `master` branch.
+This repository uses GitHub Actions to automatically build and package `STC_editor` as an AppImage on every push to any branch (publishing to a GitHub Release happens only for the `release` event).
 
 ---
 

@@ -1,12 +1,17 @@
-name: Test STC_editor on Linux
+name: Test STC_editor on Linux [on push to any branch and PRs to master]
 
 on:
   push:
     branches:
-      - master
+      - '**'   # every branch (tags are covered by the `release` event)
   pull_request:
     branches:
       - master
+
+# A newer push to the same branch/PR cancels the build still running for it (saves runner minutes).
+# concurrency:
+#   group: ${{ github.workflow }}-${{ github.ref }}
+#   cancel-in-progress: true
 
 jobs:
   test:
