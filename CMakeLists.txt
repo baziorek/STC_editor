@@ -162,8 +162,10 @@ endif()
 # Directories NOT scanned (third-party code, tests with their own explicit target lists,
 # build output, assets): see _stc_excluded_dir_regex. A new top-level directory with sources
 # is picked up automatically, since the list of top-level directories is itself globbed.
+# `vcpkg*` matters in CI: the Windows workflow clones vcpkg INTO the workspace (./vcpkg), and its
+# buildtrees/ contain thousands of foreign .cpp files (e.g. ICU's os400/cxxfilt.cpp -> demangle.h).
 set(_stc_excluded_dir_regex
-    "^(libs|tests|docs|_docs|screens|resources|dictionaries|translations|qt-runtime|cmake|build.*|cmake-build.*|\\..*)$")
+    "^(libs|tests|docs|_docs|screens|resources|dictionaries|translations|qt-runtime|cmake|vcpkg.*|build.*|cmake-build.*|\\..*)$")
 
 function(stc_collect_sources out_var)
     set(_patterns "*.cpp" "*.h" "*.ui")

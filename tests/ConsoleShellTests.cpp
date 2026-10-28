@@ -21,7 +21,7 @@ QStringList describe(const QString& line)
     static const char* const names[] = {"cmd", "assign", "arg", "opt", "str", "var", "op", "comment"};
     QStringList result;
     for (const Token& token : ConsoleShell::tokenize(line))
-        result << QStringLiteral("%1:%2").arg(QLatin1StringView(names[static_cast<int>(token.kind)]), line.mid(token.start, token.length));
+        result << QStringLiteral("%1:%2").arg(QLatin1String(names[static_cast<int>(token.kind)]), line.mid(token.start, token.length));
     return result;
 }
 

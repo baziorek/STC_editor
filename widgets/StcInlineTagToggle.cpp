@@ -38,8 +38,8 @@ void insertAndMoveBack(QPlainTextEdit* editor, const QString& text, int back)
 void insertLink(QPlainTextEdit* editor)
 {
     static const QRegularExpression urlRe(R"((https?://|www\.)\S+)");
-    constexpr QLatin1StringView begin{R"([a href=")"};
-    constexpr QLatin1StringView end{R"("])"};
+    constexpr QLatin1String begin{R"([a href=")"};
+    constexpr QLatin1String end{R"("])"};
 
     QString selected = editor->textCursor().selectedText().trimmed();
     selected.replace(QChar::ParagraphSeparator, u' ');
@@ -75,9 +75,9 @@ void insertLink(QPlainTextEdit* editor)
 void insertImage(QPlainTextEdit* editor)
 {
     static const QStringList imageExtensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".svg", ".avif", ".tiff"};
-    constexpr QLatin1StringView begin{R"([img src=")"};
-    constexpr QLatin1StringView end{R"("])"};
-    constexpr QLatin1StringView description{R"(" opis=")"};
+    constexpr QLatin1String begin{R"([img src=")"};
+    constexpr QLatin1String end{R"("])"};
+    constexpr QLatin1String description{R"(" opis=")"};
 
     QString selected = editor->textCursor().selectedText().trimmed();
     selected.replace(QChar::ParagraphSeparator, u' ');

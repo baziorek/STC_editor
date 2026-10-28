@@ -1,11 +1,16 @@
-name: Build STC_editor for Windows (zip format)
+name: Build STC_editor for Windows (zip format) [on push to any branch and release]
 
 on:
   push:
     branches:
-      - master
+      - '**'   # every branch (tags are covered by the `release` event)
   release:
     types: [created]
+
+# A newer push to the same branch/PR cancels the build still running for it (saves runner minutes).
+# concurrency:
+#   group: ${{ github.workflow }}-${{ github.ref }}
+#   cancel-in-progress: true
 
 jobs:
   build-windows:
