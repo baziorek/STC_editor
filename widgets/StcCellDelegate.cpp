@@ -11,8 +11,8 @@
 
 namespace
 {
-constexpr QLatin1StringView RUN_OPEN{"[run]"};
-constexpr QLatin1StringView RUN_CLOSE{"[/run]"};
+constexpr QLatin1String RUN_OPEN{"[run]"};
+constexpr QLatin1String RUN_CLOSE{"[/run]"};
 constexpr const char* FORMATTED_PROPERTY = "stcFormatted";
 constexpr int MAX_CACHED_DOCUMENTS = 256;
 

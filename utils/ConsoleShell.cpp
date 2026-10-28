@@ -7,12 +7,22 @@
 #include <QSet>
 #include <QStandardPaths>
 #include <QStringView>
+#include <initializer_list>
 
 namespace ConsoleShell
 {
 namespace
 {
-using namespace Qt::StringLiterals;
+/// A set of QStrings from plain literals. (The `u"..."_s` literals of Qt::StringLiterals need Qt 6.4,
+/// while Ubuntu 22.04 - the CI of the Linux build - has Qt 6.2.)
+QSet<QString> wordSet(std::initializer_list<const char*> words)
+{
+    QSet<QString> set;
+    set.reserve(static_cast<qsizetype>(words.size()));
+    for (const char* word : words)
+        set.insert(QString::fromLatin1(word));
+    return set;
+}
 
 #ifdef Q_OS_WIN
 constexpr bool kBackslashEscapes = false; // `C:\dir\file`
@@ -96,21 +106,21 @@ bool isAssignment(QStringView word)
 /// Words after which the next word is a command again (`sudo make`, `if test ...`, `time ls`).
 bool keepsCommandPosition(QStringView word)
 {
-    static const QSet<QString> prefixes{u"if"_s, u"then"_s, u"else"_s, u"elif"_s, u"do"_s, u"while"_s, u"until"_s,
-                                        u"!"_s,  u"time"_s, u"sudo"_s, u"exec"_s, u"nohup"_s, u"command"_s};
+    static const QSet<QString> prefixes =
+        wordSet({"if", "then", "else", "elif", "do", "while", "until", "!", "time", "sudo", "exec", "nohup", "command"});
     return prefixes.contains(word.toString());
 }
 
 /// Words handled by the shell itself (they are not programs on the disk, or not always).
 bool isShellBuiltin(const QString& word)
 {
-    static const QSet<QString> builtins{
-        u"cd"_s,    u"clear"_s, u"cls"_s,   u"echo"_s,    u"export"_s, u"unset"_s,  u"source"_s, u"."_s,
-        u"alias"_s, u"set"_s,   u"read"_s,  u"pwd"_s,     u"exit"_s,   u"exec"_s,   u"eval"_s,    u"type"_s,
-        u"test"_s,  u"["_s,     u"if"_s,    u"then"_s,     u"else"_s,   u"elif"_s,   u"fi"_s,      u"for"_s,
-        u"in"_s,    u"do"_s,    u"done"_s,  u"while"_s,    u"until"_s,  u"case"_s,   u"esac"_s,    u"time"_s,
-        u"wait"_s,  u"ulimit"_s, u"umask"_s, u"history"_s, u"command"_s, u"dir"_s,   u"copy"_s,    u"del"_s,
-        u"move"_s,  u"ren"_s,   u"mkdir"_s, u"rmdir"_s,   u"md"_s,     u"rd"_s,     u"chdir"_s};
+    static const QSet<QString> builtins = wordSet({
+        "cd",    "clear", "cls",   "echo",    "export", "unset",  "source", ".",
+        "alias", "set",   "read",  "pwd",     "exit",   "exec",   "eval",    "type",
+        "test",  "[",     "if",    "then",     "else",   "elif",   "fi",      "for",
+        "in",    "do",    "done",  "while",    "until",  "case",   "esac",    "time",
+        "wait",  "ulimit", "umask", "history", "command", "dir",   "copy",    "del",
+        "move",  "ren",   "mkdir", "rmdir",   "md",     "rd",     "chdir"});
     return builtins.contains(word);
 }
 
@@ -436,7 +446,7 @@ QString formatDuration(qint64 milliseconds)
 
 bool isListingCommand(const QString& line)
 {
-    static const QSet<QString> programs{u"ls"_s, u"dir"_s, u"vdir"_s, u"find"_s, u"fd"_s, u"fdfind"_s, u"eza"_s, u"exa"_s};
+    static const QSet<QString> programs = wordSet({"ls", "dir", "vdir", "find", "fd", "fdfind", "eza", "exa"});
     for (const Token& token : tokenize(line))
     {
         if (token.kind != TokenKind::Command)
