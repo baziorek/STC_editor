@@ -237,6 +237,7 @@ void STCSyntaxHighlighter::highlightBlock(const QString &text)
     _languageStateBits = 0;          // set only by the code blocks which do not end on this line
 
     const int prev = previousBlockState();  // save before overwriting
+    _stateThisLine = prev == STATE_NONE ? 0 : prev;
     DEBUG(true, "----------") << prev << text;
 
     // --- 1. DIV (outermost) ---
@@ -271,9 +272,9 @@ void STCSyntaxHighlighter::highlightBlock(const QString &text)
     // --- 7. Spellcheck for untagged plain text ---
     highlightPlainTextContent(text);
 
-    bool anyChange = divChanges | headersChanges | pktOrCsvChanges | codeChanges | styleChanges | hrefImgChanges;
-    if (!anyChange)
-        setCurrentBlockState(prev);
+    // Whatever was opened or closed in this line is in `_stateThisLine`; without any change it is the previous state.
+    // (Not setting it when "something changed" left the state of an earlier highlighting of the line in place.)
+    setCurrentBlockState(_stateThisLine == 0 ? STATE_NONE : _stateThisLine);
 
     mergeLanguageStateIntoBlockState();
 }
@@ -410,11 +411,12 @@ bool STCSyntaxHighlighter::highlightDivBlock(const QString &text)
         {
             QTextCharFormat fmt;
             QString closingTag = "[/div]";
-            if (prevState == DIV_CLASS_TIP)
+            // other flags can be there too (a multi-line block of code or csv inside of the div)
+            if (prevState & DIV_CLASS_TIP)
                 fmt = styledTagsMap.value("tip").format;
-            else if (prevState == DIV_CLASS_UWAGA)
+            else if (prevState & DIV_CLASS_UWAGA)
                 fmt = styledTagsMap.value("warning").format;
-            else if (prevState == DIV_CLASS_CYTAT)
+            else if (prevState & DIV_CLASS_CYTAT)
             {
                 fmt = styledTagsMap.value("cytat").format;
                 closingTag = "[/cytat]";
@@ -439,11 +441,10 @@ bool STCSyntaxHighlighter::highlightDivBlock(const QString &text)
 
                 // Format closing tag
                 setFormat(closeStart, closeMatch.capturedLength(0), tagFmt);
-                currentBlockStateWithoutFlag(prevState);
+                currentBlockStateWithoutFlag(prevState & (DIV_CLASS_TIP | DIV_CLASS_UWAGA | DIV_CLASS_PLAIN | DIV_CLASS_CYTAT)); // only the div, not what is open inside of it
             } else {
                 setFormat(0, text.length(), fmt);
                 applySpellcheckToTextRange(text, 0, text.length(), fmt);
-                setCurrentBlockState(prevState);
             }
 
             return true;
@@ -506,7 +507,7 @@ bool STCSyntaxHighlighter::highlightDivBlock(const QString &text)
 
             // Format closing tag
             setFormat(closeMatch.capturedStart(0), closeMatch.capturedLength(0), tagFmt);
-            currentBlockStateWithFlag(prevState);
+            // a block closed in the same line leaves the state as it was
         }
         else
         {
@@ -665,33 +666,16 @@ bool STCSyntaxHighlighter::highlightPktOrCsv(const QString& text)
 
 void STCSyntaxHighlighter::currentBlockStateWithoutFlag(int flag, std::source_location location)
 {
-    const auto previous = previousBlockState();
-    if (previous == flag)
-    {
-        DEBUG(true, "\t-") << "\t usuwamy poprzednia flage: " << flag << ". linia:" << location.line();
-        setCurrentBlockState(STATE_NONE);
-    }
-    else
-    {
-        const auto newState = previous & ~flag;
-        DEBUG(true, "\t-") << "\t usuwamy ze stanu " << previous << " flage: " << flag << ", nowy stan: " << newState << ". linia:" << location.line();
-        setCurrentBlockState(newState);
-    }
+    _stateThisLine &= ~flag;
+    DEBUG(true, "\t-") << "\t usuwamy flage: " << flag << ", nowy stan: " << _stateThisLine << ". linia:" << location.line();
+    setCurrentBlockState(_stateThisLine == 0 ? STATE_NONE : _stateThisLine);
 }
+
 void STCSyntaxHighlighter::currentBlockStateWithFlag(int flag, std::source_location location)
 {
-    const auto previous = previousBlockState();
-    if (STATE_NONE == previous)
-    {
-        DEBUG(true, "\t+")  << "\t dodaje stan flage: " << flag << ". linia:" << location.line();
-        setCurrentBlockState(flag);
-    }
-    else
-    {
-        const auto newState = previous | flag;
-        DEBUG(true, "\t+") << "\t dodaje do stanu " << previous << " flage: " << flag << ", nowy stan: " << newState << ". linia:" << location.line();
-        setCurrentBlockState(newState);
-    }
+    _stateThisLine |= flag;
+    DEBUG(true, "\t+") << "\t dodaje flage: " << flag << ", nowy stan: " << _stateThisLine << ". linia:" << location.line();
+    setCurrentBlockState(_stateThisLine);
 }
 
 bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)

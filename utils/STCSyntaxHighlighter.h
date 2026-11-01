@@ -128,4 +128,10 @@ private:
 
     SyntaxMode _mode = SyntaxMode::Stc;
     int _languageStateBits = 0; // what the code highlighting of this line wants the next line to know
+
+    /// The state of the line being highlighted: starts as the state of the previous line and every construct which
+    /// opens or closes in this line adds or removes its own flag (currentBlockStateWithFlag / ...WithoutFlag). A line can
+    /// open and close several constructs (`[/cpp][/run];[run][code]print(1)`), so each of them has to build on the
+    /// result of the others, not on the previous line.
+    int _stateThisLine = 0;
 };

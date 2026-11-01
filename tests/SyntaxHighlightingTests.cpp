@@ -856,6 +856,109 @@ TEST(PlainTextMode, PartsOfAddressesAreNotSpellChecked)
         EXPECT_FALSE(isMisspelledFormat(formatAt(block, column))) << "column " << column << " '" << text[column].toLatin1() << "'";
 }
 
+// A line can close one construct and open another (`[/cpp][/run];[run][code src="python"]print(1)`): the flag of each
+// has to be added or removed in the state which the line already has, not in the state of the previous line.
+namespace
+{
+constexpr int kStateCsv = 0x100;
+constexpr int kStateCode = 0x800;
+constexpr int kStateCodeCpp = 0x1000;
+constexpr int kStateDivTip = 0x10;
+} // namespace
+
+TEST(HighlighterStates, ClosingOneBlockOfCodeAndOpeningAnotherInTheSameLine)
+{
+    HighlightedDocument d("[cpp]\n"                               // 0
+                          "int a;\n"                              // 1
+                          "[/cpp][code src=\"python\"]print(1)\n"  // 2
+                          "x = 2\n"                               // 3
+                          "[/code]\n"                             // 4
+                          "plain");                               // 5
+
+    EXPECT_EQ(blockAt(d.document, 1).userState(), kStateCodeCpp);
+    EXPECT_EQ(blockAt(d.document, 2).userState(), kStateCode) << "[cpp] is closed, [code] is open";
+    EXPECT_EQ(blockAt(d.document, 3).userState(), kStateCode);
+    EXPECT_EQ(blockAt(d.document, 4).userState(), -1);
+    EXPECT_EQ(blockAt(d.document, 5).userState(), -1);
+}
+
+TEST(HighlighterStates, CsvWithBlocksOfCodeClosesAtItsEnd)
+{
+    HighlightedDocument d("[csv extended header]C++;python3;\n"      // 0
+                          "[run][cpp]\n"                             // 1
+                          "int main() {}\n"                          // 2
+                          "[/cpp][/run];[run][code src=\"python\"]print(1)\n" // 3
+                          "# comment\n"                              // 4
+                          "[/code][/run];\n"                         // 5
+                          "[/csv]\n"                                 // 6
+                          "\n"                                       // 7
+                          "[h3]Header[/h3]\n"                        // 8
+                          "plain");                                  // 9
+
+    EXPECT_EQ(blockAt(d.document, 0).userState(), kStateCsv);
+    EXPECT_EQ(blockAt(d.document, 2).userState(), kStateCsv | kStateCodeCpp);
+    EXPECT_EQ(blockAt(d.document, 3).userState(), kStateCsv | kStateCode);
+    EXPECT_EQ(blockAt(d.document, 4).userState(), kStateCsv | kStateCode);
+    EXPECT_EQ(blockAt(d.document, 5).userState(), kStateCsv) << "[/code] closes the code, the csv goes on";
+    EXPECT_EQ(blockAt(d.document, 6).userState(), -1) << "[/csv] closes the csv";
+    EXPECT_EQ(blockAt(d.document, 8).userState(), -1);
+
+    // the header after the table looks like a header which is alone in a document
+    HighlightedDocument alone("[h3]Header[/h3]");
+    EXPECT_EQ(formatAt(blockAt(d.document, 8), 6).foreground().color(), formatAt(blockAt(alone.document, 0), 6).foreground().color());
+    EXPECT_EQ(formatAt(blockAt(d.document, 8), 6).fontPointSize(), formatAt(blockAt(alone.document, 0), 6).fontPointSize());
+}
+
+TEST(HighlighterStates, EditingTheEndOfTheCsvFixesTheLinesAfterIt)
+{
+    HighlightedDocument d("[csv]\n"
+                          "[run][cpp]\n"
+                          "x\n"
+                          "[/cpp][/run];[run][code]y\n"
+                          "[/code][/run];\n"
+                          "[/csv]\n"
+                          "plain");
+    EXPECT_EQ(blockAt(d.document, 6).userState(), -1);
+
+    // the table gets longer: the state of the next lines has to follow
+    QTextCursor cursor(&d.document);
+    cursor.setPosition(blockAt(d.document, 4).position());
+    cursor.insertText("more;\n");
+    EXPECT_EQ(blockAt(d.document, 5).userState(), kStateCsv);
+    EXPECT_EQ(blockAt(d.document, 7).userState(), -1);
+}
+
+TEST(HighlighterStates, BlockOfCodeInsideOfAMultiLineDivDoesNotEndTheDiv)
+{
+    HighlightedDocument d("[div class=\"tip\"]\n"   // 0
+                          "text\n"                 // 1
+                          "[cpp]\n"                // 2
+                          "int x;\n"               // 3
+                          "[/cpp]\n"               // 4
+                          "more\n"                 // 5
+                          "[/div]\n"               // 6
+                          "plain");                // 7
+
+    EXPECT_EQ(blockAt(d.document, 3).userState(), kStateDivTip | kStateCodeCpp);
+    EXPECT_EQ(blockAt(d.document, 5).userState(), kStateDivTip);
+    EXPECT_EQ(formatAt(blockAt(d.document, 5), 0).background().color(), formatAt(blockAt(d.document, 1), 0).background().color())
+        << "the line after the code is still in the tip";
+    EXPECT_EQ(blockAt(d.document, 6).userState(), -1);
+    EXPECT_EQ(blockAt(d.document, 7).userState(), -1);
+}
+
+TEST(HighlighterStates, DivInOneLineLeavesTheStateAlone)
+{
+    HighlightedDocument d("[div]one line[/div]\n"
+                          "[csv]\n"
+                          "[div]one line[/div]\n"
+                          "[/csv]\n"
+                          "plain");
+    EXPECT_EQ(blockAt(d.document, 0).userState(), -1);
+    EXPECT_EQ(blockAt(d.document, 2).userState(), kStateCsv);
+    EXPECT_EQ(blockAt(d.document, 3).userState(), -1);
+}
+
 TEST(PlainTextMode, StcModeKeepsItsOwnBehavior)
 {
     // the same text in the STC mode: no link formatting is added there
