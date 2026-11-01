@@ -77,6 +77,7 @@
 #include "CodeEditor.h"
 #include "utils/SyntaxModeMemory.h"
 #include "utils/StcTagRegions.h"
+#include "utils/StcTagScanner.h"
 #include "widgets/LineNumberArea.h"
 #include "utils/EditHistory.h"
 #include "utils/ExactText.h"
@@ -520,6 +521,8 @@ void CodeEditor::connectSignalsWithSlots()
     connect(this, &CodeEditor::updateRequest, this, &CodeEditor::updateLineNumberArea);
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::totalLinesCountChanged);
     connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::highlightCurrentLine);
+    connect(this, &QPlainTextEdit::selectionChanged, this, &CodeEditor::updateMatchingTagHighlight);
+    connect(this, &CodeEditor::syntaxModeChanged, this, &CodeEditor::updateMatchingTagHighlight);
     connect(verticalScrollBar(), &QScrollBar::valueChanged, this, &CodeEditor::onScrollChanged);
     connect(&fileWatcher, &QFileSystemWatcher::fileChanged, this, &CodeEditor::fileChanged);
 
@@ -2276,8 +2279,47 @@ void CodeEditor::highlightCurrentLine()
         selection.cursor.clearSelection();
         extraSelections.append(selection);
     }
+    extraSelections.append(matchingTagHighlight_);
 
     setExtraSelections(extraSelections);
+}
+
+void CodeEditor::updateMatchingTagHighlight()
+{
+    QList<QTextEdit::ExtraSelection> highlight;
+
+    const QTextCursor selection = textCursor();
+    constexpr int kLongestTagName = 64; // a long selection is not a name of a tag: no need to read the document
+    if (selection.hasSelection() && syntaxMode() == SyntaxMode::Stc &&
+        selection.selectionEnd() - selection.selectionStart() <= kLongestTagName)
+    {
+        const int start = selection.selectionStart();
+        const int end = selection.selectionEnd();
+
+        // Cheap guess before the document is read: a name follows `[` or `/`, a whole tag starts with `[`
+        const QChar before = start > 0 ? document()->characterAt(start - 1) : QChar();
+        const bool mayBeTag = before == QLatin1Char('[') || before == QLatin1Char('/') || document()->characterAt(start) == QLatin1Char('[');
+        if (mayBeTag)
+        {
+            if (const auto counterpart = StcTagScanner::matchingTag(toPlainText(), {start, end}))
+            {
+                QTextEdit::ExtraSelection other;
+                other.cursor = QTextCursor(document());
+                other.cursor.setPosition(counterpart->start);
+                other.cursor.setPosition(counterpart->end, QTextCursor::KeepAnchor);
+                other.format.setBackground(palette().color(QPalette::Highlight));
+                other.format.setForeground(palette().color(QPalette::HighlightedText));
+                highlight.append(other);
+            }
+        }
+    }
+
+    if (highlight.isEmpty() && matchingTagHighlight_.isEmpty())
+    {
+        return;
+    }
+    matchingTagHighlight_ = highlight;
+    highlightCurrentLine();
 }
 
 void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
@@ -3397,13 +3439,7 @@ void CodeEditor::handleCodeBlockDetectionOnChange(int position) // emit codeBloc
 
     const QString line = block.text();
 
-    static const QRegularExpression openTagRe(R"(\[(cpp|code|py|log)(\s+src\s*=\s*"[^"]*")?\])", QRegularExpression::CaseInsensitiveOption);
-    static const QRegularExpression closeTagRe(R"(\[/\s*(cpp|code|py|log)\s*\])", QRegularExpression::CaseInsensitiveOption);
-
-    bool lineHasOpen = openTagRe.match(line).hasMatch();
-    bool lineHasClose = closeTagRe.match(line).hasMatch();
-
-    if (lineHasOpen || lineHasClose)
+    if (StcTagScanner::containsVerbatimTag(line)) // an opening or a closing tag of a block of code
     {
         analizeEntireDocumentDetectingCodeBlocks();
     }
@@ -3421,7 +3457,7 @@ QVector<CodeBlock> CodeEditor::parseAllCodeBlocks()
     QVector<CodeBlock> result;
     QString text = toPlainText();
 
-    QRegularExpression tagRe(R"__(\[(cpp|code|py|log)(\s+src\s*=\s*"([^"]*)")?\](.*?)\[/\s*\1\s*\])__",
+    QRegularExpression tagRe(QStringLiteral(R"__(\[(%1)(\s+src\s*=\s*"([^"]*)")?\](.*?)\[/\s*\1\s*\])__").arg(StcTagScanner::verbatimTagsAlternation()),
                              QRegularExpression::DotMatchesEverythingOption | QRegularExpression::CaseInsensitiveOption | QRegularExpression::MultilineOption);
 
     QRegularExpressionMatchIterator it = tagRe.globalMatch(text);

@@ -1,4 +1,5 @@
 #include "PreviewSyncMap.h"
+#include "StcTagScanner.h"
 
 #include <QRegularExpression>
 #include <QSet>
@@ -41,10 +42,7 @@ constexpr int kFarDomWindow = 30000;
 /// How far (in characters of the preview) the source of a place is looked for, when the place itself has none
 constexpr int kNearestSourceCharWindow = 200;
 
-bool isVerbatimTag(const QString& name)
-{
-    return name == "cpp" || name == "code" || name == "py" || name == "log";
-}
+using StcTagScanner::isVerbatimTag;
 
 const QSet<QString>& knownTags()
 {

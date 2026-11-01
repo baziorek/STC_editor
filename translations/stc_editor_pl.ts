@@ -387,8 +387,8 @@ Czy chcesz wczytać go ponownie?</translation>
     </message>
     <message>
         <location filename="../CodeEditorFolding.cpp" line="1"/>
-        <source>Fold this section or block of code</source>
-        <translation>Zwiń tę sekcję lub blok kodu</translation>
+        <source>Fold this section or block</source>
+        <translation>Zwiń tę sekcję lub blok</translation>
     </message>
     <message>
         <location filename="../CodeEditorFolding.cpp" line="1"/>

@@ -3,20 +3,14 @@
 #include <QList>
 #include <QString>
 
+#include "StcTagScanner.h"
+
 /// Finding the text which the 4th, 5th... click of the left mouse button selects in the STC markup:
 ///  - the value of the attribute the click is in: `[a href="https://x.y" name="some text"]` -> `some text`,
 ///  - the text between the tags in which the click is: `[h1]Some title[/h1]` -> `Some title`.
 namespace StcTagRegions
 {
-/// Half-open range of the characters of the text: [start, end).
-struct Range
-{
-    int start = 0;
-    int end = 0;
-
-    int length() const { return end - start; }
-    bool operator==(const Range&) const = default;
-};
+using Range = StcTagScanner::Range; ///< half-open range of the characters of the text: [start, end)
 
 /// The regions which contain the cursor `position` (a position between characters, as in `QTextCursor`),
 /// from the innermost one to the outermost one: the value of the attribute (if the position is in one),

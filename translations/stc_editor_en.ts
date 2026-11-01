@@ -381,8 +381,8 @@ Do you want to reload it?</translation>
     </message>
     <message>
         <location filename="../CodeEditorFolding.cpp" line="1"/>
-        <source>Fold this section or block of code</source>
-        <translation>Fold this section or block of code</translation>
+        <source>Fold this section or block</source>
+        <translation>Fold this section or block</translation>
     </message>
     <message>
         <location filename="../CodeEditorFolding.cpp" line="1"/>

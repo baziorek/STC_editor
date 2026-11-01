@@ -372,6 +372,10 @@ protected:
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();
+    /// When the selection is the name of an opening tag (a double click on `h1` in `[h1]`) the name in the closing tag
+    /// is highlighted like a selection, and the other way round. Tags without a closing tag (`[a href=...]`, `[img ...]`)
+    /// and selections of anything else (an attribute, a word) highlight nothing; a new selection takes it off.
+    void updateMatchingTagHighlight();
     void updateLineNumberArea(const QRect &rect, int dy);
 
 private:
@@ -436,6 +440,8 @@ private:
     /// "Compile" in the menu of a code block: g++ for [cpp] and [code], syntax check and run for [py]
     void addCompileAction(QMenu* menu, const CodeBlock& codeOnlyBlock);
     QList<QTextEdit::ExtraSelection> persistentSearchHighlights;
+    /// The other tag of the pair when the selection is the name of a tag (set by updateMatchingTagHighlight())
+    QList<QTextEdit::ExtraSelection> matchingTagHighlight_;
 
     QFileSystemWatcher fileWatcher;
     QString lastTooltipImagePath; /// this variable is for image tool tips - to keep them visible longer

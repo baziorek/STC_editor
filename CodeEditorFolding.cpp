@@ -41,8 +41,8 @@ void CodeEditor::setupFolding()
         shortcut->setObjectName(description);
         connect(shortcut, &QShortcut::activated, this, slot);
     };
-    makeFoldShortcut(QKeySequence(Qt::ALT | Qt::Key_Left), &CodeEditor::foldAtCursor, "Fold the section / the block of code at the cursor");
-    makeFoldShortcut(QKeySequence(Qt::ALT | Qt::Key_Right), &CodeEditor::unfoldAtCursor, "Unfold the section / the block of code at the cursor");
+    makeFoldShortcut(QKeySequence(Qt::ALT | Qt::Key_Left), &CodeEditor::foldAtCursor, "Fold the section / the block at the cursor");
+    makeFoldShortcut(QKeySequence(Qt::ALT | Qt::Key_Right), &CodeEditor::unfoldAtCursor, "Unfold the section / the block at the cursor");
     makeFoldShortcut(QKeySequence(Qt::ALT | Qt::SHIFT | Qt::Key_Left), &CodeEditor::foldAll, "Fold everything");
     makeFoldShortcut(QKeySequence(Qt::ALT | Qt::SHIFT | Qt::Key_Right), &CodeEditor::unfoldAll, "Unfold everything");
 
@@ -508,7 +508,7 @@ void CodeEditor::addFoldingActions(QMenu* menu)
     }
     else if (innermostFoldableRegionAround(cursorLine) >= 0)
     {
-        submenu->addAction(tr("Fold this section or block of code"), this, &CodeEditor::foldAtCursor);
+        submenu->addAction(tr("Fold this section or block"), this, &CodeEditor::foldAtCursor);
     }
     submenu->addSeparator();
     submenu->addAction(tr("Fold everything"), this, &CodeEditor::foldAll);

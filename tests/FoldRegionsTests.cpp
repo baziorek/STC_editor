@@ -216,3 +216,81 @@ TEST(FoldRegions, RegionsAreSortedByTheirFirstLine)
     for (int i = 1; i < regions.size(); ++i)
         EXPECT_LT(regions[i - 1].startLine, regions[i].startLine);
 }
+
+TEST(FoldRegions, DivIsFoldableAlsoWithAttributes)
+{
+    const auto regions = findRegions(linesOf(
+        "text\n"                           // 0
+        "[div class=\"tip\"]\n"            // 1
+        "advice\n"                         // 2
+        "more advice\n"                    // 3
+        "[/div]\n"                         // 4
+        "[div]\n"                          // 5
+        "x\n"                              // 6
+        "[/div]"));                         // 7
+
+    ASSERT_EQ(regions.size(), 2);
+    EXPECT_EQ(regions[0].kind, Kind::Div);
+    EXPECT_EQ(regions[0].tag, "div");
+    EXPECT_EQ(regions[0].startLine, 1);
+    EXPECT_EQ(regions[0].endLine, 3);
+    EXPECT_EQ(regions[0].extentEndLine, 4);
+    EXPECT_EQ(regions[1].startLine, 5);
+    EXPECT_EQ(regions[1].endLine, 6);
+}
+
+TEST(FoldRegions, DivInOneLineOrWithoutClosingTagIsNotFoldable)
+{
+    EXPECT_TRUE(findRegions(linesOf("[div]text[/div]")).isEmpty());
+    EXPECT_TRUE(findRegions(linesOf("[div]\n[/div]")).isEmpty());
+    EXPECT_TRUE(findRegions(linesOf("[div]\ntext\nmore")).isEmpty());
+    EXPECT_TRUE(findRegions(linesOf("text\n[/div]\nmore")).isEmpty()); // a closing tag with nothing to close
+}
+
+TEST(FoldRegions, NestedDivsPairWithTheNearestClosingTag)
+{
+    const auto regions = findRegions(linesOf(
+        "[div]\n"          // 0
+        "a\n"              // 1
+        "[div]\n"          // 2
+        "b\n"              // 3
+        "[/div]\n"         // 4
+        "c\n"              // 5
+        "[/div]"));         // 6
+
+    ASSERT_EQ(regions.size(), 2);
+    EXPECT_EQ((std::pair{regions[0].startLine, regions[0].endLine}), (std::pair{0, 5})); // outer
+    EXPECT_EQ((std::pair{regions[1].startLine, regions[1].endLine}), (std::pair{2, 3})); // inner
+}
+
+TEST(FoldRegions, DivInsideOfCodeIsCode)
+{
+    const auto regions = findRegions(linesOf(
+        "[cpp]\n"
+        "// [div]\n"
+        "x\n"
+        "[/cpp]\n"
+        "[/div]"));
+    ASSERT_EQ(regions.size(), 1);
+    EXPECT_EQ(regions[0].kind, Kind::Code);
+}
+
+TEST(FoldRegions, BlocksStartingInTheSameLineBiggerFirst)
+{
+    const auto regions = findRegions(linesOf(
+        "[div][cpp]\n"      // 0
+        "x\n"               // 1
+        "[/cpp]\n"          // 2
+        "y\n"               // 3
+        "[/div]"));          // 4
+    ASSERT_EQ(regions.size(), 2);
+    EXPECT_EQ(regions[0].kind, Kind::Div);
+    EXPECT_EQ(regions[1].kind, Kind::Code);
+}
+
+TEST(FoldRegions, TagNamesOnlyLikeHeadersAreHeaders)
+{
+    // `[h7]`, `[h]`, `[hr]` and `[h1x]` are not headers
+    EXPECT_TRUE(findRegions(linesOf("[h7]a[/h7]\nx\n[h]b\ny\n[hr]\nz\n[h1x]\nw")).isEmpty());
+    EXPECT_EQ(findRegions(linesOf("[h1 class=\"x\"]a[/h1]\ntext")).size(), 1);
+}

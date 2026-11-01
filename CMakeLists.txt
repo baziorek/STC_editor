@@ -476,10 +476,20 @@ if(NOT WIN32)
     add_executable(${PROJECT_NAME}TagRegionsTests
         tests/StcTagRegionsTests.cpp
         utils/StcTagRegions.cpp
+        utils/StcTagScanner.cpp
     )
     target_include_directories(${PROJECT_NAME}TagRegionsTests PRIVATE ${PROJECT_SOURCE_DIR})
     target_link_libraries(${PROJECT_NAME}TagRegionsTests PRIVATE Qt${QT_VERSION_MAJOR}::Core ${GTEST_LIBRARIES} pthread gtest_main)
     add_test(NAME ${PROJECT_NAME}TagRegionsTests COMMAND ${PROJECT_NAME}TagRegionsTests)
+
+    # Reading and pairing the STC tags, and the tag which matches the selected one. Only QtCore.
+    add_executable(${PROJECT_NAME}TagScannerTests
+        tests/StcTagScannerTests.cpp
+        utils/StcTagScanner.cpp
+    )
+    target_include_directories(${PROJECT_NAME}TagScannerTests PRIVATE ${PROJECT_SOURCE_DIR})
+    target_link_libraries(${PROJECT_NAME}TagScannerTests PRIVATE Qt${QT_VERSION_MAJOR}::Core ${GTEST_LIBRARIES} pthread gtest_main)
+    add_test(NAME ${PROJECT_NAME}TagScannerTests COMMAND ${PROJECT_NAME}TagScannerTests)
 
     # Which link (and which web page) is under the cursor, for the preview shown when the mouse rests on a link. Only QtCore.
     add_executable(${PROJECT_NAME}LinkPreviewTargetTests
@@ -522,6 +532,7 @@ if(NOT WIN32)
     add_executable(${PROJECT_NAME}PreviewSyncTests
         tests/PreviewSyncMapTests.cpp
         utils/PreviewSyncMap.cpp
+        utils/StcTagScanner.cpp
     )
     target_include_directories(${PROJECT_NAME}PreviewSyncTests PRIVATE ${PROJECT_SOURCE_DIR})
     target_link_libraries(${PROJECT_NAME}PreviewSyncTests PRIVATE Qt${QT_VERSION_MAJOR}::Core ${GTEST_LIBRARIES} pthread gtest_main)
@@ -575,6 +586,7 @@ if(NOT WIN32)
     add_executable(${PROJECT_NAME}FoldRegionsTests
         tests/FoldRegionsTests.cpp
         utils/FoldRegions.cpp
+        utils/StcTagScanner.cpp
     )
     target_include_directories(${PROJECT_NAME}FoldRegionsTests PRIVATE ${PROJECT_SOURCE_DIR})
     target_link_libraries(${PROJECT_NAME}FoldRegionsTests PRIVATE Qt${QT_VERSION_MAJOR}::Core ${GTEST_LIBRARIES} pthread gtest_main)

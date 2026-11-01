@@ -69,10 +69,11 @@ If you want to use this editor for writing content for [cpp0x.pl](https://cpp0x.
     - If selected text is already tagged, re-tagging with the same tag removes the tags if the selection includes or is within them.
 22. **Spellchecking**: Uses the [nuspell](https://nuspell.github.io/) library to check text against a Polish dictionary, underlining non-existent words. Text within STC tags is skipped unless attributes (e.g., image descriptions) require checking.
     - Context menu offers suggestions for correcting typos.
-23. **Folding of headers and blocks of code** (STC mode): the section of a `[h1]`...`[h6]` header (up to the next header of the same or a shallower level) and a multi-line `[cpp]`, `[code]`, `[py]` or `[log]` block collapse into one line with a "… N lines" label.
+23. **Folding of headers and blocks of code** (STC mode): the section of a `[h1]`...`[h6]` header (up to the next header of the same or a shallower level) and a multi-line `[cpp]`, `[code]`, `[py]`, `[log]` or `[div]` block (also with attributes, e.g. `[div class="tip"]`) collapse into one line with a "… N lines" label.
     - Click the triangle in the margin (next to the line number) or the "… N lines" label to fold/unfold. Shortcuts (when the editor has focus): `Alt+Left` folds and `Alt+Right` unfolds the region at the cursor, `Alt+Shift+Left` / `Alt+Shift+Right` fold / unfold everything. The context menu → "Folding" also has "Fold all blocks of code".
     - Folding only hides lines: the text, saving, compiling a block and the edit history are unchanged. Folded nested sections stay folded when their parent is unfolded.
     - The cursor never stays in a hidden line: search, "go to line", a click in the preview, undo, or pressing Enter at the end of a folded header unfold whatever covers the cursor. The content of `[cpp]`/`[code]`/`[py]`/`[log]` is verbatim, so a `[h1]` inside a program starts nothing.
+24. **Matching tag highlight**: a double click on the name of an opening tag (`h1` in `[h1]`) also highlights the name in the closing tag `[/h1]`, and the other way round. Works with attributes too (`[div class="tip"]`). Tags without a closing tag (`[a href=...]`, `[img src=...]`) and a double click on an attribute highlight nothing. Any other selection or moving the cursor takes the highlight off.
 
 ## General Editor Features
 
@@ -193,7 +194,7 @@ QT_QPA_PLATFORM=offscreen ctest --output-on-failure
 22. ~~PreviewWidget: Track positions between the source document and HTML preview~~ - done in both directions (scrolling the editor and clicking the preview)
 24. Precompiled headers for `codeEditor.h` and module support.
 25. Integrate IWYU with CMake.
-26. ~~Code and header folding~~ (done). To consider: folding `[csv]`/`[pkt]`/`[div]` too, remembering folded sections between sessions.
+26. ~~Code and header folding~~ (done). To consider: folding `[csv]`/`[pkt]` too, remembering folded sections between sessions.
 27. Automatic content backups.
 28. Use `QTextBlockUserData` for optimization (e.g., `block.setUserData(data)`).
 29. Optimize editor performance for fast typing.

@@ -1,38 +1,13 @@
 #include "FoldRegions.h"
 
-#include <QHash>
-#include <QRegularExpression>
+#include "StcTagScanner.h"
+
 #include <algorithm>
 
 namespace stcfold
 {
 namespace
 {
-// The same tags and the same form of the opening tag as CodeEditor::parseAllCodeBlocks() recognizes
-const QRegularExpression& openingTokenRe()
-{
-    static const QRegularExpression re(
-        R"__(\[(cpp|code|py|log)(\s+src\s*=\s*"[^"]*")?\]|\[h([1-6])(?:\s[^\]]*)?\])__",
-        QRegularExpression::CaseInsensitiveOption);
-    return re;
-}
-
-const QRegularExpression& closingTagRe(const QString& tag)
-{
-    static const QHash<QString, QRegularExpression> byTag = [] {
-        QHash<QString, QRegularExpression> result;
-        for (const QString& name : {QStringLiteral("cpp"), QStringLiteral("code"), QStringLiteral("py"), QStringLiteral("log")})
-        {
-            result.insert(name, QRegularExpression(QStringLiteral(R"(\[/\s*%1\s*\])").arg(name),
-                                                   QRegularExpression::CaseInsensitiveOption));
-        }
-        return result;
-    }();
-    // `tag` is always one of the four names the opening regular expression accepts. (Not `byTag[tag]`: on a const
-    // QHash it returns the regular expression by value, and the reference to that temporary would dangle.)
-    return byTag.constFind(tag).value();
-}
-
 bool isEscaped(const QString& line, int tagStart)
 {
     return tagStart > 0 && line[tagStart - 1] == QLatin1Char('\\');
@@ -43,10 +18,24 @@ bool isBlank(const QString& line)
     return line.trimmed().isEmpty();
 }
 
+/// 1..6 for `h1`..`h6`, 0 for any other name
+int headerLevel(const QString& name)
+{
+    if (name.size() == 2 && name[0] == QLatin1Char('h') && name[1] >= QLatin1Char('1') && name[1] <= QLatin1Char('6'))
+        return name[1].digitValue();
+    return 0;
+}
+
 struct HeaderMark
 {
     int line;
     int level;
+};
+
+struct OpenedBlock
+{
+    QString tag;
+    int line;
 };
 } // namespace
 
@@ -55,61 +44,78 @@ QVector<Region> findRegions(const QStringList& lines)
     QVector<HeaderMark> headers;
     QVector<Region> regions;
 
-    QString openedTag;     // not empty: we are inside of a block of code, which waits for its closing tag
-    int openedLine = -1;
+    QString verbatimTag;       // not empty: we are inside of a block of code, which waits for its closing tag
+    int verbatimLine = -1;
+    QVector<OpenedBlock> openedDivs;
+
+    // The block is folded by hiding the lines after the one with the opening tag. The line with the closing tag stays,
+    // unless there is code before the tag in it: then it is hidden with the block.
+    auto addBlock = [&regions](int openLine, int closeLine, const QString& lineOfClosingTag, int closingTagStart, Kind kind, const QString& tag) {
+        const bool closingLineHasContent = !isBlank(lineOfClosingTag.left(closingTagStart));
+        const int lastHiddenLine = closingLineHasContent ? closeLine : closeLine - 1;
+        if (lastHiddenLine > openLine)
+        {
+            regions.push_back({openLine, lastHiddenLine, kind, 0, tag, closeLine});
+        }
+    };
 
     for (int lineNumber = 0; lineNumber < lines.size(); ++lineNumber)
     {
         const QString& line = lines[lineNumber];
-        int position = 0;
         bool headerInThisLine = false;
 
-        while (position <= line.size())
+        int position = 0;
+        while ((position = static_cast<int>(line.indexOf(QLatin1Char('['), position))) >= 0)
         {
-            if (!openedTag.isEmpty())
+            const std::optional<StcTagScanner::Token> token = StcTagScanner::parseTagAt(line, position);
+            if (!token)
             {
-                const auto closing = closingTagRe(openedTag).match(line, position);
-                if (!closing.hasMatch())
-                {
-                    break; // the block goes on in the next line
-                }
+                ++position;
+                continue;
+            }
+            const int tagStart = position;
+            position = token->range.end;
 
-                // Text before the closing tag in its line is a part of the code, so that line cannot be hidden
-                // while its tag stays visible. A line with only the closing tag stays visible.
-                const bool closingLineHasCode = !isBlank(line.left(closing.capturedStart()));
-                const int lastHiddenLine = closingLineHasCode ? lineNumber : lineNumber - 1;
-                if (lastHiddenLine > openedLine)
+            if (!verbatimTag.isEmpty())
+            {
+                // the content is verbatim: only the closing tag of the block means something
+                if (token->closing && token->name == verbatimTag)
                 {
-                    regions.push_back({openedLine, lastHiddenLine, Kind::Code, 0, openedTag, lineNumber});
+                    addBlock(verbatimLine, lineNumber, line, tagStart, Kind::Code, verbatimTag);
+                    verbatimTag.clear();
                 }
-                openedTag.clear();
-                position = closing.capturedEnd();
                 continue;
             }
 
-            const auto opening = openingTokenRe().match(line, position);
-            if (!opening.hasMatch())
+            if (token->closing)
             {
-                break;
+                if (token->name == QLatin1String("div") && !openedDivs.isEmpty())
+                {
+                    addBlock(openedDivs.takeLast().line, lineNumber, line, tagStart, Kind::Div, token->name);
+                }
+                continue;
             }
-            position = opening.capturedEnd();
-            if (isEscaped(line, opening.capturedStart()))
+            if (isEscaped(line, tagStart))
             {
                 continue; // `\[cpp]` is a text, not a tag
             }
 
-            if (opening.capturedStart(3) >= 0) // a header
+            if (const int level = headerLevel(token->name); level > 0)
             {
                 if (!headerInThisLine)
                 {
-                    headers.push_back({lineNumber, opening.captured(3).toInt()});
+                    headers.push_back({lineNumber, level});
                     headerInThisLine = true;
                 }
             }
-            else
+            else if (StcTagScanner::isVerbatimTag(token->name))
             {
-                openedTag = opening.captured(1).toLower();
-                openedLine = lineNumber;
+                verbatimTag = token->name;
+                verbatimLine = lineNumber;
+            }
+            else if (token->name == QLatin1String("div"))
+            {
+                openedDivs.push_back({token->name, lineNumber});
             }
         }
     }
@@ -141,7 +147,9 @@ QVector<Region> findRegions(const QStringList& lines)
     std::stable_sort(regions.begin(), regions.end(), [](const Region& a, const Region& b) {
         if (a.startLine != b.startLine)
             return a.startLine < b.startLine;
-        return a.kind == Kind::Header && b.kind != Kind::Header; // a header first when both start in one line
+        if ((a.kind == Kind::Header) != (b.kind == Kind::Header))
+            return a.kind == Kind::Header; // a header first when regions start in one line
+        return a.extentEndLine > b.extentEndLine; // then the bigger (outer) one
     });
     return regions;
 }

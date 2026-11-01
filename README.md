@@ -84,10 +84,11 @@ Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://c
     - Jeśli jesteśmy w między tagami `[x]...[/x]` to zaznacza cały tekst między tagami.
     - Jeśli klikamy w przestrzeni na artybut `[y atr="..."]` to zaznaczany jest cały tekst atrybutu.
 28. **Feed Cpp0x.pl**: Widget wyświetlający aktualności na stronie [cpp0x.pl](https://cpp0x.pl).
-29. **Zwijanie nagłówków i bloków kodu** (tryb STC): sekcja nagłówka `[h1]`...`[h6]` (do następnego nagłówka tego samego lub wyższego poziomu) oraz wielolinijkowy blok `[cpp]`, `[code]`, `[py]`, `[log]` zwija się do jednej linii z etykietą „… N linii”.
+29. **Zwijanie nagłówków i bloków kodu** (tryb STC): sekcja nagłówka `[h1]`...`[h6]` (do następnego nagłówka tego samego lub wyższego poziomu) oraz wielolinijkowy blok `[cpp]`, `[code]`, `[py]`, `[log]` albo `[div]` (także z atrybutami, np. `[div class="tip"]`) zwija się do jednej linii z etykietą „… N linii”.
     - Kliknij trójkąt na marginesie (obok numeru linii) albo etykietę „… N linii”, aby zwinąć/rozwinąć. Skróty (gdy edytor ma fokus): `Alt+←` zwija, `Alt+→` rozwija region przy kursorze, `Alt+Shift+←` / `Alt+Shift+→` zwija / rozwija wszystko. Menu kontekstowe → „Zwijanie” ma też „Zwiń wszystkie bloki kodu”.
     - Zwijanie tylko ukrywa linie: tekst, zapis do pliku, kompilacja bloku i historia zmian są bez zmian. Zwinięte zagnieżdżone sekcje pozostają zwinięte po rozwinięciu rodzica.
     - Kursor nigdy nie zostaje w ukrytej linii: wyszukiwanie, „idź do linii”, kliknięcie w podglądzie, cofanie zmian czy wciśnięcie Enter na końcu zwiniętego nagłówka rozwijają to, co zasłania kursor. Treść `[cpp]`/`[code]`/`[py]`/`[log]` jest dosłowna, więc `[h1]` wewnątrz programu niczego nie zaczyna.
+30. **Podświetlanie pary tagów**: dwuklik na nazwie tagu otwierającego (`h1` w `[h1]`) zaznacza też nazwę w tagu zamykającym `[/h1]`, i odwrotnie. Działa także dla tagów z atrybutami (`[div class="tip"]`). Tagi bez zamykającego (`[a href=...]`, `[img src=...]`) oraz dwuklik na atrybucie niczego nie podświetlają. Zaznaczenie czegokolwiek innego lub przeniesienie kursora zdejmuje podświetlenie.
 
 ## Ogólne funkcje edytora
 Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wybrane funkcjonalności, których brakuje mi w zwykłych edytorach:
@@ -195,9 +196,9 @@ QT_QPA_PLATFORM=offscreen ctest --output-on-failure
 `QT_QPA_PLATFORM=offscreen` pozwala uruchomić testy używające Qt na maszynie bez środowiska graficznego (np. na serwerze CI).
 
 ## Planowane funkcjonalności
-1. ~~Zwijanie nagłówków i kodu~~ (zrobione). Do rozważenia: zwijanie także `[csv]`/`[pkt]`/`[div]`, zapamiętywanie zwiniętych sekcji między sesjami.
+1. Rozważyć użycie tej samej biblioteki do porównywania zarówno linii jak i znaków np. https://github.com/google/diff-match-patch
 3. Podpięcie sztucznej inteligencji np. llama.cpp do komentowania kodu i artykułu. Z możliwością edycji promptu.
-4. Rozważyć użycie tej samej biblioteki do porównywania zarówno linii jak i znaków np. https://github.com/google/diff-match-patch
+4. 
 5. Obsługa markdown
 6. Pobieranie aktualizacji przez https://cpp0x.pl/xml/ - poprawki wizualne
 7. Dodać widget edytujący obrazki - link z podglądem, opis, tekst alternatywny i jeszcze jest tam checkbox z autofit
