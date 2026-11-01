@@ -396,6 +396,8 @@ CodeEditor::CodeEditor(QWidget *parent)
 
     // In plain text mode the addresses written in the text are links, in the other modes only the [a href] tag is
     linkPreview = new LinkPreviewController(this, [this] { return syntaxMode() == SyntaxMode::PlainText; });
+
+    setupFolding(); // after the highlighter: whether folding is available depends on the syntax mode
 }
 
 SyntaxMode CodeEditor::syntaxMode() const
@@ -542,7 +544,7 @@ int CodeEditor::lineNumberAreaWidth()
     const int digits4LineNumber = std::log10(maxLine) + 1;
 
     const int space = 7 + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits4LineNumber; // 4 px of it for the circle of a line with history
-    return space;
+    return space + foldColumnWidth(); // the markers of folding are on the right of the numbers
 }
 
 QString CodeEditor::exactText() const
@@ -677,6 +679,11 @@ void CodeEditor::onScrollChanged(int)
 
 void CodeEditor::onCursorPositionChanged()
 {
+    if (!textCursor().block().isVisible())
+    {
+        updateFolding(); // the cursor was put into a folded region (search, "go to line"...): unfolds what hides it
+    }
+
     const int newLine = textCursor().blockNumber();
     if (newLine != currentLine)
     {
@@ -973,6 +980,7 @@ void CodeEditor::contextMenuEvent(QContextMenuEvent* event)
         addDivTagActionsIfApplicable(menu);
         addHeaderTagActionsIfApplicable(menu, event->pos());
     }
+    addFoldingActions(menu);
 
     menu->exec(event->globalPos());
     delete menu;
@@ -2314,6 +2322,7 @@ void CodeEditor::paintLineNumberRow(QPainter& painter, int blockNumber, int top)
 
     paintLineNumber(painter, blockNumber, top);
     paintHistoryCircle(painter, blockNumber, top);
+    paintFoldMarker(painter, blockNumber, top);
 }
 
 void CodeEditor::paintModifiedLineBackground(QPainter& painter, int top) const
@@ -2327,7 +2336,7 @@ void CodeEditor::paintCurrentLineArrow(QPainter& painter, int top) const
     const int arrowHeight = 6;
 
     QPolygon arrow;
-    arrow << QPoint(lineNumberArea->width() - 1, yCenter) // top of arrow on the right edge
+    arrow << QPoint(lineNumbersRightEdge() - 1, yCenter)  // top of arrow on the right edge of the numbers
           << QPoint(0, yCenter - arrowHeight/2)           // upper left corner
           << QPoint(0, yCenter + arrowHeight/2);          // lower button corner
 
@@ -2350,7 +2359,7 @@ void CodeEditor::paintLineNumber(QPainter& painter, int blockNumber, int top) co
 {
     painter.setPen(Qt::black);
     painter.setFont(lineNumberFont());
-    painter.drawText(0, top, lineNumberArea->width() - lineNumberRightMargin, fontMetrics().height(),
+    painter.drawText(0, top, lineNumbersRightEdge() - lineNumberRightMargin, fontMetrics().height(),
                      Qt::AlignRight, QString::number(blockNumber + 1));
 }
 
@@ -2367,7 +2376,7 @@ void CodeEditor::paintHistoryCircle(QPainter& painter, int blockNumber, int top)
     const QFontMetrics numberMetrics(lineNumberFont());
     constexpr int padding = 3;
     const int textWidth = numberMetrics.horizontalAdvance(QString::number(blockNumber + 1));
-    const QRectF circle(lineNumberArea->width() - lineNumberRightMargin - textWidth - padding, top + 0.5,
+    const QRectF circle(lineNumbersRightEdge() - lineNumberRightMargin - textWidth - padding, top + 0.5,
                         textWidth + 2 * padding, numberMetrics.height());
 
     QPen pen(marker == EditHistory::LineMarker::Applied ? QColor("#1f5fbf") : QColor("#7d93b8"), 1.3);
@@ -2777,6 +2786,12 @@ void CodeEditor::dropEvent(QDropEvent *event)
 
 void CodeEditor::mouseMoveEvent(QMouseEvent* event)
 {
+    if (const bool overLabel = foldLabelLineAt(event->pos()) >= 0; overLabel != overFoldLabel_)
+    {
+        overFoldLabel_ = overLabel;
+        viewport()->setCursor(overLabel ? Qt::PointingHandCursor : Qt::IBeamCursor);
+    }
+
     // Do not show tooltip while selecting with the left mouse button
     if (const bool isSelectingWithLeftMouseButtonActive = event->buttons() & Qt::LeftButton)
     {
@@ -3358,6 +3373,11 @@ void CodeEditor::analizeEntireDocumentDetectingCodeBlocks()
 
 void CodeEditor::onContentsChange(int position, int charsRemoved, int charsAdded)
 {
+    if (replacingWholeContent)
+    {
+        foldedRegions_.clear(); // another text: nothing of the old one stays folded
+        foldedStartLines_.clear();
+    }
     handleCodeBlockDetectionOnChange(position);
 }
 
@@ -3423,6 +3443,15 @@ QVector<CodeBlock> CodeEditor::parseAllCodeBlocks()
 
 void CodeEditor::mousePressEvent(QMouseEvent* event)
 {
+    if (event->button() == Qt::LeftButton)
+    {
+        if (const int foldedLine = foldLabelLineAt(event->pos()); foldedLine >= 0)
+        {
+            unfoldLine(foldedLine); // a click on "... N lines" opens the region
+            return;
+        }
+    }
+
     if (isCtrlLeftClick(event))
     {
         const QTextCursor cursor = cursorForPosition(event->pos());
@@ -3441,6 +3470,11 @@ void CodeEditor::mousePressEvent(QMouseEvent* event)
 
 void CodeEditor::mouseDoubleClickEvent(QMouseEvent* event)
 {
+    if (event->button() == Qt::LeftButton && foldLabelLineAt(event->pos()) >= 0)
+    {
+        return; // the first click of the double click has already unfolded the region
+    }
+
     // Depending on the platform, the 4th click arrives as a press or as another double click, so both are counted
     if (trySelectTagRegionOnMultiClick(event))
         return;
@@ -3758,6 +3792,12 @@ void CodeEditor::lineNumberAreaMousePress(QMouseEvent* event)
         return;
 
     const int line = lineAtGutterY(static_cast<int>(event->position().y()));
+    if (line >= 0 && event->position().x() >= lineNumbersRightEdge() && foldRegionByStartLine_.contains(line))
+    {
+        toggleFoldAtLine(line); // the marker of folding
+        event->accept();
+        return;
+    }
     if (line >= 0 && editHistory->lineMarker(line) != EditHistory::LineMarker::None)
     {
         showLineHistory(line);
@@ -3768,6 +3808,12 @@ void CodeEditor::lineNumberAreaMousePress(QMouseEvent* event)
 void CodeEditor::lineNumberAreaMouseMove(QMouseEvent* event)
 {
     const int line = lineAtGutterY(static_cast<int>(event->position().y()));
+    if (line >= 0 && event->position().x() >= lineNumbersRightEdge() && foldRegionByStartLine_.contains(line))
+    {
+        lineNumberArea->setCursor(Qt::PointingHandCursor);
+        lineNumberArea->setToolTip(isFolded(line) ? tr("Click to unfold") : tr("Click to fold"));
+        return;
+    }
     const auto marker = line >= 0 ? editHistory->lineMarker(line) : EditHistory::LineMarker::None;
     if (marker == EditHistory::LineMarker::None)
     {

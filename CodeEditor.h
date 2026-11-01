@@ -13,6 +13,7 @@
 #include <QAction>
 #include <QFont>
 #include <QKeySequence>
+#include <QHash>
 #include <QList>
 #include <QMultiMap>
 #include <QObject>
@@ -29,6 +30,7 @@
 #include <memory>
 #include <optional>
 
+#include "utils/FoldRegions.h"
 #include "utils/SyntaxMode.h"
 #include "types/CodeBlock.h"
 
@@ -80,6 +82,39 @@ public:
     /// Clicking a number which is circled shows the history of that line; the cursor and the tooltip say which are
     void lineNumberAreaMousePress(QMouseEvent *event);
     void lineNumberAreaMouseMove(QMouseEvent *event);
+
+    // ---- Folding: the section of a header or a block of code written in many lines collapses into one line ----
+    // Works in the STC mode. Folding only hides the lines (the text is not changed, it is saved and compiled as it was),
+    // so the cursor never stays in a hidden line: whatever puts it there (search, "go to line", a click in the preview,
+    // typing at the end of a folded line) unfolds what hides it.
+
+    /// What can be folded in the document now (STC mode): the sections of `[h1]`..`[h6]` and the blocks of code.
+    /// Brought up to date a moment after the last change of the text (see updateFolding()).
+    const QVector<stcfold::Region>& foldRegions() const { return foldRegions_; }
+    /// Whether the line (zero-based) starts a region which can be folded
+    bool isFoldable(int line) const { return foldRegionByStartLine_.contains(line); }
+    /// Whether the region which starts in the line (zero-based) is folded now
+    bool isFolded(int line) const;
+    int foldedRegionsCount() const { return static_cast<int>(foldedRegions_.size()); }
+
+    void foldLine(int line);
+    void unfoldLine(int line);
+    void toggleFoldAtLine(int line);
+
+    /// The innermost region around the cursor (its first line, the lines inside and the closing tag of a block of code)
+    /// which is not folded yet. Nothing happens when there is no such region.
+    void foldAtCursor();
+    /// Unfolds the region which the line of the cursor starts (only a folded line can be there)
+    void unfoldAtCursor();
+    /// Unfolds the region which starts in the line of the cursor, or else folds the innermost one around the cursor
+    void toggleFoldAtCursor();
+    void foldAll();
+    void foldAllCodeBlocks();
+    void unfoldAll();
+
+    /// Brings the folds up to date with the text now. Normally it is done by itself a moment after the last change
+    /// (for the regions, the markers and the hidden lines), the call is for the code which needs the result at once.
+    void updateFolding();
 
     /// Undo / redo: what Ctrl+Z, Ctrl+Shift+Z and the context menu call. They are QPlainTextEdit::undo() / redo()
     /// plus a word to the history of edits about what is going on.
@@ -229,6 +264,9 @@ protected:
 
     void resizeEvent(QResizeEvent *event) override;
 
+    /// Draws the "... N lines" labels at the end of folded lines
+    void paintEvent(QPaintEvent *event) override;
+
     void contextMenuEvent(QContextMenuEvent* event) override;
 
     void dragEnterEvent(QDragEnterEvent *event) override;
@@ -353,6 +391,39 @@ private:
     /// Makes Undo and Redo of the standard menu go through the history; returns the Redo action (null if not found)
     QAction* routeUndoRedoThroughHistory(QMenu* menu);
     QList<QAction*> createEditHistoryActions(QMenu* menu, int clickedLine);
+
+    // Folding (CodeEditorFolding.cpp)
+    struct FoldedRegion
+    {
+        QTextCursor anchor;       ///< at the start of the first line of the region: follows the line when the text changes
+        stcfold::Kind kind;
+        int level;
+    };
+    void setupFolding();
+    void scheduleFoldingUpdate();
+    bool foldingAvailable() const;
+    /// Width of the column of the margin with the markers of the regions: 0 when folding is not available
+    int foldColumnWidth() const;
+    /// Right edge of the part of the margin with the line numbers (the column of the markers is on its right)
+    int lineNumbersRightEdge() const;
+    void foldRegionsByIndex(const QVector<int>& indices);
+    void dropFoldsHidingLine(int line);
+    /// Makes the lines hidden exactly when a folded region hides them, then updates the view
+    void applyFolding();
+    void paintFoldMarker(QPainter& painter, int blockNumber, int top) const;
+    /// The first line of the folded region whose "... N lines" label is under the point (coordinates of the viewport), -1 if none
+    int foldLabelLineAt(const QPoint& viewportPoint) const;
+    void addFoldingActions(QMenu* menu);
+    int innermostFoldableRegionAround(int line) const;
+
+    QVector<stcfold::Region> foldRegions_;
+    QHash<int, int> foldRegionByStartLine_; ///< the first line of a region -> its index in foldRegions_
+    QVector<FoldedRegion> foldedRegions_;
+    QSet<int> foldedStartLines_;            ///< first lines of foldedRegions_, for the markers (refreshed with the folds)
+    QTimer* foldingTimer_ = nullptr;
+    QVector<QPair<QRect, int>> foldLabels_; ///< where the "... N lines" labels were drawn (viewport coordinates) and the first line of their regions
+    int lastFoldColumnWidth_ = 0;
+    bool overFoldLabel_ = false;
 
     // The margin with line numbers, one row at a time
     QFont lineNumberFont() const;

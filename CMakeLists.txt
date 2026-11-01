@@ -571,6 +571,15 @@ if(NOT WIN32)
     target_link_libraries(${PROJECT_NAME}HeaderNestingTests PRIVATE ${GTEST_LIBRARIES} pthread gtest_main)
     add_test(NAME ${PROJECT_NAME}HeaderNestingTests COMMAND ${PROJECT_NAME}HeaderNestingTests)
 
+    # Which parts of the document can be folded in the editor (sections of headers, blocks of code). No widget, only QtCore.
+    add_executable(${PROJECT_NAME}FoldRegionsTests
+        tests/FoldRegionsTests.cpp
+        utils/FoldRegions.cpp
+    )
+    target_include_directories(${PROJECT_NAME}FoldRegionsTests PRIVATE ${PROJECT_SOURCE_DIR})
+    target_link_libraries(${PROJECT_NAME}FoldRegionsTests PRIVATE Qt${QT_VERSION_MAJOR}::Core ${GTEST_LIBRARIES} pthread gtest_main)
+    add_test(NAME ${PROJECT_NAME}FoldRegionsTests COMMAND ${PROJECT_NAME}FoldRegionsTests)
+
     # The console: splitting of the command line into the colored tokens, cd, built-ins. Only QtCore.
     add_executable(${PROJECT_NAME}ConsoleShellTests
         tests/ConsoleShellTests.cpp

@@ -355,6 +355,56 @@ Czy chcesz wczytać go ponownie?</translation>
         <source>(all the changes are undone now; Ctrl+Shift+Z brings them back)</source>
         <translation>(wszystkie zmiany są teraz cofnięte; Ctrl+Shift+Z je przywraca)</translation>
     </message>
+    <message numerus="yes">
+        <location filename="../CodeEditorFolding.cpp" line="360"/>
+        <source>%n line(s)</source>
+        <comment>label at the end of a folded line</comment>
+        <translation>
+            <numerusform>%n linia</numerusform>
+            <numerusform>%n linie</numerusform>
+            <numerusform>%n linii</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <source>Click to fold</source>
+        <translation>Kliknij, aby zwinąć</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <source>Click to unfold</source>
+        <translation>Kliknij, aby rozwinąć</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <source>Folding</source>
+        <translation>Zwijanie</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <source>Unfold</source>
+        <translation>Rozwiń</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <source>Fold this section or block of code</source>
+        <translation>Zwiń tę sekcję lub blok kodu</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <source>Fold everything</source>
+        <translation>Zwiń wszystko</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <source>Fold all blocks of code</source>
+        <translation>Zwiń wszystkie bloki kodu</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <source>Unfold everything</source>
+        <translation>Rozwiń wszystko</translation>
+    </message>
 </context>
 <context>
     <name>CppCompilerDialog</name>

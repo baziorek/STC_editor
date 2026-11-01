@@ -350,6 +350,55 @@ Do you want to reload it?</translation>
         <source>(all the changes are undone now; Ctrl+Shift+Z brings them back)</source>
         <translation>(all the changes are undone now; Ctrl+Shift+Z brings them back)</translation>
     </message>
+    <message numerus="yes">
+        <location filename="../CodeEditorFolding.cpp" line="360"/>
+        <source>%n line(s)</source>
+        <comment>label at the end of a folded line</comment>
+        <translation>
+            <numerusform>%n line</numerusform>
+            <numerusform>%n lines</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <source>Click to fold</source>
+        <translation>Click to fold</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <source>Click to unfold</source>
+        <translation>Click to unfold</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <source>Folding</source>
+        <translation>Folding</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <source>Unfold</source>
+        <translation>Unfold</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <source>Fold this section or block of code</source>
+        <translation>Fold this section or block of code</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <source>Fold everything</source>
+        <translation>Fold everything</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <source>Fold all blocks of code</source>
+        <translation>Fold all blocks of code</translation>
+    </message>
+    <message>
+        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <source>Unfold everything</source>
+        <translation>Unfold everything</translation>
+    </message>
 </context>
 <context>
     <name>CppCompilerDialog</name>
