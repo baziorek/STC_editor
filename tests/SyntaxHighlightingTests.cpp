@@ -861,9 +861,11 @@ TEST(PlainTextMode, PartsOfAddressesAreNotSpellChecked)
 namespace
 {
 constexpr int kStateCsv = 0x100;
+constexpr int kStatePkt = 0x200;
 constexpr int kStateCode = 0x800;
 constexpr int kStateCodeCpp = 0x1000;
 constexpr int kStateDivTip = 0x10;
+constexpr int kStateCodeLanguageCpp = 0x800000; // the block is closed by [/code], but it is C++
 } // namespace
 
 TEST(HighlighterStates, ClosingOneBlockOfCodeAndOpeningAnotherInTheSameLine)
@@ -945,6 +947,83 @@ TEST(HighlighterStates, BlockOfCodeInsideOfAMultiLineDivDoesNotEndTheDiv)
         << "the line after the code is still in the tip";
     EXPECT_EQ(blockAt(d.document, 6).userState(), -1);
     EXPECT_EQ(blockAt(d.document, 7).userState(), -1);
+}
+
+// `[code src="C++"]` is highlighted as C++, but it is closed by `[/code]` (not by `[/cpp]`)
+TEST(HighlighterStates, CodeBlockWithCppSourceIsClosedByCodeTag)
+{
+    HighlightedDocument d("[code src=\"C++\"]\n"                // 0
+                          "int x = 5;\n"                        // 1
+                          "[/code]\n"                           // 2
+                          "[h1]Header[/h1]\n"                   // 3
+                          "plain");                             // 4
+
+    EXPECT_EQ(blockAt(d.document, 1).userState(), kStateCode | kStateCodeLanguageCpp);
+    EXPECT_EQ(blockAt(d.document, 2).userState(), -1) << "[/code] has to close the block";
+    EXPECT_EQ(blockAt(d.document, 3).userState(), -1);
+    EXPECT_EQ(blockAt(d.document, 4).userState(), -1);
+
+    // still highlighted as C++
+    EXPECT_TRUE(blockHasColor(blockAt(d.document, 1), "PrimitiveType")) << "int";
+
+    // the header after the block is a header, like one which is alone in a document
+    HighlightedDocument alone("[h1]Header[/h1]");
+    EXPECT_EQ(formatAt(blockAt(d.document, 3), 6).fontPointSize(), formatAt(blockAt(alone.document, 0), 6).fontPointSize());
+    EXPECT_EQ(formatAt(blockAt(d.document, 3), 6).foreground().color(), formatAt(blockAt(alone.document, 0), 6).foreground().color());
+}
+
+TEST(HighlighterStates, CppSourceInCodeTagInTheDifferentSpellings)
+{
+    for (const char* source : {"C++", "c++", "cpp", "CPP"})
+    {
+        HighlightedDocument d(QStringLiteral("[code src=\"%1\"]\nint x;\n[/code]\nplain").arg(source));
+        EXPECT_EQ(blockAt(d.document, 1).userState(), kStateCode | kStateCodeLanguageCpp) << source;
+        EXPECT_EQ(blockAt(d.document, 2).userState(), -1) << source;
+    }
+}
+
+TEST(HighlighterStates, CodeBlockWithCppSourceInsideOfCsvAndEndingInTheSameLine)
+{
+    HighlightedDocument d("[csv]\n"                                          // 0
+                          "[run][code src=\"c++\"]int a;\n"                   // 1
+                          "int b;\n"                                         // 2
+                          "[/code][/run];[run][cpp]\n"                       // 3
+                          "int c;\n"                                         // 4
+                          "[/cpp][/run];\n"                                  // 5
+                          "[/csv]\n"                                         // 6
+                          "plain");                                          // 7
+
+    EXPECT_EQ(blockAt(d.document, 2).userState(), kStateCsv | kStateCode | kStateCodeLanguageCpp);
+    EXPECT_EQ(blockAt(d.document, 3).userState(), kStateCsv | kStateCodeCpp) << "[code] is closed, [cpp] is open, and it is not the language flag of [code]";
+    EXPECT_EQ(blockAt(d.document, 5).userState(), kStateCsv);
+    EXPECT_EQ(blockAt(d.document, 6).userState(), -1);
+}
+
+// `[pkt]` (a list) opens and closes inside of a cell of a `[csv]` (a table)
+TEST(HighlighterStates, PktInsideOfCsvKeepsBothStatesAndItsOwnLook)
+{
+    HighlightedDocument d("[csv extended header]A;B;\n"          // 0
+                          "[run]one[/run];[run]x\n"              // 1
+                          "[pkt ext][run]first[/run]\n"          // 2
+                          "[run]second[/run]\n"                  // 3
+                          "[/pkt][/run];\n"                      // 4
+                          "[run]three[/run];\n"                  // 5
+                          "[/csv]\n"                             // 6
+                          "plain");                              // 7
+
+    EXPECT_EQ(blockAt(d.document, 1).userState(), kStateCsv);
+    EXPECT_EQ(blockAt(d.document, 2).userState(), kStateCsv | kStatePkt) << "[pkt] opened inside of the table";
+    EXPECT_EQ(blockAt(d.document, 3).userState(), kStateCsv | kStatePkt);
+    EXPECT_EQ(blockAt(d.document, 4).userState(), kStateCsv) << "[/pkt] closes the list, the table goes on";
+    EXPECT_EQ(blockAt(d.document, 5).userState(), kStateCsv);
+    EXPECT_EQ(blockAt(d.document, 6).userState(), -1);
+
+    // the tags of the list are grey, like the tags of the table
+    EXPECT_EQ(formatAt(blockAt(d.document, 2), 1).foreground().color(), QColor(Qt::gray)) << "[pkt ext]";
+    EXPECT_EQ(formatAt(blockAt(d.document, 4), 1).foreground().color(), QColor(Qt::gray)) << "[/pkt]";
+
+    // the content of the list is not drawn in the colour of the table
+    EXPECT_NE(formatAt(blockAt(d.document, 3), 8).background().color(), formatAt(blockAt(d.document, 5), 8).background().color());
 }
 
 TEST(HighlighterStates, DivInOneLineLeavesTheStateAlone)

@@ -61,6 +61,11 @@ enum BlockState // TODO: Why not to use `enum class StcTags: std::uint32_t` inst
     STATE_PY_TRIPLE_SQ    = 0x100000,  // inside `'''...'''`
     STATE_XML_COMMENT     = 0x200000,  // inside `<!-- ... -->`  (only when the whole file is XML)
     STATE_XML_IN_TAG      = 0x400000,  // inside `<tag ...`      (only when the whole file is XML)
+
+    /// With STATE_CODE (or STATE_CODE_PY): the block is closed by `[/code]`, but its language is C++ (`[code src="C++"]`).
+    /// STATE_CODE_CPP alone means `[cpp]`, which is closed by `[/cpp]`: the flag which tells the closing tag and the one
+    /// which tells the language must not be the same, or `[code src="c++"]` is never closed.
+    STATE_CODE_LANGUAGE_CPP = 0x800000,
 };
 
 constexpr int PY_STATE_SHIFT  = 19;
@@ -588,30 +593,13 @@ bool STCSyntaxHighlighter::highlightPktOrCsv(const QString& text)
             foundAny = true;
         };
 
-        handleBlock(STATE_PKT, "pkt", stc::syntax::pktCloseRe);
+        // The outer block first (a table), the inner one on top of it (a list of files in a cell: `[pkt ext]`...`[/pkt]`
+        // is inside of `[csv]`...`[/csv]`), or the inner one would be painted over with the colour of the outer one.
         handleBlock(STATE_CSV, "csv", stc::syntax::csvCloseRe);
-
-        // Format [run] only if in extended mode
-        bool extendedMode = text.contains("ext") || text.contains("extended") || text.contains("extended header");
-
-        auto runMatches = stc::syntax::runTagRe.globalMatch(text);
-        while (runMatches.hasNext())
-        {
-            auto m = runMatches.next();
-            setFormat(m.capturedStart(), 5, runTagFmt); // [run]
-            setFormat(m.capturedEnd() - 6, 6, runTagFmt); // [/run]
-
-            if (extendedMode)
-            {
-                _noFormatRangesThisLine.append({ m.capturedStart(1), m.capturedLength(1) });
-            }
-        }
-
-        if (foundAny)
-            return true;
+        handleBlock(STATE_PKT, "pkt", stc::syntax::pktCloseRe);
     }
 
-    // --- 2. New openings on the same line ---
+    // --- 2. New openings on the same line (`foundAny` is also set by the continuation above) ---
     auto processTag = [&](const QRegularExpression& openRe,
                           const QRegularExpression& closeRe,
                           const QString& tagName,
@@ -658,8 +646,29 @@ bool STCSyntaxHighlighter::highlightPktOrCsv(const QString& text)
         }
     };
 
+    // (also in a line which continues a block: `[pkt ext]` can open in the middle of a table)
     processTag(stc::syntax::pktOpenRe, stc::syntax::pktCloseRe, "pkt", STATE_PKT);
     processTag(stc::syntax::csvOpenRe, stc::syntax::csvCloseRe, "csv", STATE_CSV);
+
+    // --- 3. [run] inside of a block which was open before this line, on top of everything above ---
+    if (prevState != STATE_NONE)
+    {
+        // Format [run] only if in extended mode
+        bool extendedMode = text.contains("ext") || text.contains("extended") || text.contains("extended header");
+
+        auto runMatches = stc::syntax::runTagRe.globalMatch(text);
+        while (runMatches.hasNext())
+        {
+            auto m = runMatches.next();
+            setFormat(m.capturedStart(), 5, runTagFmt); // [run]
+            setFormat(m.capturedEnd() - 6, 6, runTagFmt); // [/run]
+
+            if (extendedMode)
+            {
+                _noFormatRangesThisLine.append({ m.capturedStart(1), m.capturedLength(1) });
+            }
+        }
+    }
 
     return foundAny;
 } // TODO: Dodać ignorowanie, gdy tagi nie wewnątrz `[run]`
@@ -712,18 +721,23 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
         {
             if (prev & blk.stateFlag)
             {
-                QTextCharFormat fmt = styledTagsMap.value(blk.styleKey).format;
+                // `[code src="c++"]`: closed like [code], highlighted like [cpp]
+                const bool cppByLanguage = (prev & STATE_CODE_LANGUAGE_CPP) && blk.stateFlag != STATE_CODE_CPP;
+                const int languageFlag = cppByLanguage ? STATE_CODE_CPP : blk.stateFlag;
+                const int flagsOfBlock = cppByLanguage ? (blk.stateFlag | STATE_CODE_LANGUAGE_CPP) : blk.stateFlag;
+
+                QTextCharFormat fmt = styledTagsMap.value(cppByLanguage ? QStringLiteral("cpp") : blk.styleKey).format;
                 QRegularExpressionMatch close = blk.closeRe.match(text);
                 if (close.hasMatch())
                 {
                     const int closeStart = close.capturedStart();
 
                     setFormat(0, closeStart, fmt);
-                    applyCodeHighlighting(blk.stateFlag, text, 0, closeStart, languageStateFromPreviousBlock()); // <— tylko fragment kodu; blok się kończy, więc nic nie przechodzi do następnej linii
+                    applyCodeHighlighting(languageFlag, text, 0, closeStart, languageStateFromPreviousBlock()); // <— tylko fragment kodu; blok się kończy, więc nic nie przechodzi do następnej linii
 
                     setFormat(closeStart, close.capturedLength(), tagFmt);
                     _codeRangesThisLine.append({ closeStart, close.capturedLength() });
-                    currentBlockStateWithoutFlag(blk.stateFlag);
+                    currentBlockStateWithoutFlag(flagsOfBlock);
                     offset = close.capturedEnd();
                     found = true;
                     continue;
@@ -731,9 +745,9 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
                 else
                 {
                     setFormat(0, text.length(), fmt);
-                    _languageStateBits = applyCodeHighlighting(blk.stateFlag, text, 0, text.length(), languageStateFromPreviousBlock()); // <— do końca linii
+                    _languageStateBits = applyCodeHighlighting(languageFlag, text, 0, text.length(), languageStateFromPreviousBlock()); // <— do końca linii
 
-                    currentBlockStateWithFlag(blk.stateFlag);
+                    currentBlockStateWithFlag(flagsOfBlock);
                     _codeRangesThisLine.append({ 0, text.length() });
                     return true;
                 }
@@ -752,32 +766,38 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
         const int tagStart = openMatch.capturedStart();
         const int tagEnd   = openMatch.capturedEnd();
 
+        // stateFlag: what the closing tag is (it is kept in the state of the next lines),
+        // languageFlag: how the content is highlighted
         QTextCharFormat fmt;
         QString styleKey;
         int stateFlag;
+        int languageFlag;
         QRegularExpression closeRe;
 
-        if (tag == "cpp" || src.contains("cpp") || src.contains("c++"))
+        if (tag == "cpp")
         {
             styleKey = "cpp";
-            fmt = styledTagsMap.value(styleKey).format;
-            stateFlag = STATE_CODE_CPP;
+            stateFlag = languageFlag = STATE_CODE_CPP;
             closeRe = closeReMap["cpp"];
-        }
-        else if (tag == "py")
-        {
-            styleKey = "py";
-            fmt = styledTagsMap.value(styleKey).format;
-            stateFlag = STATE_CODE_PY;
-            closeRe = closeReMap["py"];
         }
         else
         {
-            styleKey = "code";
-            fmt = styledTagsMap.value(styleKey).format;
-            stateFlag = STATE_CODE;
-            closeRe = closeReMap["code"];
+            const bool isPython = tag == "py";
+            stateFlag = isPython ? STATE_CODE_PY : STATE_CODE;
+            closeRe = closeReMap[isPython ? "py" : "code"];
+            if (src.contains("cpp") || src.contains("c++"))
+            {
+                styleKey = "cpp";
+                languageFlag = STATE_CODE_CPP;
+                stateFlag |= STATE_CODE_LANGUAGE_CPP;
+            }
+            else
+            {
+                styleKey = isPython ? "py" : "code";
+                languageFlag = stateFlag;
+            }
         }
+        fmt = styledTagsMap.value(styleKey).format;
 
         QRegularExpressionMatch closeMatch = closeRe.match(text, tagEnd);
         if (closeMatch.hasMatch())
@@ -793,7 +813,7 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
             setFormat(tagStart, tagEnd - tagStart, tagFmt);
             setFormat(contentStart, contentLen, fmt);
 
-            applyCodeHighlighting(stateFlag, text, contentStart, closeStart, 0); // <— tylko [cpp]…[/cpp], [py]…[/py]
+            applyCodeHighlighting(languageFlag, text, contentStart, closeStart, 0); // <— tylko [cpp]…[/cpp], [py]…[/py]
 
             _codeRangesThisLine.append({ contentStart, contentLen });
             setFormat(closeStart, closeLen, tagFmt);
@@ -806,7 +826,7 @@ bool STCSyntaxHighlighter::highlightCodeBlock(const QString& text)
             setFormat(tagStart, tagEnd - tagStart, tagFmt);
             setFormat(tagEnd, text.length() - tagEnd, fmt);
 
-            _languageStateBits = applyCodeHighlighting(stateFlag, text, tagEnd, text.length(), 0); // <— od tagu do końca linii
+            _languageStateBits = applyCodeHighlighting(languageFlag, text, tagEnd, text.length(), 0); // <— od tagu do końca linii
 
             _codeRangesThisLine.append({ tagEnd, text.length() - tagEnd });
             currentBlockStateWithFlag(stateFlag);

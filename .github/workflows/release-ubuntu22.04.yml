@@ -83,6 +83,7 @@ jobs:
 
           cp qt-runtime/resources/* build/resources/
           cp -r qt-runtime/translations build/
+          cp -r dictionaries build/   # the program looks for dictionaries/pl/ next to the executable
 
           echo "Searching for QtWebEngineProcess..."
           QTWEBENGINE_BIN=$(dpkg -L libqt6webenginecore6-bin | grep QtWebEngineProcess | head -n 1 || true)
@@ -126,6 +127,9 @@ jobs:
           chmod +x deb/usr/bin/STC_editor
 
           cp STC_editor.desktop deb/usr/share/applications/
+
+          mkdir -p deb/usr/share/STC_editor/dictionaries/pl
+          cp dictionaries/pl/pl_PL.aff dictionaries/pl/pl_PL.dic deb/usr/share/STC_editor/dictionaries/pl/
           cp resources/icons/stc_editor.png deb/usr/share/icons/hicolor/256x256/apps/stc_editor.png
 
           if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then

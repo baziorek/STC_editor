@@ -70,6 +70,7 @@ jobs:
           if (Test-Path build\icudtl.dat) { copy build\icudtl.dat zipdir\ }
           if (Test-Path build\resources) { Copy-Item build\resources -Recurse -Destination zipdir\ }
           if (Test-Path build\translations) { Copy-Item build\translations -Recurse -Destination zipdir\ }
+          Copy-Item dictionaries -Recurse -Destination zipdir\
           if (Test-Path build\platforms) { Copy-Item build\platforms -Recurse -Destination zipdir\ }
           7z a STC_editor-win64.zip .\zipdir\*
 
