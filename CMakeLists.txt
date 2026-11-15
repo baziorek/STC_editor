@@ -528,6 +528,15 @@ if(NOT WIN32)
     target_link_libraries(${PROJECT_NAME}LineSearchTests PRIVATE Qt${QT_VERSION_MAJOR}::Core ${GTEST_LIBRARIES} pthread gtest_main)
     add_test(NAME ${PROJECT_NAME}LineSearchTests COMMAND ${PROJECT_NAME}LineSearchTests)
 
+    # Line-by-line and character-level diff of two texts (DiffCalculation). Only QtCore.
+    add_executable(${PROJECT_NAME}DiffCalculationTests
+        tests/DiffCalculationTests.cpp
+        utils/DiffCalculation.cpp
+    )
+    target_include_directories(${PROJECT_NAME}DiffCalculationTests PRIVATE ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/libs)
+    target_link_libraries(${PROJECT_NAME}DiffCalculationTests PRIVATE Qt${QT_VERSION_MAJOR}::Core ${GTEST_LIBRARIES} pthread gtest_main)
+    add_test(NAME ${PROJECT_NAME}DiffCalculationTests COMMAND ${PROJECT_NAME}DiffCalculationTests)
+
     # Mapping of the lines of the source to the places of the HTML preview (scroll synchronization). Only QtCore.
     add_executable(${PROJECT_NAME}PreviewSyncTests
         tests/PreviewSyncMapTests.cpp

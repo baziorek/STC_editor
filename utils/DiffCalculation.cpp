@@ -1,6 +1,9 @@
 #include <stddef.h>
 #include <algorithm>
+#include <array>
+#include <list>
 #include <string>
+#include <unordered_map>
 #include <vector>
 #include <QSet>
 #include <QStringList>
@@ -11,7 +14,6 @@
 #include <utility>
 
 #include "DiffCalculation.h"
-#include "pydifflib-cpp/difflib.hpp" /// it uses https://github.com/dominicprice/pydifflib-cpp
 #include "diff-match-patch-cpp-stl/diff_match_patch.h" /// it uses https://github.com/leutloff/diff-match-patch-cpp-stl/
 
 
@@ -54,6 +56,11 @@ namespace
 /// Looking for similar line pairs costs about (bytes of old lines) x (bytes of new lines) in a changed block
 /// (about 2.5 s for 200 x 200 unrelated lines of 500 bytes, 10x more without optimizations). Above this limit the block is paired by position instead.
 constexpr unsigned long long maxSimilarityWork = 400'000'000ULL;
+/// Timeout (seconds) for the whole-document line diff; on timeout diff_match_patch falls back
+/// to a coarse delete+insert for the part it could not resolve in time.
+constexpr float lineDiffTimeoutSeconds = 2.0f;
+/// Timeout (seconds) for character-level diffs and line similarity estimates.
+constexpr float charDiffTimeoutSeconds = 0.25f;
 
 DiffLine makeDiffLine(const std::vector<std::string> &a, const std::vector<std::string> &b, int oldIndex, int newIndex, DiffType type)
 {
@@ -85,89 +92,269 @@ void pairByPosition(const std::vector<std::string> &a, const std::vector<std::st
         result.push_back(makeDiffLine(a, b, -1, newIndexes[k], DiffType::Added));
 }
 
-/// Handles a block [i1,i2) of old lines that has to become [j1,j2) of new lines (difflib's "replace").
-///
-/// Pairing k-th with k-th is wrong as soon as a line is inserted or removed inside the block - all
-/// the following pairs are then shifted. So the lines are matched by similarity, using the library's
-/// Differ (the algorithm of Python's difflib.ndiff): the most similar pair is an anchor, the lines before
-/// and after the anchor are handled recursively. Lines that have no similar counterpart stay unpaired
-/// (removed / added); a run of such lines is then shown side by side by position.
-void appendReplaceBlock(const std::vector<std::string> &a, const std::vector<std::string> &b,
-                        int i1, int i2, int j1, int j2, std::vector<DiffLine> &result)
+/// "Fancy replace" of difflib's Differ, reimplemented on top of diff_match_patch: within a block
+/// of removed/added lines the most similar pair (similarity above 0.74, i.e. difflib's cutoff of
+/// 0.75) becomes an anchor shown as modified, and the lines before and after it are handled
+/// recursively. Lines without a similar counterpart stay unpaired (removed / added); a run of
+/// such lines is then shown side by side by position.
+struct ReplaceDiffer
 {
-    std::vector<int> pendingOld, pendingNew;
+    const std::vector<std::string> &a;
+    const std::vector<std::string> &b;
+    std::vector<DiffLine> &result;
+    std::vector<int> pendingOld;
+    std::vector<int> pendingNew;
+    diff_match_patch<std::string> similarityDmp;
 
-    auto flushPending = [&]() {
+    ReplaceDiffer(const std::vector<std::string> &a, const std::vector<std::string> &b, std::vector<DiffLine> &result)
+        : a(a), b(b), result(result)
+    {
+        similarityDmp.Diff_Timeout = charDiffTimeoutSeconds;
+    }
+
+    void flushPending()
+    {
         pairByPosition(a, b, pendingOld, pendingNew, result);
         pendingOld.clear();
         pendingNew.clear();
-    };
+    }
 
+    void emitPair(int i, int j, DiffType type)
+    {
+        flushPending();
+        result.push_back(makeDiffLine(a, b, i, j, type));
+    }
+
+    void dumpOld(int i1, int i2)
+    {
+        for (int i = i1; i < i2; ++i) pendingOld.push_back(i);
+    }
+
+    void dumpNew(int j1, int j2)
+    {
+        for (int j = j1; j < j2; ++j) pendingNew.push_back(j);
+    }
+
+    void plainReplace(int i1, int i2, int j1, int j2)
+    {
+        if (j2 - j1 < i2 - i1) { dumpNew(j1, j2); dumpOld(i1, i2); }
+        else                   { dumpOld(i1, i2); dumpNew(j1, j2); }
+    }
+
+    /// Similarity of two lines in [0,1], like SequenceMatcher::ratio() (2*matches/(len1+len2)),
+    /// computed from the character diff. The cheap upper bounds are checked first, like difflib.
+    double similarity(const std::string &x, const std::string &y, double threshold) const
+    {
+        const double total = static_cast<double>(x.size() + y.size());
+        if (total == 0.0)
+            return 1.0;
+
+        const double realQuick = 2.0 * std::min(x.size(), y.size()) / total;
+        if (realQuick <= threshold)
+            return realQuick;
+
+        std::array<int, 256> countX{}, countY{};
+        for (const char c : x) ++countX[static_cast<unsigned char>(c)];
+        for (const char c : y) ++countY[static_cast<unsigned char>(c)];
+        size_t common = 0;
+        for (size_t k = 0; k < countX.size(); ++k)
+            common += static_cast<size_t>(std::min(countX[k], countY[k]));
+        const double quick = 2.0 * common / total;
+        if (quick <= threshold)
+            return quick;
+
+        size_t equal = 0;
+        for (const auto &d : similarityDmp.diff_main(x, y, false))
+            if (d.operation == diff_match_patch<std::string>::EQUAL)
+                equal += d.text.size();
+        return 2.0 * equal / total;
+    }
+
+    void fancyReplace(int i1, int i2, int j1, int j2)
+    {
+        double bestRatio = 0.74;
+        int bestI = i1, bestJ = j1;
+        bool eqFound = false;
+        int eqI = 0, eqJ = 0;
+
+        for (int j = j1; j < j2; ++j)
+        {
+            for (int i = i1; i < i2; ++i)
+            {
+                if (a[i] == b[j])
+                {
+                    if (!eqFound) { eqFound = true; eqI = i; eqJ = j; }
+                    continue;
+                }
+                const double ratio = similarity(a[i], b[j], bestRatio);
+                if (ratio > bestRatio)
+                {
+                    bestRatio = ratio;
+                    bestI = i;
+                    bestJ = j;
+                }
+            }
+        }
+
+        if (bestRatio < 0.75)
+        {
+            if (!eqFound)
+            {
+                plainReplace(i1, i2, j1, j2);
+                return;
+            }
+            bestI = eqI;
+            bestJ = eqJ;
+        }
+        else
+        {
+            eqFound = false;
+        }
+
+        fancyHelper(i1, bestI, j1, bestJ);
+        emitPair(bestI, bestJ, eqFound ? DiffType::Unchanged : DiffType::Modified);
+        fancyHelper(bestI + 1, i2, bestJ + 1, j2);
+    }
+
+    void fancyHelper(int i1, int i2, int j1, int j2)
+    {
+        if (i1 < i2)
+        {
+            if (j1 < j2) fancyReplace(i1, i2, j1, j2);
+            else         dumpOld(i1, i2);
+        }
+        else if (j1 < j2)
+        {
+            dumpNew(j1, j2);
+        }
+    }
+};
+
+/// Handles a block [i1,i2) of old lines that has to become [j1,j2) of new lines.
+///
+/// Pairing k-th with k-th is wrong as soon as a line is inserted or removed inside the block - all
+/// the following pairs are then shifted. So the lines are matched by similarity (see ReplaceDiffer);
+/// lines that have no similar counterpart stay unpaired (removed / added); a run of such lines is
+/// then shown side by side by position.
+void appendReplaceBlock(const std::vector<std::string> &a, const std::vector<std::string> &b,
+                        int i1, int i2, int j1, int j2, std::vector<DiffLine> &result)
+{
     unsigned long long oldBytes = 0, newBytes = 0;
     for (int i = i1; i < i2; ++i) oldBytes += a[i].size() + 1;
     for (int j = j1; j < j2; ++j) newBytes += b[j].size() + 1;
 
     if (oldBytes * newBytes > maxSimilarityWork)
     {
-        for (int i = i1; i < i2; ++i) pendingOld.push_back(i);
-        for (int j = j1; j < j2; ++j) pendingNew.push_back(j);
-        flushPending();
+        std::vector<int> oldIndexes, newIndexes;
+        for (int i = i1; i < i2; ++i) oldIndexes.push_back(i);
+        for (int j = j1; j < j2; ++j) newIndexes.push_back(j);
+        pairByPosition(a, b, oldIndexes, newIndexes, result);
         return;
     }
 
-    const std::vector<std::string> oldBlock(a.begin() + i1, a.begin() + i2);
-    const std::vector<std::string> newBlock(b.begin() + j1, b.begin() + j2);
+    ReplaceDiffer differ(a, b, result);
+    differ.fancyReplace(i1, i2, j1, j2);
+    differ.flushPending();
+}
 
-    pydifflib::Differ<std::string> differ;
-    int oldIndex = i1, newIndex = j1;
+enum class LineOpTag
+{
+    Equal,
+    Delete,
+    Insert,
+    Replace
+};
 
-    for (const auto &delta : differ.get_deltas(oldBlock, newBlock))
-    {
-        using pydifflib::tag_t;
+struct LineOp
+{
+    LineOpTag tag;
+    int i1, i2, j1, j2;
+};
 
-        switch (delta.tag)
+/// Line-level diff produced by diff_match_patch: each distinct line is encoded as a single
+/// char32_t token and the token strings are diffed (checklines=false - the built-in line mode
+/// expects '\n'-separated text, which the token strings do not contain). Runs of deletes and
+/// inserts become "replace" blocks, like the opcodes of difflib's SequenceMatcher.
+std::vector<LineOp> computeLineOps(const std::vector<std::string> &a, const std::vector<std::string> &b)
+{
+    std::unordered_map<std::string, char32_t> ids;
+    ids.reserve(a.size() + b.size());
+    std::u32string textA, textB;
+    textA.reserve(a.size());
+    textB.reserve(b.size());
+
+    auto encode = [&ids](const std::vector<std::string> &lines, std::u32string &out) {
+        for (const auto &line : lines)
         {
-        case tag_t::t_delete:
-            pendingOld.push_back(oldIndex++);
-            break;
-        case tag_t::t_insert:
-            pendingNew.push_back(newIndex++);
-            break;
-        case tag_t::t_replace: // similar lines: a pair
-            flushPending();
-            result.push_back(makeDiffLine(a, b, oldIndex++, newIndex++, DiffType::Modified));
-            break;
-        default: // t_equal: identical line found inside the block
-            flushPending();
-            result.push_back(makeDiffLine(a, b, oldIndex++, newIndex++, DiffType::Unchanged));
-            break;
+            auto it = ids.find(line);
+            if (it == ids.end())
+                it = ids.emplace(line, static_cast<char32_t>(ids.size() + 1)).first;
+            out.push_back(it->second);
         }
+    };
+    encode(a, textA);
+    encode(b, textB);
+
+    using Dmp = diff_match_patch<std::u32string>;
+    Dmp dmp;
+    dmp.Diff_Timeout = lineDiffTimeoutSeconds;
+    const auto diffs = dmp.diff_main(textA, textB, false);
+
+    std::vector<LineOp> ops;
+    size_t i = 0, j = 0;
+    for (auto it = diffs.begin(); it != diffs.end(); )
+    {
+        const int length = static_cast<int>(it->text.size());
+        if (it->operation == Dmp::EQUAL)
+        {
+            ops.push_back({ LineOpTag::Equal, static_cast<int>(i), static_cast<int>(i) + length,
+                            static_cast<int>(j), static_cast<int>(j) + length });
+            i += length;
+            j += length;
+            ++it;
+            continue;
+        }
+
+        int deleted = 0, inserted = 0;
+        while (it != diffs.end() && it->operation != Dmp::EQUAL)
+        {
+            const int l = static_cast<int>(it->text.size());
+            if (it->operation == Dmp::DELETE) deleted += l; else inserted += l;
+            ++it;
+        }
+
+        if (deleted && inserted)
+            ops.push_back({ LineOpTag::Replace, static_cast<int>(i), static_cast<int>(i) + deleted,
+                            static_cast<int>(j), static_cast<int>(j) + inserted });
+        else if (deleted)
+            ops.push_back({ LineOpTag::Delete, static_cast<int>(i), static_cast<int>(i) + deleted,
+                            static_cast<int>(j), static_cast<int>(j) });
+        else
+            ops.push_back({ LineOpTag::Insert, static_cast<int>(i), static_cast<int>(i),
+                            static_cast<int>(j), static_cast<int>(j) + inserted });
+        i += deleted;
+        j += inserted;
     }
-    flushPending();
+    return ops;
 }
 } // namespace
 
 QSet<int> calculateModifiedLines(const QStringList& oldLines, const QStringList& newLines)
 {
-    using namespace pydifflib;
-
     std::vector<std::string> a, b;
     for (const auto& line : oldLines)
         a.emplace_back(line.toStdString());
     for (const auto& line : newLines)
         b.emplace_back(line.toStdString());
 
-    SequenceMatcher matcher(a, b);
-    auto opcodes = matcher.get_opcodes();
-
     QSet<int> modified;
 
-    for (const auto& op : opcodes)
+    for (const auto &op : computeLineOps(a, b))
     {
-        if (op.tag != tag_t::t_equal)
+        if (op.tag != LineOpTag::Equal)
         {
-            for (int i = op.j1; i < op.j2; ++i)
-                modified.insert(i + 1);  // linie liczymy od 1
+            for (int k = op.j1; k < op.j2; ++k)
+                modified.insert(k + 1);  // linie liczymy od 1
         }
     }
 
@@ -176,27 +363,22 @@ QSet<int> calculateModifiedLines(const QStringList& oldLines, const QStringList&
 
 std::vector<DiffLine> computeDiff(const QStringList &oldLines, const QStringList &newLines)
 {
-    using namespace pydifflib;
-
     std::vector<std::string> a, b;
     for (const auto &line : oldLines)
         a.push_back(line.toStdString());
     for (const auto &line : newLines)
         b.push_back(line.toStdString());
 
-    SequenceMatcher matcher(a, b);
-    auto opcodes = matcher.get_opcodes();
-
     std::vector<DiffLine> result;
 
-    for (const auto &op : opcodes)
+    for (const auto &op : computeLineOps(a, b))
     {
         int i1 = op.i1, i2 = op.i2; // old
         int j1 = op.j1, j2 = op.j2; // new
 
         switch (op.tag)
         {
-        case tag_t::t_equal:
+        case LineOpTag::Equal:
             for (int k = 0; k < i2 - i1; ++k)
             {
                 result.push_back(DiffLine{
@@ -209,11 +391,11 @@ std::vector<DiffLine> computeDiff(const QStringList &oldLines, const QStringList
             }
             break;
 
-        case tag_t::t_replace:
+        case LineOpTag::Replace:
             appendReplaceBlock(a, b, i1, i2, j1, j2, result);
             break;
 
-        case tag_t::t_delete:
+        case LineOpTag::Delete:
             for (int k = i1; k < i2; ++k)
             {
                 result.push_back(DiffLine{
@@ -226,7 +408,7 @@ std::vector<DiffLine> computeDiff(const QStringList &oldLines, const QStringList
             }
             break;
 
-        case tag_t::t_insert:
+        case LineOpTag::Insert:
             for (int k = j1; k < j2; ++k)
             {
                 result.push_back(DiffLine{
@@ -316,7 +498,6 @@ namespace
 {
 /// Above this many characters (of the part that differs) a text is not compared character by character
 constexpr qsizetype maxCharDiffLength = 200'000;
-constexpr float charDiffTimeoutSeconds = 0.25f;
 
 struct CommonEnds
 {

@@ -43,7 +43,7 @@ Jak ktoś chce tego używać na potrzeby pisania na stronę [Cpp0x.pl](https://c
 10. **Czyszczenie pustych linii**: Kliknij prawym przyciskiem wewnątrz dowolnego tekstu, aby usunąć nadmiarowe puste linie, pozostawiając maksymalnie dwie puste linie obok siebie. Przydatne do porządkowania tekstu po usunięciu komentarzy lub ogólnego czyszczenia formatowania.
  9. **Statystyki pliku**: Wyświetla statystyki specyficzne dla STC, np. użycie znaczników, obok standardowych metryk edytora.
 10. **Nawigacja okruszkowa**: Dynamicznie aktualizowany pasek adresu pokazujący bieżącą pozycję w strukturze dokumentu STC, z możliwością kliknięcia.
-11. **Śledzenie zmian**: Śledzi zmienione linie za pomocą biblioteki pydifflib-cpp.
+11. **Śledzenie zmian**: Śledzi zmienione linie za pomocą biblioteki diff-match-patch-cpp-stl.
 12. **Listowanie kodów w pliku**: Oddzielny widget, który śledzi na bieżąco pozycje kodów `[cpp]` i innych.
 13. **Dedykowane przeciągnij i upuść**: Do aplikacji można przeciągać pliki i zostaną odpowiednio obsłużone:
     - Ścieżka do plików graficznych zostanie otoczona tagami `[img src="ścieżka/do/przeciagnietego/obrazu.png"]`
@@ -196,7 +196,6 @@ QT_QPA_PLATFORM=offscreen ctest --output-on-failure
 `QT_QPA_PLATFORM=offscreen` pozwala uruchomić testy używające Qt na maszynie bez środowiska graficznego (np. na serwerze CI).
 
 ## Planowane funkcjonalności
-1. Rozważyć użycie tej samej biblioteki do porównywania zarówno linii jak i znaków np. https://github.com/google/diff-match-patch
 3. Podpięcie sztucznej inteligencji np. llama.cpp do komentowania kodu i artykułu. Z możliwością edycji promptu.
 4. 
 5. Obsługa markdown
@@ -272,12 +271,11 @@ Narzędzie to okazało się bardzo pomocne przy tworzeniu artykułów na [Cpp0x.
 - [Źródło użytych ikonek: MDI](https://pictogrammers.com/library/mdi/)
 
 ## Używane biblioteki zewnętrzne
-1. [pydifflib-cpp](https://github.com/dominicprice/pydifflib-cpp) - Do śledzenia zmian w liniach. Licencja: BSD 3-Clause.
-2. [diff-match-patch-cpp-stl](https://github.com/leutloff/diff-match-patch-cpp-stl/) - Do różnic na poziomie znaków w obrębie linii. Licencja: Apache 2.0.
-3. [uchardet](https://gitlab.freedesktop.org/uchardet/uchardet) - Do wykrywania kodowania plików (nie tylko UTF-8). Licencja: Mozilla Public License.
-4. [nuspell](https://nuspell.github.io/) - Do sprawdzania pisowni, wykorzystuje słowniki [Hunspell](https://hunspell.github.io/).
-5. [StripCppComments](https://github.com/wtwhite/StripCppComments) - Do usuwania komentarzy z kodu C++. Licencja: MIT.
-6. [ArsMasiuk/QCodeEditor](https://github.com/ArsMasiuk/QCodeEditor) (będący forkiem [Megaxela/QCodeEditor](https://github.com/Megaxela/QCodeEditor)) - edytor tekstowy w Qt, który ma kolorowanie składni dla C++, Python i innych. Licencja MIT.
+1. [diff-match-patch-cpp-stl](https://github.com/leutloff/diff-match-patch-cpp-stl/) - Do śledzenia zmian w liniach i do różnic na poziomie znaków w obrębie linii. Licencja: Apache 2.0.
+2. [uchardet](https://gitlab.freedesktop.org/uchardet/uchardet) - Do wykrywania kodowania plików (nie tylko UTF-8). Licencja: Mozilla Public License.
+3. [nuspell](https://nuspell.github.io/) - Do sprawdzania pisowni, wykorzystuje słowniki [Hunspell](https://hunspell.github.io/).
+4. [StripCppComments](https://github.com/wtwhite/StripCppComments) - Do usuwania komentarzy z kodu C++. Licencja: MIT.
+5. [ArsMasiuk/QCodeEditor](https://github.com/ArsMasiuk/QCodeEditor) (będący forkiem [Megaxela/QCodeEditor](https://github.com/Megaxela/QCodeEditor)) - edytor tekstowy w Qt, który ma kolorowanie składni dla C++, Python i innych. Licencja MIT.
 
 
 ### Słowniki (język polski)

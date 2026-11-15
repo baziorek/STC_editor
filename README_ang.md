@@ -41,7 +41,7 @@ If you want to use this editor for writing content for [cpp0x.pl](https://cpp0x.
 10. **Clean Up Empty Lines**: Right-click inside any text to remove excessive empty lines, leaving a maximum of two consecutive empty lines. This is useful for cleaning up text after removing comments or for general text cleanup.
 10. **File Statistics**: Displays STC-specific statistics, such as tag usage, alongside standard editor metrics.
 10. **Breadcrumb Navigation**: A dynamically updated breadcrumb bar showing the current position in the STC document structure, with clickable navigation.
-11. **Change Tracking**: Tracks modified lines using the [pydifflib-cpp](https://github.com/dominicprice/pydifflib-cpp) library.
+11. **Change Tracking**: Tracks modified lines using the [diff-match-patch-cpp-stl](https://github.com/leutloff/diff-match-patch-cpp-stl/) library.
 12. **Code Block Listing**: A separate widget that tracks the positions of `[cpp]` and other code blocks in real-time.
 13. **Dedicated Drag-and-Drop**: Drag files into the application for automatic handling:
     - Image file paths are wrapped in `[img src="path/to/dragged/image.png"]` tags.
@@ -187,7 +187,7 @@ QT_QPA_PLATFORM=offscreen ctest --output-on-failure
 15. Refactor CodeEditor to avoid being a God Object, possibly with AI assistance.
 16. Pasting images from the clipboard (`Ctrl+V`) with a prompt to save them to a directory.
 17. Application translations using QLinguist.
-18. Use a single library (e.g., [diff-match-patch](https://github.com/google/diff-match-patch)) for both line and character diffs.
+18. ~~Use a single library (e.g., [diff-match-patch](https://github.com/google/diff-match-patch)) for both line and character diffs.~~ - done: diff-match-patch-cpp-stl is used for both
 19. Integration with AI models (e.g., [Ollama](https://ollama.com)).
 20. Display font size information during `Ctrl+Scroll` (like QtCreator).
 21. Table generator for STC tables.
@@ -261,12 +261,11 @@ This tool has been invaluable for creating articles on [cpp0x.pl](https://cpp0x.
 
 ## External Libraries Used
 
-1. [pydifflib-cpp](https://github.com/dominicprice/pydifflib-cpp) - For detecting line differences (added, removed, modified). License: PSF.
-2. [diff-match-patch-cpp-stl](https://github.com/leutloff/diff-match-patch-cpp-stl/) - For character-level differences within matching lines. License: Apache 2.0.
-3. [uchardet](https://gitlab.freedesktop.org/uchardet/uchardet) - Supports multiple file encodings (not just UTF-8). License: Mozilla Public License.
-4. [nuspell](https://nuspell.github.io/) - Spellchecking library using [Hunspell](https://hunspell.github.io/) dictionaries.
-5. [StripCppComments](https://github.com/wtwhite/StripCppComments) - For removing C++ comments. License: MIT.
-6. [ArsMasiuk/QCodeEditor](https://github.com/ArsMasiuk/QCodeEditor) (which is fork of [Megaxela/QCodeEditor](https://github.com/Megaxela/QCodeEditor)) - it is text editor in Qt, which has syntax highlighting for C++, python and more. It is being used (with odifications) for syntax highlight of C++ code. License: MIT.
+1. [diff-match-patch-cpp-stl](https://github.com/leutloff/diff-match-patch-cpp-stl/) - For detecting line differences (added, removed, modified) and character-level differences within matching lines. License: Apache 2.0.
+2. [uchardet](https://gitlab.freedesktop.org/uchardet/uchardet) - Supports multiple file encodings (not just UTF-8). License: Mozilla Public License.
+3. [nuspell](https://nuspell.github.io/) - Spellchecking library using [Hunspell](https://hunspell.github.io/) dictionaries.
+4. [StripCppComments](https://github.com/wtwhite/StripCppComments) - For removing C++ comments. License: MIT.
+5. [ArsMasiuk/QCodeEditor](https://github.com/ArsMasiuk/QCodeEditor) (which is fork of [Megaxela/QCodeEditor](https://github.com/Megaxela/QCodeEditor)) - it is text editor in Qt, which has syntax highlighting for C++, python and more. It is being used (with odifications) for syntax highlight of C++ code. License: MIT.
 
 
 ### Dictionaries (Polish)
