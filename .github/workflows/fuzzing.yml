@@ -1,0 +1,68 @@
+name: Fuzzing
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  schedule:
+    # Weekly longer runs, Wednesdays 05:00 UTC
+    - cron: '0 5 * * 3'
+  workflow_dispatch:
+
+# Read-only checkout; the fuzz job needs nothing else.
+permissions:
+  contents: read
+
+jobs:
+  fuzz:
+    name: libFuzzer targets
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repo with submodules
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          submodules: recursive
+
+      - name: Install clang, compiler-rt and Qt6
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            clang \
+            libclang-rt-dev \
+            qt6-base-dev \
+            pkg-config \
+            build-essential
+
+      - name: Build fuzz targets
+        run: |
+          set -e
+          mkdir -p build-fuzz
+          QTFLAGS="$(pkg-config --cflags --libs Qt6Core)"
+          BASE="-std=c++20 -fsanitize=fuzzer,address -g -O1 -fPIC -I. -Ilibs $QTFLAGS"
+
+          clang++ $BASE fuzz/diff_fuzzer.cpp        utils/DiffCalculation.cpp   -o build-fuzz/diff_fuzzer
+          clang++ $BASE fuzz/stc_scan_fuzzer.cpp    utils/StcTagScanner.cpp     -o build-fuzz/stc_scan_fuzzer
+          clang++ $BASE fuzz/html_pretty_fuzzer.cpp utils/HtmlPrettyPrinter.cpp -o build-fuzz/html_pretty_fuzzer
+          clang++ $BASE fuzz/line_search_fuzzer.cpp utils/LineSearch.cpp        -o build-fuzz/line_search_fuzzer
+
+      - name: Run fuzz targets
+        run: |
+          set -u
+          failed=0
+          for t in build-fuzz/*_fuzzer; do
+            name="$(basename "$t")"
+            corpus="fuzz/corpus/${name%_fuzzer}"
+            mkdir -p "$corpus" "artifacts/$name"
+            echo "=== $name ==="
+            ./$t "$corpus" -max_total_time=120 -timeout=10 -artifact_prefix="artifacts/$name/" || failed=1
+          done
+          exit $failed
+
+      - name: Upload crash artifacts
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: fuzz-crash-artifacts
+          path: artifacts/
+          if-no-files-found: ignore
