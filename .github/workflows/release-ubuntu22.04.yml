@@ -7,10 +7,6 @@ on:
   release:
     types: [created]
 
-# softprops/action-gh-release needs to write release assets on `release` events.
-permissions:
-  contents: write
-
 # A newer push to the same branch/PR cancels the build still running for it (saves runner minutes).
 # concurrency:
 #   group: ${{ github.workflow }}-${{ github.ref }}
@@ -19,6 +15,10 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-22.04
+    # softprops/action-gh-release needs to write release assets on `release` events.
+    # Declared at job level (not top level) so the token stays as narrow as possible.
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repo with submodules
@@ -107,7 +107,10 @@ jobs:
 
       - name: Download linuxdeployqt
         run: |
-          wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
+          # Pinned to release 11; the SHA-256 is verified so a tampered or
+          # silently rebuilt binary cannot be executed on the runner.
+          wget https://github.com/probonopd/linuxdeployqt/releases/download/11/linuxdeployqt-continuous-x86_64.AppImage
+          echo "65192b29bee5f8da8820672aeee91f217896b08ca6236c84d996813129fb3510  linuxdeployqt-continuous-x86_64.AppImage" | sha256sum -c -
           chmod +x linuxdeployqt-continuous-x86_64.AppImage
 
       - name: Run linuxdeployqt

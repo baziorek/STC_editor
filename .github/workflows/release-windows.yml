@@ -7,10 +7,6 @@ on:
   release:
     types: [created]
 
-# softprops/action-gh-release needs to write release assets on `release` events.
-permissions:
-  contents: write
-
 # A newer push to the same branch/PR cancels the build still running for it (saves runner minutes).
 # concurrency:
 #   group: ${{ github.workflow }}-${{ github.ref }}
@@ -19,6 +15,10 @@ permissions:
 jobs:
   build-windows:
     runs-on: windows-latest
+    # softprops/action-gh-release needs to write release assets on `release` events.
+    # Declared at job level (not top level) so the token stays as narrow as possible.
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository

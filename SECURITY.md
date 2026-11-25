@@ -16,11 +16,12 @@ Please **do not** open a public issue for security vulnerabilities.
 
 Report vulnerabilities privately via **GitHub Security Advisories**:
 
-1. Open the repository on GitHub.
-2. Go to the **Security** tab.
-3. Click **Report a vulnerability** (requires the feature to be enabled by
-   the maintainer; if the button is missing, open a regular issue asking for a
-   private contact channel instead).
+1. Open the repository on GitHub: <https://github.com/baziorek/STC_editor>
+2. Go to the **Security** tab → **Advisories** → **Report a vulnerability**
+   (direct link: <https://github.com/baziorek/STC_editor/security/advisories/new>).
+3. If private vulnerability reporting is not enabled, open a regular issue
+   asking for a private contact channel instead — see
+   <https://github.com/baziorek/STC_editor/issues>.
 
 Please include:
 
