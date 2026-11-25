@@ -1,0 +1,38 @@
+name: OpenSSF Scorecard
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  schedule:
+    # Run every Monday at 00:00 UTC
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+# For the `publish_results` step below to upload results to GitHub, the
+# following permissions are required (add `pull-requests: write` if needed for PR checks).
+permissions: read-all
+
+jobs:
+  analysis:
+    name: Scorecard analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write # for publishing the results to GitHub
+      id-token: write # to publish the results
+      contents: read # for analysis
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: OSSF Scorecard action
+        uses: ossf/scorecard-action@v2.6.0
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+          # sparse-checkout option not needed: the repo is small enough
