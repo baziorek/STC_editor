@@ -7,6 +7,9 @@ on:
   release:
     types: [created]
 
+permissions:
+  contents: read
+
 # A newer push to the same branch/PR cancels the build still running for it (saves runner minutes).
 # concurrency:
 #   group: ${{ github.workflow }}-${{ github.ref }}
@@ -106,10 +109,13 @@ jobs:
           cp resources/icons/stc_editor.png build/
 
       - name: Download linuxdeployqt
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Pinned to release 11; the SHA-256 is verified so a tampered or
-          # silently rebuilt binary cannot be executed on the runner.
-          wget https://github.com/probonopd/linuxdeployqt/releases/download/11/linuxdeployqt-continuous-x86_64.AppImage
+          # Pinned to the immutable release 11; the SHA-256 is verified so a
+          # tampered or silently rebuilt binary cannot be executed on the runner.
+          gh release download 11 --repo probonopd/linuxdeployqt \
+            --pattern 'linuxdeployqt-continuous-x86_64.AppImage' --clobber
           echo "65192b29bee5f8da8820672aeee91f217896b08ca6236c84d996813129fb3510  linuxdeployqt-continuous-x86_64.AppImage" | sha256sum -c -
           chmod +x linuxdeployqt-continuous-x86_64.AppImage
 
