@@ -1,0 +1,13 @@
+# Dependabot keeps the GitHub Actions pinned to commit SHAs up to date:
+# it opens pull requests that bump the SHA (and the version comment) whenever
+# a new release of an action is published.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns:
+          - "*"

@@ -22,12 +22,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3
         with:
           submodules: recursive
 
       - name: Set up Qt
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@b7840a6733f49e2a39c4355260d2375063d39b61 # v3
         with:
           version: 6.7.3
           target: desktop
@@ -35,10 +35,10 @@ jobs:
           modules: qtwebengine qtpositioning qtwebchannel
 
       - name: Set up MSVC
-        uses: ilammy/msvc-dev-cmd@v1
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
 
       - name: Run vcpkg (manifest mode)
-        uses: lukka/run-vcpkg@v11
+        uses: lukka/run-vcpkg@b1a0dd252f06b9e25b3c022a9a03bd7a427fb6a2 # v11
         with:
           runVcpkgInstall: true
           vcpkgJsonGlob: vcpkg.json
@@ -79,13 +79,13 @@ jobs:
           7z a STC_editor-win64.zip .\zipdir\*
 
       - name: Upload zip as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: STC_editor-win64
           path: STC_editor-win64.zip
 
       - name: Upload ZIP to GitHub Release
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           files: STC_editor-win64.zip

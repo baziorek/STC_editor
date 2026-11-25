@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout repo with submodules
-        uses: actions/checkout@v3
+        uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3
         with:
           submodules: recursive
 
@@ -154,25 +154,25 @@ jobs:
           dpkg-deb --build deb stc-editor.deb
 
       - name: Upload AppImage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: STC_editor-AppImage
           path: STC_editor-x86_64.AppImage
 
       - name: Upload .deb artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: STC_editor-deb
           path: stc-editor.deb
 
       - name: Upload AppImage to GitHub Release
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           files: STC_editor-x86_64.AppImage
 
       - name: Upload .deb to GitHub Release
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           files: stc-editor.deb
