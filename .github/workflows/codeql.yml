@@ -1,0 +1,60 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  schedule:
+    # Weekly deep scan, Mondays 03:30 UTC
+    - cron: '30 3 * * 1'
+  workflow_dispatch:
+
+# Top level is read-only; the job grants itself security-events: write
+# to upload the analysis results to the repository's Security tab.
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Analyze (C/C++)
+    runs-on: ubuntu-24.04
+    permissions:
+      security-events: write # for uploading the analysis results
+      contents: read # for checkout and analysis
+
+    steps:
+      - name: Checkout repo with submodules
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          submodules: recursive
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@915412ff23e8b7659517e607487dbeae018f2934 # v4.39.5
+        with:
+          languages: cpp
+          build-mode: autobuild
+
+      - name: Install build dependencies (Qt6, GTest, build tools)
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            qt6-base-dev \
+            qt6-tools-dev \
+            qt6-tools-dev-tools \
+            qt6-webengine-dev \
+            qt6-webengine-dev-tools \
+            libqt6webenginecore6-bin \
+            libgl-dev \
+            libglu1-mesa-dev \
+            libxkbcommon-dev \
+            mesa-common-dev \
+            build-essential \
+            cmake \
+            qt6-base-dev-tools \
+            libuchardet-dev \
+            libgtest-dev \
+            wget
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@915412ff23e8b7659517e607487dbeae018f2934 # v4.39.5
