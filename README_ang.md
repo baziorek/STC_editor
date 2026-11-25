@@ -2,6 +2,7 @@
 ![Build Status: Linux](https://github.com/baziorek/STC_editor/actions/workflows/release-ubuntu22.04.yml/badge.svg)
 ![Build Status: Windows](https://github.com/baziorek/STC_editor/actions/workflows/release-windows.yml/badge.svg)
 ![Building & running tests](https://github.com/baziorek/STC_editor/actions/workflows/test-linux.yml/badge.svg)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/baziorek/STC_editor/badge)](https://securityscorecards.dev/viewer/?uri=github.com/baziorek/STC_editor)
 
 <a href="https://en.wikipedia.org/wiki/Totus_Tuus"><img width="10%" alt="Totus Tuus" src="https://github.com/user-attachments/assets/02c77754-5d69-4688-b99b-496995de4cfe" /></a>
 
