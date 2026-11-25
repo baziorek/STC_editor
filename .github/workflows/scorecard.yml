@@ -10,9 +10,10 @@ on:
     - cron: '0 0 * * 1'
   workflow_dispatch:
 
-# For the `publish_results` step below to upload results to GitHub, the
-# following permissions are required (add `pull-requests: write` if needed for PR checks).
-permissions: read-all
+# Top level is read-only; the job below grants itself only what it needs
+# (security-events: write + id-token: write to publish results, contents: read for checkout).
+permissions:
+  contents: read
 
 jobs:
   analysis:

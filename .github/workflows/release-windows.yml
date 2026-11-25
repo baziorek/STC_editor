@@ -7,6 +7,10 @@ on:
   release:
     types: [created]
 
+# softprops/action-gh-release needs to write release assets on `release` events.
+permissions:
+  contents: write
+
 # A newer push to the same branch/PR cancels the build still running for it (saves runner minutes).
 # concurrency:
 #   group: ${{ github.workflow }}-${{ github.ref }}

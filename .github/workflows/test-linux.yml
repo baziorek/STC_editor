@@ -8,6 +8,10 @@ on:
     branches:
       - master
 
+# Least privilege: checkout + read-only build/test needs nothing more.
+permissions:
+  contents: read
+
 # A newer push to the same branch/PR cancels the build still running for it (saves runner minutes).
 # concurrency:
 #   group: ${{ github.workflow }}-${{ github.ref }}
