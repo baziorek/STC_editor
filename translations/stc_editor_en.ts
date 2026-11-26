@@ -1461,6 +1461,46 @@ Double click to go to the line.</translation>
         <translation>Do You really want to close the editor without saving unsaved changes?</translation>
     </message>
     <message>
+        <location filename="../ui/mainwindow.cpp" line="0"/>
+        <source>Untitled</source>
+        <translation>Untitled</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.cpp" line="0"/>
+        <source>Close tab without saving?</source>
+        <translation>Close tab without saving?</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.cpp" line="0"/>
+        <source>Do You really want to close this tab without saving unsaved changes?</source>
+        <translation>Do You really want to close this tab without saving unsaved changes?</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.cpp" line="0"/>
+        <source>Close tab</source>
+        <translation>Close tab</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.cpp" line="0"/>
+        <source>PDF document (*.pdf)</source>
+        <translation>PDF document (*.pdf)</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="0"/>
+        <source>Print</source>
+        <translation>Print</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="0"/>
+        <source>Ctrl+P</source>
+        <translation>Ctrl+P</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="0"/>
+        <source>Export to PDF</source>
+        <translation>Export to PDF</translation>
+    </message>
+    <message>
         <location filename="../ui/mainwindow.cpp" line="665"/>
         <source>Confirm discarding current file content?</source>
         <translation>Confirm discarding current file content?</translation>

@@ -1474,6 +1474,46 @@ Dwuklik przenosi do linii.</translation>
         <translation>Do You really want to close the editor without saving unsaved changes?</translation>
     </message>
     <message>
+        <location filename="../ui/mainwindow.cpp" line="0"/>
+        <source>Untitled</source>
+        <translation>Bez tytułu</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.cpp" line="0"/>
+        <source>Close tab without saving?</source>
+        <translation>Zamknąć kartę bez zapisu?</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.cpp" line="0"/>
+        <source>Do You really want to close this tab without saving unsaved changes?</source>
+        <translation>Czy na pewno chcesz zamknąć tę kartę bez zapisywania niezapisanych zmian?</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.cpp" line="0"/>
+        <source>Close tab</source>
+        <translation>Zamknij kartę</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.cpp" line="0"/>
+        <source>PDF document (*.pdf)</source>
+        <translation>Dokument PDF (*.pdf)</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="0"/>
+        <source>Print</source>
+        <translation>Drukuj</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="0"/>
+        <source>Ctrl+P</source>
+        <translation>Ctrl+P</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="0"/>
+        <source>Export to PDF</source>
+        <translation>Eksportuj do PDF</translation>
+    </message>
+    <message>
         <location filename="../ui/mainwindow.cpp" line="665"/>
         <source>Confirm discarding current file content?</source>
         <translation>Confirm discarding current file content?</translation>
