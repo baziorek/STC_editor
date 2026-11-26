@@ -149,20 +149,9 @@
         </widget>
        </item>
        <item>
-        <widget class="CodeEditor" name="textEditor">
-         <property name="font">
-          <font>
-           <pointsize>14</pointsize>
-          </font>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QPlainText {
-	background-color: rgb(255, 255, 255);
-	color: rgb(0, 0, 0);
-    font-family: monospace;
-}
-
-</string>
+        <widget class="QTabWidget" name="editorTabs">
+         <property name="documentMode">
+          <bool>true</bool>
          </property>
         </widget>
        </item>

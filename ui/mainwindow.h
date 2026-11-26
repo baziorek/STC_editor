@@ -13,6 +13,7 @@ class CppNewsWidget;
 QT_END_NAMESPACE
 
 class ConsoleWidget;
+class CodeEditor;
 class QDockWidget;
 
 class QTextCursor;
@@ -40,6 +41,7 @@ public slots:
     void closeEvent(QCloseEvent *event) override;
 
     bool loadFileContentToEditorDistargingCurrentContent(const QString& fileName);
+    void openFileInTab(const QString& fileName);
 
     void onStcTagsButtonPressed(StcTags stcTag);
 
@@ -131,7 +133,20 @@ protected:
 
     void connectShortcuts();
     void restoreLastSession();
-    void connectShortcutsFromCodeWidget();
+
+    /// document tabs: each tab holds its own CodeEditor with the whole state of the document
+    CodeEditor* currentEditor() const;
+    CodeEditor* createEditorTab();
+    void connectEditorSignals(CodeEditor* editor);
+    void onEditorTabsCurrentChanged(int index);
+    void onEditorTabCloseRequested(int index);
+    /// asks about unsaved changes of the current tab and closes it; returns false when the user cancelled.
+    /// With ensureAtLeastOneTab=false (application close) the last tab is not replaced by a fresh one.
+    bool confirmAndCloseCurrentTab(bool ensureAtLeastOneTab = true);
+    void updateTabTitle(CodeEditor* editor);
+    void refreshEditorDependentWidgets(CodeEditor* editor);
+    /// opens the file in a tab: activates the tab if it is already open, reuses a pristine empty tab or adds a new one
+    int findTabIndexForFile(const QString& fileName) const;
     bool closeApplicationReturningIfClosed();
     bool operationWhichDiscardsChangesRequestedReturningIfDiscarded(const QString &dialogTitle, const QString &dialogMessage,
                                                                     bool restoreEditorAfterwards = true);

@@ -52,10 +52,8 @@ int main(int argc, char *argv[])
                            [&w, filesToOpen]() {
             for (const QString& fileName : filesToOpen)
             {
-                if (!w.loadFileContentToEditorDistargingCurrentContent(fileName))
-                {
-                    qWarning() << "Opening file: '" << fileName << "' failed!";
-                }
+                // every file from the command line gets its own tab; a file already open is just activated
+                w.openFileInTab(fileName);
             }
         });
     }

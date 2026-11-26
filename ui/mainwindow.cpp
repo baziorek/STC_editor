@@ -44,6 +44,8 @@ namespace GeometryNames
     constexpr const char LAST_DIRECTORY[] = "lastDirectory";
     constexpr const char RECENT_FILES_LIST[] = "recentFiles";
     constexpr const char RESUME_SESSION[] = "startup/resumeSession";
+    constexpr const char SESSION_OPEN_FILES[] = "session/openFiles";
+    constexpr const char SESSION_ACTIVE_FILE[] = "session/activeFile";
     constexpr const char LOGIN_USERNAME[] = "login/username";
     constexpr const char LOGIN_PASSWORD[] = "login/password";
     constexpr const char LOGIN_REMEMBER[] = "login/remember";
@@ -113,11 +115,19 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     // The console is made before loadSettings(): restoreState() has to find its dock to restore its place and size
     consoleWidget = new ConsoleWidget(this);
-    consoleWidget->setCurrentFileProvider([this] { return ui->textEditor->getFileName(); });
+    consoleWidget->setCurrentFileProvider([this] { return currentEditor()->getFileName(); });
     consoleDockWidget = new QDockWidget(tr("Console"), this);
     consoleDockWidget->setObjectName(QStringLiteral("consoleDockWidget"));
     consoleDockWidget->setWidget(consoleWidget);
     addDockWidget(Qt::BottomDockWidgetArea, consoleDockWidget);
+
+    // document tabs: closable, the current one is shown in the window title and drives every file action
+    ui->editorTabs->setTabsClosable(true);
+    connect(ui->editorTabs, &QTabWidget::currentChanged, this, &MainWindow::onEditorTabsCurrentChanged);
+    connect(ui->editorTabs, &QTabWidget::tabCloseRequested, this, &MainWindow::onEditorTabCloseRequested);
+
+    // the first document tab; further ones are created by File > New / Open
+    createEditorTab();
 
     loadSettings();
 
@@ -129,12 +139,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     ui->findWidget->hide();
     ui->findDockWidget->hide();
-    ui->findWidget->setCodeEditor(ui->textEditor);
-    ui->textEditor->setFocus();
+    ui->findWidget->setCodeEditor(currentEditor());
+    currentEditor()->setFocus();
 
-    ui->contextTableWidget->setTextEditor(ui->textEditor);
-    ui->codesListTableWidget->setTextEditor(ui->textEditor);
-    ui->todosTableWidget->setTextEditor(ui->textEditor);
+    ui->contextTableWidget->setTextEditor(currentEditor());
+    ui->codesListTableWidget->setTextEditor(currentEditor());
+    ui->todosTableWidget->setTextEditor(currentEditor());
 
     // the news of cpp0x.pl: a tab of the right panel, shown from the View menu
     cppNewsWidget = new CppNewsWidget(this);
@@ -152,7 +162,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->menuView->addSeparator();
     ui->menuView->addAction(consoleAction);
     connect(consoleDockWidget, &QDockWidget::visibilityChanged, this, &MainWindow::onConsoleVisibilityChanged);
-    connect(consoleWidget, &ConsoleWidget::leaveRequested, ui->textEditor, qOverload<>(&QWidget::setFocus));
+    connect(consoleWidget, &ConsoleWidget::leaveRequested, this, [this] {
+        if (currentEditor())
+            currentEditor()->setFocus();
+    });
     connect(consoleWidget, &ConsoleWidget::openDirectoryRequested, this, [](const QString& directory) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(directory));
     });
@@ -161,7 +174,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     });
 
     connectSignals2Slots();
-    connectShortcutsFromCodeWidget();
     connectShortcuts();
 
     // Restore last session if the setting is enabled
@@ -171,15 +183,17 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 void MainWindow::connectSignals2Slots()
 {
     connect(ui->buttonsEmittingStc, &StcTagsButtons::buttonPressed, this, &MainWindow::onStcTagsButtonPressed);
-    connect(ui->contextTableWidget, &FilteredTagTableWidget::goToLineClicked, ui->textEditor, &CodeEditor::go2LineRequested);
-    connect(ui->goToLineGroupBox, &GoToLineWidget::onGoToLineRequested, ui->textEditor, &CodeEditor::go2LineRequested);
-    connect(ui->findWidget, &FindDialog::jumpToLocationRequested, ui->textEditor, &CodeEditor::goToLineAndOffset);
-    connect(ui->textEditor, &CodeEditor::totalLinesCountChanged, ui->goToLineGroupBox, &GoToLineWidget::setMaxLine);
-    connect(ui->textEditor, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateBreadcrumb);
+    connect(ui->contextTableWidget, &FilteredTagTableWidget::goToLineClicked, this, [this](int line) {
+        if (currentEditor()) currentEditor()->go2LineRequested(line);
+    });
+    connect(ui->goToLineGroupBox, &GoToLineWidget::onGoToLineRequested, this, [this](int line) {
+        if (currentEditor()) currentEditor()->go2LineRequested(line);
+    });
+    connect(ui->findWidget, &FindDialog::jumpToLocationRequested, this, [this](int line, int offset) {
+        if (currentEditor()) currentEditor()->goToLineAndOffset(line, offset);
+    });
 
     // The preview follows the editor (the user scrolls only the editor)
-    connect(ui->textEditor->verticalScrollBar(), &QScrollBar::valueChanged, this, &MainWindow::onEditorViewportMoved);
-    connect(ui->textEditor, &QPlainTextEdit::textChanged, this, &MainWindow::onEditorViewportMoved);
     connect(ui->stcPreviewWidget, &StcPreviewWidget::scrollSyncEnabledChanged, this, [](bool enabled) {
         QSettings().setValue(GeometryNames::PREVIEW_SCROLL_SYNC, enabled);
     });
@@ -189,14 +203,9 @@ void MainWindow::connectSignals2Slots()
     connect(ui->stcPreviewWidget, &StcPreviewWidget::clickSyncEnabledChanged, this, [](bool enabled) {
         QSettings().setValue(GeometryNames::PREVIEW_CLICK_SYNC, enabled);
     });
-    connect(ui->textEditor, &CodeEditor::numberOfModifiedLinesChanged, [this](int linesNumber) {
-        this->onFileContentChanged(ui->textEditor->getFileName(), linesNumber);
-    });
     connect(ui->todosTableWidget, &TodoTrackerTableWidget::todosTotalCountChanged, [this](int todosTotal) {
         this->setTodosCounterValue(todosTotal);
     });
-    connect(ui->textEditor, &QPlainTextEdit::textChanged, ui->stopwatchGroupBox, &WorkAwareStopwatch::notifyWorkActivity);
-    connect(ui->textEditor, &CodeEditor::contentReloaded, ui->todosTableWidget, &TodoTrackerTableWidget::scanEntireDocumentDetectingAllTodos);
     connect(ui->menuOpen_recent, &QMenu::aboutToShow, this, &MainWindow::onRecentRecentFilesMenuOpened);
     
     // Language switching connections
@@ -209,14 +218,13 @@ void MainWindow::connectSignals2Slots()
     for (const auto& [action, mode] : syntaxMenuActions())
     {
         syntaxActions->addAction(action);
-        connect(action, &QAction::triggered, this, [this, mode] { ui->textEditor->setSyntaxModeChosenByUser(mode); });
+        connect(action, &QAction::triggered, this, [this, mode] { currentEditor()->setSyntaxModeChosenByUser(mode); });
     }
-    connect(ui->textEditor, &CodeEditor::syntaxModeChanged, this, &MainWindow::onSyntaxModeChanged);
-    onSyntaxModeChanged(ui->textEditor->syntaxMode());
+    onSyntaxModeChanged(currentEditor()->syntaxMode());
 
     setUpEncodingMenu();
 
-    ui->breadcrumbTextBrowser->setTextEditor(ui->textEditor);
+    ui->breadcrumbTextBrowser->setTextEditor(currentEditor());
     ui->breadcrumbTextBrowser->setHeaderTable(ui->contextTableWidget);
 }
 
@@ -300,7 +308,7 @@ void MainWindow::onStcTagsButtonPressed(StcTags stcTag)
 }
 void MainWindow::toggleTagOnSelectedText(const QString& tag)
 {
-    auto cursor = ui->textEditor->textCursor();
+    auto cursor = currentEditor()->textCursor();
     QString selectedText = cursor.selectedText();
 
     // Handle newlines as QChar::ParagraphSeparator
@@ -327,7 +335,7 @@ void MainWindow::toggleTagOnSelectedText(const QString& tag)
     {
         int selStart = cursor.selectionStart();
         int selEnd = cursor.selectionEnd();
-        QString fullText = ui->textEditor->toPlainText(); // TODO: Can't we avoid merging entire text?
+        QString fullText = currentEditor()->toPlainText(); // TODO: Can't we avoid merging entire text?
         // Check for openTag before selection and closeTag after selection
         int openTagStart = selStart - openTag.length();
         int closeTagEnd = selEnd + closeTag.length();
@@ -337,7 +345,7 @@ void MainWindow::toggleTagOnSelectedText(const QString& tag)
                 fullText.mid(selEnd, closeTag.length()) == closeTag)
             {
                 // Remove closeTag first
-                QTextCursor tmpCursor = ui->textEditor->textCursor();
+                QTextCursor tmpCursor = currentEditor()->textCursor();
                 tmpCursor.setPosition(selEnd);
                 tmpCursor.setPosition(selEnd + closeTag.length(), QTextCursor::KeepAnchor);
                 tmpCursor.removeSelectedText();
@@ -346,10 +354,10 @@ void MainWindow::toggleTagOnSelectedText(const QString& tag)
                 tmpCursor.setPosition(openTagStart + openTag.length(), QTextCursor::KeepAnchor);
                 tmpCursor.removeSelectedText();
                 // Restore original text (without tags)
-                QTextCursor restoreCursor = ui->textEditor->textCursor();
+                QTextCursor restoreCursor = currentEditor()->textCursor();
                 restoreCursor.setPosition(openTagStart);
                 restoreCursor.setPosition(openTagStart + selectedText.length(), QTextCursor::KeepAnchor);
-                ui->textEditor->setTextCursor(restoreCursor);
+                currentEditor()->setTextCursor(restoreCursor);
                 return;
             }
         }
@@ -365,7 +373,7 @@ void MainWindow::toggleTagOnSelectedText(const QString& tag)
     {
         int pos = cursor.position() - closeTag.length();
         cursor.setPosition(pos);
-        ui->textEditor->setTextCursor(cursor);
+        currentEditor()->setTextCursor(cursor);
     }
 }
 
@@ -413,15 +421,21 @@ QAction* MainWindow::createRecentFileAction(const QString& filePath, const Recen
             return;
         }
 
-        updateRecentFiles(filePath);
-        onRecentRecentFilesMenuOpened();
-        loadFileContentToEditorDistargingCurrentContent(filePath);
+        openFileInTab(filePath);
 
         const int position = recentFilesWithPositions.value(filePath).cursorPosition;
-        QTextCursor cursor = ui->textEditor->textCursor();
-        cursor.setPosition(position);
-        ui->textEditor->setTextCursor(cursor);
-        ui->textEditor->ensureCursorVisible();
+        const int scrollPosition = recentFilesWithPositions.value(filePath).scrollPosition;
+        if (currentEditor())
+        {
+            QTextCursor cursor = currentEditor()->textCursor();
+            cursor.setPosition(position);
+            currentEditor()->setTextCursor(cursor);
+            currentEditor()->ensureCursorVisible();
+            if (scrollPosition > 0)
+                currentEditor()->verticalScrollBar()->setValue(scrollPosition);
+            updateRecentFiles(filePath);
+        }
+        onRecentRecentFilesMenuOpened();
     });
 
     return action;
@@ -450,7 +464,7 @@ void MainWindow::addClearRecentFilesAction()
 
 void MainWindow::onCopyFileAbsoluteNamePressed()
 {
-    const auto fileName = ui->textEditor->getFileName();
+    const auto fileName = currentEditor()->getFileName();
     if (! fileName.isEmpty())
     {
         const auto fileNameAbsolutePath = QFileInfo(fileName).absoluteFilePath();
@@ -460,7 +474,7 @@ void MainWindow::onCopyFileAbsoluteNamePressed()
 
 void MainWindow::onCopyFileBaseNamePressed()
 {
-    const auto fileName = ui->textEditor->getFileName();
+    const auto fileName = currentEditor()->getFileName();
     if (! fileName.isEmpty())
     {
         QString baseName = QFileInfo(fileName).fileName();
@@ -470,7 +484,7 @@ void MainWindow::onCopyFileBaseNamePressed()
 
 void MainWindow::onOpenParentDirectoryPressed()
 {
-    QString fileName = ui->textEditor->getFileName();
+    QString fileName = currentEditor()->getFileName();
     QString pathToOpen;
 
     if (fileName.isEmpty())
@@ -492,7 +506,7 @@ void MainWindow::onShowAvailableShortcutsPressed()
 
     dialog->addShortcuts(ui->buttonsEmittingStc->listOfShortcuts(), "Buttons");
 
-    dialog->addShortcuts(ui->textEditor->listOfShortcuts(), "Editor");
+    dialog->addShortcuts(currentEditor()->listOfShortcuts(), "Editor");
 
     QList<QAction*> menuActions = findChildren<QAction*>();
     dialog->addQActions(menuActions, "Application Menu");
@@ -504,13 +518,13 @@ void MainWindow::onShowAvailableShortcutsPressed()
 
 void MainWindow::onFileStatsRequested()
 {
-    auto result = DocumentStatistics::analyze(ui->textEditor);
+    auto result = DocumentStatistics::analyze(currentEditor());
     QMessageBox::information(this, tr("File statistics"), result.toQString());
 }
 
 void MainWindow::onCompareWithPastedTextRequested()
 {
-    PastedTextDiffDialog dialog(ui->textEditor, this);
+    PastedTextDiffDialog dialog(currentEditor(), this);
     dialog.exec();
 }
 
@@ -526,7 +540,7 @@ void MainWindow::onFindTriggered(bool checked)
     else
     {
         ui->findDockWidget->setVisible(false);
-        ui->textEditor->setFocus();
+        currentEditor()->setFocus();
     }
 
     QSignalBlocker blocker(ui->actionFind_replace);
@@ -545,43 +559,250 @@ void MainWindow::onFindReplaceTriggered(bool checked)
     else
     {
         ui->findDockWidget->setVisible(false);
-        ui->textEditor->setFocus();
+        currentEditor()->setFocus();
     }
 
     QSignalBlocker blocker(ui->actionFind);
     ui->actionFind->setChecked(false);
 }
 
-[[deprecated("Instead of them mnemoniks from Qt are being used")]] void MainWindow::connectShortcutsFromCodeWidget()
+CodeEditor* MainWindow::currentEditor() const
 {
-    connect(ui->textEditor, &CodeEditor::shortcutPressed_bold, [this]() {
+    return qobject_cast<CodeEditor*>(ui->editorTabs->currentWidget());
+}
+
+CodeEditor* MainWindow::createEditorTab()
+{
+    auto* editor = new CodeEditor(ui->editorTabs);
+
+    // the same look the editor had as a single widget in mainwindow.ui
+    QFont font = editor->font();
+    font.setPointSize(14);
+    editor->setFont(font);
+    editor->setStyleSheet(QStringLiteral("QPlainText {\n"
+                                         "\tbackground-color: rgb(255, 255, 255);\n"
+                                         "\tcolor: rgb(0, 0, 0);\n"
+                                         "    font-family: monospace;\n"
+                                         "}\n"));
+
+    const int index = ui->editorTabs->addTab(editor, tr("Untitled"));
+    connectEditorSignals(editor);
+    updateTabTitle(editor);
+    Q_UNUSED(index);
+    return editor;
+}
+
+void MainWindow::connectEditorSignals(CodeEditor* editor)
+{
+    // the widgets below show the document of the current tab: signals of the other tabs are ignored
+    connect(editor, &CodeEditor::totalLinesCountChanged, this, [this, editor](int lines) {
+        if (editor == currentEditor())
+            ui->goToLineGroupBox->setMaxLine(lines);
+    });
+    connect(editor, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateBreadcrumb);
+
+    // The preview follows the editor (the user scrolls only the editor)
+    connect(editor->verticalScrollBar(), &QScrollBar::valueChanged, this, &MainWindow::onEditorViewportMoved);
+    connect(editor, &QPlainTextEdit::textChanged, this, &MainWindow::onEditorViewportMoved);
+
+    connect(editor, &CodeEditor::numberOfModifiedLinesChanged, [this, editor](int linesNumber) {
+        if (editor == currentEditor())
+            this->onFileContentChanged(editor->getFileName(), linesNumber);
+    });
+    connect(editor, &QPlainTextEdit::textChanged, ui->stopwatchGroupBox, &WorkAwareStopwatch::notifyWorkActivity);
+    connect(editor, &CodeEditor::contentReloaded, ui->todosTableWidget, &TodoTrackerTableWidget::scanEntireDocumentDetectingAllTodos);
+    connect(editor, &CodeEditor::syntaxModeChanged, this, [this, editor](SyntaxMode mode) {
+        if (editor == currentEditor())
+            onSyntaxModeChanged(mode);
+    });
+
+    // the rendered preview of the STC markup follows the text of the current document
+    connect(editor, &CodeEditor::textChanged, [this, editor]() {
+        if (editor == currentEditor() && ui->stcPreviewWidget->isVisible())
+            ui->stcPreviewWidget->updateText(editor->toPlainText());
+    });
+
+    // the "*" of the tab title and the modification info of the window title
+    connect(editor->document(), &QTextDocument::modificationChanged, this, [this, editor](bool) {
+        updateTabTitle(editor);
+        if (editor == currentEditor())
+        {
+            const QString fileName = editor->getFileName();
+            if (editor->document()->isModified())
+                updateWindowTitle(fileName, editor->getFileModificationInfoText());
+            else
+                updateWindowTitle(fileName);
+        }
+    });
+
+    connect(editor, &CodeEditor::shortcutPressed_bold, [this]() {
         this->surroundSelectedTextWithTag(tagsClasses[StcTags::BOLD], tagsClasses[StcTags::BOLD]);
     });
-    connect(ui->textEditor, &CodeEditor::shortcutPressed_run, [this]() {
+    connect(editor, &CodeEditor::shortcutPressed_run, [this]() {
         this->surroundSelectedTextWithTag(tagsClasses[StcTags::RUN], tagsClasses[StcTags::RUN]);
     });
-    connect(ui->textEditor, &CodeEditor::shortcutPressed_warning, [this]() {
+    connect(editor, &CodeEditor::shortcutPressed_warning, [this]() {
         this->surroundSelectedTextWithTag(tagsClasses[StcTags::DIV_WARNING], tagsClasses[StcTags::DIV], R"( class="uwaga")");
     });
-    connect(ui->textEditor, &CodeEditor::shortcutPressed_tip, [this]() {
+    connect(editor, &CodeEditor::shortcutPressed_tip, [this]() {
         this->surroundSelectedTextWithTag(tagsClasses[StcTags::DIV_TIP], tagsClasses[StcTags::DIV], R"( class="tip")");
     });
-    connect(ui->textEditor, &CodeEditor::shortcutPressed_href, [this]() {
+    connect(editor, &CodeEditor::shortcutPressed_href, [this]() {
         this->surroundSelectedTextWithAHrefTag();
     });
 
-    connect(ui->textEditor, &CodeEditor::shortcutPressed_h1, [this] {
+    connect(editor, &CodeEditor::shortcutPressed_h1, [this] {
         this->surroundSelectedTextWithTag("h1", "h1");
     });
-    connect(ui->textEditor, &CodeEditor::shortcutPressed_h2, [this] {
+    connect(editor, &CodeEditor::shortcutPressed_h2, [this] {
         this->surroundSelectedTextWithTag("h2", "h2");
     });
-    connect(ui->textEditor, &CodeEditor::shortcutPressed_h3, [this] {
+    connect(editor, &CodeEditor::shortcutPressed_h3, [this] {
         this->surroundSelectedTextWithTag("h3", "h3");
     });
-    connect(ui->textEditor, &CodeEditor::shortcutPressed_h4, [this] {
+    connect(editor, &CodeEditor::shortcutPressed_h4, [this] {
         this->surroundSelectedTextWithTag("h4", "h4");
     });
+}
+
+void MainWindow::updateTabTitle(CodeEditor* editor)
+{
+    const int index = ui->editorTabs->indexOf(editor);
+    if (index < 0)
+        return;
+
+    const QString fileName = editor->getFileName();
+    QString title = fileName.isEmpty() ? tr("Untitled") : QFileInfo(fileName).fileName();
+    if (editor->document()->isModified())
+        title = QLatin1Char('*') + title;
+
+    ui->editorTabs->setTabText(index, title);
+    ui->editorTabs->setTabToolTip(index, fileName);
+}
+
+void MainWindow::onEditorTabsCurrentChanged(int index)
+{
+    auto* editor = qobject_cast<CodeEditor*>(ui->editorTabs->widget(index));
+    if (!editor)
+        return;
+
+    refreshEditorDependentWidgets(editor);
+    setDisabledMenuActionsDependingOnOpenedFile(editor->getFileName().isEmpty());
+    onSyntaxModeChanged(editor->syntaxMode());
+    ui->goToLineGroupBox->setMaxLine(editor->linesCount());
+    updateEncodingMenuHeader();
+
+    if (editor->document()->isModified())
+        updateWindowTitle(editor->getFileName(), editor->getFileModificationInfoText());
+    else
+        updateWindowTitle(editor->getFileName());
+
+    if (ui->stcPreviewWidget->isVisible())
+        ui->stcPreviewWidget->updateText(editor->toPlainText());
+}
+
+void MainWindow::refreshEditorDependentWidgets(CodeEditor* editor)
+{
+    ui->contextTableWidget->setTextEditor(editor);
+    ui->codesListTableWidget->setTextEditor(editor);
+    ui->todosTableWidget->setTextEditor(editor);
+    ui->breadcrumbTextBrowser->setTextEditor(editor);
+    ui->findWidget->setCodeEditor(editor);
+}
+
+void MainWindow::onEditorTabCloseRequested(int index)
+{
+    ui->editorTabs->setCurrentIndex(index);
+    confirmAndCloseCurrentTab();
+}
+
+bool MainWindow::confirmAndCloseCurrentTab(bool ensureAtLeastOneTab)
+{
+    auto* editor = currentEditor();
+    if (!editor)
+        return false;
+
+    if (!operationWhichDiscardsChangesRequestedReturningIfDiscarded(
+            tr("Close tab without saving?"), tr("Do You really want to close this tab without saving unsaved changes?"),
+            /*restoreEditorAfterwards=*/false))
+    {
+        return false;
+    }
+
+    const int index = ui->editorTabs->indexOf(editor);
+    ui->editorTabs->removeTab(index);
+    editor->deleteLater();
+
+    if (ensureAtLeastOneTab && ui->editorTabs->count() == 0)
+        createEditorTab();
+
+    // removing the current tab fires currentChanged(), which refreshes the title for the tab shown next
+    return true;
+}
+
+int MainWindow::findTabIndexForFile(const QString& fileName) const
+{
+    const auto targetInfo = QFileInfo(fileName);
+    const auto targetCanonical = targetInfo.canonicalFilePath();
+    const auto targetAbsolute = targetInfo.absoluteFilePath();
+
+    for (int i = 0; i < ui->editorTabs->count(); ++i)
+    {
+        const auto* editor = qobject_cast<CodeEditor*>(ui->editorTabs->widget(i));
+        if (!editor)
+            continue;
+
+        const auto openInfo = QFileInfo(editor->getFileName());
+        if (openInfo.fileName().isEmpty())
+            continue;
+
+        if ((!targetCanonical.isEmpty() && openInfo.canonicalFilePath() == targetCanonical) ||
+            openInfo.absoluteFilePath() == targetAbsolute)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void MainWindow::openFileInTab(const QString& fileName)
+{
+    const int existingIndex = findTabIndexForFile(fileName);
+    if (existingIndex >= 0)
+    {
+        ui->editorTabs->setCurrentIndex(existingIndex);
+        return;
+    }
+
+    // a pristine unnamed tab takes the file instead of adding one more tab
+    CodeEditor* editor = nullptr;
+    for (int i = 0; i < ui->editorTabs->count(); ++i)
+    {
+        auto* candidate = qobject_cast<CodeEditor*>(ui->editorTabs->widget(i));
+        if (candidate && candidate->getFileName().isEmpty() && candidate->document()->isEmpty())
+        {
+            editor = candidate;
+            ui->editorTabs->setCurrentIndex(i);
+            break;
+        }
+    }
+
+    const bool addedNewTab = (editor == nullptr);
+    if (addedNewTab)
+    {
+        editor = createEditorTab();
+        ui->editorTabs->setCurrentIndex(ui->editorTabs->indexOf(editor));
+    }
+
+    if (!loadFileContentToEditorDistargingCurrentContent(fileName) && addedNewTab)
+    {
+        // nothing was loaded into the fresh tab: remove it again
+        const int index = ui->editorTabs->indexOf(editor);
+        ui->editorTabs->removeTab(index);
+        editor->deleteLater();
+        if (ui->editorTabs->count() == 0)
+            createEditorTab();
+    }
 }
 
 void MainWindow::connectShortcuts()
@@ -593,6 +814,13 @@ void MainWindow::connectShortcuts()
         ui->goToLineGroupBox->setFocus();
         ui->goToLineGroupBox->setVisible(true);
         ui->actionGo_to_line->setChecked(true);
+    });
+
+    QAction *closeTabAction = new QAction(tr("Close tab"), this);
+    closeTabAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_W));
+    addAction(closeTabAction);
+    connect(closeTabAction, &QAction::triggered, this, [this]() {
+        confirmAndCloseCurrentTab();
     });
 }
 
@@ -627,24 +855,25 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    if (operationWhichDiscardsChangesRequestedReturningIfDiscarded(
-            tr("Close without saving?"), tr("Do You really want to close the editor without saving unsaved changes?"),
-            /*restoreEditorAfterwards=*/false))
+    // every tab is closed; only the ones with unsaved changes are asked about
+    while (ui->editorTabs->count() > 0)
     {
-        QWidget::closeEvent(event);
+        if (!confirmAndCloseCurrentTab(/*ensureAtLeastOneTab=*/false))
+        {
+            event->ignore();
+            return;
+        }
     }
-    else
-    {
-        event->ignore();
-    }
+
+    QWidget::closeEvent(event);
 }
 
 bool MainWindow::operationWhichDiscardsChangesRequestedReturningIfDiscarded(const QString &dialogTitle, const QString &dialogMessage,
                                                                             bool restoreEditorAfterwards)
 {
-    if (!ui->textEditor->noUnsavedChanges())
+    if (!currentEditor()->noUnsavedChanges())
     {
-        DiffReviewDialog dialog(ui->textEditor, dialogTitle, dialogMessage, this);
+        DiffReviewDialog dialog(currentEditor(), dialogTitle, dialogMessage, this);
         if (dialog.exec() == QDialog::Accepted)
         {
             switch (dialog.userChoice())
@@ -654,7 +883,7 @@ bool MainWindow::operationWhichDiscardsChangesRequestedReturningIfDiscarded(cons
                 {
                     // The file is saved, so there is nothing to bring back; the editor content is replaced (or closed) next anyway
                     if (restoreEditorAfterwards)
-                        ui->textEditor->restoreStateWhichDoesNotRequireSaving(/*discardChanges=*/true);
+                        currentEditor()->restoreStateWhichDoesNotRequireSaving(/*discardChanges=*/true);
                     return true;
                 }
                 else // saving failed
@@ -664,9 +893,9 @@ bool MainWindow::operationWhichDiscardsChangesRequestedReturningIfDiscarded(cons
                 break;
             case DiffReviewDialog::Discard:
                 if (restoreEditorAfterwards)
-                    ui->textEditor->restoreStateWhichDoesNotRequireSaving(/*discardChanges=*/true);
+                    currentEditor()->restoreStateWhichDoesNotRequireSaving(/*discardChanges=*/true);
                 else
-                    ui->textEditor->discardUnsavedChanges(); // no reload from disk: the caller throws the content away anyway
+                    currentEditor()->discardUnsavedChanges(); // no reload from disk: the caller throws the content away anyway
                 break;
             case DiffReviewDialog::Cancel:
             default:
@@ -690,17 +919,22 @@ bool MainWindow::closeApplicationReturningIfClosed()
 
 void MainWindow::onNewFilePressed()
 {
-    ui->todosTableWidget->clearTodos();
-    ui->contextTableWidget->clear();
-
-    if (operationWhichDiscardsChangesRequestedReturningIfDiscarded(
-            tr("Confirm discarding current file content?"), tr("Do You really want to lose currently unsaved changes and create new file"),
-            /*restoreEditorAfterwards=*/false))
+    // a pristine unnamed tab is reused; every document with content stays open in its own tab
+    for (int i = 0; i < ui->editorTabs->count(); ++i)
     {
-        ui->textEditor->newEmptyFile();
-        updateWindowTitle();
-        setDisabledMenuActionsDependingOnOpenedFile(/*disabled=*/true);
+        auto* editor = qobject_cast<CodeEditor*>(ui->editorTabs->widget(i));
+        if (editor && editor->getFileName().isEmpty() && editor->document()->isEmpty())
+        {
+            editor->newEmptyFile();
+            ui->editorTabs->setCurrentIndex(i);
+            editor->setFocus();
+            return;
+        }
     }
+
+    auto* editor = createEditorTab();
+    ui->editorTabs->setCurrentIndex(ui->editorTabs->indexOf(editor));
+    editor->setFocus();
 }
 
 bool MainWindow::onSaveAsPressed()
@@ -716,7 +950,7 @@ void MainWindow::onPrintPressed()
     dialog.setWindowTitle(tr("Print"));
     if (dialog.exec() == QDialog::Accepted)
     {
-        ui->textEditor->print(&printer);
+        currentEditor()->print(&printer);
     }
 }
 
@@ -737,7 +971,7 @@ void MainWindow::onExportPdfPressed()
     QPrinter printer(QPrinter::HighResolution);
     printer.setOutputFormat(QPrinter::PdfFormat);
     printer.setOutputFileName(fileName);
-    ui->textEditor->print(&printer);
+    currentEditor()->print(&printer);
 
     lastDirectory = QFileInfo(fileName).absolutePath();
 }
@@ -775,8 +1009,9 @@ bool MainWindow::saveEntireContent2File(QString fileName)
     if (!fileName.isEmpty())
     {
         updateWindowTitle(fileName);
-        if (ui->textEditor->saveEntireContent2File(fileName))
+        if (currentEditor()->saveEntireContent2File(fileName))
         {
+            updateTabTitle(currentEditor());
             setDisabledMenuActionsDependingOnOpenedFile(/*disabled=*/false);
             return true;
         }
@@ -786,29 +1021,34 @@ bool MainWindow::saveEntireContent2File(QString fileName)
 
 void MainWindow::updateWindowTitle(QString fileName, QString suffix)
 {
-    if (fileName.isEmpty())
+    QString title = qApp->applicationName();
+    if (!fileName.isEmpty())
     {
-        setWindowTitle(qApp->applicationName());
-    }
-    else
-    {
-        auto newFileName = qApp->applicationName() + ": " + fileName;
+        title += ": " + fileName;
         if (! suffix.isEmpty())
         {
-            newFileName += " \t[" + suffix + ']';
+            title += " \t[" + suffix + ']';
         }
-        setWindowTitle(newFileName);
     }
+
+    // the number of open documents is shown only when there is more than one
+    const int documentsCount = ui->editorTabs->count();
+    if (documentsCount > 1)
+    {
+        title += QStringLiteral(" (%1)").arg(documentsCount);
+    }
+
+    setWindowTitle(title);
 }
 
 bool MainWindow::onSavePressed()
 {
-    auto outputFileName = ui->textEditor->getFileName();
+    auto outputFileName = currentEditor()->getFileName();
     if (outputFileName.isEmpty())
     {
         return onSaveAsPressed();
     }
-    else if (ui->textEditor->noUnsavedChanges())
+    else if (currentEditor()->noUnsavedChanges())
     {
         return true;
     }
@@ -820,25 +1060,18 @@ bool MainWindow::onSavePressed()
 
 void MainWindow::onOpenPressed()
 {
-    if (! operationWhichDiscardsChangesRequestedReturningIfDiscarded(
-            tr("Decline currently unsaved changes?"), tr("Do You really want to decline currently unsaved changes and open new file?")))
-    {
-        return;
-    }
-
     const auto fileName = chooseFileWithDialog(QFileDialog::AcceptOpen).trimmed();
     if (! fileName.isEmpty())
     {
-        ui->todosTableWidget->clearTodos();
-        ui->contextTableWidget->clear();
-
-        loadFileContentToEditorDistargingCurrentContent(fileName);
+        openFileInTab(fileName);
+        if (currentEditor())
+            currentEditor()->setFocus();
     }
 }
 
 void MainWindow::onReloadFilePressed()
 {
-    if (ui->textEditor->getFileName().isEmpty())
+    if (currentEditor()->getFileName().isEmpty())
     {
         return;
     }
@@ -851,20 +1084,21 @@ void MainWindow::onReloadFilePressed()
         return;
     }
 
-    ui->textEditor->reloadFromFile(/*discardChanges=*/true);
+    currentEditor()->reloadFromFile(/*discardChanges=*/true);
 }
 
 void MainWindow::onRenameFilePressed()
 {
-    const auto oldFilePath = ui->textEditor->getFileName();
+    const auto oldFilePath = currentEditor()->getFileName();
 
-    RenameFileDialog dialog(ui->textEditor, this);
+    RenameFileDialog dialog(currentEditor(), this);
     if (QDialog::Accepted != dialog.exec())
         return;
 
     const auto newFilePath = dialog.newAbsoluteFilePath();
 
     updateWindowTitle(newFilePath);
+    updateTabTitle(currentEditor());
     updateRecentFiles(newFilePath);
 
     QMessageBox::information(this, tr("Success"), tr("Successfull rename of file from:\n")
@@ -875,11 +1109,12 @@ bool MainWindow::loadFileContentToEditorDistargingCurrentContent(const QString& 
 {
     ui->todosTableWidget->clearTodos();
 
-    if (ui->textEditor->loadFileContentDistargingCurrentContent(fileName))
+    if (currentEditor()->loadFileContentDistargingCurrentContent(fileName))
     {
         setDisabledMenuActionsDependingOnOpenedFile(/*disabled=*/false);
 
         updateWindowTitle(fileName);
+        updateTabTitle(currentEditor());
 
         ui->actionReload_file->setEnabled(true);
         updateRecentFiles(fileName);
@@ -927,7 +1162,7 @@ void MainWindow::onRepository_pressed()
 
 void MainWindow::onCheckTagsPressed()
 {
-    const auto text = ui->textEditor->toPlainText().toStdString();
+    const auto text = currentEditor()->toPlainText().toStdString();
     const auto tagsErrors = PairedTagsChecker::checkTags(text);
 
     ui->errorsInText->clearErrors();
@@ -976,14 +1211,14 @@ void MainWindow::onConsoleVisibilityChanged(bool visible)
         {
             // starts where the article is (the commands see the file also as $STC_FILE), later the user decides with cd
             consoleDirectoryInitialized = true;
-            const QString fileName = ui->textEditor->getFileName();
+            const QString fileName = currentEditor()->getFileName();
             consoleWidget->setWorkingDirectory(fileName.isEmpty() ? lastDirectory : QFileInfo(fileName).absolutePath());
         }
         consoleWidget->focusInput();
     }
     else if (consoleWidget->isAncestorOf(QApplication::focusWidget()))
     {
-        ui->textEditor->setFocus();
+        currentEditor()->setFocus();
     }
 }
 
@@ -1025,7 +1260,7 @@ void MainWindow::onViewMenuAboutToShow()
 
 void MainWindow::surroundSelectedTextWithTag(QString divClass, QString textBase, QString extraAttributes, bool closable)
 {
-    auto cursor = ui->textEditor->textCursor();
+    auto cursor = currentEditor()->textCursor();
     QString selectedText = cursor.selectedText();
 
     const auto textOpening = "[" + textBase + extraAttributes + "]";
@@ -1055,15 +1290,15 @@ void MainWindow::putTextBackToCursorPosition(QTextCursor &cursor, QString divCla
         auto currentPosition = cursor.position();
         auto positionMovedBeforeTextEnding = currentPosition - textEnding.size();
         cursor.setPosition(positionMovedBeforeTextEnding);
-        ui->textEditor->setTextCursor(cursor);
+        currentEditor()->setTextCursor(cursor);
     }
 
-    ui->textEditor->setFocus();
+    currentEditor()->setFocus();
 }
 
 void MainWindow::surroundSelectedTextWithAHrefTag()
 {
-    auto cursor = ui->textEditor->textCursor();
+    auto cursor = currentEditor()->textCursor();
     QString selectedText = cursor.selectedText();
 
     constexpr const char* beginOfTag = R"([a href=")";
@@ -1078,7 +1313,7 @@ void MainWindow::surroundSelectedTextWithAHrefTag()
         // Position cursor inside href attribute
         int pos = cursor.position() - strlen(endOfTag);
         cursor.setPosition(pos);
-        ui->textEditor->setTextCursor(cursor);
+        currentEditor()->setTextCursor(cursor);
         return;
     }
 
@@ -1094,7 +1329,7 @@ void MainWindow::surroundSelectedTextWithAHrefTag()
 
 void MainWindow::surroundSelectedTextWithImgTag()
 {
-    auto cursor = ui->textEditor->textCursor();
+    auto cursor = currentEditor()->textCursor();
     QString selectedText = cursor.selectedText().trimmed();
 
     constexpr const char* beginOfTag = R"([img src=")";
@@ -1108,7 +1343,7 @@ void MainWindow::surroundSelectedTextWithImgTag()
         // Position cursor inside src attribute
         int pos = cursor.position() - strlen(endOfTag);
         cursor.setPosition(pos);
-        ui->textEditor->setTextCursor(cursor);
+        currentEditor()->setTextCursor(cursor);
         return;
     }
 
@@ -1245,13 +1480,28 @@ void MainWindow::saveSettings()
         settings.setValue(GeometryNames::RECENT_FILES_LIST, recentFilesMap);
     }
 
+    // the documents open in the tabs, in tab order, and the one shown last
+    QStringList openFiles;
+    for (int i = 0; i < ui->editorTabs->count(); ++i)
+    {
+        const auto* editor = qobject_cast<CodeEditor*>(ui->editorTabs->widget(i));
+        if (editor && !editor->getFileName().isEmpty())
+            openFiles << editor->getFileName();
+    }
+    settings.setValue(GeometryNames::SESSION_OPEN_FILES, openFiles);
+
+    if (currentEditor() && !currentEditor()->getFileName().isEmpty())
+        settings.setValue(GeometryNames::SESSION_ACTIVE_FILE, currentEditor()->getFileName());
+    else
+        settings.remove(GeometryNames::SESSION_ACTIVE_FILE);
+
     settings.setValue(GeometryNames::RESUME_SESSION, ui->actionResumeSession->isChecked());
 }
 
 void MainWindow::updateRecentFiles(const QString& path)
 {
-    int cursorPos = ui->textEditor->textCursor().position();
-    int scrollPos = ui->textEditor->verticalScrollBar()->value();
+    int cursorPos = currentEditor()->textCursor().position();
+    int scrollPos = currentEditor()->verticalScrollBar()->value();
 
     recentFilesWithPositions.remove(path);
     RecentFileInfo info;
@@ -1362,9 +1612,12 @@ QStringList MainWindow::offeredEncodings() const
 
 void MainWindow::updateEncodingMenuHeader()
 {
-    encodingCurrentAction->setText(tr("Current encoding: %1").arg(ui->textEditor->saveEncoding()));
+    if (!encodingCurrentAction)
+        return; // the menu is built in connectSignals2Slots(), after the first tab already exists
+
+    encodingCurrentAction->setText(tr("Current encoding: %1").arg(currentEditor()->saveEncoding()));
     // a new document has nothing on disk to read again
-    reloadEncodingMenu->setEnabled(!ui->textEditor->getFileName().isEmpty());
+    reloadEncodingMenu->setEnabled(!currentEditor()->getFileName().isEmpty());
 }
 
 void MainWindow::rebuildSaveEncodingMenu()
@@ -1372,7 +1625,7 @@ void MainWindow::rebuildSaveEncodingMenu()
     // the entries of the previous opening are deleted with the menu; the group forgets them by itself
     saveEncodingMenu->clear();
 
-    const QString current = ui->textEditor->saveEncoding();
+    const QString current = currentEditor()->saveEncoding();
 
     QStringList encodings = offeredEncodings();
     // the file may be in an encoding which is not on the list (e.g. one found by detection): it is shown too
@@ -1404,7 +1657,7 @@ void MainWindow::rebuildReloadEncodingMenu()
 
 void MainWindow::onEncodingChosen(const QString& encodingName)
 {
-    const QString current = ui->textEditor->saveEncoding();
+    const QString current = currentEditor()->saveEncoding();
     if (encodingName.compare(current, Qt::CaseInsensitive) == 0)
         return;
 
@@ -1417,7 +1670,7 @@ void MainWindow::onEncodingChosen(const QString& encodingName)
         QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
 
     if (answer == QMessageBox::Yes)
-        ui->textEditor->setSaveEncoding(encodingName);
+        currentEditor()->setSaveEncoding(encodingName);
 }
 
 void MainWindow::onReloadWithEncodingChosen(const QString& encodingName)
@@ -1432,7 +1685,7 @@ void MainWindow::onReloadWithEncodingChosen(const QString& encodingName)
         return;
     }
 
-    ui->textEditor->reloadFileWithEncoding(encodingName);
+    currentEditor()->reloadFileWithEncoding(encodingName);
 }
 
 void MainWindow::restoreLastSession()
@@ -1441,10 +1694,44 @@ void MainWindow::restoreLastSession()
     if (!settings.value(GeometryNames::RESUME_SESSION, true).toBool())
         return;
 
+    // every document which was open in a tab is reopened as a tab, in the same order
+    const QStringList openFiles = settings.value(GeometryNames::SESSION_OPEN_FILES).toStringList();
+    if (!openFiles.isEmpty())
+    {
+        const QString activeFile = settings.value(GeometryNames::SESSION_ACTIVE_FILE).toString();
+
+        for (const QString& filePath : openFiles)
+        {
+            if (!QFile::exists(filePath))
+                continue;
+
+            openFileInTab(filePath);
+
+            const auto info = recentFilesWithPositions.value(filePath);
+            if (currentEditor() && info.cursorPosition > 0)
+            {
+                QTextCursor cursor = currentEditor()->textCursor();
+                cursor.setPosition(info.cursorPosition);
+                currentEditor()->setTextCursor(cursor);
+                currentEditor()->ensureCursorVisible();
+
+                if (info.scrollPosition > 0)
+                    currentEditor()->verticalScrollBar()->setValue(info.scrollPosition);
+            }
+        }
+
+        // the tab which was active last is shown again
+        const int activeIndex = findTabIndexForFile(activeFile);
+        if (activeIndex >= 0)
+            ui->editorTabs->setCurrentIndex(activeIndex);
+
+        return;
+    }
+
+    // no saved tab session (e.g. files were never saved with names): fall back to the most recently opened file
     if (recentFilesWithPositions.isEmpty())
         return;
 
-    // Find the most recently opened file that still exists
     const auto sorted = getSortedExistingRecentFiles(recentFilesWithPositions);
     if (sorted.isEmpty())
         return;
@@ -1453,14 +1740,14 @@ void MainWindow::restoreLastSession()
 
     if (loadFileContentToEditorDistargingCurrentContent(filePath))
     {
-        QTextCursor cursor = ui->textEditor->textCursor();
+        QTextCursor cursor = currentEditor()->textCursor();
         cursor.setPosition(info.cursorPosition);
-        ui->textEditor->setTextCursor(cursor);
-        ui->textEditor->ensureCursorVisible();
+        currentEditor()->setTextCursor(cursor);
+        currentEditor()->ensureCursorVisible();
 
         if (info.scrollPosition > 0)
         {
-            ui->textEditor->verticalScrollBar()->setValue(info.scrollPosition);
+            currentEditor()->verticalScrollBar()->setValue(info.scrollPosition);
         }
     }
 }
@@ -1469,7 +1756,7 @@ void MainWindow::onFileContentChanged(const QString &fileName, int changedLines)
 {
     if (changedLines)
     {
-        const auto modificationInfo = ui->textEditor->getFileModificationInfoText();
+        const auto modificationInfo = currentEditor()->getFileModificationInfoText();
         updateWindowTitle(fileName, modificationInfo);
     }
     else
@@ -1482,7 +1769,7 @@ void MainWindow::onUpdateBreadcrumb()
 {
     if (!ui->breadcrumbTextBrowser->isHidden())
     {
-        QTextCursor cursor = ui->textEditor->textCursor();
+        QTextCursor cursor = currentEditor()->textCursor();
         ui->breadcrumbTextBrowser->updateBreadcrumb(cursor);
     }
 }
@@ -1499,7 +1786,7 @@ void MainWindow::onEditorViewportMoved()
         return; // the user has just clicked the preview: it must not run away from under the mouse
     }
 
-    const CodeEditor::ViewportTop top = ui->textEditor->viewportTop();
+    const CodeEditor::ViewportTop top = currentEditor()->viewportTop();
     ui->stcPreviewWidget->scrollToSourceLine(top.line, top.fraction, top.atEndOfDocument);
 }
 
@@ -1507,8 +1794,8 @@ void MainWindow::onPreviewClicked(int sourcePosition)
 {
     // Moving the cursor can scroll the editor, and the editor would scroll the preview back (see onEditorViewportMoved)
     previewClickInProgress = true;
-    ui->textEditor->showPosition(sourcePosition);
-    ui->textEditor->setFocus();
+    currentEditor()->showPosition(sourcePosition);
+    currentEditor()->setFocus();
     QTimer::singleShot(0, this, [this] { previewClickInProgress = false; });
 }
 
@@ -1571,21 +1858,14 @@ void MainWindow::onShowStcPreviewTriggered()
         ui->stcPreviewWidget->login(dlg.username(), dlg.password());
     }
 
-    connect(ui->textEditor, &CodeEditor::textChanged, [this]() {
-        if (ui->stcPreviewWidget->isVisible())
-        {
-            ui->stcPreviewWidget->updateText(ui->textEditor->toPlainText());
-        }
-    });
+    // the text of every document tab refreshes the preview (see connectEditorSignals)
+    ui->stcPreviewWidget->updateText(currentEditor()->toPlainText());
 
     connect(ui->stcPreviewWidget, &StcPreviewWidget::loginFailed, this, [this](const QString &msg) {
         QMessageBox::warning(this, tr("Login error"), msg);
     });
 
     connect(ui->stcPreviewWidget, &StcPreviewWidget::loginSucceeded, this, [this]() {
-        connect(ui->textEditor, &CodeEditor::textChanged, this, [this]() {
-            ui->stcPreviewWidget->updateText(ui->textEditor->toPlainText());
-        });
-        ui->stcPreviewWidget->updateText(ui->textEditor->toPlainText());
+        ui->stcPreviewWidget->updateText(currentEditor()->toPlainText());
     });
 }
