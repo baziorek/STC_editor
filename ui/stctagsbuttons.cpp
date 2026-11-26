@@ -121,3 +121,16 @@ void StcTagsButtons::useInTableCell()
         button->setFocusPolicy(Qt::NoFocus);
     }
 }
+
+void StcTagsButtons::setMarkdownMode(bool enabled)
+{
+    // the buttons which have no markdown equivalent
+    const QList<QAbstractButton*> stcOnly = {
+        ui->button_run, ui->button_div, ui->button_div_tip, ui->button_div_warning,
+        ui->button_pkt, ui->button_csv, ui->button_subsctipt, ui->button_supsctipt,
+        ui->button_teleType, ui->button_underlined,
+    };
+
+    for (QAbstractButton* button : stcOnly)
+        button->setVisible(!enabled);
+}

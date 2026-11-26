@@ -40,6 +40,7 @@
 #include "widgets/ThreeWayDiffDialog.h"
 #include "widgets/MinimapWidget.h"
 #include "widgets/RenameFileDialog.h"
+#include "utils/MarkdownFormatting.h"
 using namespace std;
 
 namespace
@@ -291,6 +292,12 @@ void MainWindow::connectSignals2Slots()
 
 void MainWindow::onStcTagsButtonPressed(StcTags stcTag)
 {
+    if (currentEditor() && currentEditor()->syntaxMode() == SyntaxMode::Markdown)
+    {
+        applyMarkdownTag(stcTag);
+        return;
+    }
+
     switch (stcTag)
     {
     case StcTags::RUN:
@@ -364,6 +371,56 @@ void MainWindow::onStcTagsButtonPressed(StcTags stcTag)
         break;
     default:
         qDebug() << __FILE__ << ": " << __LINE__ << ": Unsupported option: " << std::to_underlying(stcTag);
+        break;
+    }
+}
+
+void MainWindow::applyMarkdownTag(StcTags stcTag)
+{
+    auto* editor = currentEditor();
+    switch (stcTag)
+    {
+    case StcTags::BOLD:
+        markdownedit::toggleInline(editor, QStringLiteral("**"));
+        break;
+    case StcTags::ITALIC:
+        markdownedit::toggleInline(editor, QStringLiteral("*"));
+        break;
+    case StcTags::STRUCK_OUT:
+        markdownedit::toggleInline(editor, QStringLiteral("~~"));
+        break;
+    case StcTags::H1:
+        markdownedit::toggleHeading(editor, 1);
+        break;
+    case StcTags::H2:
+        markdownedit::toggleHeading(editor, 2);
+        break;
+    case StcTags::H3:
+        markdownedit::toggleHeading(editor, 3);
+        break;
+    case StcTags::H4:
+        markdownedit::toggleHeading(editor, 4);
+        break;
+    case StcTags::QUOTE:
+        markdownedit::toggleQuote(editor);
+        break;
+    case StcTags::A_HREF:
+        markdownedit::insertLink(editor);
+        break;
+    case StcTags::IMG:
+        markdownedit::insertImage(editor);
+        break;
+    case StcTags::CODE:
+        markdownedit::toggleInline(editor, QStringLiteral("`"));
+        break;
+    case StcTags::CPP:
+        markdownedit::insertCodeBlock(editor, QStringLiteral("cpp"));
+        break;
+    case StcTags::PY:
+        markdownedit::insertCodeBlock(editor, QStringLiteral("python"));
+        break;
+    default:
+        // the remaining tags have no markdown equivalent; their buttons are hidden in this mode
         break;
     }
 }
@@ -721,33 +778,34 @@ void MainWindow::connectEditorSignals(CodeEditor* editor)
         }
     });
 
+    // the shortcuts go through onStcTagsButtonPressed so they format with markdown syntax too
     connect(editor, &CodeEditor::shortcutPressed_bold, [this]() {
-        this->surroundSelectedTextWithTag(tagsClasses[StcTags::BOLD], tagsClasses[StcTags::BOLD]);
+        onStcTagsButtonPressed(StcTags::BOLD);
     });
     connect(editor, &CodeEditor::shortcutPressed_run, [this]() {
-        this->surroundSelectedTextWithTag(tagsClasses[StcTags::RUN], tagsClasses[StcTags::RUN]);
+        onStcTagsButtonPressed(StcTags::RUN);
     });
     connect(editor, &CodeEditor::shortcutPressed_warning, [this]() {
-        this->surroundSelectedTextWithTag(tagsClasses[StcTags::DIV_WARNING], tagsClasses[StcTags::DIV], R"( class="uwaga")");
+        onStcTagsButtonPressed(StcTags::DIV_WARNING);
     });
     connect(editor, &CodeEditor::shortcutPressed_tip, [this]() {
-        this->surroundSelectedTextWithTag(tagsClasses[StcTags::DIV_TIP], tagsClasses[StcTags::DIV], R"( class="tip")");
+        onStcTagsButtonPressed(StcTags::DIV_TIP);
     });
     connect(editor, &CodeEditor::shortcutPressed_href, [this]() {
-        this->surroundSelectedTextWithAHrefTag();
+        onStcTagsButtonPressed(StcTags::A_HREF);
     });
 
     connect(editor, &CodeEditor::shortcutPressed_h1, [this] {
-        this->surroundSelectedTextWithTag("h1", "h1");
+        onStcTagsButtonPressed(StcTags::H1);
     });
     connect(editor, &CodeEditor::shortcutPressed_h2, [this] {
-        this->surroundSelectedTextWithTag("h2", "h2");
+        onStcTagsButtonPressed(StcTags::H2);
     });
     connect(editor, &CodeEditor::shortcutPressed_h3, [this] {
-        this->surroundSelectedTextWithTag("h3", "h3");
+        onStcTagsButtonPressed(StcTags::H3);
     });
     connect(editor, &CodeEditor::shortcutPressed_h4, [this] {
-        this->surroundSelectedTextWithTag("h4", "h4");
+        onStcTagsButtonPressed(StcTags::H4);
     });
 }
 
@@ -2056,6 +2114,9 @@ void MainWindow::onSyntaxModeChanged(SyntaxMode mode)
 
     // checking whether the STC tags are closed makes no sense when there are no STC tags
     ui->actioncheck_if_tags_are_closed->setEnabled(syntaxmode::usesStcMarkup(mode));
+
+    // in a Markdown document only the buttons with a markdown equivalent stay visible
+    ui->buttonsEmittingStc->setMarkdownMode(mode == SyntaxMode::Markdown);
 }
 
 void MainWindow::setUpEncodingMenu()

@@ -473,6 +473,18 @@ if(NOT WIN32)
     add_test(NAME ${PROJECT_NAME}SyntaxTests COMMAND ${PROJECT_NAME}SyntaxTests)
     set_tests_properties(${PROJECT_NAME}SyntaxTests PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
+    # The markdown formatting helpers behind the tag buttons in Markdown mode. Needs a
+    # QApplication because they work on a QPlainTextEdit.
+    add_executable(${PROJECT_NAME}MarkdownFormattingTests
+        tests/MarkdownFormattingTests.cpp
+        utils/MarkdownFormatting.cpp
+    )
+    target_include_directories(${PROJECT_NAME}MarkdownFormattingTests PRIVATE ${PROJECT_SOURCE_DIR})
+    target_link_libraries(${PROJECT_NAME}MarkdownFormattingTests PRIVATE
+        Qt${QT_VERSION_MAJOR}::Widgets ${GTEST_LIBRARIES} pthread)
+    add_test(NAME ${PROJECT_NAME}MarkdownFormattingTests COMMAND ${PROJECT_NAME}MarkdownFormattingTests)
+    set_tests_properties(${PROJECT_NAME}MarkdownFormattingTests PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
     # Regions selected by the 4th click (attribute values, content of tags). Only QtCore.
     add_executable(${PROJECT_NAME}TagRegionsTests
         tests/StcTagRegionsTests.cpp

@@ -156,6 +156,9 @@ protected:
 
     void surroundSelectedTextWithTag(QString divClass, QString text, QString extraAttributes = "", bool closable = true);
     void toggleTagOnSelectedText(const QString& tag);
+    /// The same buttons in a Markdown document: bold/italic/strike/code markers, `#` headings,
+    /// `> ` quotes, `[text](url)` links, `![alt](src)` images and fenced code blocks.
+    void applyMarkdownTag(StcTags stcTag);
 
     void connectShortcuts();
     void restoreLastSession();

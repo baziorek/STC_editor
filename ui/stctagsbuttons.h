@@ -21,6 +21,11 @@ public:
     /// so the edited cell keeps it.
     void useInTableCell();
 
+    /// Markdown documents get the same buttons, but only the ones which have a markdown equivalent
+    /// stay visible (`[run]`, the `[div]` blocks, `[pkt]`, `[csv]`, sub/superscript, the typewriter
+    /// and the underline have none and are hidden). MainWindow then formats with markdown syntax.
+    void setMarkdownMode(bool enabled);
+
 signals:
     void buttonPressed(StcTags tag);
 
