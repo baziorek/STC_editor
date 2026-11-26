@@ -268,6 +268,8 @@ void SideBySideDiffWidget::setDiffData(const std::vector<DiffCalculation::DiffLi
 
     buildPanes();
     currentRegion_ = regions_.isEmpty() ? -1 : 0;
+    highlightedFirst_ = highlightedLast_ = -1; // the panes were rebuilt - no highlight survives
+    updateCurrentRegionHighlight();
     updateChangeLabel();
     updateGutter();
 }
@@ -278,6 +280,7 @@ void SideBySideDiffWidget::setPlainLines(const QStringList &oldLines, const QStr
     lineDiffs_.clear();
     regions_.clear();
     currentRegion_ = -1;
+    highlightedFirst_ = highlightedLast_ = -1;
 
     buildPlainPanes(oldLines, newLines);
 
@@ -463,6 +466,40 @@ void SideBySideDiffWidget::setTitles(const QString &oldTitle, const QString &new
     newTitleLabel_->setText(newTitle);
 }
 
+void SideBySideDiffWidget::updateCurrentRegionHighlight()
+{
+    // paints (or clears) the blue background of the number cells of rows [first, last]
+    const auto paintRange = [](QTextEdit *numbers, int first, int last, bool on) {
+        QTextDocument *doc = numbers->document();
+        for (int row = first; row <= last; ++row)
+        {
+            const QTextBlock block = doc->findBlockByNumber(row);
+            if (!block.isValid())
+                break;
+            QTextBlockFormat format = block.blockFormat();
+            format.setBackground(on ? QColor(173, 216, 230) : QBrush());
+            QTextCursor cursor(block);
+            cursor.setBlockFormat(format);
+        }
+    };
+
+    if (highlightedFirst_ >= 0)
+    {
+        paintRange(numberOldEdit_, highlightedFirst_, highlightedLast_, false);
+        paintRange(numberNewEdit_, highlightedFirst_, highlightedLast_, false);
+        highlightedFirst_ = highlightedLast_ = -1;
+    }
+
+    if (currentRegion_ >= 0 && currentRegion_ < regions_.size())
+    {
+        const auto &region = regions_[currentRegion_];
+        highlightedFirst_ = region.firstEntry;
+        highlightedLast_ = region.lastEntry;
+        paintRange(numberOldEdit_, region.firstEntry, region.lastEntry, true);
+        paintRange(numberNewEdit_, region.firstEntry, region.lastEntry, true);
+    }
+}
+
 void SideBySideDiffWidget::updateGutter()
 {
     auto *gutter = static_cast<ChangeGutterWidget *>(gutter_);
@@ -494,6 +531,7 @@ void SideBySideDiffWidget::scrollToRegion(int regionIndex)
         return;
 
     currentRegion_ = regionIndex;
+    updateCurrentRegionHighlight();
     updateChangeLabel();
 
     const int row = regions_[regionIndex].firstEntry;

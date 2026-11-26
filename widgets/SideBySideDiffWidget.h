@@ -89,12 +89,16 @@ private:
     void nextChange();
     void previousChange();
     void updateGutter();
+    /// Paints the line numbers of the current change region blue (and clears the previous one)
+    void updateCurrentRegionHighlight();
 
     std::vector<DiffCalculation::DiffLine> diffLines_;
     QList<DiffCalculation::LineDiffResult> lineDiffs_;
     QVector<ChangeRegion> regions_;
     Actions actionMode_ = Actions::None;
     int currentRegion_ = -1;
+    int highlightedFirst_ = -1; // rows of the numbers column painted for currentRegion_
+    int highlightedLast_ = -1;
 
     QLabel *oldTitleLabel_ = nullptr;
     QLabel *newTitleLabel_ = nullptr;
