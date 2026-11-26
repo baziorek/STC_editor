@@ -121,8 +121,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     consoleDockWidget->setWidget(consoleWidget);
     addDockWidget(Qt::BottomDockWidgetArea, consoleDockWidget);
 
-    // document tabs: closable, the current one is shown in the window title and drives every file action
+    // document tabs: closable, the current one is shown in the window title and drives every file action;
+    // the tab bar is hidden while only one document is open
     ui->editorTabs->setTabsClosable(true);
+    ui->editorTabs->setTabBarAutoHide(true);
     connect(ui->editorTabs, &QTabWidget::currentChanged, this, &MainWindow::onEditorTabsCurrentChanged);
     connect(ui->editorTabs, &QTabWidget::tabCloseRequested, this, &MainWindow::onEditorTabCloseRequested);
 
