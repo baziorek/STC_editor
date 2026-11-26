@@ -62,7 +62,9 @@ jobs:
       - name: Build application (traced by CodeQL)
         run: |
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-          cmake --build build --target STC_editor --parallel
+          # The CodeQL tracer adds overhead to every compiler invocation;
+          # unbounded --parallel has gotten the runner killed mid-build.
+          cmake --build build --target STC_editor --parallel 4
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@915412ff23e8b7659517e607487dbeae018f2934 # v4.39.5
