@@ -689,6 +689,19 @@ void MainWindow::connectEditorSignals(CodeEditor* editor)
             onSyntaxModeChanged(mode);
     });
 
+    // Ctrl+wheel / Ctrl +/- zooms: the new size becomes the editor font for every tab
+    // and is remembered for the next run (same setting as "Editor font…")
+    connect(editor, &CodeEditor::fontZoomed, this, [this](const QFont &font) {
+        editorFont = font;
+        QSettings().setValue(QStringLiteral("editor/font"), font);
+        for (int i = 0; i < ui->editorTabs->count(); ++i)
+        {
+            if (auto* tab = qobject_cast<CodeEditor*>(ui->editorTabs->widget(i)))
+                tab->setFont(font);
+        }
+        minimapWidget->setBaseFont(font);
+    });
+
     // the rendered preview of the STC markup follows the text of the current document
     connect(editor, &CodeEditor::textChanged, [this, editor]() {
         if (editor == currentEditor() && ui->stcPreviewWidget->isVisible())

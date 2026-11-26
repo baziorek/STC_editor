@@ -257,6 +257,10 @@ signals:
 
     void syntaxModeChanged(SyntaxMode mode);
 
+    /// Emitted after Ctrl+wheel / Ctrl +/- changed this editor's font size,
+    /// so the main window can remember the zoom for all tabs and the next run.
+    void fontZoomed(const QFont &font);
+
 public slots:
     void fileChanged(const QString &path);
 
