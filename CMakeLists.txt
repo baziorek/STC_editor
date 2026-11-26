@@ -538,6 +538,17 @@ if(NOT WIN32)
     target_link_libraries(${PROJECT_NAME}DiffCalculationTests PRIVATE Qt${QT_VERSION_MAJOR}::Core ${GTEST_LIBRARIES} pthread gtest_main)
     add_test(NAME ${PROJECT_NAME}DiffCalculationTests COMMAND ${PROJECT_NAME}DiffCalculationTests)
 
+    # Side-by-side diff view (aligned panes, colors, gutter, scroll sync). Needs Qt Widgets; own main() with QApplication.
+    add_executable(${PROJECT_NAME}SideBySideDiffTests
+        tests/SideBySideDiffTests.cpp
+        widgets/SideBySideDiffWidget.cpp
+        utils/DiffCalculation.cpp
+    )
+    target_include_directories(${PROJECT_NAME}SideBySideDiffTests PRIVATE ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/libs)
+    target_link_libraries(${PROJECT_NAME}SideBySideDiffTests PRIVATE Qt${QT_VERSION_MAJOR}::Widgets ${GTEST_LIBRARIES} pthread)
+    add_test(NAME ${PROJECT_NAME}SideBySideDiffTests COMMAND ${PROJECT_NAME}SideBySideDiffTests)
+    set_tests_properties(${PROJECT_NAME}SideBySideDiffTests PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
     # Mapping of the lines of the source to the places of the HTML preview (scroll synchronization). Only QtCore.
     add_executable(${PROJECT_NAME}PreviewSyncTests
         tests/PreviewSyncMapTests.cpp

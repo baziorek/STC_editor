@@ -8,10 +8,10 @@
 #include "CodeEditor.h"
 #include "utils/DiffCalculation.h"
 #include "utils/FileEncodingHandler.h"
-#include "DiffViewerWidget.h"
+#include "SideBySideDiffWidget.h"
 
 FileDiffDialog::FileDiffDialog(CodeEditor* editor, const QString& otherFilePath, QWidget* parent)
-    : QDialog(parent)
+    : QDialog(parent), editor(editor)
 {
     init(editor->exactLines(),
          FileEncodingHandler::readFile(otherFilePath).split('\n'),
@@ -36,9 +36,14 @@ void FileDiffDialog::init(const QStringList& oldLines, const QStringList& newLin
     statsLabel = new QLabel(this);
     layout->addWidget(statsLabel);
 
-    diffWidget = new DiffViewerWidget(this);
-    diffWidget->setRowActions(DiffViewerWidget::RowActions::None);
+    diffWidget = new SideBySideDiffWidget(this);
+    diffWidget->setActions(SideBySideDiffWidget::Actions::None);
+    diffWidget->setTitles(tr("Old version"), tr("New version"));
     layout->addWidget(diffWidget, 1);
+
+    if (editor)
+        connect(diffWidget, &SideBySideDiffWidget::jumpToLineInEditor,
+                editor, &CodeEditor::go2LineRequested);
 
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Close, this);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
@@ -58,7 +63,7 @@ void FileDiffDialog::init(const QStringList& oldLines, const QStringList& newLin
             ++modified;
     }
 
-    diffWidget->setDiffData(diffs);
+    diffWidget->setDiffLines(fullDiff);
 
     if (diffs.isEmpty())
         statsLabel->setText(tr("No differences - the files are identical."));

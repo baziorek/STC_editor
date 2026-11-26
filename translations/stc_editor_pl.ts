@@ -858,48 +858,68 @@ start: %4</translation>
 <context>
     <name>DiffReviewDialog</name>
     <message>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="73"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="71"/>
         <source>Unsaved Changes Detected</source>
         <translation>Unsaved Changes Detected</translation>
     </message>
     <message>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="91"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="89"/>
         <source>This file has not been saved yet — no diff available.</source>
         <translation>This file has not been saved yet — no diff available.</translation>
     </message>
     <message>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="177"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="131"/>
+        <source>Saved version</source>
+        <translation>Zapisana wersja</translation>
+    </message>
+    <message>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="131"/>
+        <source>Current version</source>
+        <translation>Bieżąca wersja</translation>
+    </message>
+    <message>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="141"/>
+        <source>Editor</source>
+        <translation>Edytor</translation>
+    </message>
+    <message>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="141"/>
+        <source>File on disk</source>
+        <translation>Plik na dysku</translation>
+    </message>
+    <message>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="211"/>
         <source>Save</source>
         <translation>Save</translation>
     </message>
     <message>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="178"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="212"/>
         <source>Discard Changes</source>
         <translation>Discard Changes</translation>
     </message>
     <message>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="179"/>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="206"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="213"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="240"/>
         <source>Cancel</source>
         <translation>Cancel</translation>
     </message>
     <message>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="204"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="238"/>
         <source>Reload</source>
         <translation>Reload</translation>
     </message>
     <message>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="205"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="239"/>
         <source>Discard External Changes</source>
         <translation>Discard External Changes</translation>
     </message>
     <message>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="309"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="285"/>
         <source>Modified lines: %1 | Added: %2 | Removed: %3</source>
         <translation>Modified lines: %1 | Added: %2 | Removed: %3</translation>
     </message>
     <message>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="314"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="290"/>
         <source>File last modified: %1 | Last edit in session: %2</source>
         <translation>File last modified: %1 | Last edit in session: %2</translation>
     </message>
@@ -968,9 +988,8 @@ start: %4</translation>
 <context>
     <name>EditHistoryDialog</name>
     <message>
-        <location filename="../widgets/EditHistoryDialog.ui" line="14"/>
         <source>Edit history</source>
-        <translation>Historia edycji</translation>
+        <translation type="vanished">Historia edycji</translation>
     </message>
     <message>
         <location filename="../widgets/EditHistoryDialog.cpp" line="378"/>
@@ -1224,12 +1243,22 @@ Dwuklik przenosi do linii.</translation>
         <translation>Porównaj %1 z %2</translation>
     </message>
     <message>
-        <location filename="../widgets/FileDiffDialog.cpp" line="64"/>
+        <location filename="../widgets/FileDiffDialog.cpp" line="41"/>
+        <source>Old version</source>
+        <translation>Stara wersja</translation>
+    </message>
+    <message>
+        <location filename="../widgets/FileDiffDialog.cpp" line="41"/>
+        <source>New version</source>
+        <translation>Nowa wersja</translation>
+    </message>
+    <message>
+        <location filename="../widgets/FileDiffDialog.cpp" line="69"/>
         <source>No differences - the files are identical.</source>
         <translation>Brak różnic - pliki są identyczne.</translation>
     </message>
     <message>
-        <location filename="../widgets/FileDiffDialog.cpp" line="66"/>
+        <location filename="../widgets/FileDiffDialog.cpp" line="71"/>
         <source>Modified lines: %1 | Added: %2 | Removed: %3</source>
         <translation>Zmienione linie: %1 | dodane: %2 | usunięte: %3</translation>
     </message>
@@ -1479,19 +1508,16 @@ Dwuklik przenosi do linii.</translation>
 <context>
     <name>LineHistoryDialog</name>
     <message>
-        <location filename="../widgets/LineHistoryDialog.ui" line="63"/>
         <source>added</source>
-        <translation>dodane</translation>
+        <translation type="vanished">dodane</translation>
     </message>
     <message>
-        <location filename="../widgets/LineHistoryDialog.ui" line="79"/>
         <source>removed</source>
-        <translation>usunięte</translation>
+        <translation type="vanished">usunięte</translation>
     </message>
     <message>
-        <location filename="../widgets/LineHistoryDialog.ui" line="86"/>
         <source>Greyed entries are undone (Ctrl+Shift+Z brings them back); they disappear when you edit after an undo.</source>
-        <translation>Wyszarzone wpisy są cofnięte (Ctrl+Shift+Z je przywraca); znikają, gdy po cofnięciu wprowadzisz nową zmianę.</translation>
+        <translation type="vanished">Wyszarzone wpisy są cofnięte (Ctrl+Shift+Z je przywraca); znikają, gdy po cofnięciu wprowadzisz nową zmianę.</translation>
     </message>
     <message>
         <location filename="../widgets/LineHistoryDialog.cpp" line="275"/>
@@ -1504,7 +1530,6 @@ Dwuklik przenosi do linii.</translation>
         <translation>Linia &lt;b&gt;%1&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../widgets/LineHistoryDialog.ui" line="14"/>
         <location filename="../widgets/LineHistoryDialog.cpp" line="275"/>
         <source>History of a line</source>
         <translation>Historia linii</translation>
@@ -2511,109 +2536,113 @@ Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy na
 <context>
     <name>PastedTextDiffDialog</name>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="148"/>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="44"/>
         <source>Compare with pasted text</source>
         <translation>Porównaj z wklejonym tekstem</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="162"/>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="58"/>
         <source>Paste the new version of the whole text here:</source>
         <translation>Wklej tutaj nową wersję całego tekstu:</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="164"/>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="60"/>
         <source>Paste from clipboard</source>
         <translation>Wklej ze schowka</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="170"/>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="66"/>
         <source>Ctrl+V - the diff against the current editor content appears below</source>
         <translation>Ctrl+V - różnice względem bieżącej zawartości edytora pojawią się poniżej</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="181"/>
         <source>← apply to the editor    → discard (keep the editor&apos;s line)    - per line, or per block of consecutive changed lines (blue header)</source>
-        <translation>← zastosuj w edytorze    → odrzuć (zostaw linię z edytora)    - osobno dla linii lub dla bloku kolejnych zmienionych linii (niebieski nagłówek)</translation>
+        <translation type="vanished">← zastosuj w edytorze    → odrzuć (zostaw linię z edytora)    - osobno dla linii lub dla bloku kolejnych zmienionych linii (niebieski nagłówek)</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="187"/>
         <source>Editor #</source>
-        <translation>Edytor nr</translation>
+        <translation type="vanished">Edytor nr</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="187"/>
         <source>Editor line</source>
-        <translation>Linia edytora</translation>
+        <translation type="vanished">Linia edytora</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="187"/>
         <source>Pasted #</source>
-        <translation>Wklejone nr</translation>
+        <translation type="vanished">Wklejone nr</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="187"/>
         <source>Pasted line</source>
-        <translation>Linia wklejona</translation>
+        <translation type="vanished">Linia wklejona</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="188"/>
         <source>Line number in the editor</source>
-        <translation>Numer linii w edytorze</translation>
+        <translation type="vanished">Numer linii w edytorze</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="189"/>
         <source>Line content in the editor (current)</source>
-        <translation>Zawartość linii w edytorze (bieżąca)</translation>
+        <translation type="vanished">Zawartość linii w edytorze (bieżąca)</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="190"/>
         <source>Line number in the pasted text</source>
-        <translation>Numer linii we wklejonym tekście</translation>
+        <translation type="vanished">Numer linii we wklejonym tekście</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="191"/>
         <source>Line content in the pasted text</source>
-        <translation>Zawartość linii we wklejonym tekście</translation>
+        <translation type="vanished">Zawartość linii we wklejonym tekście</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="205"/>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="77"/>
+        <source>← keep the editor&apos;s lines    → take the pasted lines - for each run of consecutive changes</source>
+        <translation>← zostaw linie edytora    → przyjmij linie ze schowka - dla każdego bloku kolejnych zmian</translation>
+    </message>
+    <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="83"/>
+        <source>Editor</source>
+        <translation>Edytor</translation>
+    </message>
+    <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="83"/>
+        <source>Pasted text</source>
+        <translation>Wklejony tekst</translation>
+    </message>
+    <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="97"/>
         <source>Apply pasted text to editor</source>
         <translation>Zastosuj wklejony tekst w edytorze</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="206"/>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="98"/>
         <source>Replaces the whole editor content with the pasted text (can be undone with Ctrl+Z)</source>
         <translation>Zastępuje całą zawartość edytora wklejonym tekstem (można cofnąć przez Ctrl+Z)</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="207"/>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="99"/>
         <source>Close</source>
         <translation>Zamknij</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="253"/>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="143"/>
         <source>Paste the new version of the text above.</source>
         <translation>Wklej powyżej nową wersję tekstu.</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="280"/>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="169"/>
         <source>No differences - the pasted text is identical to the editor content.</source>
         <translation>Brak różnic - wklejony tekst jest identyczny z zawartością edytora.</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="282"/>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="171"/>
         <source>Modified lines: %1 | Added: %2 | Removed: %3</source>
         <translation>Zmienione linie: %1 | dodane: %2 | usunięte: %3</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="302"/>
         <source>none</source>
-        <translation>brak</translation>
+        <translation type="vanished">brak</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="358"/>
         <source>Block of %1 changes  |  editor %2  ↔  pasted %3</source>
-        <translation>Blok %1 zmian  |  edytor %2  ↔  wklejone %3</translation>
+        <translation type="vanished">Blok %1 zmian  |  edytor %2  ↔  wklejone %3</translation>
     </message>
 </context>
 <context>
@@ -2645,7 +2674,6 @@ Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy na
 <context>
     <name>RenameFileDialog</name>
     <message>
-        <location filename="../widgets/RenameFileDialog.ui" line="53"/>
         <location filename="../widgets/RenameFileDialog.cpp" line="29"/>
         <source>Rename file</source>
         <translation>Zmień nazwę pliku</translation>
@@ -2696,34 +2724,51 @@ Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy na
         <translation>Rename failed!</translation>
     </message>
     <message>
-        <location filename="../widgets/RenameFileDialog.ui" line="14"/>
         <source>Dialog</source>
-        <translation>Dialog</translation>
+        <translation type="vanished">Dialog</translation>
     </message>
     <message>
-        <location filename="../widgets/RenameFileDialog.ui" line="20"/>
         <source>Create directory if not exists</source>
-        <translation>Create directory if not exists</translation>
+        <translation type="vanished">Create directory if not exists</translation>
     </message>
     <message>
-        <location filename="../widgets/RenameFileDialog.ui" line="37"/>
         <source>Old file path</source>
-        <translation>Old file path</translation>
+        <translation type="vanished">Old file path</translation>
     </message>
     <message>
-        <location filename="../widgets/RenameFileDialog.ui" line="62"/>
         <source>File path</source>
-        <translation>File path</translation>
+        <translation type="vanished">File path</translation>
     </message>
     <message>
-        <location filename="../widgets/RenameFileDialog.ui" line="69"/>
         <source>Replace existing file</source>
-        <translation>Replace existing file</translation>
+        <translation type="vanished">Replace existing file</translation>
     </message>
     <message>
-        <location filename="../widgets/RenameFileDialog.ui" line="79"/>
         <source>Browse directory</source>
-        <translation>Browse directory</translation>
+        <translation type="vanished">Browse directory</translation>
+    </message>
+</context>
+<context>
+    <name>SideBySideDiffWidget</name>
+    <message>
+        <location filename="../widgets/SideBySideDiffWidget.cpp" line="178"/>
+        <source>◀ Prev change</source>
+        <translation>◀ Poprzednia zmiana</translation>
+    </message>
+    <message>
+        <location filename="../widgets/SideBySideDiffWidget.cpp" line="179"/>
+        <source>Next change ▶</source>
+        <translation>Następna zmiana ▶</translation>
+    </message>
+    <message>
+        <location filename="../widgets/SideBySideDiffWidget.cpp" line="439"/>
+        <source>No differences</source>
+        <translation>Brak różnic</translation>
+    </message>
+    <message>
+        <location filename="../widgets/SideBySideDiffWidget.cpp" line="447"/>
+        <source>Change %1 of %2</source>
+        <translation>Zmiana %1 z %2</translation>
     </message>
 </context>
 <context>
@@ -2767,7 +2812,6 @@ Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy na
 <context>
     <name>StcTablesCreator</name>
     <message>
-        <location filename="../widgets/StcTablesCreator.ui" line="14"/>
         <location filename="../widgets/StcTablesCreator.cpp" line="59"/>
         <source>Table Editor</source>
         <translation>Table Editor</translation>
@@ -2929,34 +2973,28 @@ To samo co pole wyboru w komórce.</translation>
         <translation>Jest &apos;;&apos; poza tagiem - podzieliłoby to komórkę na dwie.</translation>
     </message>
     <message>
-        <location filename="../widgets/StcTablesCreator.ui" line="20"/>
         <source>with header</source>
-        <translation>with header</translation>
+        <translation type="vanished">with header</translation>
     </message>
     <message>
-        <location filename="../widgets/StcTablesCreator.ui" line="46"/>
         <source>extended</source>
-        <translation>extended</translation>
+        <translation type="vanished">extended</translation>
     </message>
     <message>
-        <location filename="../widgets/StcTablesCreator.ui" line="53"/>
         <source>Add row</source>
-        <translation>Add row</translation>
+        <translation type="vanished">Add row</translation>
     </message>
     <message>
-        <location filename="../widgets/StcTablesCreator.ui" line="56"/>
         <source>+ Row</source>
-        <translation>+ Row</translation>
+        <translation type="vanished">+ Row</translation>
     </message>
     <message>
-        <location filename="../widgets/StcTablesCreator.ui" line="73"/>
         <source>Add column</source>
-        <translation>Add column</translation>
+        <translation type="vanished">Add column</translation>
     </message>
     <message>
-        <location filename="../widgets/StcTablesCreator.ui" line="76"/>
         <source>+ Column</source>
-        <translation>+ Column</translation>
+        <translation type="vanished">+ Column</translation>
     </message>
 </context>
 <context>

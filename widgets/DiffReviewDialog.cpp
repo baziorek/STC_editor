@@ -5,23 +5,21 @@
 #include <QFileInfo>
 #include <QFont>
 #include <QDateTime>
-#include <QTextBlock>
-#include <QChar>
 #include <QTextCursor>
 #include <QTextDocument>
 #include <Qt>
 #include <algorithm>
 
 #include "DiffReviewDialog.h"
+#include "DiffLineEdit.h"
 #include "CodeEditor.h"
 #include "utils/DiffCalculation.h"
-#include "widgets/DiffViewerWidget.h"
 
 class QWidget;
 
 
 DiffReviewDialog::DiffReviewDialog(CodeEditor* editor, const QString &dialogTitle, const QString &dialogMessage, QWidget* parent)
-    : QDialog(parent), dialogMode(UnsavedChanges)
+    : QDialog(parent), dialogMode(UnsavedChanges), editor(editor)
 {
     setupDialogTitleAndLayout(dialogTitle);
 
@@ -45,7 +43,7 @@ DiffReviewDialog::DiffReviewDialog(CodeEditor* editor, const QString &dialogTitl
 
 DiffReviewDialog::DiffReviewDialog(CodeEditor* editor, const QString &dialogTitle, const QString &dialogMessage, 
                                    const QStringList& newFileContent, DialogMode mode, QWidget* parent)
-    : QDialog(parent), dialogMode(mode), externalNewContent(newFileContent)
+    : QDialog(parent), dialogMode(mode), externalNewContent(newFileContent), editor(editor)
 {
     setupDialogTitleAndLayout(dialogTitle);
 
@@ -60,7 +58,7 @@ DiffReviewDialog::DiffReviewDialog(CodeEditor* editor, const QString &dialogTitl
     else
     {
         setupFileInfoHeader(filePath);
-        setupDiffAreaForExternalChange(editor, newFileContent);
+        setupDiffAreaForExternalChange(editor);
         setupEditorConnections(editor);
     }
 
@@ -128,47 +126,83 @@ void DiffReviewDialog::setupFileInfoHeader(const QString& filePath)
 
 void DiffReviewDialog::setupDiffArea(CodeEditor* editor)
 {
-    diffWidget = new DiffViewerWidget(this);
+    diffWidget = new SideBySideDiffWidget(this);
+    diffWidget->setActions(SideBySideDiffWidget::Actions::RestoreOnly);
+    diffWidget->setTitles(tr("Saved version"), tr("Current version"));
     mainLayout->addWidget(diffWidget, 1); // 1 means Expanding
 
-    const QStringList oldLines = editor->getOriginalLines();
-    const QStringList newLines = editor->exactLines();
-
-    const auto diffLines = DiffCalculation::computeDiff(oldLines, newLines);
-    const auto diffs = DiffCalculation::computeModifiedLineDiffs(diffLines);
-
-    populateMetadata(oldLines, newLines, editor->getFileName(),
-                     editor->getFileModificationTime(),
-                     editor->getLastChangeTime(),
-                     diffs);
-    diffWidget->setDiffData(diffs);
+    refreshDiff(editor);
 }
 
-void DiffReviewDialog::setupDiffAreaForExternalChange(CodeEditor* editor, const QStringList& newFileContent)
+void DiffReviewDialog::setupDiffAreaForExternalChange(CodeEditor* editor)
 {
-    diffWidget = new DiffViewerWidget(this);
+    diffWidget = new SideBySideDiffWidget(this);
+    diffWidget->setActions(SideBySideDiffWidget::Actions::RestoreOnly);
+    diffWidget->setTitles(tr("Editor"), tr("File on disk"));
     mainLayout->addWidget(diffWidget, 1); // 1 means Expanding
 
-    const QStringList oldLines = editor->exactLines();
-    const QStringList newLines = newFileContent;
-
-    const auto diffLines = DiffCalculation::computeDiff(oldLines, newLines);
-    const auto diffs = DiffCalculation::computeModifiedLineDiffs(diffLines);
-
-    populateMetadata(oldLines, newLines, editor->getFileName(),
-                     editor->getFileModificationTime(),
-                     editor->getLastChangeTime(),
-                     diffs);
-    diffWidget->setDiffData(diffs);
+    refreshDiff(editor);
 }
 
 void DiffReviewDialog::setupEditorConnections(CodeEditor* editor)
 {
-    connect(diffWidget, &DiffViewerWidget::jumpToLineInEditor, editor, &CodeEditor::go2LineRequested);
+    connect(diffWidget, &SideBySideDiffWidget::jumpToLineInEditor, editor, &CodeEditor::go2LineRequested);
 
-    connect(diffWidget, &DiffViewerWidget::lineRestored, editor, [=, this](int lineIndex, const QString& restoredText) {
-        handleLineRestoration(editor, lineIndex, restoredText);
+    connect(diffWidget, &SideBySideDiffWidget::regionDiscarded, this, [this](int regionIndex) {
+        restoreRegion(regionIndex);
     });
+}
+
+void DiffReviewDialog::refreshDiff(CodeEditor* editor)
+{
+    const int keptScroll = diffWidget ? diffWidget->scrollValue() : 0;
+
+    QStringList oldLines, newLines;
+    if (dialogMode == ExternalFileChange)
+    {
+        oldLines = editor->exactLines();
+        newLines = externalNewContent;
+    }
+    else
+    {
+        oldLines = editor->getOriginalLines();
+        newLines = editor->exactLines();
+    }
+
+    fullDiff = DiffCalculation::computeDiff(oldLines, newLines);
+    const auto diffs = DiffCalculation::computeModifiedLineDiffs(fullDiff);
+
+    diffWidget->setDiffLines(fullDiff);
+    diffWidget->setScrollValue(keptScroll);
+
+    populateMetadata(oldLines, newLines, editor->getFileName(),
+                     editor->getFileModificationTime(),
+                     editor->getLastChangeTime(),
+                     diffs);
+}
+
+/// "↩" on a run of changes puts the old side's lines back into the editor.
+/// Which side of the diff the editor document is depends on the mode: for unsaved changes
+/// the editor holds the "new" side, for an external change it holds the "old" side.
+void DiffReviewDialog::restoreRegion(int regionIndex)
+{
+    if (!diffWidget || regionIndex < 0 || regionIndex >= diffWidget->changeRegions().size())
+        return;
+
+    const auto &region = diffWidget->changeRegions()[regionIndex];
+    const bool editorIsNewSide = (dialogMode == UnsavedChanges);
+
+    const auto oldSide = DiffLineEdit::sideLinesOfRegion(fullDiff, region.firstEntry, region.lastEntry, true);
+    const auto newSide = DiffLineEdit::sideLinesOfRegion(fullDiff, region.firstEntry, region.lastEntry, false);
+    const auto &editorSide = editorIsNewSide ? newSide : oldSide;
+
+    QTextDocument *doc = editor->document();
+    QTextCursor group(doc);
+    group.beginEditBlock();
+    DiffLineEdit::replaceLines(doc, editorSide.first, editorSide.count, editorSide.insertAfter, oldSide.texts);
+    group.endEditBlock();
+
+    refreshDiff(editor);
 }
 
 void DiffReviewDialog::setupButtons()
@@ -223,64 +257,6 @@ void DiffReviewDialog::setupButtonsForExternalChange()
     buttonLayout->addWidget(discardButton);
     buttonLayout->addWidget(cancelButton);
     mainLayout->addLayout(buttonLayout);
-}
-
-void DiffReviewDialog::handleLineRestoration(CodeEditor* editor, int lineIndex, const QString& restoredText)
-{
-    const QStringList oldLines = (dialogMode == ExternalFileChange) 
-        ? editor->exactLines() 
-        : editor->getOriginalLines();
-    QStringList lines = editor->exactLines();
-
-    const auto& diffList = diffWidget->diffData();
-    const auto it = std::find_if(diffList.begin(), diffList.end(),
-                                 [lineIndex](const DiffCalculation::LineDiffResult& d) {
-                                     return d.newLineIndex == lineIndex || d.oldLineIndex == lineIndex;
-                                 });
-    if (it == diffList.end())
-        return;
-
-    const auto& diff = *it;
-    QTextDocument* doc = editor->document();
-
-    if (diff.oldLineIndex == -1 && diff.newLineIndex >= 0)
-    {
-        QTextBlock block = doc->findBlockByNumber(diff.newLineIndex);
-        if (block.isValid())
-        {
-            QTextCursor cursor(block);
-            cursor.select(QTextCursor::LineUnderCursor);
-            cursor.removeSelectedText();
-            cursor.deleteChar();
-        }
-    }
-    else if (diff.newLineIndex == -1 && diff.oldLineIndex >= 0)
-    {
-        QTextBlock block = doc->findBlockByNumber(diff.oldLineIndex);
-        QTextCursor cursor = block.isValid() ? QTextCursor(block) : QTextCursor(doc);
-        cursor.movePosition(QTextCursor::StartOfBlock);
-        cursor.insertText(restoredText + '\n');
-    }
-    else
-    {
-        QTextBlock block = doc->findBlockByNumber(diff.newLineIndex);
-        if (block.isValid())
-        {
-            QTextCursor cursor(block);
-            cursor.select(QTextCursor::LineUnderCursor);
-            cursor.insertText(restoredText);
-        }
-    }
-
-    const QStringList newLines = editor->exactLines();
-    const auto diffLines = DiffCalculation::computeDiff(oldLines, newLines);
-    const auto diffs = DiffCalculation::computeModifiedLineDiffs(diffLines);
-
-    diffWidget->setDiffData(diffs);
-    populateMetadata(oldLines, newLines, editor->getFileName(),
-                     editor->getFileModificationTime(),
-                     editor->getLastChangeTime(),
-                     diffs);
 }
 
 DiffReviewDialog::Result DiffReviewDialog::userChoice() const

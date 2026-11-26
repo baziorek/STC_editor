@@ -4,8 +4,8 @@
 #include <QStringList>
 
 class CodeEditor;
-class DiffViewerWidget;
 class QLabel;
+class SideBySideDiffWidget;
 
 /**
  * @class FileDiffDialog
@@ -27,6 +27,7 @@ public:
 private:
     void init(const QStringList& oldLines, const QStringList& newLines, const QString& title);
 
+    CodeEditor* editor = nullptr;
     QLabel* statsLabel = nullptr;
-    DiffViewerWidget* diffWidget = nullptr;
+    SideBySideDiffWidget* diffWidget = nullptr;
 };

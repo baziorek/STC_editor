@@ -1,7 +1,5 @@
 #include <QClipboard>
 #include <QGuiApplication>
-#include <QHash>
-#include <QPair>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPlainTextEdit>
@@ -12,17 +10,11 @@
 #include <QTextCursor>
 #include <QTextDocument>
 #include <QVBoxLayout>
-#include <algorithm>
-#include <QChar>
 #include <QStringList>
-#include <QTableWidgetItem>
 #include <QWidget>
-#include <Qt>
-#include <QtGlobal>
-#include <utility>
 
 #include "PastedTextDiffDialog.h"
-#include "DiffViewerWidget.h"
+#include "DiffLineEdit.h"
 #include "CodeEditor.h"
 #include "utils/ExactText.h"
 #include "utils/DiffCalculation.h"
@@ -42,102 +34,6 @@ QString matchTrailingNewline(QString pasted, const QString &reference)
         pasted += '\n';
 
     return pasted;
-}
-
-// --- line-level edits of a QTextDocument (block == line); callers group them in an edit block ---
-
-/// Removes `count` lines starting at `first`
-void removeLines(QTextDocument *doc, int first, int count)
-{
-    const int last = std::min(first + count - 1, doc->blockCount() - 1);
-    const QTextBlock firstBlock = doc->findBlockByNumber(first);
-    const QTextBlock lastBlock = doc->findBlockByNumber(last);
-    if (count <= 0 || !firstBlock.isValid() || !lastBlock.isValid())
-        return;
-
-    const int lastTextEnd = lastBlock.position() + lastBlock.length() - 1;
-    QTextCursor cursor(doc);
-
-    if (firstBlock.previous().isValid())
-    {
-        // the separator before the first removed line goes away together with the lines
-        cursor.setPosition(firstBlock.previous().position() + firstBlock.previous().length() - 1);
-        cursor.setPosition(lastTextEnd, QTextCursor::KeepAnchor);
-    }
-    else if (lastBlock.next().isValid())
-    {
-        cursor.setPosition(firstBlock.position());
-        cursor.setPosition(lastBlock.next().position(), QTextCursor::KeepAnchor);
-    }
-    else // everything
-    {
-        cursor.setPosition(firstBlock.position());
-        cursor.setPosition(lastTextEnd, QTextCursor::KeepAnchor);
-    }
-    cursor.removeSelectedText();
-}
-
-/// afterIndex == -1 inserts before the first line
-void insertLinesAfter(QTextDocument *doc, int afterIndex, const QStringList &lines)
-{
-    if (lines.isEmpty())
-        return;
-
-    const QString text = lines.join('\n');
-    QTextCursor cursor(doc);
-
-    if (afterIndex < 0)
-    {
-        cursor.setPosition(0);
-        cursor.insertText(text + '\n');
-        return;
-    }
-
-    const QTextBlock block = doc->findBlockByNumber(std::min(afterIndex, doc->blockCount() - 1));
-    cursor.setPosition(block.position() + block.length() - 1);
-    cursor.insertText('\n' + text);
-}
-
-/// Replaces `count` lines starting at `first` with `lines`. With count == 0 the lines are inserted after `insertAfter`
-/// (-1 == at the beginning); with no `lines` the old ones are just removed.
-void replaceLines(QTextDocument *doc, int first, int count, int insertAfter, const QStringList &lines)
-{
-    if (count <= 0)
-    {
-        insertLinesAfter(doc, insertAfter, lines);
-        return;
-    }
-
-    if (lines.isEmpty())
-    {
-        removeLines(doc, first, count);
-        return;
-    }
-
-    const QTextBlock firstBlock = doc->findBlockByNumber(first);
-    const QTextBlock lastBlock = doc->findBlockByNumber(std::min(first + count - 1, doc->blockCount() - 1));
-    if (!firstBlock.isValid() || !lastBlock.isValid())
-        return;
-
-    QTextCursor cursor(doc);
-    cursor.setPosition(firstBlock.position());
-    cursor.setPosition(lastBlock.position() + lastBlock.length() - 1, QTextCursor::KeepAnchor);
-    cursor.insertText(lines.join('\n'));
-}
-
-void replaceLine(QTextDocument *doc, int index, const QString &text)
-{
-    replaceLines(doc, index, 1, -1, {text});
-}
-
-void removeLine(QTextDocument *doc, int index)
-{
-    removeLines(doc, index, 1);
-}
-
-void insertLineAfter(QTextDocument *doc, int afterIndex, const QString &text)
-{
-    insertLinesAfter(doc, afterIndex, {text});
 }
 } // namespace
 
@@ -178,21 +74,17 @@ PastedTextDiffDialog::PastedTextDiffDialog(CodeEditor *editor, QWidget *parent)
     statsLabel = new QLabel(diffContainer);
     diffLayout->addWidget(statsLabel);
 
-    auto *hintLabel = new QLabel(tr("← apply to the editor    → discard (keep the editor's line)    - per line, or per block of consecutive changed lines (blue header)"), diffContainer);
+    auto *hintLabel = new QLabel(tr("← keep the editor's lines    → take the pasted lines - for each run of consecutive changes"), diffContainer);
     hintLabel->setStyleSheet("color: gray");
     diffLayout->addWidget(hintLabel);
 
-    diffWidget = new DiffViewerWidget(diffContainer);
-    diffWidget->setRowActions(DiffViewerWidget::RowActions::AcceptOrDiscardChange);
-    diffWidget->setHorizontalHeaderLabels({tr("Editor #"), tr("Editor line"), tr("Pasted #"), tr("Pasted line"), QString()});
-    diffWidget->horizontalHeaderItem(0)->setToolTip(tr("Line number in the editor"));
-    diffWidget->horizontalHeaderItem(1)->setToolTip(tr("Line content in the editor (current)"));
-    diffWidget->horizontalHeaderItem(2)->setToolTip(tr("Line number in the pasted text"));
-    diffWidget->horizontalHeaderItem(3)->setToolTip(tr("Line content in the pasted text"));
-    connect(diffWidget, &DiffViewerWidget::changeAccepted, this, &PastedTextDiffDialog::acceptChange);
-    connect(diffWidget, &DiffViewerWidget::changeDiscarded, this, &PastedTextDiffDialog::discardChange);
-    connect(diffWidget, &DiffViewerWidget::blockAccepted, this, &PastedTextDiffDialog::acceptBlock);
-    connect(diffWidget, &DiffViewerWidget::blockDiscarded, this, &PastedTextDiffDialog::discardBlock);
+    diffWidget = new SideBySideDiffWidget(diffContainer);
+    diffWidget->setActions(SideBySideDiffWidget::Actions::AcceptDiscard);
+    diffWidget->setTitles(tr("Editor"), tr("Pasted text"));
+    // "←" keeps the editor's (left) version -> the pasted text is edited; "→" takes the pasted (right) version -> the editor is edited
+    connect(diffWidget, &SideBySideDiffWidget::regionDiscarded, this, &PastedTextDiffDialog::discardRegion);
+    connect(diffWidget, &SideBySideDiffWidget::regionAccepted, this, &PastedTextDiffDialog::acceptRegion);
+    connect(diffWidget, &SideBySideDiffWidget::jumpToLineInEditor, editor, &CodeEditor::go2LineRequested);
     diffLayout->addWidget(diffWidget, 1);
 
     splitter->addWidget(pasteContainer);
@@ -242,14 +134,12 @@ void PastedTextDiffDialog::recomputeDiff()
 {
     recomputeTimer.stop();
 
-    const int keptScroll = diffWidget->verticalScrollBar()->value();
+    const int keptScroll = diffWidget->scrollValue();
 
     if (pasteEdit->toPlainText().isEmpty())
     {
         fullDiff.clear();
-        blocks.clear();
-        diffWidget->setBlocks({});
-        diffWidget->setDiffData({});
+        diffWidget->setDiffLines({});
         statsLabel->setText(tr("Paste the new version of the text above."));
         applyButton->setEnabled(false);
         return;
@@ -272,9 +162,8 @@ void PastedTextDiffDialog::recomputeDiff()
             ++modified;
     }
 
-    diffWidget->setBlocks(findBlocks(diffs));
-    diffWidget->setDiffData(diffs);
-    diffWidget->verticalScrollBar()->setValue(keptScroll); // stay where the user was after accepting/discarding a change
+    diffWidget->setDiffLines(fullDiff);
+    diffWidget->setScrollValue(keptScroll); // stay where the user was after accepting/discarding a change
 
     if (diffs.isEmpty())
         statsLabel->setText(tr("No differences - the pasted text is identical to the editor content."));
@@ -285,230 +174,43 @@ void PastedTextDiffDialog::recomputeDiff()
     applyButton->setEnabled(!diffs.isEmpty());
 }
 
-/// Runs of two or more consecutive changed lines (no unchanged line in between) become blocks.
-QList<DiffViewerWidget::Block> PastedTextDiffDialog::findBlocks(const QList<DiffCalculation::LineDiffResult> &rows)
+/// "→" on a run of changes: the pasted lines replace the editor's lines of that run.
+void PastedTextDiffDialog::acceptRegion(int regionIndex)
 {
-    using DiffCalculation::DiffType;
-
-    blocks.clear();
-    QList<DiffViewerWidget::Block> widgetBlocks;
-
-    QHash<QPair<int, int>, int> rowOfChange; // (old index, new index) -> row of `rows`
-    for (int row = 0; row < rows.size(); ++row)
-        rowOfChange.insert({rows[row].oldLineIndex, rows[row].newLineIndex}, row);
-
-    auto lineRange = [](int first, int count) {
-        if (count <= 0)
-            return tr("none");
-        return count == 1 ? QString::number(first + 1) : QString("%1–%2").arg(first + 1).arg(first + count);
-    };
-
-    size_t i = 0;
-    while (i < fullDiff.size())
-    {
-        if (fullDiff[i].type == DiffType::Unchanged)
-        {
-            ++i;
-            continue;
-        }
-
-        size_t j = i;
-        while (j + 1 < fullDiff.size() && fullDiff[j + 1].type != DiffType::Unchanged)
-            ++j;
-
-        if (j > i)
-        {
-            Block block;
-            block.firstEntry = i;
-            block.lastEntry = j;
-
-            for (size_t e = i; e <= j; ++e)
-            {
-                if (fullDiff[e].oldIndex >= 0)
-                {
-                    if (block.oldFirst < 0)
-                        block.oldFirst = fullDiff[e].oldIndex;
-                    ++block.oldCount;
-                }
-                if (fullDiff[e].newIndex >= 0)
-                {
-                    if (block.newFirst < 0)
-                        block.newFirst = fullDiff[e].newIndex;
-                    ++block.newCount;
-                }
-            }
-            for (size_t e = i; e-- > 0;)
-            {
-                if (block.insertAfterOld < 0 && fullDiff[e].oldIndex >= 0)
-                    block.insertAfterOld = fullDiff[e].oldIndex;
-                if (block.insertAfterNew < 0 && fullDiff[e].newIndex >= 0)
-                    block.insertAfterNew = fullDiff[e].newIndex;
-                if (block.insertAfterOld >= 0 && block.insertAfterNew >= 0)
-                    break;
-            }
-
-            const int firstRow = rowOfChange.value({fullDiff[i].oldIndex, fullDiff[i].newIndex}, -1);
-            const int lastRow = rowOfChange.value({fullDiff[j].oldIndex, fullDiff[j].newIndex}, -1);
-
-            if (firstRow >= 0 && lastRow - firstRow == static_cast<int>(j - i)) // every changed line has a row
-            {
-                DiffViewerWidget::Block widgetBlock;
-                widgetBlock.firstRow = firstRow;
-                widgetBlock.lastRow = lastRow;
-                widgetBlock.title = tr("Block of %1 changes  |  editor %2  ↔  pasted %3")
-                                        .arg(j - i + 1)
-                                        .arg(lineRange(block.oldFirst, block.oldCount))
-                                        .arg(lineRange(block.newFirst, block.newCount));
-                widgetBlocks.append(widgetBlock);
-                blocks.push_back(block);
-            }
-        }
-        i = j + 1;
-    }
-
-    return widgetBlocks;
-}
-
-const DiffCalculation::DiffLine *PastedTextDiffDialog::findFullDiffLine(int oldIndex, int newIndex, int *position) const
-{
-    for (size_t i = 0; i < fullDiff.size(); ++i)
-    {
-        if (fullDiff[i].oldIndex == oldIndex && fullDiff[i].newIndex == newIndex)
-        {
-            if (position)
-                *position = static_cast<int>(i);
-            return &fullDiff[i];
-        }
-    }
-    return nullptr;
-}
-
-void PastedTextDiffDialog::acceptChange(int row)
-{
-    if (row < 0 || row >= diffWidget->diffData().size())
+    if (regionIndex < 0 || regionIndex >= diffWidget->changeRegions().size())
         return;
 
-    const auto &result = diffWidget->diffData()[row];
-    int position = -1;
-    const auto *line = findFullDiffLine(result.oldLineIndex, result.newLineIndex, &position);
-    if (!line)
-        return;
+    const auto &region = diffWidget->changeRegions()[regionIndex];
+    const auto oldSide = DiffLineEdit::sideLinesOfRegion(fullDiff, region.firstEntry, region.lastEntry, true);
+    const auto newSide = DiffLineEdit::sideLinesOfRegion(fullDiff, region.firstEntry, region.lastEntry, false);
 
     // The editor is what changes: one edit block == one undo step
     QTextDocument *doc = editor->document();
     QTextCursor group(doc);
     group.beginEditBlock();
-
-    if (line->oldIndex >= 0 && line->newIndex >= 0)      // modified: take the pasted version of the line
-    {
-        replaceLine(doc, line->oldIndex, line->newText);
-    }
-    else if (line->oldIndex >= 0)                        // the pasted text has no such line: remove it from the editor
-    {
-        removeLine(doc, line->oldIndex);
-    }
-    else                                                 // the pasted text has an extra line: insert it after its editor neighbour
-    {
-        int insertAfter = -1;
-        for (int i = position - 1; i >= 0; --i)
-        {
-            if (fullDiff[i].oldIndex >= 0)
-            {
-                insertAfter = fullDiff[i].oldIndex;
-                break;
-            }
-        }
-        insertLineAfter(doc, insertAfter, line->newText);
-    }
-
+    DiffLineEdit::replaceLines(doc, oldSide.first, oldSide.count, oldSide.insertAfter, newSide.texts);
     group.endEditBlock();
 
-    // Deferred: the clicked button belongs to the table that is about to be rebuilt
+    // Deferred: the clicked button belongs to the widget that is about to be rebuilt
     QTimer::singleShot(0, this, &PastedTextDiffDialog::recomputeDiff);
 }
 
-void PastedTextDiffDialog::discardChange(int row)
+/// "←" on a run of changes: the editor's lines replace the pasted lines of that run,
+/// so the difference disappears from the pasted text.
+void PastedTextDiffDialog::discardRegion(int regionIndex)
 {
-    if (row < 0 || row >= diffWidget->diffData().size())
+    if (regionIndex < 0 || regionIndex >= diffWidget->changeRegions().size())
         return;
 
-    const auto &result = diffWidget->diffData()[row];
-    int position = -1;
-    const auto *line = findFullDiffLine(result.oldLineIndex, result.newLineIndex, &position);
-    if (!line)
-        return;
+    const auto &region = diffWidget->changeRegions()[regionIndex];
+    const auto oldSide = DiffLineEdit::sideLinesOfRegion(fullDiff, region.firstEntry, region.lastEntry, true);
+    const auto newSide = DiffLineEdit::sideLinesOfRegion(fullDiff, region.firstEntry, region.lastEntry, false);
 
     // The pasted text is what changes (its own undo stack keeps working)
     QTextDocument *doc = pasteEdit->document();
     QTextCursor group(doc);
     group.beginEditBlock();
-
-    if (line->oldIndex >= 0 && line->newIndex >= 0)      // modified: put the editor's line back into the pasted text
-    {
-        replaceLine(doc, line->newIndex, line->oldText);
-    }
-    else if (line->newIndex >= 0)                        // extra line in the pasted text: drop it
-    {
-        removeLine(doc, line->newIndex);
-    }
-    else                                                 // line missing in the pasted text: bring the editor's line back
-    {
-        int insertAfter = -1;
-        for (int i = position - 1; i >= 0; --i)
-        {
-            if (fullDiff[i].newIndex >= 0)
-            {
-                insertAfter = fullDiff[i].newIndex;
-                break;
-            }
-        }
-        insertLineAfter(doc, insertAfter, line->oldText);
-    }
-
-    group.endEditBlock();
-
-    QTimer::singleShot(0, this, &PastedTextDiffDialog::recomputeDiff);
-}
-
-void PastedTextDiffDialog::acceptBlock(int blockIndex)
-{
-    if (blockIndex < 0 || blockIndex >= static_cast<int>(blocks.size()))
-        return;
-
-    const Block block = blocks[blockIndex];
-
-    QStringList pastedLines;
-    for (size_t e = block.firstEntry; e <= block.lastEntry; ++e)
-        if (fullDiff[e].newIndex >= 0)
-            pastedLines << fullDiff[e].newText;
-
-    // The editor is what changes: one edit block == one undo step for the whole block
-    QTextDocument *doc = editor->document();
-    QTextCursor group(doc);
-    group.beginEditBlock();
-    replaceLines(doc, block.oldFirst, block.oldCount, block.insertAfterOld, pastedLines);
-    group.endEditBlock();
-
-    QTimer::singleShot(0, this, &PastedTextDiffDialog::recomputeDiff);
-}
-
-void PastedTextDiffDialog::discardBlock(int blockIndex)
-{
-    if (blockIndex < 0 || blockIndex >= static_cast<int>(blocks.size()))
-        return;
-
-    const Block block = blocks[blockIndex];
-
-    QStringList editorLines;
-    for (size_t e = block.firstEntry; e <= block.lastEntry; ++e)
-        if (fullDiff[e].oldIndex >= 0)
-            editorLines << fullDiff[e].oldText;
-
-    // The pasted text is what changes
-    QTextDocument *doc = pasteEdit->document();
-    QTextCursor group(doc);
-    group.beginEditBlock();
-    replaceLines(doc, block.newFirst, block.newCount, block.insertAfterNew, editorLines);
+    DiffLineEdit::replaceLines(doc, newSide.first, newSide.count, newSide.insertAfter, oldSide.texts);
     group.endEditBlock();
 
     QTimer::singleShot(0, this, &PastedTextDiffDialog::recomputeDiff);

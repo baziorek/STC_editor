@@ -151,8 +151,9 @@ Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wyb
 27. **Nawigacja wstecz/dalej**: `Edycja → Wstecz` (`Alt+[`) i `Edycja → Dalej` (`Alt+]`) przeskakują między miejscami, w których kursor dłużej się zatrzymywał — skoki (kliknięcie, „idź do linii”, wynik wyszukiwania) stają się krokami historii, a pisanie i strzałki nie zaśmiecają jej.
 28. **Porównywanie z plikiem**: `Edycja → Porównaj z plikiem…` pokazuje diff linii bieżącego dokumentu względem wybranego pliku (kodowanie wykrywane automatycznie, widok tylko do odczytu).
 29. **Porównywanie dwóch plików**: `Edycja → Porównaj pliki…` pozwala wybrać dwa pliki z dysku i zobaczyć diff ich linii — bez otwierania ich w edytorze.
-30. **Minimapa**: `Widok → Minimapa ☑` pokazuje po prawej stronie edytora miniaturowy podgląd całego dokumentu (jak w VS Code). Zmiana dokumentu odświeża ją po krótkiej chwili, a kliknięcie lub przeciągnięcie na minimapce przewija edytor do klikniętego miejsca; kółko myszy nad minimapką przewija dokument. Stan jest zapamiętywany.
-31. **Tryb zen**: `Widok → Tryb zen` (`F11`) ukrywa pasek menu, pasek statusu, panel boczny, zakładki kontekstowe, podgląd i konsolę oraz przechodzi w tryb pełnoekranowy — zostaje sam tekst. Powtórne `F11` przywraca wszystko dokładnie tak, jak było. Stan nie jest zapisywany między uruchomieniami.
+30. **Widok diffu obok siebie**: Wszystkie porównania (z plikiem, dwóch plików, ze schowkiem i niezapisanych zmian) pokazują obie wersje dokumentu obok siebie, w pełni wyrównane — brakujące linie są zastąpione pustymi wierszami, więc oba panele przewijają się synchronicznie. Zmienione linie są kolorowe (czerwone/usunięte, zielone/dodane, żółte/zmienione), a wewnątrz zmienionych linii podświetlane są dokładnie te znaki, które się różnią. W wąskim pasku między pane'ami każdy blok kolejnych zmian ma przyciski `←`/`→` (przyjmij wersję lewej/prawej strony), a nagłówek oferuje skoki do poprzedniej/następnej zmiany. W porównaniu ze schowkiem `→` wpisuje wersję schowka do edytora, a `←` poprawia tekst schowka pod edytor; przy przeglądzie niezapisanych zmian `↩` przywraca linie z wersji zapisanej.
+31. **Minimapa**: `Widok → Minimapa ☑` pokazuje po prawej stronie edytora miniaturowy podgląd całego dokumentu (jak w VS Code). Zmiana dokumentu odświeża ją po krótkiej chwili, a kliknięcie lub przeciągnięcie na minimapce przewija edytor do klikniętego miejsca; kółko myszy nad minimapką przewija dokument. Stan jest zapamiętywany.
+32. **Tryb zen**: `Widok → Tryb zen` (`F11`) ukrywa pasek menu, pasek statusu, panel boczny, zakładki kontekstowe, podgląd i konsolę oraz przechodzi w tryb pełnoekranowy — zostaje sam tekst. Powtórne `F11` przywraca wszystko dokładnie tak, jak było. Stan nie jest zapisywany między uruchomieniami.
 
 ## ⬇️ Pobieranie (najnowsza wersja zbudowana automatycznie)
 
@@ -215,7 +216,7 @@ QT_QPA_PLATFORM=offscreen ctest --output-on-failure
 6. Pobieranie aktualizacji przez https://cpp0x.pl/xml/ - poprawki wizualne
 7. Dodać widget edytujący obrazki - link z podglądem, opis, tekst alternatywny i jeszcze jest tam checkbox z autofit
 8. Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
-9. Diff tak ładny jak meld
+9. ~~Diff tak ładny jak meld~~ (widok obok siebie z kolorami i strzałkami jest zrobiony - patrz punkt 30)
 10. Wyświetlanie statystyk zmian w czasie rzeczywistym (liczba linii, znaków, rozmiar pliku, linia i kolumna).
 11. Szukanie tylko w kodzie
 12. Może AI mi podzieli CodeEditor aby nie był GodObject
@@ -243,7 +244,7 @@ QT_QPA_PLATFORM=offscreen ctest --output-on-failure
 39. Dyktowanie tekstu (biblioteka [Whisper](https://github.com/openai/whisper))
 40. Skróty `Alt+Lewo` i `Alt+Prawo` do nawigacji wstecz/dalej po pozycjach w kodzie.
 41. Otwieranie wielu plików jednocześnie.
-42. Widok sąsiadujący do porównywania plików.
+42. ~~Widok sąsiadujący do porównywania plików.~~ (zrobione - wszystkie diffy są obok siebie)
 43. Konsolidacja obrazów do jednego katalogu z aktualizacją ścieżek w znacznikach STC.
 44. Sprawdzania (reszta; `[run]`, atrybuty, legalne tagi i zamykanie nieotwartych tagów są już zrobione - patrz opis weryfikacji znaczników wyżej):
      - Automatyczne uruchamianie weryfikacji po opuszczeniu linijki ze zmianami (np. czy jest tam nowy tag) - obecnie weryfikacja jest uruchamiana ręcznie

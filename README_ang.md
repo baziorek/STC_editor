@@ -131,8 +131,9 @@ The editor is also suitable for general document editing. Here are some standout
 26. **Back/forward navigation**: `Edit → Navigate back` (`Alt+[`) and `Edit → Navigate forward` (`Alt+]`) jump between the places where the cursor rested — jumps (clicks, "go to line", search results) become history steps, while typing and arrow keys do not pollute it.
 27. **Compare with file**: `Edit → Compare with file…` shows the line diff of the current document against a chosen file (encoding auto-detected, read-only view).
 28. **Compare two files**: `Edit → Compare files…` lets you pick two files from the disk and see the diff of their lines - without opening them in the editor.
-29. **Minimap**: `View → Minimap ☑` shows a miniature preview of the whole document on the right side of the editor (like in VS Code). The document refreshes it after a short delay, and clicking or dragging on the minimap scrolls the editor to the clicked place; the mouse wheel over the minimap scrolls the document. The state is remembered.
-30. **Zen mode**: `View → Zen mode` (`F11`) hides the menu bar, the status bar, the side panel, the context tabs, the preview and the console, and goes fullscreen - only the text remains. Pressing `F11` again restores everything exactly as it was. The state is not saved between runs.
+29. **Side-by-side diff view**: All comparisons (with a file, two files, with pasted text and unsaved changes) show both versions of the document next to each other, fully aligned - missing lines become empty placeholders, so both panes scroll together. Changed lines are colored (red/removed, green/added, yellow/modified) and inside modified lines exactly the differing characters are highlighted. A narrow gutter between the panes gives every run of consecutive changes `←`/`→` buttons (take the left/right version), and the header offers previous/next change navigation. In the pasted-text comparison `→` writes the pasted version into the editor while `←` fixes the pasted text to match the editor; in the unsaved-changes review `↩` restores the saved lines.
+30. **Minimap**: `View → Minimap ☑` shows a miniature preview of the whole document on the right side of the editor (like in VS Code). The document refreshes it after a short delay, and clicking or dragging on the minimap scrolls the editor to the clicked place; the mouse wheel over the minimap scrolls the document. The state is remembered.
+31. **Zen mode**: `View → Zen mode` (`F11`) hides the menu bar, the status bar, the side panel, the context tabs, the preview and the console, and goes fullscreen - only the text remains. Pressing `F11` again restores everything exactly as it was. The state is not saved between runs.
 
 ## ⬇️ Downloads (Latest Automatically Built Version)
 
@@ -226,7 +227,7 @@ QT_QPA_PLATFORM=offscreen ctest --output-on-failure
 44. Text dictation using [Whisper](https://github.com/openai/whisper).
 45. `Alt+Left` and `Alt+Right` for navigating backward/forward through code positions.
 46. Open multiple files simultaneously.
-47. Side-by-side view for comparing files.
+47. ~~Side-by-side view for comparing files.~~ (done - all diffs are shown side by side)
 48. Export code blocks to external files.
 49. Consolidate images into a single directory with path updates in STC tags.
 50. Save individual lines to disk when comparing unsaved changes.
