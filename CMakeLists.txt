@@ -165,7 +165,7 @@ endif()
 # `vcpkg*` matters in CI: the Windows workflow clones vcpkg INTO the workspace (./vcpkg), and its
 # buildtrees/ contain thousands of foreign .cpp files (e.g. ICU's os400/cxxfilt.cpp -> demangle.h).
 set(_stc_excluded_dir_regex
-    "^(libs|tests|docs|_docs|screens|resources|dictionaries|translations|qt-runtime|cmake|vcpkg.*|build.*|cmake-build.*|\\..*)$")
+    "^(libs|tests|fuzz|docs|_docs|screens|resources|dictionaries|translations|qt-runtime|cmake|vcpkg.*|build.*|cmake-build.*|\\..*)$")
 
 function(stc_collect_sources out_var)
     set(_patterns "*.cpp" "*.h" "*.ui")
