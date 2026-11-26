@@ -57,10 +57,12 @@ jobs:
             wget
 
       # CodeQL traces the compiler calls of this build (build-mode: manual).
+      # Only the application target is needed - the test executables would just
+      # double the build time without adding anything to the analysis.
       - name: Build application (traced by CodeQL)
         run: |
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-          cmake --build build --parallel
+          cmake --build build --target STC_editor --parallel
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@915412ff23e8b7659517e607487dbeae018f2934 # v4.39.5
