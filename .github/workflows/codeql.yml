@@ -33,7 +33,7 @@ jobs:
         uses: github/codeql-action/init@915412ff23e8b7659517e607487dbeae018f2934 # v4.39.5
         with:
           languages: cpp
-          build-mode: autobuild
+          build-mode: manual
 
       - name: Install build dependencies (Qt6, GTest, build tools)
         run: |
@@ -55,6 +55,12 @@ jobs:
             libuchardet-dev \
             libgtest-dev \
             wget
+
+      # CodeQL traces the compiler calls of this build (build-mode: manual).
+      - name: Build application (traced by CodeQL)
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@915412ff23e8b7659517e607487dbeae018f2934 # v4.39.5
