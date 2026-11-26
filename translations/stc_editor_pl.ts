@@ -4,63 +4,72 @@
 <context>
     <name>BackupRecoveryDialog</name>
     <message>
+        <location filename="../widgets/BackupRecoveryDialog.cpp" line="33"/>
         <source>Backup Recovery</source>
-        <translation type="vanished">Odzyskiwanie z kopii zapasowej</translation>
+        <translation>Odzyskiwanie z kopii zapasowej</translation>
     </message>
     <message>
+        <location filename="../widgets/BackupRecoveryDialog.cpp" line="66"/>
         <source>Backup is newer (created: %1) | Original file (modified: %2)</source>
-        <translation type="vanished">Kopia zapasowa jest nowsza (utworzona: %1) | Plik oryginalny (zmodyfikowany: %2)</translation>
+        <translation>Kopia zapasowa jest nowsza (utworzona: %1) | Plik oryginalny (zmodyfikowany: %2)</translation>
     </message>
     <message>
+        <location filename="../widgets/BackupRecoveryDialog.cpp" line="73"/>
         <source>Backup is older (created: %1) | Original file (modified: %2)</source>
-        <translation type="vanished">Kopia zapasowa jest starsza (utworzona: %1) | Plik oryginalny (zmodyfikowany: %2)</translation>
+        <translation>Kopia zapasowa jest starsza (utworzona: %1) | Plik oryginalny (zmodyfikowany: %2)</translation>
     </message>
     <message>
+        <location filename="../widgets/BackupRecoveryDialog.cpp" line="80"/>
         <source>Backup created: %1</source>
-        <translation type="vanished">Kopia zapasowa utworzona: %1</translation>
+        <translation>Kopia zapasowa utworzona: %1</translation>
     </message>
     <message>
+        <location filename="../widgets/BackupRecoveryDialog.cpp" line="84"/>
         <source>Backup timestamp unavailable</source>
-        <translation type="vanished">Brak znacznika czasu kopii zapasowej</translation>
+        <translation>Brak znacznika czasu kopii zapasowej</translation>
     </message>
     <message>
+        <location filename="../widgets/BackupRecoveryDialog.cpp" line="118"/>
         <source>Differences: Modified: %1 | Added in current: %2 | Removed from current: %3</source>
-        <translation type="vanished">Różnice: zmienione: %1 | dodane w bieżącym: %2 | usunięte z bieżącego: %3</translation>
+        <translation>Różnice: zmienione: %1 | dodane w bieżącym: %2 | usunięte z bieżącego: %3</translation>
     </message>
     <message>
+        <location filename="../widgets/BackupRecoveryDialog.cpp" line="129"/>
         <source>Restore from Backup</source>
-        <translation type="vanished">Przywróć z kopii zapasowej</translation>
+        <translation>Przywróć z kopii zapasowej</translation>
     </message>
     <message>
+        <location filename="../widgets/BackupRecoveryDialog.cpp" line="130"/>
         <source>Discard Backup</source>
-        <translation type="vanished">Odrzuć kopię zapasową</translation>
+        <translation>Odrzuć kopię zapasową</translation>
     </message>
     <message>
+        <location filename="../widgets/BackupRecoveryDialog.cpp" line="131"/>
         <source>Cancel</source>
-        <translation type="vanished">Anuluj</translation>
+        <translation>Anuluj</translation>
     </message>
 </context>
 <context>
     <name>CodeEditor</name>
     <message>
-        <location filename="../CodeEditor.cpp" line="529"/>
-        <location filename="../CodeEditor.cpp" line="2639"/>
+        <location filename="../CodeEditor.cpp" line="589"/>
+        <location filename="../CodeEditor.cpp" line="2830"/>
         <source>Checking if no unsaved changes failed!</source>
         <translation>Sprawdzanie niezapisanych zmian nie powiodło się!</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="711"/>
-        <location filename="../CodeEditor.cpp" line="730"/>
+        <location filename="../CodeEditor.cpp" line="776"/>
+        <location filename="../CodeEditor.cpp" line="795"/>
         <source>Loading file error</source>
         <translation>Błąd wczytywania pliku</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="738"/>
+        <location filename="../CodeEditor.cpp" line="803"/>
         <source>Not valid in the encoding</source>
         <translation>Niepoprawne w tym kodowaniu</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="739"/>
+        <location filename="../CodeEditor.cpp" line="804"/>
         <source>The file contains bytes which are not valid in the encoding %1. They will be shown as replacement characters.
 
 Open anyway?</source>
@@ -69,12 +78,12 @@ Open anyway?</source>
 Otworzyć mimo to?</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="781"/>
+        <location filename="../CodeEditor.cpp" line="846"/>
         <source>Characters not in the encoding</source>
         <translation>Znaki spoza kodowania</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="782"/>
+        <location filename="../CodeEditor.cpp" line="847"/>
         <source>Some characters cannot be written in the encoding %1. They will be saved as &apos;?&apos;.
 
 Save anyway?</source>
@@ -83,237 +92,237 @@ Save anyway?</source>
 Zapisać mimo to?</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="947"/>
+        <location filename="../CodeEditor.cpp" line="1014"/>
         <source>Search C++ documentation for &quot;%1&quot;</source>
         <translation>Szukaj &quot;%1&quot; w dokumentacji C++</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="949"/>
+        <location filename="../CodeEditor.cpp" line="1016"/>
         <source>C++ documentation: %1</source>
         <translation>Dokumentacja C++: %1</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="981"/>
+        <location filename="../CodeEditor.cpp" line="1048"/>
         <source>Open STC lesson: %1</source>
         <translation>Otwórz lekcję kursu STC: %1</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="984"/>
+        <location filename="../CodeEditor.cpp" line="1051"/>
         <source>STC course: %1</source>
         <translation>Kurs STC: %1</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1009"/>
+        <location filename="../CodeEditor.cpp" line="1076"/>
         <source>Copy link</source>
         <translation>Kopiuj link</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1035"/>
+        <location filename="../CodeEditor.cpp" line="1097"/>
         <source>Preview the page when hovering the link</source>
         <translation>Podgląd strony po najechaniu na link</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1014"/>
+        <location filename="../CodeEditor.cpp" line="1081"/>
         <source>Remove link</source>
         <translation>Usuń link</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1019"/>
+        <location filename="../CodeEditor.cpp" line="1086"/>
         <source>Select link</source>
         <translation>Zaznacz link</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1120"/>
+        <location filename="../CodeEditor.cpp" line="1199"/>
         <source>alt attribute</source>
         <translation>atrybut alt</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1153"/>
+        <location filename="../CodeEditor.cpp" line="1232"/>
         <source>opis attribute</source>
         <translation>atrybut opis</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1186"/>
+        <location filename="../CodeEditor.cpp" line="1265"/>
         <source>autofit attribute</source>
         <translation>atrybut autofit</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1239"/>
+        <location filename="../CodeEditor.cpp" line="1318"/>
         <source>ext attribute</source>
         <translation>atrybut ext</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1301"/>
+        <location filename="../CodeEditor.cpp" line="1380"/>
         <source>Error</source>
         <translation>Błąd</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1301"/>
+        <location filename="../CodeEditor.cpp" line="1380"/>
         <source>Could not find matching [/csv] tag</source>
         <translation>Nie znaleziono pasującego znacznika [/csv]</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1368"/>
+        <location filename="../CodeEditor.cpp" line="1447"/>
         <source>extended attribute</source>
         <translation>atrybut extended</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1392"/>
+        <location filename="../CodeEditor.cpp" line="1471"/>
         <source>header attribute</source>
         <translation>atrybut header</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1418"/>
+        <location filename="../CodeEditor.cpp" line="1497"/>
         <source>Edit table</source>
         <translation>Edytuj tabelę</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1421"/>
+        <location filename="../CodeEditor.cpp" line="1500"/>
         <source>Edit the table in a spreadsheet-like editor</source>
         <translation>Edytuj tabelę w edytorze przypominającym arkusz kalkulacyjny</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1461"/>
+        <location filename="../CodeEditor.cpp" line="1540"/>
         <source>name attribute</source>
         <translation>atrybut name</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1526"/>
+        <location filename="../CodeEditor.cpp" line="1605"/>
         <source>Convert to [div]</source>
         <translation>Zamień na [div]</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1542"/>
+        <location filename="../CodeEditor.cpp" line="1621"/>
         <source>Convert to [div class=&quot;tip&quot;]</source>
         <translation>Zamień na [div class=&quot;tip&quot;]</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1558"/>
+        <location filename="../CodeEditor.cpp" line="1637"/>
         <source>Convert to [div class=&quot;uwaga&quot;]</source>
         <translation>Zamień na [div class=&quot;uwaga&quot;]</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1602"/>
+        <location filename="../CodeEditor.cpp" line="1681"/>
         <source>To UPPER CASE</source>
         <translation>Na WIELKIE LITERY</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1612"/>
+        <location filename="../CodeEditor.cpp" line="1691"/>
         <source>To lower case</source>
         <translation>Na małe litery</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1628"/>
+        <location filename="../CodeEditor.cpp" line="1707"/>
         <source>To camelCase</source>
         <translation>Na camelCase</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1639"/>
+        <location filename="../CodeEditor.cpp" line="1718"/>
         <source>To snake_case</source>
         <translation>Na snake_case</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1670"/>
+        <location filename="../CodeEditor.cpp" line="1749"/>
         <source>Remove numbering</source>
         <translation>Usuń numerację</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1676"/>
+        <location filename="../CodeEditor.cpp" line="1755"/>
         <source>Renumber selection</source>
         <translation>Numeruj zaznaczenie od nowa</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1683"/>
+        <location filename="../CodeEditor.cpp" line="1762"/>
         <source>Add numeration: 1., 2., 3. ...</source>
         <translation>Dodaj numerację: 1., 2., 3. ...</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1712"/>
+        <location filename="../CodeEditor.cpp" line="1791"/>
         <source>Add bullet points</source>
         <translation>Dodaj punktory</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1739"/>
+        <location filename="../CodeEditor.cpp" line="1818"/>
         <source>Join lines with space</source>
         <translation>Połącz linie spacją</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1748"/>
+        <location filename="../CodeEditor.cpp" line="1827"/>
         <source>Sort lines ascending</source>
         <translation>Sortuj linie rosnąco</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1755"/>
+        <location filename="../CodeEditor.cpp" line="1834"/>
         <source>Sort lines descending</source>
         <translation>Sortuj linie malejąco</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="1974"/>
+        <location filename="../CodeEditor.cpp" line="2053"/>
         <source>Remove [%1]</source>
         <translation>Usuń [%1]</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="2011"/>
+        <location filename="../CodeEditor.cpp" line="2090"/>
         <source>Select this source code</source>
         <translation>Zaznacz ten kod źródłowy</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="2017"/>
+        <location filename="../CodeEditor.cpp" line="2096"/>
         <source>Copy this source code</source>
         <translation>Kopiuj ten kod źródłowy</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="2025"/>
+        <location filename="../CodeEditor.cpp" line="2104"/>
         <source>Format C++ with clang-format</source>
         <translation>Sformatuj C++ przez clang-format</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="2032"/>
+        <location filename="../CodeEditor.cpp" line="2111"/>
         <source>Formatting failed or clang-format not available.</source>
         <translation>Formatowanie nie powiodło się lub clang-format jest niedostępny.</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="2038"/>
+        <location filename="../CodeEditor.cpp" line="2117"/>
         <source>Remove C++ Comments</source>
         <translation>Usuń komentarze C++</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="2051"/>
+        <location filename="../CodeEditor.cpp" line="2130"/>
         <source>Clean Up Empty Lines</source>
         <translation>Usuń nadmiarowe puste linie</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="2091"/>
+        <location filename="../CodeEditor.cpp" line="2170"/>
         <source>Compile C++ with g++</source>
         <translation>Skompiluj C++ za pomocą g++</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="2094"/>
+        <location filename="../CodeEditor.cpp" line="2173"/>
         <source>Check the syntax (python3), do not run</source>
         <translation>Sprawdź składnię (python3), bez uruchamiania</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="2095"/>
+        <location filename="../CodeEditor.cpp" line="2174"/>
         <source>Check the syntax and run (python3)</source>
         <translation>Sprawdź składnię i uruchom (python3)</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="2098"/>
+        <location filename="../CodeEditor.cpp" line="2177"/>
         <source>Check the syntax (bash -n), do not run</source>
         <translation>Sprawdź składnię (bash -n), bez uruchamiania</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="2099"/>
+        <location filename="../CodeEditor.cpp" line="2178"/>
         <source>Check the syntax and run (bash)</source>
         <translation>Sprawdź składnię i uruchom (bash)</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="2612"/>
+        <location filename="../CodeEditor.cpp" line="2803"/>
         <source>File changed</source>
         <translation>Plik został zmieniony</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="2613"/>
+        <location filename="../CodeEditor.cpp" line="2804"/>
         <source>File &apos;%1&apos; has been modified outside of the editor.
 
 Do you want to reload it?</source>
@@ -322,27 +331,27 @@ Do you want to reload it?</source>
 Czy chcesz wczytać go ponownie?</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="3178"/>
+        <location filename="../CodeEditor.cpp" line="3375"/>
         <source>Convert to [%1]</source>
         <translation>Zamień na [%1]</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="3221"/>
+        <location filename="../CodeEditor.cpp" line="3418"/>
         <source>Spelling suggestions</source>
         <translation>Propozycje pisowni</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="3624"/>
+        <location filename="../CodeEditor.cpp" line="3834"/>
         <source>Edit history…</source>
         <translation>Historia edycji…</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="3630"/>
+        <location filename="../CodeEditor.cpp" line="3840"/>
         <source>History of line %1…</source>
         <translation>Historia linii %1…</translation>
     </message>
     <message numerus="yes">
-        <location filename="../CodeEditor.cpp" line="3713"/>
+        <location filename="../CodeEditor.cpp" line="3935"/>
         <source>This line was changed %n time(s) in this session - click to see its history</source>
         <translation>
             <numerusform>Ta linia została zmieniona %n raz w tej sesji – kliknij, aby zobaczyć jej historię</numerusform>
@@ -351,12 +360,12 @@ Czy chcesz wczytać go ponownie?</translation>
         </translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="3715"/>
+        <location filename="../CodeEditor.cpp" line="3937"/>
         <source>(all the changes are undone now; Ctrl+Shift+Z brings them back)</source>
         <translation>(wszystkie zmiany są teraz cofnięte; Ctrl+Shift+Z je przywraca)</translation>
     </message>
     <message numerus="yes">
-        <location filename="../CodeEditorFolding.cpp" line="360"/>
+        <location filename="../CodeEditorFolding.cpp" line="464"/>
         <source>%n line(s)</source>
         <comment>label at the end of a folded line</comment>
         <translation>
@@ -366,329 +375,468 @@ Czy chcesz wczytać go ponownie?</translation>
         </translation>
     </message>
     <message>
-        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <location filename="../CodeEditor.cpp" line="3923"/>
         <source>Click to fold</source>
         <translation>Kliknij, aby zwinąć</translation>
     </message>
     <message>
-        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <location filename="../CodeEditor.cpp" line="3923"/>
         <source>Click to unfold</source>
         <translation>Kliknij, aby rozwinąć</translation>
     </message>
     <message>
-        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <location filename="../CodeEditorFolding.cpp" line="504"/>
         <source>Folding</source>
         <translation>Zwijanie</translation>
     </message>
     <message>
-        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <location filename="../CodeEditorFolding.cpp" line="507"/>
         <source>Unfold</source>
         <translation>Rozwiń</translation>
     </message>
     <message>
-        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <location filename="../CodeEditorFolding.cpp" line="511"/>
         <source>Fold this section or block</source>
         <translation>Zwiń tę sekcję lub blok</translation>
     </message>
     <message>
-        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <location filename="../CodeEditorFolding.cpp" line="514"/>
         <source>Fold everything</source>
         <translation>Zwiń wszystko</translation>
     </message>
     <message>
-        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <location filename="../CodeEditorFolding.cpp" line="515"/>
         <source>Fold all blocks of code</source>
         <translation>Zwiń wszystkie bloki kodu</translation>
     </message>
     <message>
-        <location filename="../CodeEditorFolding.cpp" line="1"/>
+        <location filename="../CodeEditorFolding.cpp" line="516"/>
         <source>Unfold everything</source>
         <translation>Rozwiń wszystko</translation>
     </message>
 </context>
 <context>
+    <name>ConsoleOutputEdit</name>
+    <message>
+        <location filename="../widgets/ConsoleOutputEdit.cpp" line="263"/>
+        <source>%1 lines of output, %2%3
+started in %4</source>
+        <translation>%1 linii wyjścia, %2%3
+start: %4</translation>
+    </message>
+    <message>
+        <location filename="../widgets/ConsoleOutputEdit.cpp" line="265"/>
+        <source> (running)</source>
+        <translation> (działa)</translation>
+    </message>
+    <message>
+        <location filename="../widgets/ConsoleOutputEdit.cpp" line="307"/>
+        <source>Clear the console</source>
+        <translation>Wyczyść konsolę</translation>
+    </message>
+</context>
+<context>
+    <name>ConsoleWidget</name>
+    <message>
+        <location filename="../widgets/ConsoleWidget.cpp" line="252"/>
+        <source>cd: there is no previous directory</source>
+        <translation>cd: nie ma poprzedniego katalogu</translation>
+    </message>
+    <message>
+        <location filename="../widgets/ConsoleWidget.cpp" line="257"/>
+        <source>cd: %1: no such directory</source>
+        <translation>cd: %1: brak takiego katalogu</translation>
+    </message>
+    <message>
+        <location filename="../widgets/ConsoleWidget.cpp" line="362"/>
+        <source>[interrupted]</source>
+        <translation>[przerwano]</translation>
+    </message>
+    <message>
+        <location filename="../widgets/ConsoleWidget.cpp" line="364"/>
+        <source>[terminated abnormally]</source>
+        <translation>[zakończono nieprawidłowo]</translation>
+    </message>
+    <message>
+        <location filename="../widgets/ConsoleWidget.cpp" line="366"/>
+        <source>[exit code %1]</source>
+        <translation>[kod wyjścia %1]</translation>
+    </message>
+    <message>
+        <location filename="../widgets/ConsoleWidget.cpp" line="382"/>
+        <source>[cannot start the shell: %1]</source>
+        <translation>[nie można uruchomić powłoki: %1]</translation>
+    </message>
+    <message>
+        <location filename="../widgets/ConsoleWidget.cpp" line="593"/>
+        <source>Typed text goes to the program (Ctrl+D ends the input, Ctrl+C stops the program)</source>
+        <translation>Wpisany tekst trafia do programu (Ctrl+D kończy wprowadzanie, Ctrl+C zatrzymuje program)</translation>
+    </message>
+    <message>
+        <location filename="../widgets/ConsoleWidget.cpp" line="594"/>
+        <source>Type a command (Enter runs it, Ctrl+C stops it, Ctrl+L clears, Ctrl+Up/Down jumps between commands, Esc goes back to the editor)</source>
+        <translation>Wpisz polecenie (Enter uruchamia, Ctrl+C zatrzymuje, Ctrl+L czyści, Ctrl+Strzałka w górę/dół przeskakuje między poleceniami, Esc wraca do edytora)</translation>
+    </message>
+    <message>
+        <location filename="../widgets/ConsoleWidget.cpp" line="600"/>
+        <source>Stop the command (Ctrl+C); the second click kills it</source>
+        <translation>Zatrzymaj polecenie (Ctrl+C); drugie kliknięcie zabija je</translation>
+    </message>
+    <message>
+        <location filename="../widgets/ConsoleWidget.cpp" line="601"/>
+        <source>Clear the console (Ctrl+L, or the command clear)</source>
+        <translation>Wyczyść konsolę (Ctrl+L albo polecenie clear)</translation>
+    </message>
+</context>
+<context>
     <name>CppCompilerDialog</name>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="163"/>
         <source>Python: syntax check and run</source>
-        <translation type="vanished">Python: sprawdzenie składni i uruchomienie</translation>
+        <translation>Python: sprawdzenie składni i uruchomienie</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="160"/>
         <source>g++ compilation</source>
-        <translation type="vanished">Kompilacja g++</translation>
+        <translation>Kompilacja g++</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="166"/>
         <source>Bash: syntax check and run</source>
-        <translation type="vanished">Bash: sprawdzenie składni i uruchomienie</translation>
+        <translation>Bash: sprawdzenie składni i uruchomienie</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="208"/>
         <source>e.g. -std=c++23 -O2 -Wall -Wextra</source>
-        <translation type="vanished">np. -std=c++23 -O2 -Wall -Wextra</translation>
+        <translation>np. -std=c++23 -O2 -Wall -Wextra</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="210"/>
         <source>Passed to g++ before the source file. Split like in a shell: &apos;...&apos;, &quot;...&quot; and \ work, e.g. -DNAME=&apos;&quot;a b&quot;&apos;</source>
-        <translation type="vanished">Przekazywane do g++ przed plikiem źródłowym. Dzielone jak w powłoce: działają &apos;...&apos;, &quot;...&quot; oraz \, np. -DNAME=&apos;&quot;a b&quot;&apos;</translation>
+        <translation>Przekazywane do g++ przed plikiem źródłowym. Dzielone jak w powłoce: działają &apos;...&apos;, &quot;...&quot; oraz \, np. -DNAME=&apos;&quot;a b&quot;&apos;</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="213"/>
         <source>e.g. -lpthread -lm  or  -L/path/to/libs -lfoo</source>
-        <translation type="vanished">np. -lpthread -lm  lub  -L/sciezka/do/bibliotek -lfoo</translation>
+        <translation>np. -lpthread -lm  lub  -L/sciezka/do/bibliotek -lfoo</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="215"/>
         <source>Passed to g++ after the source file (libraries, -L paths, ...)</source>
-        <translation type="vanished">Przekazywane do g++ po pliku źródłowym (biblioteki, ścieżki -L, ...)</translation>
+        <translation>Przekazywane do g++ po pliku źródłowym (biblioteki, ścieżki -L, ...)</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="217"/>
         <source>Run the program after a successful compilation</source>
-        <translation type="vanished">Uruchom program po udanej kompilacji</translation>
+        <translation>Uruchom program po udanej kompilacji</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="219"/>
         <source>Compile (F5)</source>
-        <translation type="vanished">Kompiluj (F5)</translation>
+        <translation>Kompiluj (F5)</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="222"/>
         <source>Stop</source>
-        <translation type="vanished">Zatrzymaj</translation>
+        <translation>Zatrzymaj</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="229"/>
         <source>Compiler flags:</source>
-        <translation type="vanished">Flagi kompilatora:</translation>
+        <translation>Flagi kompilatora:</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="230"/>
         <source>Linker flags / libraries:</source>
-        <translation type="vanished">Flagi linkera / biblioteki:</translation>
+        <translation>Flagi linkera / biblioteki:</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="254"/>
         <source>Compiler messages (errors, warnings)</source>
-        <translation type="vanished">Komunikaty kompilatora (błędy, ostrzeżenia)</translation>
+        <translation>Komunikaty kompilatora (błędy, ostrzeżenia)</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="255"/>
         <source>Output of the program</source>
-        <translation type="vanished">Wyjście programu</translation>
+        <translation>Wyjście programu</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="257"/>
         <source>Insert compiler log below the code</source>
-        <translation type="vanished">Wstaw log kompilatora pod kodem</translation>
+        <translation>Wstaw log kompilatora pod kodem</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="258"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="261"/>
         <source>Adds [code]...[/code] with this text under the closing tag of the code block</source>
-        <translation type="vanished">Dodaje [code]...[/code] z tym tekstem pod znacznikiem zamykającym bloku kodu</translation>
+        <translation>Dodaje [code]...[/code] z tym tekstem pod znacznikiem zamykającym bloku kodu</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="260"/>
         <source>Insert program output below the code</source>
-        <translation type="vanished">Wstaw wyjście programu pod kodem</translation>
+        <translation>Wstaw wyjście programu pod kodem</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="271"/>
         <source>Compilation time</source>
-        <translation type="vanished">Czas kompilacji</translation>
+        <translation>Czas kompilacji</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="272"/>
         <source>Execution time of the program</source>
-        <translation type="vanished">Czas wykonania programu</translation>
+        <translation>Czas wykonania programu</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="274"/>
         <source>stdout</source>
-        <translation type="vanished">stdout</translation>
+        <translation>stdout</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="276"/>
         <source>Show what the program wrote to stdout</source>
-        <translation type="vanished">Pokaż, co program wypisał na stdout</translation>
+        <translation>Pokaż, co program wypisał na stdout</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="277"/>
         <source>stderr</source>
-        <translation type="vanished">stderr</translation>
+        <translation>stderr</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="279"/>
         <source>Show what the program wrote to stderr (red). Unchecked text is not inserted into the article either.</source>
-        <translation type="vanished">Pokaż, co program wypisał na stderr (na czerwono). Odznaczony tekst nie jest też wstawiany do artykułu.</translation>
+        <translation>Pokaż, co program wypisał na stderr (na czerwono). Odznaczony tekst nie jest też wstawiany do artykułu.</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="299"/>
+        <location filename="../ui/cppcompilerdialog.cpp" line="420"/>
         <source>Syntax check</source>
-        <translation type="vanished">Sprawdzenie składni</translation>
+        <translation>Sprawdzenie składni</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="299"/>
         <source>Compiler log</source>
-        <translation type="vanished">Log kompilatora</translation>
+        <translation>Log kompilatora</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="300"/>
         <source>Script output</source>
-        <translation type="vanished">Wyjście skryptu</translation>
+        <translation>Wyjście skryptu</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="300"/>
         <source>Program output</source>
-        <translation type="vanished">Wyjście programu</translation>
+        <translation>Wyjście programu</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="309"/>
         <source>Put the code back into the article</source>
-        <translation type="vanished">Wstaw kod z powrotem do artykułu</translation>
+        <translation>Wstaw kod z powrotem do artykułu</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="310"/>
         <source>Replaces the content of the code block in the article with the code from this window</source>
-        <translation type="vanished">Zastępuje zawartość bloku kodu w artykule kodem z tego okna</translation>
+        <translation>Zastępuje zawartość bloku kodu w artykule kodem z tego okna</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="312"/>
         <source>Close</source>
-        <translation type="vanished">Zamknij</translation>
+        <translation>Zamknij</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="356"/>
         <source>Interpreter flags:</source>
-        <translation type="vanished">Flagi interpretera:</translation>
+        <translation>Flagi interpretera:</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="357"/>
         <source>e.g. -W error  (the script is always run with -u)</source>
-        <translation type="vanished">np. -W error  (skrypt jest zawsze uruchamiany z -u)</translation>
+        <translation>np. -W error  (skrypt jest zawsze uruchamiany z -u)</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="358"/>
         <source>e.g. -x  (prints every command)  or  -e -u -o pipefail</source>
-        <translation type="vanished">np. -x  (wypisuje każde polecenie)  lub  -e -u -o pipefail</translation>
+        <translation>np. -x  (wypisuje każde polecenie)  lub  -e -u -o pipefail</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="359"/>
         <source>Passed to %1 before the script. Split like in a shell: &apos;...&apos;, &quot;...&quot; and \ work</source>
-        <translation type="vanished">Przekazywane do %1 przed skryptem. Dzielone jak w powłoce: działają &apos;...&apos;, &quot;...&quot; oraz \</translation>
+        <translation>Przekazywane do %1 przed skryptem. Dzielone jak w powłoce: działają &apos;...&apos;, &quot;...&quot; oraz \</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="364"/>
         <source>Result of the syntax check (%1)</source>
-        <translation type="vanished">Wynik sprawdzenia składni (%1)</translation>
+        <translation>Wynik sprawdzenia składni (%1)</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="730"/>
         <source>Failed to start %1. Is it installed and available in PATH?</source>
-        <translation type="vanished">Nie udało się uruchomić %1. Czy jest zainstalowany i dostępny w PATH?</translation>
+        <translation>Nie udało się uruchomić %1. Czy jest zainstalowany i dostępny w PATH?</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="362"/>
         <source>Run the script after a successful syntax check</source>
-        <translation type="vanished">Uruchom skrypt po udanym sprawdzeniu składni</translation>
+        <translation>Uruchom skrypt po udanym sprawdzeniu składni</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="363"/>
         <source>Run (F5)</source>
-        <translation type="vanished">Uruchom (F5)</translation>
+        <translation>Uruchom (F5)</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="365"/>
         <source>Output of the script</source>
-        <translation type="vanished">Wyjście skryptu</translation>
+        <translation>Wyjście skryptu</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="366"/>
         <source>Time of the syntax check</source>
-        <translation type="vanished">Czas sprawdzenia składni</translation>
+        <translation>Czas sprawdzenia składni</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="367"/>
         <source>Execution time of the script</source>
-        <translation type="vanished">Czas wykonania skryptu</translation>
+        <translation>Czas wykonania skryptu</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="420"/>
         <source>Compilation</source>
-        <translation type="vanished">Kompilacja</translation>
+        <translation>Kompilacja</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="453"/>
         <source>Failed to create a temporary directory.</source>
-        <translation type="vanished">Nie udało się utworzyć katalogu tymczasowego.</translation>
+        <translation>Nie udało się utworzyć katalogu tymczasowego.</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="460"/>
         <source>Failed to create the temporary source file.</source>
-        <translation type="vanished">Nie udało się utworzyć tymczasowego pliku źródłowego.</translation>
+        <translation>Nie udało się utworzyć tymczasowego pliku źródłowego.</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="478"/>
         <source>Compiling...</source>
-        <translation type="vanished">Kompilowanie...</translation>
+        <translation>Kompilowanie...</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="493"/>
         <source>Checking the syntax...</source>
-        <translation type="vanished">Sprawdzanie składni...</translation>
+        <translation>Sprawdzanie składni...</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="514"/>
         <source>Running the script...</source>
-        <translation type="vanished">Uruchamianie skryptu...</translation>
+        <translation>Uruchamianie skryptu...</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="519"/>
         <source>Running the program...</source>
-        <translation type="vanished">Uruchamianie programu...</translation>
+        <translation>Uruchamianie programu...</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="676"/>
         <source>The script</source>
-        <translation type="vanished">Skrypt</translation>
+        <translation>Skrypt</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="676"/>
         <source>The program</source>
-        <translation type="vanished">Program</translation>
+        <translation>Program</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="682"/>
         <source>%1 was stopped.</source>
-        <translation type="vanished">%1 został zatrzymany.</translation>
+        <translation>%1 został zatrzymany.</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="687"/>
         <source>%1 took longer than %2 s and was killed.</source>
-        <translation type="vanished">%1 trwał dłużej niż %2 s i został zabity.</translation>
+        <translation>%1 trwał dłużej niż %2 s i został zabity.</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="691"/>
         <source>%1 printed more than 1 MiB, it was killed and the output is truncated.</source>
-        <translation type="vanished">%1 wypisał ponad 1 MiB, został zabity, a wyjście jest obcięte.</translation>
+        <translation>%1 wypisał ponad 1 MiB, został zabity, a wyjście jest obcięte.</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="695"/>
         <source>%1 crashed.</source>
-        <translation type="vanished">%1 uległ awarii.</translation>
+        <translation>%1 uległ awarii.</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="701"/>
         <source>Syntax check failed (exit code %1).</source>
-        <translation type="vanished">Sprawdzenie składni nie powiodło się (kod wyjścia %1).</translation>
+        <translation>Sprawdzenie składni nie powiodło się (kod wyjścia %1).</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="702"/>
         <source>Compilation failed (exit code %1).</source>
-        <translation type="vanished">Kompilacja nie powiodła się (kod wyjścia %1).</translation>
+        <translation>Kompilacja nie powiodła się (kod wyjścia %1).</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="712"/>
         <source>The syntax is correct.</source>
-        <translation type="vanished">Składnia jest poprawna.</translation>
+        <translation>Składnia jest poprawna.</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="712"/>
         <source>Compilation succeeded.</source>
-        <translation type="vanished">Kompilacja zakończona sukcesem.</translation>
+        <translation>Kompilacja zakończona sukcesem.</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="717"/>
         <source>The script finished, exit code %1.</source>
-        <translation type="vanished">Skrypt zakończył działanie, kod wyjścia %1.</translation>
+        <translation>Skrypt zakończył działanie, kod wyjścia %1.</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="717"/>
         <source>The program finished, exit code %1.</source>
-        <translation type="vanished">Program zakończył działanie, kod wyjścia %1.</translation>
+        <translation>Program zakończył działanie, kod wyjścia %1.</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="732"/>
         <source>Failed to start the compiled program.</source>
-        <translation type="vanished">Nie udało się uruchomić skompilowanego programu.</translation>
+        <translation>Nie udało się uruchomić skompilowanego programu.</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="772"/>
         <source>The code in the article has been replaced.</source>
-        <translation type="vanished">Kod w artykule został zastąpiony.</translation>
+        <translation>Kod w artykule został zastąpiony.</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="808"/>
         <source>The compiler log has been inserted below the code.</source>
-        <translation type="vanished">Log kompilatora został wstawiony pod kodem.</translation>
+        <translation>Log kompilatora został wstawiony pod kodem.</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="814"/>
         <source>The program output has been inserted below the code.</source>
-        <translation type="vanished">Wyjście programu zostało wstawione pod kodem.</translation>
+        <translation>Wyjście programu zostało wstawione pod kodem.</translation>
     </message>
 </context>
 <context>
     <name>CppNewsWidget</name>
     <message>
-        <location filename="../widgets/CppNewsWidget.cpp" line="47"/>
+        <location filename="../widgets/CppNewsWidget.cpp" line="51"/>
         <source>Double-click a thread to open it on the forum</source>
         <translation>Dwukliknij wątek, aby otworzyć go na forum</translation>
     </message>
     <message>
-        <location filename="../widgets/CppNewsWidget.cpp" line="93"/>
+        <location filename="../widgets/CppNewsWidget.cpp" line="97"/>
         <source>Checking the news...</source>
         <translation>Sprawdzanie aktualności...</translation>
     </message>
     <message>
-        <location filename="../widgets/CppNewsWidget.cpp" line="103"/>
+        <location filename="../widgets/CppNewsWidget.cpp" line="107"/>
         <source>Could not check the news: %1</source>
         <translation>Nie udało się sprawdzić aktualności: %1</translation>
     </message>
     <message>
-        <location filename="../widgets/CppNewsWidget.cpp" line="115"/>
+        <location filename="../widgets/CppNewsWidget.cpp" line="119"/>
         <source>The answer is not an XML feed</source>
         <translation>Odpowiedź nie jest kanałem XML</translation>
     </message>
     <message>
-        <location filename="../widgets/CppNewsWidget.cpp" line="121"/>
+        <location filename="../widgets/CppNewsWidget.cpp" line="128"/>
         <source>No news found in the feed. Structure: %1</source>
         <translation>W kanale nie znaleziono aktualności. Struktura: %1</translation>
     </message>
@@ -697,12 +845,12 @@ Czy chcesz wczytać go ponownie?</translation>
         <translation type="vanished">Nie udało się odczytać kanału aktualności</translation>
     </message>
     <message>
-        <location filename="../widgets/CppNewsWidget.cpp" line="133"/>
+        <location filename="../widgets/CppNewsWidget.cpp" line="140"/>
         <source>Checked at %1</source>
         <translation>Sprawdzono o %1</translation>
     </message>
     <message>
-        <location filename="../widgets/CppNewsWidget.cpp" line="143"/>
+        <location filename="../widgets/CppNewsWidget.cpp" line="150"/>
         <source>New thread</source>
         <translation>Nowy wątek</translation>
     </message>
@@ -710,160 +858,182 @@ Czy chcesz wczytać go ponownie?</translation>
 <context>
     <name>DiffReviewDialog</name>
     <message>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="73"/>
         <source>Unsaved Changes Detected</source>
-        <translation type="vanished">Unsaved Changes Detected</translation>
+        <translation>Unsaved Changes Detected</translation>
     </message>
     <message>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="91"/>
         <source>This file has not been saved yet — no diff available.</source>
-        <translation type="vanished">This file has not been saved yet — no diff available.</translation>
+        <translation>This file has not been saved yet — no diff available.</translation>
     </message>
     <message>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="177"/>
         <source>Save</source>
-        <translation type="vanished">Save</translation>
+        <translation>Save</translation>
     </message>
     <message>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="178"/>
         <source>Discard Changes</source>
-        <translation type="vanished">Discard Changes</translation>
+        <translation>Discard Changes</translation>
     </message>
     <message>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="179"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="206"/>
         <source>Cancel</source>
-        <translation type="vanished">Cancel</translation>
+        <translation>Cancel</translation>
     </message>
     <message>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="204"/>
         <source>Reload</source>
-        <translation type="vanished">Reload</translation>
+        <translation>Reload</translation>
     </message>
     <message>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="205"/>
         <source>Discard External Changes</source>
-        <translation type="vanished">Discard External Changes</translation>
+        <translation>Discard External Changes</translation>
     </message>
     <message>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="309"/>
         <source>Modified lines: %1 | Added: %2 | Removed: %3</source>
-        <translation type="vanished">Modified lines: %1 | Added: %2 | Removed: %3</translation>
+        <translation>Modified lines: %1 | Added: %2 | Removed: %3</translation>
     </message>
     <message>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="314"/>
         <source>File last modified: %1 | Last edit in session: %2</source>
-        <translation type="vanished">File last modified: %1 | Last edit in session: %2</translation>
+        <translation>File last modified: %1 | Last edit in session: %2</translation>
     </message>
 </context>
 <context>
     <name>DiffViewerWidget</name>
     <message>
+        <location filename="../widgets/DiffViewerWidget.cpp" line="209"/>
         <source>← Apply block</source>
-        <translation type="vanished">← Zastosuj blok</translation>
+        <translation>← Zastosuj blok</translation>
     </message>
     <message>
+        <location filename="../widgets/DiffViewerWidget.cpp" line="210"/>
         <source>Apply all %1 changes of this block to the editor at once</source>
-        <translation type="vanished">Zastosuj od razu wszystkie %1 zmian(y) tego bloku w edytorze</translation>
+        <translation>Zastosuj od razu wszystkie %1 zmian(y) tego bloku w edytorze</translation>
     </message>
     <message>
+        <location filename="../widgets/DiffViewerWidget.cpp" line="211"/>
         <source>→ Discard block</source>
-        <translation type="vanished">→ Odrzuć blok</translation>
+        <translation>→ Odrzuć blok</translation>
     </message>
     <message>
+        <location filename="../widgets/DiffViewerWidget.cpp" line="212"/>
         <source>Discard all %1 changes of this block (keep the editor&apos;s lines)</source>
-        <translation type="vanished">Odrzuć wszystkie %1 zmian(y) tego bloku (zostaw linie z edytora)</translation>
+        <translation>Odrzuć wszystkie %1 zmian(y) tego bloku (zostaw linie z edytora)</translation>
     </message>
     <message>
+        <location filename="../widgets/DiffViewerWidget.cpp" line="282"/>
         <source>Apply this change to the editor (take the right-hand line)</source>
-        <translation type="vanished">Zastosuj tę zmianę w edytorze (weź linię z prawej strony)</translation>
+        <translation>Zastosuj tę zmianę w edytorze (weź linię z prawej strony)</translation>
     </message>
     <message>
+        <location filename="../widgets/DiffViewerWidget.cpp" line="283"/>
         <source>Discard this change (keep the editor&apos;s line)</source>
-        <translation type="vanished">Odrzuć tę zmianę (zostaw linię z edytora)</translation>
+        <translation>Odrzuć tę zmianę (zostaw linię z edytora)</translation>
     </message>
 </context>
 <context>
     <name>DocumentationBrowserDialog</name>
     <message>
+        <location filename="../widgets/DocumentationBrowserDialog.cpp" line="39"/>
         <source>Current address</source>
-        <translation type="vanished">Current address</translation>
+        <translation>Current address</translation>
     </message>
     <message>
+        <location filename="../widgets/DocumentationBrowserDialog.cpp" line="45"/>
         <source>Copy address</source>
-        <translation type="vanished">Copy address</translation>
+        <translation>Copy address</translation>
     </message>
     <message>
+        <location filename="../widgets/DocumentationBrowserDialog.cpp" line="46"/>
         <source>Copy current address</source>
-        <translation type="vanished">Copy current address</translation>
+        <translation>Copy current address</translation>
     </message>
     <message>
+        <location filename="../widgets/DocumentationBrowserDialog.cpp" line="52"/>
         <source>Open in browser</source>
-        <translation type="vanished">Open in browser</translation>
+        <translation>Open in browser</translation>
     </message>
     <message>
+        <location filename="../widgets/DocumentationBrowserDialog.cpp" line="53"/>
         <source>Open current address in the system browser</source>
-        <translation type="vanished">Open current address in the system browser</translation>
+        <translation>Open current address in the system browser</translation>
     </message>
 </context>
 <context>
     <name>EditHistoryDialog</name>
     <message>
+        <location filename="../widgets/EditHistoryDialog.ui" line="14"/>
         <source>Edit history</source>
-        <translation type="vanished">Historia edycji</translation>
+        <translation>Historia edycji</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="354"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="378"/>
         <source>Current state: &lt;b&gt;%1&lt;/b&gt; of %2</source>
         <translation>Bieżący stan: &lt;b&gt;%1&lt;/b&gt; z %2</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="356"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="380"/>
         <source> (%1 undone - Ctrl+Shift+Z brings them back)</source>
         <translation> (cofnięto: %1 – Ctrl+Shift+Z je przywraca)</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="370"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="394"/>
         <source>not saved in this session</source>
         <translation>nie zapisano w tej sesji</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="375"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="399"/>
         <source>last saved at %1 (that state is gone: edits were made after an undo)</source>
         <translation>ostatni zapis o %1 (tego stanu już nie ma: po cofnięciu wprowadzono nowe zmiany)</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="377"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="401"/>
         <source>&lt;b&gt;saved&lt;/b&gt; at %1 (the document is in the saved state)</source>
         <translation>&lt;b&gt;zapisano&lt;/b&gt; o %1 (dokument jest w zapisanym stanie)</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="378"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="402"/>
         <source>last saved at %1, in state %2</source>
         <translation>ostatni zapis o %1, w stanie %2</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="361"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="385"/>
         <source>The text of the oldest %1 steps was dropped to save memory; their numbers are kept.</source>
         <translation>Treść najstarszych kroków (%1) odrzucono, żeby oszczędzać pamięć; ich liczby zostały zachowane.</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="394"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="418"/>
         <source>The state the document started in (loaded at %1). Select a step to see what it changed.</source>
         <translation>Stan, w jakim dokument się zaczął (wczytany o %1). Wybierz krok, aby zobaczyć, co zmienił.</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="405"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="429"/>
         <source>Step %1, %2</source>
         <translation>Krok %1, %2</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="407"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="431"/>
         <source> (undone)</source>
         <translation> (cofnięty)</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="411"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="435"/>
         <source>the text of this step was dropped to save memory.</source>
         <translation>treść tego kroku odrzucono, żeby oszczędzać pamięć.</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="413"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="437"/>
         <source>no text changed (only formatting).</source>
         <translation>tekst się nie zmienił (tylko formatowanie).</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="414"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="438"/>
         <source>%1 modified, %2 added, %3 removed lines; %4 characters</source>
         <translation>linie: zmienione %1, dodane %2, usunięte %3; znaki: %4</translation>
     </message>
@@ -871,133 +1041,135 @@ Czy chcesz wczytać go ponownie?</translation>
 <context>
     <name>EditHistoryFormat</name>
     <message>
+        <location filename="../widgets/EditHistoryFormat.cpp" line="105"/>
         <source>(initial state)</source>
-        <translation type="vanished">(stan początkowy)</translation>
+        <translation>(stan początkowy)</translation>
     </message>
     <message>
+        <location filename="../widgets/EditHistoryFormat.cpp" line="106"/>
         <source>(no text changed)</source>
-        <translation type="vanished">(tekst bez zmian)</translation>
+        <translation>(tekst bez zmian)</translation>
     </message>
 </context>
 <context>
     <name>EditHistoryModel</name>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="123"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="147"/>
         <source>#</source>
         <translation>#</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="124"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="148"/>
         <source>Time</source>
         <translation>Czas</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="125"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="149"/>
         <source>Lines</source>
         <translation>Linie</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="126"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="150"/>
         <source>Line numbers</source>
         <translation>Numery linii</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="127"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="151"/>
         <source>Characters</source>
         <translation>Znaki</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="128"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="152"/>
         <source>Saved</source>
         <translation>Zapisano</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="129"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="153"/>
         <source>Backup</source>
         <translation>Kopia zapasowa</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="139"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="163"/>
         <source>Number of the state of the document after the step. 0 is the state it started in.
 Ctrl+Z moves the current state (▶) back by one, Ctrl+Shift+Z forward by one.</source>
         <translation>Numer stanu dokumentu po tym kroku. 0 to stan, w jakim dokument się zaczął.
 Ctrl+Z cofa bieżący stan (▶) o jeden, Ctrl+Shift+Z przesuwa go o jeden do przodu.</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="142"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="166"/>
         <source>How many lines the step changed (modified, added and removed ones)</source>
         <translation>Ile linii zmienił krok (zmodyfikowanych, dodanych i usuniętych)</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="144"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="168"/>
         <source>Modified lines; +added lines; −removed lines.
 Modified and added lines are numbered as after the step, removed ones as before it.</source>
         <translation>Linie zmodyfikowane; +dodane; −usunięte.
 Zmodyfikowane i dodane są numerowane tak jak po kroku, usunięte – tak jak przed nim.</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="147"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="171"/>
         <source>Characters inserted (+) and removed (−), line breaks included</source>
         <translation>Znaki wstawione (+) i usunięte (−), łącznie z końcami linii</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="149"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="173"/>
         <source>When the file was written while the document was in this state</source>
         <translation>Kiedy plik został zapisany, gdy dokument był w tym stanie</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="151"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="175"/>
         <source>When the automatic backup was written while the document was in this state.
 Hover over the cell to see the path of the backup file.</source>
         <translation>Kiedy automatyczna kopia zapasowa została zapisana, gdy dokument był w tym stanie.
 Najedź na komórkę, aby zobaczyć ścieżkę pliku kopii zapasowej.</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="54"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="78"/>
         <source>The state the document started in</source>
         <translation>Stan, w jakim dokument się zaczął</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="56"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="80"/>
         <source>The document is in this state now</source>
         <translation>Dokument jest teraz w tym stanie</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="57"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="81"/>
         <source>Undone: Ctrl+Shift+Z brings it back</source>
         <translation>Cofnięte: Ctrl+Shift+Z to przywraca</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="63"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="87"/>
         <source>The content was loaded at %1</source>
         <translation>Treść została wczytana o %1</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="64"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="88"/>
         <source>Started: %1
 Last edit: %2</source>
         <translation>Początek: %1
 Ostatnia edycja: %2</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="82"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="106"/>
         <source>Backup written at %1
 File: %2</source>
         <translation>Kopia zapasowa zapisana o %1
 Plik: %2</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="85"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="109"/>
         <source>(the file is no longer there: it was removed after saving)</source>
         <translation>(plik już nie istnieje: został usunięty po zapisaniu)</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="101"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="125"/>
         <source>%1 modified, %2 added, %3 removed</source>
         <translation>zmodyfikowane: %1, dodane: %2, usunięte: %3</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="105"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="129"/>
         <source>Modified lines; +added lines; −removed lines.
 Modified and added lines are numbered as after the step, removed ones as before it.
 Double click to go to the line.</source>
@@ -1006,7 +1178,7 @@ Zmodyfikowane i dodane są numerowane tak jak po kroku, usunięte – tak jak pr
 Dwuklik przenosi do linii.</translation>
     </message>
     <message>
-        <location filename="../widgets/EditHistoryDialog.cpp" line="109"/>
+        <location filename="../widgets/EditHistoryDialog.cpp" line="133"/>
         <source>The texts were too long to compare character by character: the numbers are approximate</source>
         <translation>Teksty były zbyt długie, by porównać je znak po znaku: liczby są przybliżone</translation>
     </message>
@@ -1014,50 +1186,78 @@ Dwuklik przenosi do linii.</translation>
 <context>
     <name>ErrorList</name>
     <message>
+        <location filename="../ui/errorlist.ui" line="20"/>
         <source>Form</source>
-        <translation type="vanished">Form</translation>
+        <translation>Form</translation>
     </message>
     <message>
+        <location filename="../ui/errorlist.ui" line="40"/>
         <source>Errors summary</source>
-        <translation type="vanished">Errors summary</translation>
+        <translation>Errors summary</translation>
     </message>
     <message>
+        <location filename="../ui/errorlist.ui" line="57"/>
         <source>Line</source>
-        <translation type="vanished">Line</translation>
+        <translation>Line</translation>
     </message>
     <message>
+        <location filename="../ui/errorlist.ui" line="62"/>
         <source>Position</source>
-        <translation type="vanished">Position</translation>
+        <translation>Position</translation>
     </message>
     <message>
+        <location filename="../ui/errorlist.ui" line="67"/>
         <source>Error text</source>
-        <translation type="vanished">Error text</translation>
+        <translation>Error text</translation>
+    </message>
+</context>
+<context>
+    <name>FileDiffDialog</name>
+    <message>
+        <location filename="../widgets/FileDiffDialog.cpp" line="18"/>
+        <source>Compare with %1</source>
+        <translation>Porównaj z %1</translation>
+    </message>
+    <message>
+        <location filename="../widgets/FileDiffDialog.cpp" line="26"/>
+        <source>Compare %1 with %2</source>
+        <translation>Porównaj %1 z %2</translation>
+    </message>
+    <message>
+        <location filename="../widgets/FileDiffDialog.cpp" line="64"/>
+        <source>No differences - the files are identical.</source>
+        <translation>Brak różnic - pliki są identyczne.</translation>
+    </message>
+    <message>
+        <location filename="../widgets/FileDiffDialog.cpp" line="66"/>
+        <source>Modified lines: %1 | Added: %2 | Removed: %3</source>
+        <translation>Zmienione linie: %1 | dodane: %2 | usunięte: %3</translation>
     </message>
 </context>
 <context>
     <name>FilteredTagTableWidget</name>
     <message>
-        <location filename="../widgets/FilteredTagTableWidget.cpp" line="36"/>
+        <location filename="../widgets/FilteredTagTableWidget.cpp" line="49"/>
         <source>Text</source>
         <translation>Tekst</translation>
     </message>
     <message>
-        <location filename="../widgets/FilteredTagTableWidget.cpp" line="36"/>
+        <location filename="../widgets/FilteredTagTableWidget.cpp" line="49"/>
         <source>Line</source>
         <translation>Linia</translation>
     </message>
     <message>
-        <location filename="../widgets/FilteredTagTableWidget.cpp" line="36"/>
+        <location filename="../widgets/FilteredTagTableWidget.cpp" line="49"/>
         <source>Tag ▾</source>
         <translation>Znacznik ▾</translation>
     </message>
     <message>
-        <location filename="../widgets/FilteredTagTableWidget.cpp" line="348"/>
+        <location filename="../widgets/FilteredTagTableWidget.cpp" line="361"/>
         <source>Deselect all</source>
         <translation>Deselect all</translation>
     </message>
     <message>
-        <location filename="../widgets/FilteredTagTableWidget.cpp" line="356"/>
+        <location filename="../widgets/FilteredTagTableWidget.cpp" line="369"/>
         <source>Select all</source>
         <translation>Select all</translation>
     </message>
@@ -1065,122 +1265,152 @@ Dwuklik przenosi do linii.</translation>
 <context>
     <name>FindDialog</name>
     <message>
+        <location filename="../ui/finddialog.ui" line="14"/>
         <source>Form</source>
         <translation>Form</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.ui" line="21"/>
         <source>line</source>
         <translation>linia</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.ui" line="26"/>
         <source>position</source>
         <translation>pozycja</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.ui" line="31"/>
         <source>text</source>
         <translation>tekst</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.ui" line="50"/>
         <source>Text to find</source>
         <translation>Szukany tekst</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.ui" line="57"/>
         <source>Next</source>
         <translation>Następny</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.ui" line="64"/>
         <source>Previous</source>
         <translation>Poprzedni</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.ui" line="71"/>
         <source>Match cases</source>
         <translation>Wielkość liter</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.ui" line="78"/>
         <source>Whole words</source>
         <translation>Całe słowa</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.ui" line="85"/>
         <source>Find the lines which contain all the typed words, in any order. Switch it off to search the text as it is, with the spaces. It is not used when replacing.</source>
         <translation>Znajduje linie, w których są wszystkie wpisane słowa, w dowolnej kolejności. Wyłącz, aby szukać tekstu dokładnie tak, jak go wpisano (łącznie ze spacjami). Przy zamianie ta opcja nie działa.</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.ui" line="88"/>
         <source>Any order</source>
         <translation>Dowolna kolejność</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.ui" line="98"/>
         <source>Occurrence count in format: case sensitive (case sensitive whole word) / case insensitive (case insensitive whole word)</source>
         <translation>Liczba wystąpień w formacie: z zachowaniem wielkości liter (całe słowa z zachowaniem wielkości liter) / bez względu na wielkość liter (całe słowa bez względu na wielkość liter)</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.ui" line="101"/>
         <source>Occurrences:</source>
         <translation>Wystąpienia:</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.ui" line="125"/>
         <source>Replace with:</source>
         <translation>Zamień na:</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.ui" line="141"/>
         <source>Replacement text</source>
         <translation>Tekst zastępujący</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.ui" line="148"/>
         <source>Skip a match when it is already part of the replacement text. For example, skip &quot;cout&quot; in &quot;std::cout&quot;.</source>
         <translation>Pomiń trafienie, które już jest częścią tekstu zastępującego. Na przykład pomiń &quot;cout&quot; w &quot;std::cout&quot;.</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.ui" line="151"/>
         <source>Skip already replaced</source>
         <translation>Pomiń już zamienione</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.ui" line="158"/>
         <source>Select all</source>
         <translation>Zaznacz wszystko</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.ui" line="165"/>
         <source>Deselect all</source>
         <translation>Odznacz wszystko</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.ui" line="172"/>
         <source>Replace selected</source>
         <translation>Zamień zaznaczone</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.cpp" line="62"/>
         <source>Line %1</source>
         <translation>Linia %1</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.cpp" line="430"/>
         <source>Line</source>
         <translation>Linia</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.cpp" line="430"/>
         <source>Offset</source>
         <translation>Pozycja</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.cpp" line="430"/>
         <source>Context</source>
         <translation>Kontekst</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.cpp" line="351"/>
         <source>Occurrences: (empty text)</source>
         <translation>Wystąpienia: (pusty tekst)</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.cpp" line="368"/>
         <source> | Replace candidates: %1</source>
         <translation> | Do zamiany: %1</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.cpp" line="380"/>
         <source>Lines: %1</source>
         <translation>Linie: %1</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.cpp" line="383"/>
         <source>Occurrences: 0</source>
         <translation>Wystąpienia: 0</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.cpp" line="385"/>
         <source>Occurrences: %1 (%2)/%3 (%4)</source>
         <translation>Wystąpienia: %1 (%2)/%3 (%4)</translation>
     </message>
     <message>
+        <location filename="../ui/finddialog.cpp" line="721"/>
         <source>Replace selected (%1)</source>
         <translation>Zamień zaznaczone (%1)</translation>
     </message>
@@ -1188,237 +1418,293 @@ Dwuklik przenosi do linii.</translation>
 <context>
     <name>GoToLineWidget</name>
     <message>
+        <location filename="../ui/gotolinewidget.ui" line="20"/>
         <source>GroupBox</source>
-        <translation type="vanished">GroupBox</translation>
+        <translation>GroupBox</translation>
     </message>
     <message>
+        <location filename="../ui/gotolinewidget.ui" line="26"/>
         <source>Line number: </source>
-        <translation type="vanished">Line number: </translation>
+        <translation>Line number: </translation>
     </message>
     <message>
+        <location filename="../ui/gotolinewidget.ui" line="39"/>
         <source>Go to line</source>
-        <translation type="vanished">Przejdź do linii</translation>
+        <translation>Przejdź do linii</translation>
     </message>
 </context>
 <context>
     <name>HtmlSourceDialog</name>
     <message>
+        <location filename="../widgets/HtmlSourceDialog.cpp" line="25"/>
         <source>HTML source of the preview</source>
-        <translation type="vanished">Źródło HTML podglądu</translation>
+        <translation>Źródło HTML podglądu</translation>
     </message>
     <message>
+        <location filename="../widgets/HtmlSourceDialog.cpp" line="35"/>
         <source>Wrap lines</source>
-        <translation type="vanished">Zawijaj wiersze</translation>
+        <translation>Zawijaj wiersze</translation>
     </message>
     <message>
+        <location filename="../widgets/HtmlSourceDialog.cpp" line="40"/>
         <source>Refresh</source>
-        <translation type="vanished">Odśwież</translation>
+        <translation>Odśwież</translation>
     </message>
     <message>
+        <location filename="../widgets/HtmlSourceDialog.cpp" line="41"/>
         <source>Shows the HTML of the text rendered most recently</source>
-        <translation type="vanished">Pokazuje HTML ostatnio wyrenderowanego tekstu</translation>
+        <translation>Pokazuje HTML ostatnio wyrenderowanego tekstu</translation>
     </message>
     <message>
+        <location filename="../widgets/HtmlSourceDialog.cpp" line="44"/>
         <source>Copy</source>
-        <translation type="vanished">Kopiuj</translation>
+        <translation>Kopiuj</translation>
     </message>
     <message>
+        <location filename="../widgets/HtmlSourceDialog.cpp" line="45"/>
         <source>Copies the formatted HTML shown here</source>
-        <translation type="vanished">Kopiuje sformatowany HTML pokazany w tym oknie</translation>
+        <translation>Kopiuje sformatowany HTML pokazany w tym oknie</translation>
     </message>
     <message>
+        <location filename="../widgets/HtmlSourceDialog.cpp" line="48"/>
         <source>Close</source>
-        <translation type="vanished">Zamknij</translation>
+        <translation>Zamknij</translation>
     </message>
     <message>
+        <location filename="../widgets/HtmlSourceDialog.cpp" line="71"/>
         <source>%1 lines, %2 characters of HTML from the server</source>
-        <translation type="vanished">Liczba linii: %1, znaków HTML z serwera: %2</translation>
+        <translation>Liczba linii: %1, znaków HTML z serwera: %2</translation>
     </message>
 </context>
 <context>
     <name>LineHistoryDialog</name>
     <message>
+        <location filename="../widgets/LineHistoryDialog.ui" line="63"/>
         <source>added</source>
-        <translation type="vanished">dodane</translation>
+        <translation>dodane</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.ui" line="79"/>
         <source>removed</source>
-        <translation type="vanished">usunięte</translation>
+        <translation>usunięte</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.ui" line="86"/>
         <source>Greyed entries are undone (Ctrl+Shift+Z brings them back); they disappear when you edit after an undo.</source>
-        <translation type="vanished">Wyszarzone wpisy są cofnięte (Ctrl+Shift+Z je przywraca); znikają, gdy po cofnięciu wprowadzisz nową zmianę.</translation>
+        <translation>Wyszarzone wpisy są cofnięte (Ctrl+Shift+Z je przywraca); znikają, gdy po cofnięciu wprowadzisz nową zmianę.</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.cpp" line="275"/>
         <source>History of line %1</source>
-        <translation type="vanished">Historia linii %1</translation>
+        <translation>Historia linii %1</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.cpp" line="282"/>
         <source>Line &lt;b&gt;%1&lt;/b&gt;</source>
-        <translation type="vanished">Linia &lt;b&gt;%1&lt;/b&gt;</translation>
+        <translation>Linia &lt;b&gt;%1&lt;/b&gt;</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.ui" line="14"/>
+        <location filename="../widgets/LineHistoryDialog.cpp" line="275"/>
         <source>History of a line</source>
-        <translation type="vanished">Historia linii</translation>
+        <translation>Historia linii</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.cpp" line="283"/>
         <source>This line has no history any more (the document was replaced).</source>
-        <translation type="vanished">Ta linia nie ma już historii (zawartość dokumentu została wymieniona).</translation>
+        <translation>Ta linia nie ma już historii (zawartość dokumentu została wymieniona).</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.cpp" line="284"/>
         <source>This line is not in the document now (its creation is undone).</source>
-        <translation type="vanished">Tej linii nie ma teraz w dokumencie (jej utworzenie zostało cofnięte).</translation>
+        <translation>Tej linii nie ma teraz w dokumencie (jej utworzenie zostało cofnięte).</translation>
     </message>
     <message numerus="yes">
+        <location filename="../widgets/LineHistoryDialog.cpp" line="302"/>
         <source>%n change(s) in this session</source>
-        <translation type="vanished">
+        <translation>
             <numerusform>%n zmiana w tej sesji</numerusform>
             <numerusform>%n zmiany w tej sesji</numerusform>
             <numerusform>%n zmian w tej sesji</numerusform>
         </translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.cpp" line="304"/>
         <source>, %1 of them undone</source>
-        <translation type="vanished">, z czego cofniętych: %1</translation>
+        <translation>, z czego cofniętych: %1</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.cpp" line="305"/>
         <source>current state of the document: step &lt;b&gt;%1&lt;/b&gt; of %2</source>
-        <translation type="vanished">bieżący stan dokumentu: krok &lt;b&gt;%1&lt;/b&gt; z %2</translation>
+        <translation>bieżący stan dokumentu: krok &lt;b&gt;%1&lt;/b&gt; z %2</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.cpp" line="307"/>
         <source>the line is in the state before the first change</source>
-        <translation type="vanished">linia jest w stanie sprzed pierwszej zmiany</translation>
+        <translation>linia jest w stanie sprzed pierwszej zmiany</translation>
     </message>
 </context>
 <context>
     <name>LineHistoryModel</name>
     <message>
+        <location filename="../widgets/LineHistoryDialog.cpp" line="89"/>
         <source>Step</source>
-        <translation type="vanished">Krok</translation>
+        <translation>Krok</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.cpp" line="90"/>
         <source>Time</source>
-        <translation type="vanished">Czas</translation>
+        <translation>Czas</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.cpp" line="91"/>
         <source>Change</source>
-        <translation type="vanished">Zmiana</translation>
+        <translation>Zmiana</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.cpp" line="92"/>
         <source>Saved</source>
-        <translation type="vanished">Zapisano</translation>
+        <translation>Zapisano</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.cpp" line="102"/>
         <source>Number of the step in the table of edits. ▶ marks the state of the line in the document now.</source>
-        <translation type="vanished">Numer kroku w tabeli edycji. ▶ oznacza stan linii w dokumencie teraz.</translation>
+        <translation>Numer kroku w tabeli edycji. ▶ oznacza stan linii w dokumencie teraz.</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.cpp" line="104"/>
         <source>When the file was first written with this change in it</source>
-        <translation type="vanished">Kiedy plik został po raz pierwszy zapisany z tą zmianą</translation>
+        <translation>Kiedy plik został po raz pierwszy zapisany z tą zmianą</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.cpp" line="38"/>
+        <location filename="../widgets/LineHistoryDialog.cpp" line="53"/>
         <source>(the text was dropped to save memory)</source>
-        <translation type="vanished">(treść odrzucono, żeby oszczędzać pamięć)</translation>
+        <translation>(treść odrzucono, żeby oszczędzać pamięć)</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.cpp" line="60"/>
         <source>new line:</source>
-        <translation type="vanished">nowa linia:</translation>
+        <translation>nowa linia:</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.cpp" line="62"/>
         <source>line removed:</source>
-        <translation type="vanished">linia usunięta:</translation>
+        <translation>linia usunięta:</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.cpp" line="73"/>
         <source>The line is in this state now</source>
-        <translation type="vanished">Linia jest teraz w tym stanie</translation>
+        <translation>Linia jest teraz w tym stanie</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.cpp" line="74"/>
         <source>Undone: Ctrl+Shift+Z brings it back</source>
-        <translation type="vanished">Cofnięte: Ctrl+Shift+Z to przywraca</translation>
+        <translation>Cofnięte: Ctrl+Shift+Z to przywraca</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.cpp" line="78"/>
         <source>Not written to the file yet</source>
-        <translation type="vanished">Jeszcze nie zapisano do pliku</translation>
+        <translation>Jeszcze nie zapisano do pliku</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.cpp" line="80"/>
         <source>Green: added, red and struck through: removed. Double click to go to the line.</source>
-        <translation type="vanished">Zielone: dodane, czerwone przekreślone: usunięte. Dwuklik przenosi do linii.</translation>
+        <translation>Zielone: dodane, czerwone przekreślone: usunięte. Dwuklik przenosi do linii.</translation>
+    </message>
+</context>
+<context>
+    <name>LinkPreviewPopup</name>
+    <message>
+        <location filename="../widgets/LinkPreviewPopup.cpp" line="135"/>
+        <source>Could not load the page</source>
+        <translation>Nie udało się wczytać strony</translation>
+    </message>
+    <message>
+        <location filename="../widgets/LinkPreviewPopup.cpp" line="139"/>
+        <source>Loading…</source>
+        <translation>Wczytywanie…</translation>
     </message>
 </context>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../ui/mainwindow.ui" line="667"/>
+        <location filename="../ui/mainwindow.ui" line="816"/>
         <source>Plain text</source>
         <translation>Zwykły tekst</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="670"/>
+        <location filename="../ui/mainwindow.ui" line="819"/>
         <source>No markup: spell checking and formatted links and e-mail addresses only</source>
         <translation>Bez znaczników: tylko sprawdzanie pisowni oraz formatowanie linków i adresów e-mail</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="685"/>
+        <location filename="../ui/mainwindow.cpp" line="1291"/>
         <source>Source and data files (%1)</source>
         <translation>Pliki kodu źródłowego i danych (%1)</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="686"/>
+        <location filename="../ui/mainwindow.cpp" line="1292"/>
         <source>All files (*)</source>
         <translation>Wszystkie pliki (*)</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="259"/>
+        <location filename="../ui/mainwindow.ui" line="262"/>
         <source>Syntax</source>
         <translation>Składnia</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="656"/>
+        <location filename="../ui/mainwindow.ui" line="759"/>
+        <source>F11</source>
+        <translation>F11</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="805"/>
         <source>STC (cpp0x.pl markup)</source>
         <translation>STC (znaczniki cpp0x.pl)</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="678"/>
+        <location filename="../ui/mainwindow.ui" line="827"/>
         <source>C++</source>
         <translation>C++</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="689"/>
+        <location filename="../ui/mainwindow.ui" line="838"/>
         <source>Python</source>
         <translation>Python</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="700"/>
+        <location filename="../ui/mainwindow.ui" line="849"/>
         <source>XML</source>
         <translation>XML</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="711"/>
+        <location filename="../ui/mainwindow.ui" line="860"/>
         <source>JSON</source>
         <translation>JSON</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="659"/>
+        <location filename="../ui/mainwindow.ui" line="808"/>
         <source>Highlight the STC markup; code inside [cpp] and [py] tags is highlighted too</source>
         <translation>Koloruj znaczniki STC; kod w tagach [cpp] i [py] jest również kolorowany</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="681"/>
+        <location filename="../ui/mainwindow.ui" line="830"/>
         <source>Treat the whole file as C++ source code</source>
         <translation>Traktuj cały plik jako kod źródłowy C++</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="692"/>
+        <location filename="../ui/mainwindow.ui" line="841"/>
         <source>Treat the whole file as Python source code</source>
         <translation>Traktuj cały plik jako kod źródłowy Pythona</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="703"/>
+        <location filename="../ui/mainwindow.ui" line="852"/>
         <source>Treat the whole file as XML</source>
         <translation>Traktuj cały plik jako XML</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="714"/>
+        <location filename="../ui/mainwindow.ui" line="863"/>
         <source>Treat the whole file as JSON</source>
         <translation>Traktuj cały plik jako JSON</translation>
     </message>
@@ -1431,179 +1717,177 @@ Dwuklik przenosi do linii.</translation>
         <translation type="vanished">Język został zmieniony. Proszę uruchomić ponownie aplikację, aby zmiany weszły w życie.</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="380"/>
+        <location filename="../ui/mainwindow.cpp" line="479"/>
         <source>File not found</source>
         <translation>File not found</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="380"/>
+        <location filename="../ui/mainwindow.cpp" line="479"/>
         <source>File does not exist:
 </source>
         <translation>File does not exist:
 </translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="400"/>
+        <location filename="../ui/mainwindow.cpp" line="505"/>
         <source>No recent files</source>
         <translation>No recent files</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="409"/>
+        <location filename="../ui/mainwindow.cpp" line="514"/>
         <source>Clear Recent Files</source>
         <translation>Clear Recent Files</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="479"/>
-        <location filename="../ui/mainwindow.cpp" line="476"/>
+        <location filename="../ui/mainwindow.ui" line="564"/>
+        <location filename="../ui/mainwindow.cpp" line="581"/>
         <source>File statistics</source>
         <translation>Statystyki pliku</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="127"/>
+        <location filename="../ui/mainwindow.cpp" line="193"/>
         <source>cpp0x.pl news</source>
         <translation>Aktualności cpp0x.pl</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="599"/>
         <source>Close without saving?</source>
-        <translation>Close without saving?</translation>
+        <translation type="vanished">Close without saving?</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="599"/>
         <source>Do You really want to close the editor without saving unsaved changes?</source>
-        <translation>Do You really want to close the editor without saving unsaved changes?</translation>
+        <translation type="vanished">Do You really want to close the editor without saving unsaved changes?</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="0"/>
+        <location filename="../ui/mainwindow.cpp" line="646"/>
+        <location filename="../ui/mainwindow.cpp" line="746"/>
         <source>Untitled</source>
         <translation>Bez tytułu</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="0"/>
+        <location filename="../ui/mainwindow.cpp" line="857"/>
         <source>Close tab without saving?</source>
         <translation>Zamknąć kartę bez zapisu?</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="0"/>
+        <location filename="../ui/mainwindow.cpp" line="857"/>
         <source>Do You really want to close this tab without saving unsaved changes?</source>
         <translation>Czy na pewno chcesz zamknąć tę kartę bez zapisywania niezapisanych zmian?</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="0"/>
+        <location filename="../ui/mainwindow.cpp" line="975"/>
+        <location filename="../ui/mainwindow.cpp" line="1121"/>
         <source>Close tab</source>
         <translation>Zamknij kartę</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="0"/>
+        <location filename="../ui/mainwindow.cpp" line="1263"/>
         <source>PDF document (*.pdf)</source>
         <translation>Dokument PDF (*.pdf)</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="0"/>
+        <location filename="../ui/mainwindow.ui" line="338"/>
+        <location filename="../ui/mainwindow.cpp" line="1252"/>
         <source>Print</source>
         <translation>Drukuj</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="0"/>
+        <location filename="../ui/mainwindow.ui" line="341"/>
         <source>Ctrl+P</source>
         <translation>Ctrl+P</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="0"/>
+        <location filename="../ui/mainwindow.ui" line="349"/>
+        <location filename="../ui/mainwindow.cpp" line="1261"/>
         <source>Export to PDF</source>
         <translation>Eksportuj do PDF</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="665"/>
         <source>Confirm discarding current file content?</source>
-        <translation>Confirm discarding current file content?</translation>
+        <translation type="vanished">Confirm discarding current file content?</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="665"/>
         <source>Do You really want to lose currently unsaved changes and create new file</source>
-        <translation>Do You really want to lose currently unsaved changes and create new file</translation>
+        <translation type="vanished">Do You really want to lose currently unsaved changes and create new file</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="759"/>
         <source>Decline currently unsaved changes?</source>
-        <translation>Decline currently unsaved changes?</translation>
+        <translation type="vanished">Decline currently unsaved changes?</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="759"/>
         <source>Do You really want to decline currently unsaved changes and open new file?</source>
-        <translation>Do You really want to decline currently unsaved changes and open new file?</translation>
+        <translation type="vanished">Do You really want to decline currently unsaved changes and open new file?</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="782"/>
+        <location filename="../ui/mainwindow.cpp" line="1387"/>
         <source>Confirm reloading and loosing unsaved content</source>
         <translation>Confirm reloading and loosing unsaved content</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="782"/>
+        <location filename="../ui/mainwindow.cpp" line="1387"/>
         <source>Do You really want to reload the currently opened file?
 Currently unsaved changes would be declined.</source>
         <translation>Do You really want to reload the currently opened file?
 Currently unsaved changes would be declined.</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="805"/>
+        <location filename="../ui/mainwindow.cpp" line="1411"/>
         <source>Success</source>
         <translation>Success</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="805"/>
+        <location filename="../ui/mainwindow.cpp" line="1411"/>
         <source>Successfull rename of file from:
 </source>
         <translation>Successfull rename of file from:
 </translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="829"/>
+        <location filename="../ui/mainwindow.cpp" line="1436"/>
         <source>Error opening file</source>
         <translation>Error opening file</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="829"/>
+        <location filename="../ui/mainwindow.cpp" line="1436"/>
         <source>File &apos;</source>
         <translation>File &apos;</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="829"/>
+        <location filename="../ui/mainwindow.cpp" line="1436"/>
         <source>&apos; failed to be opened from commandline!</source>
         <translation>&apos; failed to be opened from commandline!</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="836"/>
+        <location filename="../ui/mainwindow.cpp" line="1443"/>
         <source>TODOs (</source>
         <translation>TODOs (</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1255"/>
+        <location filename="../ui/mainwindow.cpp" line="2041"/>
         <source>Encoding</source>
         <translation>Kodowanie</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1259"/>
+        <location filename="../ui/mainwindow.cpp" line="2045"/>
         <source>Save in encoding</source>
         <translation>Zapisz w kodowaniu</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1260"/>
+        <location filename="../ui/mainwindow.cpp" line="2046"/>
         <source>Reload with encoding</source>
         <translation>Przeładuj z kodowaniem</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1277"/>
+        <location filename="../ui/mainwindow.cpp" line="2066"/>
         <source>Current encoding: %1</source>
         <translation>Aktualne kodowanie: %1</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1325"/>
+        <location filename="../ui/mainwindow.cpp" line="2114"/>
         <source>Change encoding</source>
         <translation>Zmiana kodowania</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1326"/>
+        <location filename="../ui/mainwindow.cpp" line="2115"/>
         <source>Change the encoding of the file from %1 to %2?
 
 The text is converted and the file is saved in %2 when you save it.</source>
@@ -1612,17 +1896,17 @@ The text is converted and the file is saved in %2 when you save it.</source>
 Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy najbliższym zapisie.</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1339"/>
+        <location filename="../ui/mainwindow.cpp" line="2128"/>
         <source>Reload the file?</source>
         <translation>Przeładować plik?</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1340"/>
+        <location filename="../ui/mainwindow.cpp" line="2129"/>
         <source>Do You really want to read the file again in the encoding %1 and lose the unsaved changes?</source>
         <translation>Czy na pewno wczytać plik ponownie w kodowaniu %1 i stracić niezapisane zmiany?</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1494"/>
+        <location filename="../ui/mainwindow.cpp" line="2313"/>
         <source>Login error</source>
         <translation>Login error</translation>
     </message>
@@ -1657,292 +1941,312 @@ Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy na
         <translation>Lista błędów</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="175"/>
+        <location filename="../ui/mainwindow.ui" line="164"/>
         <source>Stopwatch (uptime and working  time)</source>
         <translation>Stoper (czas działania i pracy)</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="195"/>
+        <location filename="../ui/mainwindow.ui" line="184"/>
         <source>File</source>
         <translation>Plik</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="199"/>
+        <location filename="../ui/mainwindow.ui" line="188"/>
         <source>Open recent</source>
         <translation>Otwórz ostatnie</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="221"/>
+        <location filename="../ui/mainwindow.ui" line="213"/>
         <source>Edit</source>
         <translation>Edycja</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="230"/>
+        <location filename="../ui/mainwindow.ui" line="227"/>
         <source>Check</source>
         <translation>Sprawdź</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="236"/>
+        <location filename="../ui/mainwindow.ui" line="233"/>
         <source>Help</source>
         <translation>Pomoc</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="245"/>
+        <location filename="../ui/mainwindow.ui" line="242"/>
         <source>View</source>
         <translation>Widok</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="270"/>
+        <location filename="../ui/mainwindow.ui" line="273"/>
         <source>Language</source>
         <translation>Język</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="313"/>
+        <location filename="../ui/mainwindow.ui" line="316"/>
         <source>Open file</source>
         <translation>Otwórz plik</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="316"/>
+        <location filename="../ui/mainwindow.ui" line="319"/>
         <source>Ctrl+O</source>
         <translation>Ctrl+O</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="324"/>
+        <location filename="../ui/mainwindow.ui" line="327"/>
         <source>Save file as</source>
         <translation>Zapisz plik jako</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="327"/>
+        <location filename="../ui/mainwindow.ui" line="330"/>
         <source>Ctrl+Shift+S</source>
         <translation>Ctrl+Shift+S</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="335"/>
+        <location filename="../ui/mainwindow.ui" line="357"/>
         <source>Save file</source>
         <translation>Zapisz plik</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="338"/>
+        <location filename="../ui/mainwindow.ui" line="360"/>
         <source>Ctrl+S</source>
         <translation>Ctrl+S</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="349"/>
+        <location filename="../ui/mainwindow.ui" line="371"/>
         <source>Find</source>
         <translation>Znajdź</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="352"/>
+        <location filename="../ui/mainwindow.ui" line="374"/>
         <source>Ctrl+F</source>
         <translation>Ctrl+F</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="357"/>
+        <location filename="../ui/mainwindow.ui" line="379"/>
         <source>Compare with pasted text...</source>
         <translation>Porównaj z wklejonym tekstem...</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="398"/>
+        <location filename="../ui/mainwindow.ui" line="459"/>
         <source>Insert date and time</source>
         <translation>Wstaw datę i godzinę</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="360"/>
+        <location filename="../ui/mainwindow.ui" line="382"/>
         <source>Paste a new version of the text and see the diff against the editor content</source>
         <translation>Wklej nową wersję tekstu i zobacz różnice względem zawartości edytora</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="363"/>
+        <location filename="../ui/mainwindow.ui" line="385"/>
         <source>Ctrl+Shift+D</source>
         <translation>Ctrl+Shift+D</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="374"/>
+        <location filename="../ui/mainwindow.ui" line="396"/>
         <source>Find and replace</source>
         <translation>Znajdź i zamień</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="377"/>
+        <location filename="../ui/mainwindow.ui" line="399"/>
         <source>Ctrl+R</source>
         <translation>Ctrl+R</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="385"/>
+        <location filename="../ui/mainwindow.ui" line="410"/>
+        <source>Ctrl+Shift+T</source>
+        <translation>Ctrl+Shift+T</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="421"/>
+        <source>Alt+[</source>
+        <translation>Alt+[</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="432"/>
+        <source>Alt+]</source>
+        <translation>Alt+]</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="462"/>
+        <source>Ctrl+Alt+D</source>
+        <translation>Ctrl+Alt+D</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="470"/>
         <source>check if tags are closed</source>
         <translation>sprawdź czy tagi są zamknięte</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="390"/>
+        <location filename="../ui/mainwindow.ui" line="475"/>
         <source>Open</source>
         <translation>Otwórz</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="395"/>
+        <location filename="../ui/mainwindow.ui" line="480"/>
         <source>last</source>
         <translation>ostatni</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="403"/>
+        <location filename="../ui/mainwindow.ui" line="488"/>
         <source>Exit</source>
         <translation>Wyjdź</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="411"/>
+        <location filename="../ui/mainwindow.ui" line="496"/>
         <source>New</source>
         <translation>Nowy</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="414"/>
+        <location filename="../ui/mainwindow.ui" line="499"/>
         <source>Ctrl+N</source>
         <translation>Ctrl+N</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="422"/>
+        <location filename="../ui/mainwindow.ui" line="507"/>
         <source>Go to project repository</source>
         <translation>Przejdź do repozytorium projektu</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="430"/>
+        <location filename="../ui/mainwindow.ui" line="515"/>
         <source>Kurs STC</source>
         <translation>Kurs STC</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="438"/>
+        <location filename="../ui/mainwindow.ui" line="523"/>
         <source>Go to cpp0x.pl</source>
         <translation>Przejdź do cpp0x.pl</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="446"/>
+        <location filename="../ui/mainwindow.ui" line="531"/>
         <source>Shortcut list</source>
         <translation>Lista skrótów</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="454"/>
+        <location filename="../ui/mainwindow.ui" line="539"/>
         <source>Copy basename</source>
         <translation>Kopiuj nazwę pliku</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="462"/>
+        <location filename="../ui/mainwindow.ui" line="547"/>
         <source>Copy absolute path</source>
         <translation>Kopiuj ścieżkę absolutną</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="470"/>
+        <location filename="../ui/mainwindow.ui" line="555"/>
         <source>Open parent directory</source>
         <translation>Otwórz katalog nadrzędny</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="490"/>
+        <location filename="../ui/mainwindow.ui" line="575"/>
         <source>cpp0x.pl news ☐</source>
         <translation>Aktualności cpp0x.pl ☐</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="504"/>
+        <location filename="../ui/mainwindow.ui" line="589"/>
         <source>Short conspect ☑</source>
         <translation>Krótki konspekt ☑</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="518"/>
+        <location filename="../ui/mainwindow.ui" line="603"/>
         <source>Go to line ☑</source>
         <translation>Przejdź do linii ☑</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="532"/>
+        <location filename="../ui/mainwindow.ui" line="617"/>
         <source>Breadcrumb ☑</source>
         <translation>Breadcrumb ☑</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="543"/>
+        <location filename="../ui/mainwindow.ui" line="628"/>
         <source>Stc Preview (account at Cpp0x.pl required) ☐</source>
         <translation>Podgląd STC (wymaga konto na Cpp0x.pl) ☐</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="546"/>
+        <location filename="../ui/mainwindow.ui" line="631"/>
         <source>F6</source>
         <translation>F6</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="551"/>
+        <location filename="../ui/mainwindow.ui" line="636"/>
         <source>Copy preview HTML to clipboard</source>
         <translation>Kopiuj HTML podglądu do schowka</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="554"/>
+        <location filename="../ui/mainwindow.ui" line="639"/>
         <source>Copies the HTML rendered by cpp0x.pl for the current text</source>
         <translation>Kopiuje HTML wyrenderowany przez cpp0x.pl dla bieżącego tekstu</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="557"/>
+        <location filename="../ui/mainwindow.ui" line="642"/>
         <source>Ctrl+Shift+H</source>
         <translation>Ctrl+Shift+H</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="568"/>
+        <location filename="../ui/mainwindow.ui" line="653"/>
         <source>Reload file</source>
         <translation>Przeładuj plik</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="571"/>
+        <location filename="../ui/mainwindow.ui" line="656"/>
         <source>F5</source>
         <translation>F5</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="585"/>
+        <location filename="../ui/mainwindow.ui" line="670"/>
         <source>STC Tags buttons ☑</source>
         <translation>Przyciski tagów STC ☑</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="588"/>
+        <location filename="../ui/mainwindow.ui" line="673"/>
         <source>STC Tags buttons (shortcuts are not working when hidden)</source>
         <translation>Przyciski tagów STC (skróty nie działają gdy ukryte)</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="599"/>
+        <location filename="../ui/mainwindow.ui" line="684"/>
         <source>Rename file</source>
         <translation>Zmień nazwę pliku</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="610"/>
+        <location filename="../ui/mainwindow.ui" line="695"/>
         <source>Stop watch (uptime and working time) ☐</source>
         <translation>Stoper (czas działania i pracy) ☐</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="636"/>
+        <location filename="../ui/mainwindow.ui" line="709"/>
         <source>Word wrap ☑</source>
         <translation>Zawijanie wierszy ☑</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="664"/>
+        <location filename="../ui/mainwindow.ui" line="723"/>
         <source>Auto-indent ☑</source>
         <translation>Auto-wcinanie ☑</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="672"/>
+        <location filename="../ui/mainwindow.ui" line="731"/>
         <source>Editor font…</source>
         <translation>Czcionka edytora…</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="404"/>
+        <location filename="../ui/mainwindow.ui" line="407"/>
         <source>Reopen closed tab</source>
         <translation>Otwórz ponownie zamkniętą kartę</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="415"/>
+        <location filename="../ui/mainwindow.ui" line="418"/>
         <source>Navigate back</source>
         <translation>Wstecz</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="426"/>
+        <location filename="../ui/mainwindow.ui" line="429"/>
         <source>Navigate forward</source>
         <translation>Dalej</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="434"/>
+        <location filename="../ui/mainwindow.ui" line="437"/>
         <source>Compare with file…</source>
         <translation>Porównaj z plikiem…</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="437"/>
+        <location filename="../ui/mainwindow.ui" line="440"/>
         <source>Choose a file and see the diff of its lines against the editor content</source>
         <translation>Wybierz plik i zobacz różnice jego linii względem zawartości edytora</translation>
     </message>
@@ -1967,47 +2271,60 @@ Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy na
         <translation>Tryb zen ☐</translation>
     </message>
     <message>
+        <location filename="../ui/mainwindow.cpp" line="976"/>
         <source>Close other tabs</source>
         <translation>Zamknij pozostałe karty</translation>
     </message>
     <message>
+        <location filename="../ui/mainwindow.cpp" line="977"/>
         <source>Close all tabs</source>
         <translation>Zamknij wszystkie karty</translation>
     </message>
     <message>
+        <location filename="../ui/mainwindow.cpp" line="1540"/>
         <source>Editor font</source>
         <translation>Czcionka edytora</translation>
     </message>
     <message>
+        <location filename="../ui/mainwindow.cpp" line="803"/>
         <source>%1 words · %2 chars</source>
         <translation>%1 słów · %2 znaków</translation>
     </message>
     <message>
+        <location filename="../ui/mainwindow.cpp" line="127"/>
+        <location filename="../ui/mainwindow.cpp" line="219"/>
+        <location filename="../ui/mainwindow.cpp" line="2014"/>
+        <location filename="../ui/mainwindow.cpp" line="2015"/>
+        <source>Console</source>
+        <translation>Konsola</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.cpp" line="830"/>
         <source>Ln %1, Col %2</source>
         <translation>Wiersz %1, kolumna %2</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="624"/>
+        <location filename="../ui/mainwindow.ui" line="773"/>
         <source>Right panel ☑</source>
         <translation>Prawy panel ☑</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="627"/>
+        <location filename="../ui/mainwindow.ui" line="776"/>
         <source>F3</source>
         <translation>F3</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="638"/>
+        <location filename="../ui/mainwindow.ui" line="787"/>
         <source>Resume last session on startup</source>
         <translation>Przywróć ostatnią sesję przy uruchamianiu</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="643"/>
+        <location filename="../ui/mainwindow.ui" line="792"/>
         <source>English</source>
         <translation>Angielski</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="648"/>
+        <location filename="../ui/mainwindow.ui" line="797"/>
         <source>Polski</source>
         <translation>Polski</translation>
     </message>
@@ -2194,109 +2511,133 @@ Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy na
 <context>
     <name>PastedTextDiffDialog</name>
     <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="148"/>
         <source>Compare with pasted text</source>
-        <translation type="vanished">Porównaj z wklejonym tekstem</translation>
+        <translation>Porównaj z wklejonym tekstem</translation>
     </message>
     <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="162"/>
         <source>Paste the new version of the whole text here:</source>
-        <translation type="vanished">Wklej tutaj nową wersję całego tekstu:</translation>
+        <translation>Wklej tutaj nową wersję całego tekstu:</translation>
     </message>
     <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="164"/>
         <source>Paste from clipboard</source>
-        <translation type="vanished">Wklej ze schowka</translation>
+        <translation>Wklej ze schowka</translation>
     </message>
     <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="170"/>
         <source>Ctrl+V - the diff against the current editor content appears below</source>
-        <translation type="vanished">Ctrl+V - różnice względem bieżącej zawartości edytora pojawią się poniżej</translation>
+        <translation>Ctrl+V - różnice względem bieżącej zawartości edytora pojawią się poniżej</translation>
     </message>
     <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="181"/>
         <source>← apply to the editor    → discard (keep the editor&apos;s line)    - per line, or per block of consecutive changed lines (blue header)</source>
-        <translation type="vanished">← zastosuj w edytorze    → odrzuć (zostaw linię z edytora)    - osobno dla linii lub dla bloku kolejnych zmienionych linii (niebieski nagłówek)</translation>
+        <translation>← zastosuj w edytorze    → odrzuć (zostaw linię z edytora)    - osobno dla linii lub dla bloku kolejnych zmienionych linii (niebieski nagłówek)</translation>
     </message>
     <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="187"/>
         <source>Editor #</source>
-        <translation type="vanished">Edytor nr</translation>
+        <translation>Edytor nr</translation>
     </message>
     <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="187"/>
         <source>Editor line</source>
-        <translation type="vanished">Linia edytora</translation>
+        <translation>Linia edytora</translation>
     </message>
     <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="187"/>
         <source>Pasted #</source>
-        <translation type="vanished">Wklejone nr</translation>
+        <translation>Wklejone nr</translation>
     </message>
     <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="187"/>
         <source>Pasted line</source>
-        <translation type="vanished">Linia wklejona</translation>
+        <translation>Linia wklejona</translation>
     </message>
     <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="188"/>
         <source>Line number in the editor</source>
-        <translation type="vanished">Numer linii w edytorze</translation>
+        <translation>Numer linii w edytorze</translation>
     </message>
     <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="189"/>
         <source>Line content in the editor (current)</source>
-        <translation type="vanished">Zawartość linii w edytorze (bieżąca)</translation>
+        <translation>Zawartość linii w edytorze (bieżąca)</translation>
     </message>
     <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="190"/>
         <source>Line number in the pasted text</source>
-        <translation type="vanished">Numer linii we wklejonym tekście</translation>
+        <translation>Numer linii we wklejonym tekście</translation>
     </message>
     <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="191"/>
         <source>Line content in the pasted text</source>
-        <translation type="vanished">Zawartość linii we wklejonym tekście</translation>
+        <translation>Zawartość linii we wklejonym tekście</translation>
     </message>
     <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="205"/>
         <source>Apply pasted text to editor</source>
-        <translation type="vanished">Zastosuj wklejony tekst w edytorze</translation>
+        <translation>Zastosuj wklejony tekst w edytorze</translation>
     </message>
     <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="206"/>
         <source>Replaces the whole editor content with the pasted text (can be undone with Ctrl+Z)</source>
-        <translation type="vanished">Zastępuje całą zawartość edytora wklejonym tekstem (można cofnąć przez Ctrl+Z)</translation>
+        <translation>Zastępuje całą zawartość edytora wklejonym tekstem (można cofnąć przez Ctrl+Z)</translation>
     </message>
     <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="207"/>
         <source>Close</source>
-        <translation type="vanished">Zamknij</translation>
+        <translation>Zamknij</translation>
     </message>
     <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="253"/>
         <source>Paste the new version of the text above.</source>
-        <translation type="vanished">Wklej powyżej nową wersję tekstu.</translation>
+        <translation>Wklej powyżej nową wersję tekstu.</translation>
     </message>
     <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="280"/>
         <source>No differences - the pasted text is identical to the editor content.</source>
-        <translation type="vanished">Brak różnic - wklejony tekst jest identyczny z zawartością edytora.</translation>
+        <translation>Brak różnic - wklejony tekst jest identyczny z zawartością edytora.</translation>
     </message>
     <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="282"/>
         <source>Modified lines: %1 | Added: %2 | Removed: %3</source>
-        <translation type="vanished">Zmienione linie: %1 | dodane: %2 | usunięte: %3</translation>
+        <translation>Zmienione linie: %1 | dodane: %2 | usunięte: %3</translation>
     </message>
     <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="302"/>
         <source>none</source>
-        <translation type="vanished">brak</translation>
+        <translation>brak</translation>
     </message>
     <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="358"/>
         <source>Block of %1 changes  |  editor %2  ↔  pasted %3</source>
-        <translation type="vanished">Blok %1 zmian  |  edytor %2  ↔  wklejone %3</translation>
+        <translation>Blok %1 zmian  |  edytor %2  ↔  wklejone %3</translation>
     </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="77"/>
         <source>%1 us</source>
-        <translation type="vanished">%1 µs</translation>
+        <translation>%1 µs</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="79"/>
         <source>%1 ms</source>
-        <translation type="vanished">%1 ms</translation>
+        <translation>%1 ms</translation>
     </message>
     <message>
+        <location filename="../ui/cppcompilerdialog.cpp" line="80"/>
         <source>%1 s</source>
-        <translation type="vanished">%1 s</translation>
+        <translation>%1 s</translation>
     </message>
 </context>
 <context>
     <name>QWidget</name>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="684"/>
+        <location filename="../ui/mainwindow.cpp" line="1290"/>
         <source>Text file (*.txt)</source>
         <translation>Text file (*.txt)</translation>
     </message>
@@ -2304,106 +2645,132 @@ Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy na
 <context>
     <name>RenameFileDialog</name>
     <message>
+        <location filename="../widgets/RenameFileDialog.ui" line="53"/>
+        <location filename="../widgets/RenameFileDialog.cpp" line="29"/>
         <source>Rename file</source>
-        <translation type="vanished">Zmień nazwę pliku</translation>
+        <translation>Zmień nazwę pliku</translation>
     </message>
     <message>
+        <location filename="../widgets/RenameFileDialog.cpp" line="113"/>
         <source>Katalog nie istnieje. Zaznacz opcję tworzenia katalogu lub podaj istniejący.</source>
-        <translation type="vanished">Katalog nie istnieje. Zaznacz opcję tworzenia katalogu lub podaj istniejący.</translation>
+        <translation>Katalog nie istnieje. Zaznacz opcję tworzenia katalogu lub podaj istniejący.</translation>
     </message>
     <message>
+        <location filename="../widgets/RenameFileDialog.cpp" line="119"/>
         <source>Brak uprawnień do zapisu w tym katalogu.</source>
-        <translation type="vanished">Brak uprawnień do zapisu w tym katalogu.</translation>
+        <translation>Brak uprawnień do zapisu w tym katalogu.</translation>
     </message>
     <message>
+        <location filename="../widgets/RenameFileDialog.cpp" line="127"/>
         <source>Nazwa pliku nie może być pusta.</source>
-        <translation type="vanished">Nazwa pliku nie może być pusta.</translation>
+        <translation>Nazwa pliku nie może być pusta.</translation>
     </message>
     <message>
+        <location filename="../widgets/RenameFileDialog.cpp" line="137"/>
         <source>This is the current file.</source>
-        <translation type="vanished">This is the current file.</translation>
+        <translation>This is the current file.</translation>
     </message>
     <message>
+        <location filename="../widgets/RenameFileDialog.cpp" line="144"/>
         <source>Warning: file exists. Size: %1 B, modified: %2</source>
-        <translation type="vanished">Warning: file exists. Size: %1 B, modified: %2</translation>
+        <translation>Warning: file exists. Size: %1 B, modified: %2</translation>
     </message>
     <message>
+        <location filename="../widgets/RenameFileDialog.cpp" line="152"/>
         <source>Plik o tej nazwie już istnieje. Zaznacz opcję zastępowania.</source>
-        <translation type="vanished">Plik o tej nazwie już istnieje. Zaznacz opcję zastępowania.</translation>
+        <translation>Plik o tej nazwie już istnieje. Zaznacz opcję zastępowania.</translation>
     </message>
     <message>
+        <location filename="../widgets/RenameFileDialog.cpp" line="178"/>
         <source>Select file or directory for rename</source>
-        <translation type="vanished">Select file or directory for rename</translation>
+        <translation>Select file or directory for rename</translation>
     </message>
     <message>
+        <location filename="../widgets/RenameFileDialog.cpp" line="219"/>
         <source>Nie udało się utworzyć katalogu.</source>
-        <translation type="vanished">Nie udało się utworzyć katalogu.</translation>
+        <translation>Nie udało się utworzyć katalogu.</translation>
     </message>
     <message>
+        <location filename="../widgets/RenameFileDialog.cpp" line="241"/>
         <source>Rename failed!</source>
-        <translation type="vanished">Rename failed!</translation>
+        <translation>Rename failed!</translation>
     </message>
     <message>
+        <location filename="../widgets/RenameFileDialog.ui" line="14"/>
         <source>Dialog</source>
-        <translation type="vanished">Dialog</translation>
+        <translation>Dialog</translation>
     </message>
     <message>
+        <location filename="../widgets/RenameFileDialog.ui" line="20"/>
         <source>Create directory if not exists</source>
-        <translation type="vanished">Create directory if not exists</translation>
+        <translation>Create directory if not exists</translation>
     </message>
     <message>
+        <location filename="../widgets/RenameFileDialog.ui" line="37"/>
         <source>Old file path</source>
-        <translation type="vanished">Old file path</translation>
+        <translation>Old file path</translation>
     </message>
     <message>
+        <location filename="../widgets/RenameFileDialog.ui" line="62"/>
         <source>File path</source>
-        <translation type="vanished">File path</translation>
+        <translation>File path</translation>
     </message>
     <message>
+        <location filename="../widgets/RenameFileDialog.ui" line="69"/>
         <source>Replace existing file</source>
-        <translation type="vanished">Replace existing file</translation>
+        <translation>Replace existing file</translation>
     </message>
     <message>
+        <location filename="../widgets/RenameFileDialog.ui" line="79"/>
         <source>Browse directory</source>
-        <translation type="vanished">Browse directory</translation>
+        <translation>Browse directory</translation>
     </message>
 </context>
 <context>
     <name>StcPreviewWidget</name>
     <message>
+        <location filename="../widgets/StcPreview.cpp" line="123"/>
         <source>Synchronize scrolling with the editor</source>
-        <translation type="vanished">Synchronizuj przewijanie z edytorem</translation>
+        <translation>Synchronizuj przewijanie z edytorem</translation>
     </message>
     <message>
+        <location filename="../widgets/StcPreview.cpp" line="128"/>
         <source>Move the editor cursor to the place clicked in the preview</source>
-        <translation type="vanished">Przenieś kursor edytora w miejsce kliknięte w podglądzie</translation>
+        <translation>Przenieś kursor edytora w miejsce kliknięte w podglądzie</translation>
     </message>
     <message>
+        <location filename="../widgets/StcPreview.cpp" line="138"/>
         <source>View HTML source of the preview</source>
-        <translation type="vanished">Pokaż źródło HTML podglądu</translation>
+        <translation>Pokaż źródło HTML podglądu</translation>
     </message>
     <message>
+        <location filename="../widgets/StcPreview.cpp" line="158"/>
         <source>Nothing to show yet - open the STC preview (F6), log in to cpp0x.pl and let it render some text.</source>
-        <translation type="vanished">Nie ma jeszcze czego pokazać - otwórz podgląd STC (F6), zaloguj się do cpp0x.pl i poczekaj, aż wyrenderuje jakiś tekst.</translation>
+        <translation>Nie ma jeszcze czego pokazać - otwórz podgląd STC (F6), zaloguj się do cpp0x.pl i poczekaj, aż wyrenderuje jakiś tekst.</translation>
     </message>
     <message>
+        <location filename="../widgets/StcPreview.cpp" line="133"/>
         <source>Copy preview HTML to clipboard</source>
-        <translation type="vanished">Kopiuj HTML podglądu do schowka</translation>
+        <translation>Kopiuj HTML podglądu do schowka</translation>
     </message>
     <message>
+        <location filename="../widgets/StcPreview.cpp" line="182"/>
         <source>Nothing to copy yet - open the STC preview (F6), log in to cpp0x.pl and let it render some text.</source>
-        <translation type="vanished">Nie ma jeszcze czego kopiować - otwórz podgląd STC (F6), zaloguj się do cpp0x.pl i pozwól mu coś wyrenderować</translation>
+        <translation>Nie ma jeszcze czego kopiować - otwórz podgląd STC (F6), zaloguj się do cpp0x.pl i pozwól mu coś wyrenderować</translation>
     </message>
     <message>
+        <location filename="../widgets/StcPreview.cpp" line="189"/>
         <source>Preview HTML copied to clipboard (%1 characters)</source>
-        <translation type="vanished">HTML podglądu skopiowany do schowka (%1 znaków)</translation>
+        <translation>HTML podglądu skopiowany do schowka (%1 znaków)</translation>
     </message>
 </context>
 <context>
     <name>StcTablesCreator</name>
     <message>
+        <location filename="../widgets/StcTablesCreator.ui" line="14"/>
+        <location filename="../widgets/StcTablesCreator.cpp" line="59"/>
         <source>Table Editor</source>
-        <translation type="vanished">Table Editor</translation>
+        <translation>Table Editor</translation>
     </message>
     <message>
         <source>Edycja nagłówka kolumny</source>
@@ -2422,358 +2789,431 @@ Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy na
         <translation type="vanished">Nagłówek nie może być pusty!</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="261"/>
         <source>Delete Row</source>
-        <translation type="vanished">Delete Row</translation>
+        <translation>Delete Row</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="262"/>
         <source>Insert Row Above</source>
-        <translation type="vanished">Insert Row Above</translation>
+        <translation>Insert Row Above</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="263"/>
         <source>Insert Row Below</source>
-        <translation type="vanished">Insert Row Below</translation>
+        <translation>Insert Row Below</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="278"/>
         <source>Delete Column</source>
-        <translation type="vanished">Delete Column</translation>
+        <translation>Delete Column</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="279"/>
         <source>Insert Column Left</source>
-        <translation type="vanished">Insert Column Left</translation>
+        <translation>Insert Column Left</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="280"/>
         <source>Insert Column Right</source>
-        <translation type="vanished">Insert Column Right</translation>
+        <translation>Insert Column Right</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="340"/>
         <source>Kopiuj komórkę</source>
-        <translation type="vanished">Kopiuj komórkę</translation>
+        <translation>Kopiuj komórkę</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="346"/>
         <source>Wklej do komórki</source>
-        <translation type="vanished">Wklej do komórki</translation>
+        <translation>Wklej do komórki</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="437"/>
         <source>Informacja</source>
-        <translation type="vanished">Informacja</translation>
+        <translation>Informacja</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="438"/>
         <source>Schowek jest pusty lub nie zawiera tekstu.</source>
-        <translation type="vanished">Schowek jest pusty lub nie zawiera tekstu.</translation>
+        <translation>Schowek jest pusty lub nie zawiera tekstu.</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="457"/>
         <source>Potwierdź wklejenie</source>
-        <translation type="vanished">Potwierdź wklejenie</translation>
+        <translation>Potwierdź wklejenie</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="461"/>
         <source>Komórka w pozycji (%1, %2) nie jest pusta.
 
 </source>
-        <translation type="vanished">Komórka w pozycji (%1, %2) nie jest pusta.
+        <translation>Komórka w pozycji (%1, %2) nie jest pusta.
 
 </translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="464"/>
         <source>Aktualna zawartość:
 &quot;%1&quot;
 
 </source>
-        <translation type="vanished">Aktualna zawartość:
+        <translation>Aktualna zawartość:
 &quot;%1&quot;
 
 </translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="465"/>
         <source>Zawartość schowka:
 &quot;%1&quot;
 
 </source>
-        <translation type="vanished">Zawartość schowka:
+        <translation>Zawartość schowka:
 &quot;%1&quot;
 
 </translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="466"/>
         <source>Co chcesz zrobić?</source>
-        <translation type="vanished">Co chcesz zrobić?</translation>
+        <translation>Co chcesz zrobić?</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="471"/>
         <source>Zastąp</source>
-        <translation type="vanished">Zastąp</translation>
+        <translation>Zastąp</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="472"/>
         <source>Dołącz na końcu</source>
-        <translation type="vanished">Dołącz na końcu</translation>
+        <translation>Dołącz na końcu</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="473"/>
         <source>Dołącz na początku</source>
-        <translation type="vanished">Dołącz na początku</translation>
+        <translation>Dołącz na początku</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="474"/>
         <source>Anuluj</source>
-        <translation type="vanished">Anuluj</translation>
+        <translation>Anuluj</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="1011"/>
+        <source>[run] formatted cell</source>
+        <translation>komórka sformatowana [run]</translation>
+    </message>
+    <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="1012"/>
+        <source>Formatted cell: the text is wrapped in [run]...[/run] and the STC tags work in it.
+Not formatted cell: plain text, tags are shown as they are written.
+The same as the check box in the cell.</source>
+        <translation>Komórka sformatowana: tekst jest owinięty w [run]...[/run] i tagi STC działają w niej.
+Niesformatowana komórka: zwykły tekst, tagi są pokazywane tak, jak napisano.
+To samo co pole wyboru w komórce.</translation>
+    </message>
+    <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="1019"/>
+        <source>Enter - accept, Shift+Enter - new line</source>
+        <translation>Enter - zatwierdź, Shift+Enter - nowa linia</translation>
+    </message>
+    <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="1104"/>
+        <source>There is [run] inside of the text. Tick the box to make the whole cell formatted instead.</source>
+        <translation>W tekście jest [run]. Zaznacz pole, żeby cała komórka była sformatowana zamiast tego.</translation>
+    </message>
+    <message>
+        <location filename="../widgets/StcTablesCreator.cpp" line="1108"/>
+        <source>There is &apos;;&apos; outside of a tag - it would split this cell in two.</source>
+        <translation>Jest &apos;;&apos; poza tagiem - podzieliłoby to komórkę na dwie.</translation>
+    </message>
+    <message>
+        <location filename="../widgets/StcTablesCreator.ui" line="20"/>
         <source>with header</source>
-        <translation type="vanished">with header</translation>
+        <translation>with header</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.ui" line="46"/>
         <source>extended</source>
-        <translation type="vanished">extended</translation>
+        <translation>extended</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.ui" line="53"/>
         <source>Add row</source>
-        <translation type="vanished">Add row</translation>
+        <translation>Add row</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.ui" line="56"/>
         <source>+ Row</source>
-        <translation type="vanished">+ Row</translation>
+        <translation>+ Row</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.ui" line="73"/>
         <source>Add column</source>
-        <translation type="vanished">Add column</translation>
+        <translation>Add column</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.ui" line="76"/>
         <source>+ Column</source>
-        <translation type="vanished">+ Column</translation>
+        <translation>+ Column</translation>
     </message>
 </context>
 <context>
     <name>StcTagsButtons</name>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="14"/>
         <source>Frame</source>
-        <translation type="vanished">Frame</translation>
+        <translation>Frame</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="32"/>
         <source>Bullet list (you need to surround entire line with [run] to enable formatting</source>
-        <translation type="vanished">Bullet list (you need to surround entire line with [run] to enable formatting</translation>
+        <translation>Bullet list (you need to surround entire line with [run] to enable formatting</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="35"/>
         <source>[pkt &amp;ext]</source>
-        <translation type="vanished">[pkt &amp;ext]</translation>
+        <translation>[pkt &amp;ext]</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="46"/>
         <source>Hyperlink: This works accorging to one of three scenarios: 1. If nothing selected - just put tags, 2. If selected text contains link, 3. If selected text does not contains link</source>
-        <translation type="vanished">Hyperlink: This works accorging to one of three scenarios: 1. If nothing selected - just put tags, 2. If selected text contains link, 3. If selected text does not contains link</translation>
+        <translation>Hyperlink: This works accorging to one of three scenarios: 1. If nothing selected - just put tags, 2. If selected text contains link, 3. If selected text does not contains link</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="49"/>
         <source>[&amp;a href=]</source>
-        <translation type="vanished">[&amp;a href=]</translation>
+        <translation>[&amp;a href=]</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="60"/>
         <source>[&amp;run]</source>
-        <translation type="vanished">[&amp;run]</translation>
+        <translation>[&amp;run]</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="71"/>
         <source>[cs&amp;v extended header]</source>
-        <translation type="vanished">[cs&amp;v extended header]</translation>
+        <translation>[cs&amp;v extended header]</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="82"/>
         <source>[i&amp;mg src=]</source>
-        <translation type="vanished">[i&amp;mg src=]</translation>
+        <translation>[i&amp;mg src=]</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="95"/>
         <source>Code</source>
-        <translation type="vanished">Code</translation>
+        <translation>Code</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="116"/>
         <source>cpp code</source>
-        <translation type="vanished">cpp code</translation>
+        <translation>cpp code</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="119"/>
         <source>[&amp;cpp]</source>
-        <translation type="vanished">[&amp;cpp]</translation>
+        <translation>[&amp;cpp]</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="130"/>
         <source>python code</source>
-        <translation type="vanished">python code</translation>
+        <translation>python code</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="133"/>
         <source>[p&amp;y]</source>
-        <translation type="vanished">[p&amp;y]</translation>
+        <translation>[p&amp;y]</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="144"/>
         <source>code (monospace text on black background)</source>
-        <translation type="vanished">code (monospace text on black background)</translation>
+        <translation>code (monospace text on black background)</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="147"/>
         <source>[c&amp;ode]</source>
-        <translation type="vanished">[c&amp;ode]</translation>
+        <translation>[c&amp;ode]</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="161"/>
         <source>Headers</source>
-        <translation type="vanished">Headers</translation>
+        <translation>Headers</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="188"/>
         <source>header h1 - greatest</source>
-        <translation type="vanished">header h1 - greatest</translation>
+        <translation>header h1 - greatest</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="191"/>
         <source>[h&amp;1]</source>
-        <translation type="vanished">[h&amp;1]</translation>
+        <translation>[h&amp;1]</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="202"/>
         <source>header h2 - a little smaller than greatest</source>
-        <translation type="vanished">header h2 - a little smaller than greatest</translation>
+        <translation>header h2 - a little smaller than greatest</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="205"/>
         <source>[h&amp;2]</source>
-        <translation type="vanished">[h&amp;2]</translation>
+        <translation>[h&amp;2]</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="216"/>
         <source>header h3 - medium</source>
-        <translation type="vanished">header h3 - medium</translation>
+        <translation>header h3 - medium</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="219"/>
         <source>[h&amp;3]</source>
-        <translation type="vanished">[h&amp;3]</translation>
+        <translation>[h&amp;3]</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="230"/>
         <source>header h4 - bold text</source>
-        <translation type="vanished">header h4 - bold text</translation>
+        <translation>header h4 - bold text</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="233"/>
         <source>[h&amp;4]</source>
-        <translation type="vanished">[h&amp;4]</translation>
+        <translation>[h&amp;4]</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="247"/>
         <source>Div</source>
-        <translation type="vanished">Div</translation>
+        <translation>Div</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="268"/>
         <source>[cytat]</source>
-        <translation type="vanished">[cytat]</translation>
+        <translation>[cytat]</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="279"/>
         <source>[div &amp;tip]</source>
-        <translation type="vanished">[div &amp;tip]</translation>
+        <translation>[div &amp;tip]</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="290"/>
         <source>[&amp;div]</source>
-        <translation type="vanished">[&amp;div]</translation>
+        <translation>[&amp;div]</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="301"/>
         <source>[div &amp;warning]</source>
-        <translation type="vanished">[div &amp;warning]</translation>
+        <translation>[div &amp;warning]</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="315"/>
         <source>Font</source>
-        <translation type="vanished">Font</translation>
+        <translation>Font</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="336"/>
         <source>subscript text</source>
-        <translation type="vanished">subscript text</translation>
+        <translation>subscript text</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="339"/>
         <source>[sub]</source>
-        <translation type="vanished">[sub]</translation>
+        <translation>[sub]</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="350"/>
         <source>Super script text</source>
-        <translation type="vanished">Super script text</translation>
+        <translation>Super script text</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="353"/>
         <source>[sup]</source>
-        <translation type="vanished">[sup]</translation>
+        <translation>[sup]</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="364"/>
         <source>underline text</source>
-        <translation type="vanished">underline text</translation>
+        <translation>underline text</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="371"/>
         <source>[&amp;u]</source>
-        <translation type="vanished">[&amp;u]</translation>
+        <translation>[&amp;u]</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="381"/>
         <source>italic text</source>
-        <translation type="vanished">italic text</translation>
+        <translation>italic text</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="387"/>
         <source>[&amp;i]</source>
-        <translation type="vanished">[&amp;i]</translation>
+        <translation>[&amp;i]</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="397"/>
         <source>bold text</source>
-        <translation type="vanished">bold text</translation>
+        <translation>bold text</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="403"/>
         <source>[&amp;b]</source>
-        <translation type="vanished">[&amp;b]</translation>
+        <translation>[&amp;b]</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="409"/>
         <source>Ctrl+B</source>
-        <translation type="vanished">Ctrl+B</translation>
+        <translation>Ctrl+B</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="416"/>
         <source>Tele type text (with monospace font)</source>
-        <translation type="vanished">Tele type text (with monospace font)</translation>
+        <translation>Tele type text (with monospace font)</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="419"/>
         <source>[tt]</source>
-        <translation type="vanished">[tt]</translation>
+        <translation>[tt]</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="430"/>
         <source>strike out text</source>
-        <translation type="vanished">strike out text</translation>
+        <translation>strike out text</translation>
     </message>
     <message>
+        <location filename="../ui/stctagsbuttons.ui" line="437"/>
         <source>[&amp;s]</source>
-        <translation type="vanished">[&amp;s]</translation>
+        <translation>[&amp;s]</translation>
     </message>
 </context>
 <context>
     <name>WorkAwareStopwatch</name>
     <message>
+        <location filename="../ui/WorkAwareStopwatch.ui" line="20"/>
         <source>GroupBox</source>
-        <translation type="vanished">GroupBox</translation>
+        <translation>GroupBox</translation>
     </message>
     <message>
+        <location filename="../ui/WorkAwareStopwatch.ui" line="47"/>
         <source>Uptime (since application  start)</source>
-        <translation type="vanished">Uptime (since application  start)</translation>
+        <translation>Uptime (since application  start)</translation>
     </message>
     <message>
+        <location filename="../ui/WorkAwareStopwatch.ui" line="62"/>
+        <location filename="../ui/WorkAwareStopwatch.ui" line="93"/>
         <source>HH:mm:ss</source>
-        <translation type="vanished">HH:mm:ss</translation>
+        <translation>HH:mm:ss</translation>
     </message>
     <message>
+        <location filename="../ui/WorkAwareStopwatch.ui" line="78"/>
         <source>Working time</source>
-        <translation type="vanished">Working time</translation>
+        <translation>Working time</translation>
     </message>
     <message>
+        <location filename="../ui/WorkAwareStopwatch.ui" line="100"/>
         <source>Idle time treshold [minutes]: </source>
-        <translation type="vanished">Idle time treshold [minutes]: </translation>
-    </message>
-</context>
-<context>
-    <name>LinkPreviewPopup</name>
-    <message>
-        <location filename="../widgets/LinkPreviewPopup.cpp" line="128"/>
-        <source>Could not load the page</source>
-        <translation>Nie udało się wczytać strony</translation>
-    </message>
-    <message>
-        <location filename="../widgets/LinkPreviewPopup.cpp" line="132"/>
-        <source>Loading…</source>
-        <translation>Wczytywanie…</translation>
-    </message>
-</context>
-<context>
-    <name>FileDiffDialog</name>
-    <message>
-        <source>Compare with %1</source>
-        <translation>Porównaj z %1</translation>
-    </message>
-    <message>
-        <source>Compare %1 with %2</source>
-        <translation>Porównaj %1 z %2</translation>
-    </message>
-    <message>
-        <source>No differences - the files are identical.</source>
-        <translation>Brak różnic - pliki są identyczne.</translation>
-    </message>
-    <message>
-        <source>Modified lines: %1 | Added: %2 | Removed: %3</source>
-        <translation>Zmienione linie: %1 | dodane: %2 | usunięte: %3</translation>
+        <translation>Idle time treshold [minutes]: </translation>
     </message>
 </context>
 </TS>
