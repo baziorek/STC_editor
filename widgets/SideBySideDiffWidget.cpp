@@ -3,15 +3,20 @@
 #include "ChangeGutterWidget.h"
 #include "ui_SideBySideDiffWidget.h"
 
+#include <QAbstractTextDocumentLayout>
 #include <QFont>
 #include <QFontDatabase>
 #include <QLabel>
 #include <QPushButton>
+#include <QResizeEvent>
 #include <QScrollBar>
+#include <QShowEvent>
+#include <QSignalBlocker>
 #include <QTextBlock>
 #include <QTextCursor>
 #include <QTextDocument>
 #include <QTextEdit>
+#include <QTimer>
 #include <Qt>
 
 SideBySideDiffWidget::SideBySideDiffWidget(QWidget *parent)
@@ -189,6 +194,9 @@ void SideBySideDiffWidget::fillPanes(const QString &oldText, const QString &newT
             blockCursor.setBlockFormat(blockFormat);
         }
     }
+
+    updateScrollBarRanges();
+    scheduleScrollBarsFix();
 }
 
 void SideBySideDiffWidget::applyLineFormats(QTextEdit *edit, bool oldSide)
@@ -279,7 +287,16 @@ int SideBySideDiffWidget::scrollValue() const
 
 void SideBySideDiffWidget::setScrollValue(int value)
 {
-    oldEdit_->verticalScrollBar()->setValue(value);
+    // set every pane directly: if oldEdit_ already sits at `value` its scrollbar emits nothing
+    // and the valueChanged-based sync would leave the other panes behind
+    for (QTextEdit *edit : {numberOldEdit_, oldEdit_, numberNewEdit_, newEdit_})
+    {
+        QSignalBlocker blocker(edit->verticalScrollBar());
+        edit->verticalScrollBar()->setValue(value);
+    }
+    auto *gutter = static_cast<ChangeGutterWidget *>(gutter_);
+    gutter->scrollOffset = scrollValue();
+    gutter->update();
 }
 
 void SideBySideDiffWidget::setActions(Actions actions)
@@ -327,6 +344,47 @@ void SideBySideDiffWidget::updateCurrentRegionHighlight()
         highlightedLast_ = region.lastEntry;
         paintRange(numberOldEdit_, region.firstEntry, region.lastEntry, true);
         paintRange(numberNewEdit_, region.firstEntry, region.lastEntry, true);
+    }
+}
+
+void SideBySideDiffWidget::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+    scheduleScrollBarsFix();
+}
+
+void SideBySideDiffWidget::showEvent(QShowEvent *event)
+{
+    QWidget::showEvent(event);
+    scheduleScrollBarsFix();
+}
+
+void SideBySideDiffWidget::scheduleScrollBarsFix()
+{
+    // the panes reach their final height only after the layout polish - fix the ranges then
+    QTimer::singleShot(0, this, [this]() {
+        updateScrollBarRanges();
+        // clamping during the range fix may have moved the panes apart - re-sync them
+        setScrollValue(scrollValue());
+    });
+}
+
+void SideBySideDiffWidget::updateScrollBarRanges()
+{
+    for (QTextEdit *edit : {numberOldEdit_, oldEdit_, numberNewEdit_, newEdit_})
+    {
+        const int documentHeight =
+            int(edit->document()->documentLayout()->documentSize().height());
+        const int viewportHeight = edit->viewport()->height();
+        if (viewportHeight <= 0)
+            continue; // hidden: the viewport has no meaningful height yet
+        const int maxScroll = qMax(0, documentHeight - viewportHeight);
+        QScrollBar *bar = edit->verticalScrollBar();
+        if (bar->maximum() != maxScroll)
+        {
+            QSignalBlocker blocker(bar);
+            bar->setMaximum(maxScroll);
+        }
     }
 }
 

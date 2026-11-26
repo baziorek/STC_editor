@@ -568,7 +568,7 @@ if(NOT WIN32)
         utils/DiffCalculation.cpp
     )
     target_include_directories(${PROJECT_NAME}SideBySideDiffTests PRIVATE ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/libs)
-    target_link_libraries(${PROJECT_NAME}SideBySideDiffTests PRIVATE Qt${QT_VERSION_MAJOR}::Widgets ${GTEST_LIBRARIES} pthread)
+    target_link_libraries(${PROJECT_NAME}SideBySideDiffTests PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Test ${GTEST_LIBRARIES} pthread)
     add_test(NAME ${PROJECT_NAME}SideBySideDiffTests COMMAND ${PROJECT_NAME}SideBySideDiffTests)
     set_tests_properties(${PROJECT_NAME}SideBySideDiffTests PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 

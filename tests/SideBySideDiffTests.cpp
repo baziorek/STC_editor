@@ -3,6 +3,7 @@
 // correctly, changed lines must be colored and the scrollbars must stay in sync.
 #include <gtest/gtest.h>
 
+#include <QAbstractTextDocumentLayout>
 #include <QApplication>
 #include <QPushButton>
 #include <QScrollBar>
@@ -10,6 +11,7 @@
 #include <QTextDocument>
 #include <QTextEdit>
 #include <QTextFragment>
+#include <QtTest/QTest>
 
 #include "utils/DiffCalculation.h"
 #include "widgets/SideBySideDiffWidget.h"
@@ -168,6 +170,48 @@ TEST(SideBySideDiffWidget, ScrollBarsStayInSync)
                                 QStringLiteral("numberOldEdit"), QStringLiteral("numberNewEdit")})
     {
         ASSERT_EQ(pane(widget, name)->verticalScrollBar()->value(), 500);
+    }
+}
+
+TEST(SideBySideDiffWidget, ScrollBarRangesHaveNoDeadZone)
+{
+    // QTextEdit can keep a scrollbar maximum computed from a stale layout; the dead zone
+    // at the end made the thumb move while the text stayed put. Every pane's maximum must
+    // equal the real scrollable distance: document height minus viewport height.
+    SideBySideDiffWidget widget;
+    const auto [oldLines, newLines] = numberedLines(300, {100}, {200});
+    widget.setDiffLines(diffOf(oldLines, newLines));
+
+    widget.resize(900, 250);
+    widget.show();
+    QApplication::processEvents();
+    QTest::qWait(10); // let the deferred scrollbar-range fix run
+    QApplication::processEvents();
+
+    for (const QString &name : {QStringLiteral("oldEdit"), QStringLiteral("newEdit"),
+                                QStringLiteral("numberOldEdit"), QStringLiteral("numberNewEdit")})
+    {
+        auto *edit = pane(widget, name);
+        const int documentHeight =
+            int(edit->document()->documentLayout()->documentSize().height());
+        const int expected = qMax(0, documentHeight - edit->viewport()->height());
+        ASSERT_EQ(edit->verticalScrollBar()->maximum(), expected) << name.toStdString();
+    }
+
+    // and at the very bottom every pane must show the same last lines
+    const auto firstVisible = [](QTextEdit *edit) {
+        return edit->cursorForPosition(QPoint(10, 2)).blockNumber();
+    };
+    pane(widget, QStringLiteral("oldEdit"))->verticalScrollBar()->setValue(
+        pane(widget, QStringLiteral("oldEdit"))->verticalScrollBar()->maximum());
+    QApplication::processEvents();
+
+    const int bottomLine = firstVisible(pane(widget, QStringLiteral("oldEdit")));
+    ASSERT_GT(bottomLine, 0);
+    for (const QString &name : {QStringLiteral("newEdit"),
+                                QStringLiteral("numberOldEdit"), QStringLiteral("numberNewEdit")})
+    {
+        ASSERT_EQ(firstVisible(pane(widget, name)), bottomLine) << name.toStdString();
     }
 }
 

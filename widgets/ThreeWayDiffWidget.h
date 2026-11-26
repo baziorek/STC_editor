@@ -8,6 +8,8 @@
 
 class QLabel;
 class QPushButton;
+class QResizeEvent;
+class QShowEvent;
 class QTextEdit;
 
 namespace Ui
@@ -42,6 +44,10 @@ public:
 
     const ThreeWayDiff::Result &result() const { return result_; }
 
+protected:
+    void resizeEvent(QResizeEvent *event) override;
+    void showEvent(QShowEvent *event) override;
+
 private:
     void fillPanes(const QString &baseText, const QString &oursText, const QString &theirsText,
                    const QString &baseNumbers, const QString &oursNumbers,
@@ -52,6 +58,14 @@ private:
     void scrollToRegion(int regionIndex);
     void nextConflict();
     void previousConflict();
+    /// Sets the shared scroll offset on every pane directly (the valueChanged sync
+    /// would miss panes whose scrollbar already sits at the target value)
+    void syncScrollValue(int value);
+    /// QTextEdit can keep a scrollbar range computed from a stale layout, leaving a dead zone
+    /// where the thumb moves but the text cannot scroll - re-assert the true range
+    void updateScrollBarRanges();
+    /// Runs updateScrollBarRanges()+syncScrollValue() once the layout has settled
+    void scheduleScrollBarsFix();
 
     ThreeWayDiff::Result result_;
     int currentConflict_ = -1;

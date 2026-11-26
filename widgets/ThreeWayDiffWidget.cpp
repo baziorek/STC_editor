@@ -2,15 +2,20 @@
 
 #include "ui_ThreeWayDiffWidget.h"
 
+#include <QAbstractTextDocumentLayout>
 #include <QFont>
 #include <QFontDatabase>
 #include <QLabel>
 #include <QPushButton>
+#include <QResizeEvent>
 #include <QScrollBar>
+#include <QShowEvent>
+#include <QSignalBlocker>
 #include <QTextBlock>
 #include <QTextCursor>
 #include <QTextDocument>
 #include <QTextEdit>
+#include <QTimer>
 #include <Qt>
 
 namespace
@@ -133,7 +138,7 @@ void ThreeWayDiffWidget::setResult(const ThreeWayDiff::Result &result)
     if (firstConflict >= 0)
         scrollToRegion(firstConflict);
     else
-        baseEdit_->verticalScrollBar()->setValue(0);
+        syncScrollValue(0);
 
     updateConflictLabel();
 }
@@ -212,7 +217,9 @@ void ThreeWayDiffWidget::fillPanes(const QString &baseText, const QString &oursT
         }
     }
 
-    baseEdit_->verticalScrollBar()->setValue(0);
+    updateScrollBarRanges();
+    scheduleScrollBarsFix();
+    syncScrollValue(0);
 }
 
 void ThreeWayDiffWidget::setTitles(const QString &baseTitle, const QString &oursTitle, const QString &theirsTitle)
@@ -239,6 +246,58 @@ void ThreeWayDiffWidget::syncScrollBars()
                 other->verticalScrollBar()->setValue(value);
             }
         });
+    }
+}
+
+void ThreeWayDiffWidget::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+    scheduleScrollBarsFix();
+}
+
+void ThreeWayDiffWidget::showEvent(QShowEvent *event)
+{
+    QWidget::showEvent(event);
+    scheduleScrollBarsFix();
+}
+
+void ThreeWayDiffWidget::scheduleScrollBarsFix()
+{
+    // the panes reach their final height only after the layout polish - fix the ranges then
+    QTimer::singleShot(0, this, [this]() {
+        updateScrollBarRanges();
+        // clamping during the range fix may have moved the panes apart - re-sync them
+        syncScrollValue(baseEdit_->verticalScrollBar()->value());
+    });
+}
+
+void ThreeWayDiffWidget::syncScrollValue(int value)
+{
+    for (QTextEdit *edit : {baseNumbersEdit_, baseEdit_, oursNumbersEdit_, oursEdit_,
+                            theirsNumbersEdit_, theirsEdit_})
+    {
+        QSignalBlocker blocker(edit->verticalScrollBar());
+        edit->verticalScrollBar()->setValue(value);
+    }
+}
+
+void ThreeWayDiffWidget::updateScrollBarRanges()
+{
+    for (QTextEdit *edit : {baseNumbersEdit_, baseEdit_, oursNumbersEdit_, oursEdit_,
+                            theirsNumbersEdit_, theirsEdit_})
+    {
+        const int documentHeight =
+            int(edit->document()->documentLayout()->documentSize().height());
+        const int viewportHeight = edit->viewport()->height();
+        if (viewportHeight <= 0)
+            continue; // hidden: the viewport has no meaningful height yet
+        const int maxScroll = qMax(0, documentHeight - viewportHeight);
+        QScrollBar *bar = edit->verticalScrollBar();
+        if (bar->maximum() != maxScroll)
+        {
+            QSignalBlocker blocker(bar);
+            bar->setMaximum(maxScroll);
+        }
     }
 }
 

@@ -9,6 +9,8 @@
 class QLabel;
 class QPlainTextEdit;
 class QPushButton;
+class QResizeEvent;
+class QShowEvent;
 class QTextEdit;
 
 namespace Ui
@@ -83,6 +85,10 @@ signals:
     /// A click in the right-hand pane asked to show that line of the "new" document in the editor
     void jumpToLineInEditor(int lineIndex);
 
+protected:
+    void resizeEvent(QResizeEvent *event) override;
+    void showEvent(QShowEvent *event) override;
+
 private:
     void buildPanes();
     void buildPlainPanes(const QStringList &oldLines, const QStringList &newLines);
@@ -97,6 +103,11 @@ private:
     void updateGutter();
     /// Paints the line numbers of the current change region blue (and clears the previous one)
     void updateCurrentRegionHighlight();
+    /// QTextEdit can keep a scrollbar range computed from a stale layout, leaving a dead zone
+    /// where the thumb moves but the text cannot scroll - re-assert the true range
+    void updateScrollBarRanges();
+    /// Runs updateScrollBarRanges()+setScrollValue() once the layout has settled
+    void scheduleScrollBarsFix();
 
     std::vector<DiffCalculation::DiffLine> diffLines_;
     QList<DiffCalculation::LineDiffResult> lineDiffs_;
