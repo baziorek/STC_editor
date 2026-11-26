@@ -156,6 +156,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     connect(ui->actionPrint, &QAction::triggered, this, &MainWindow::onPrintPressed);
     connect(ui->actionExport_pdf, &QAction::triggered, this, &MainWindow::onExportPdfPressed);
+    connect(ui->actionWord_wrap, &QAction::toggled, this, &MainWindow::onWordWrapChanged);
 
     // the console: View menu entry (the dock keeps its state), Ctrl+` shows it, Esc in its line goes back to the editor
     QAction* consoleAction = consoleDockWidget->toggleViewAction();
@@ -586,6 +587,7 @@ CodeEditor* MainWindow::createEditorTab()
                                          "\tcolor: rgb(0, 0, 0);\n"
                                          "    font-family: monospace;\n"
                                          "}\n"));
+    editor->setLineWrapMode(wordWrapEnabled ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);
 
     const int index = ui->editorTabs->addTab(editor, tr("Untitled"));
     connectEditorSignals(editor);
@@ -1200,6 +1202,21 @@ void MainWindow::onBreadcrumbVisibilityChanged(bool visible)
     }
 }
 
+void MainWindow::onWordWrapChanged(bool enabled)
+{
+    wordWrapEnabled = enabled;
+
+    // the wrap is a property of every document tab, not only of the current one
+    const auto mode = enabled ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap;
+    for (int i = 0; i < ui->editorTabs->count(); ++i)
+    {
+        if (auto* editor = qobject_cast<CodeEditor*>(ui->editorTabs->widget(i)))
+            editor->setLineWrapMode(mode);
+    }
+
+    QSettings().setValue(QStringLiteral("view/wordWrap"), enabled);
+}
+
 void MainWindow::onStopWatchVisibilityChanged(bool visible)
 {
     ui->stopwatchGroupBox->setVisible(visible);
@@ -1258,6 +1275,7 @@ void MainWindow::onViewMenuAboutToShow()
     changeCheckedState(ui->actionCpp0x_news);
     changeCheckedState(ui->actionStc_Preview_account_at_Cpp0x_pl_required);
     changeCheckedState(ui->actionStop_watch_uptime_and_working_time);
+    changeCheckedState(ui->actionWord_wrap);
 }
 
 void MainWindow::surroundSelectedTextWithTag(QString divClass, QString textBase, QString extraAttributes, bool closable)
@@ -1431,6 +1449,16 @@ void MainWindow::loadSettings()
     }
 
     lastDirectory = settings.value(GeometryNames::LAST_DIRECTORY, QDir::homePath()).toString();
+
+    wordWrapEnabled = settings.value(QStringLiteral("view/wordWrap"), true).toBool();
+    const auto wrapMode = wordWrapEnabled ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap;
+    for (int i = 0; i < ui->editorTabs->count(); ++i)
+    {
+        if (auto* editor = qobject_cast<CodeEditor*>(ui->editorTabs->widget(i)))
+            editor->setLineWrapMode(wrapMode);
+    }
+    QSignalBlocker wrapBlocker(ui->actionWord_wrap);
+    ui->actionWord_wrap->setChecked(wordWrapEnabled);
 
     ui->stcPreviewWidget->setScrollSyncEnabled(settings.value(GeometryNames::PREVIEW_SCROLL_SYNC, true).toBool());
     ui->stcPreviewWidget->setClickSyncEnabled(settings.value(GeometryNames::PREVIEW_CLICK_SYNC, true).toBool());

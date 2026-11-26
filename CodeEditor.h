@@ -327,6 +327,9 @@ protected:
     bool isControlOnly(QKeyEvent *event) const;
     void handleTabIndent();
     void handleTabUnindent();
+    /// Enter inside a code block: indents the new line after a line ending with `{` or `:`,
+    /// and dedents it when the next line starts with a closing bracket. Returns true when handled.
+    bool handleAutoIndent();
     void applyToSelectedBlocks(const std::function<void (QTextCursor &)> &callback);
     bool handlePasteWithLinkWrapping();
     bool isCursorInsideImgSrcAttribute(const QTextCursor& cursor) const;

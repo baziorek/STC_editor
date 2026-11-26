@@ -1887,6 +1887,11 @@ The text is converted and the file is saved in %2 when you save it.</source>
         <translation>Stop watch (uptime and working time) ☐</translation>
     </message>
     <message>
+        <location filename="../ui/mainwindow.ui" line="636"/>
+        <source>Word wrap ☑</source>
+        <translation>Word wrap ☑</translation>
+    </message>
+    <message>
         <location filename="../ui/mainwindow.ui" line="624"/>
         <source>Right panel ☑</source>
         <translation>Right panel ☑</translation>

@@ -11,6 +11,7 @@
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QSettings>
 #include <QSignalBlocker>
 #include <QTextBlock>
 #include <QTextCharFormat>
@@ -165,6 +166,8 @@ FindDialog::FindDialog(QWidget *parent)
 
     installEventFilter2HandleMovingBetweenOccurences();
     setReplaceMode(false);
+
+    loadSearchHistory();
 }
 void FindDialog::installEventFilter2HandleMovingBetweenOccurences()
 {
@@ -322,6 +325,7 @@ bool FindDialog::eventFilter(QObject* obj, QEvent* event)
 
 FindDialog::~FindDialog()
 {
+    saveSearchHistory();
     delete ui;
 }
 
@@ -549,6 +553,10 @@ void FindDialog::hideEvent(QHideEvent* event)
     stopFollowingDocument();
     if (codeEditor)
         codeEditor->setSearchHighlights({});
+
+    rememberComboEntry(ui->textSearchField);
+    rememberComboEntry(ui->replaceTextField);
+    saveSearchHistory();
 }
 
 void FindDialog::startFollowingDocument()
@@ -778,4 +786,58 @@ void FindDialog::onReplaceSelectedMatchesPressed()
 
     // The matches which the user did not tick are still in the document, so they stay unticked
     refreshResults();
+}
+
+namespace
+{
+    constexpr int MaxHistoryEntries = 30;
+    constexpr const char SearchHistoryKey[] = "findDialog/searchHistory";
+    constexpr const char ReplaceHistoryKey[] = "findDialog/replaceHistory";
+}
+
+QStringList FindDialog::comboEntries(const QComboBox* combo)
+{
+    QStringList entries;
+    for (int i = 0; i < combo->count(); ++i)
+    {
+        const QString text = combo->itemText(i);
+        if (!text.isEmpty())
+            entries << text;
+    }
+    return entries;
+}
+
+void FindDialog::rememberComboEntry(QComboBox* combo)
+{
+    const QString text = combo->currentText();
+    if (text.isEmpty())
+        return;
+
+    while (combo->findText(text, Qt::MatchExactly) >= 0)
+        combo->removeItem(combo->findText(text, Qt::MatchExactly));
+
+    combo->addItem(text);
+    while (combo->count() > MaxHistoryEntries)
+        combo->removeItem(0);
+
+    combo->setCurrentText(text);
+}
+
+void FindDialog::loadSearchHistory()
+{
+    const QSettings settings;
+    QSignalBlocker searchBlocker(ui->textSearchField);
+    QSignalBlocker replaceBlocker(ui->replaceTextField);
+
+    for (const QString& entry : settings.value(SearchHistoryKey).toStringList())
+        ui->textSearchField->addItem(entry);
+    for (const QString& entry : settings.value(ReplaceHistoryKey).toStringList())
+        ui->replaceTextField->addItem(entry);
+}
+
+void FindDialog::saveSearchHistory()
+{
+    QSettings settings;
+    settings.setValue(SearchHistoryKey, comboEntries(ui->textSearchField));
+    settings.setValue(ReplaceHistoryKey, comboEntries(ui->replaceTextField));
 }

@@ -2512,6 +2512,13 @@ void CodeEditor::keyPressEvent(QKeyEvent* event)
         return;
     }
 
+    if ((event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
+        && !(event->modifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier)))
+    {
+        if (handleAutoIndent())
+            return;
+    }
+
     QPlainTextEdit::keyPressEvent(event); // Default behavior
 }
 
@@ -2679,6 +2686,71 @@ void CodeEditor::handleTabUnindent()
             }
         }
     });
+}
+
+bool CodeEditor::handleAutoIndent()
+{
+    if (isReadOnly())
+        return false;
+
+    QTextCursor cursor = textCursor();
+    if (cursor.hasSelection())
+        return false;
+
+    const int position = cursor.position();
+    if (!isInsideCode(position))
+        return false;
+
+    const QString lineText = cursor.block().text();
+    const QString beforeCursor = lineText.left(cursor.columnNumber());
+
+    QString indent;
+    for (const QChar ch : lineText)
+    {
+        if (ch != QLatin1Char(' ') && ch != QLatin1Char('\t'))
+            break;
+        indent += ch;
+    }
+
+    const QString indentUnit(spacesPerTab, QLatin1Char(' '));
+    const QString trimmedBefore = beforeCursor.trimmed();
+
+    if (trimmedBefore.endsWith(QLatin1Char('{')) ||
+        (trimmedBefore.endsWith(QLatin1Char(':')) && !trimmedBefore.endsWith(QStringLiteral("::"))))
+    {
+        // `if (x) {` / `def f():` - the new line goes one level deeper
+        cursor.insertText(QLatin1Char('\n') + indent + indentUnit);
+        return true;
+    }
+
+    if (!trimmedBefore.isEmpty())
+        return false;
+
+    // an empty line before a closing bracket: Enter gives the new line the bracket's level
+    const QTextBlock nextBlock = cursor.block().next();
+    if (!nextBlock.isValid())
+        return false;
+
+    const QString nextTrimmed = nextBlock.text().trimmed();
+    if (!nextTrimmed.startsWith(QLatin1Char('}')) &&
+        !nextTrimmed.startsWith(QLatin1Char(']')) &&
+        !nextTrimmed.startsWith(QLatin1Char(')')))
+        return false;
+
+    QString dedented = indent;
+    if (dedented.endsWith(indentUnit))
+        dedented.chop(spacesPerTab);
+    else if (dedented.endsWith(QLatin1Char('\t')))
+        dedented.chop(1);
+    else
+        dedented.clear();
+
+    // the whitespace in front of the cursor goes away together with the line break
+    cursor.setPosition(cursor.block().position());
+    cursor.setPosition(position, QTextCursor::KeepAnchor);
+    cursor.removeSelectedText();
+    cursor.insertText(QLatin1Char('\n') + dedented);
+    return true;
 }
 void CodeEditor::applyToSelectedBlocks(const std::function<void(QTextCursor&)>& callback)
 {

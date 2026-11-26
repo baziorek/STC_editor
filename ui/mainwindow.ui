@@ -244,6 +244,8 @@
     <addaction name="actionStc_Preview_account_at_Cpp0x_pl_required"/>
     <addaction name="actionCopy_preview_html"/>
     <addaction name="actionStop_watch_uptime_and_working_time"/>
+    <addaction name="separator"/>
+    <addaction name="actionWord_wrap"/>
    </widget>
    <widget class="QMenu" name="menuSyntax">
     <property name="title">
@@ -618,6 +620,20 @@
    </property>
    <property name="text">
     <string>Stop watch (uptime and working time) ☐</string>
+   </property>
+  </action>
+  <action name="actionWord_wrap">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="text-wrap"/>
+   </property>
+   <property name="text">
+    <string>Word wrap ☑</string>
    </property>
   </action>
   <action name="actionRight_panel">

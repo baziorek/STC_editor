@@ -17,6 +17,7 @@ namespace Ui {
 class FindDialog;
 }
 
+class QComboBox;
 class QEvent;
 class QHideEvent;
 class QShowEvent;
@@ -112,6 +113,12 @@ private:
     bool isAnyOrderSearch() const;
     int maxContextLength() const;
     QString occurrencesLabelText(const MatchStats& stats) const;
+
+    // Search and replace history, kept in the settings between runs
+    void loadSearchHistory();
+    void saveSearchHistory();
+    void rememberComboEntry(QComboBox* combo);
+    static QStringList comboEntries(const QComboBox* combo);
 
     // Following the document while the widget is visible
     void startFollowingDocument();

@@ -85,6 +85,7 @@ public slots:
     void onCppNewsShowChanged(bool visible);
     void onGoToLineShowChanged(bool visible);
     void onBreadcrumbVisibilityChanged(bool visible);
+    void onWordWrapChanged(bool enabled);
     void onRightPanelVisibilityChanged(bool visible);
     void onStopWatchVisibilityChanged(bool visible);
     /// View menu: the console (a dock at the bottom), shown with Ctrl+`
@@ -170,6 +171,9 @@ private: // members
     Ui::MainWindow *ui;
 
     QString lastDirectory;
+
+    /// word wrap of the document editors, kept in the settings (View menu → Word wrap)
+    bool wordWrapEnabled = true;
 
     CppNewsWidget* cppNewsWidget = nullptr;
     int cppNewsTabIndex = -1;

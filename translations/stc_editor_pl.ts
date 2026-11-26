@@ -1902,6 +1902,11 @@ Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy na
         <translation>Stoper (czas działania i pracy) ☐</translation>
     </message>
     <message>
+        <location filename="../ui/mainwindow.ui" line="636"/>
+        <source>Word wrap ☑</source>
+        <translation>Zawijanie wierszy ☑</translation>
+    </message>
+    <message>
         <location filename="../ui/mainwindow.ui" line="624"/>
         <source>Right panel ☑</source>
         <translation>Prawy panel ☑</translation>
