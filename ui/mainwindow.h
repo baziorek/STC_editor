@@ -58,6 +58,8 @@ public slots:
     void onOpenPressed();
     void onReloadFilePressed();
     void onRenameFilePressed();
+    void onPrintPressed();
+    void onExportPdfPressed();
     void onExitFromApplicationMenuPressed();
     void onRecentRecentFilesMenuOpened();
     void onCopyFileAbsoluteNamePressed();

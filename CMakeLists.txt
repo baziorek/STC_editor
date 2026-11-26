@@ -13,8 +13,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/StcSanitizers.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/StcIwyu.cmake)
 
-find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets WebView WebEngineWidgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets WebEngineWidgets)
+find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets WebView WebEngineWidgets PrintSupport)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets WebEngineWidgets PrintSupport)
 
 # ------------------ uchardet (system or FetchContent) ------------------
 include(FetchContent)
@@ -282,6 +282,7 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE
         Qt${QT_VERSION_MAJOR}::Widgets
         Qt${QT_VERSION_MAJOR}::WebEngineWidgets
+        Qt${QT_VERSION_MAJOR}::PrintSupport
         StripCppComments
 )
 

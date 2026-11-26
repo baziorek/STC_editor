@@ -10,6 +10,8 @@
 #include <QScrollBar>
 #include <QTimer>
 #include <QTranslator>
+#include <QPrinter>
+#include <QPrintDialog>
 #include <QAction>
 #include <QActionGroup>
 #include <QMenu>
@@ -139,6 +141,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     cppNewsTabIndex = ui->contextsTabWidget->addTab(cppNewsWidget, tr("cpp0x.pl news"));
     ui->contextsTabWidget->setTabVisible(cppNewsTabIndex, false);
     connect(ui->actionCpp0x_news, &QAction::toggled, this, &MainWindow::onCppNewsShowChanged);
+
+    connect(ui->actionPrint, &QAction::triggered, this, &MainWindow::onPrintPressed);
+    connect(ui->actionExport_pdf, &QAction::triggered, this, &MainWindow::onExportPdfPressed);
 
     // the console: View menu entry (the dock keeps its state), Ctrl+` shows it, Esc in its line goes back to the editor
     QAction* consoleAction = consoleDockWidget->toggleViewAction();
@@ -702,6 +707,39 @@ bool MainWindow::onSaveAsPressed()
 {
     const auto fileName = chooseFileWithDialog(QFileDialog::AcceptSave);
     return saveEntireContent2File(fileName);
+}
+
+void MainWindow::onPrintPressed()
+{
+    QPrinter printer(QPrinter::HighResolution);
+    QPrintDialog dialog(&printer, this);
+    dialog.setWindowTitle(tr("Print"));
+    if (dialog.exec() == QDialog::Accepted)
+    {
+        ui->textEditor->print(&printer);
+    }
+}
+
+void MainWindow::onExportPdfPressed()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Export to PDF"),
+                                                    lastDirectory.isEmpty() ? QDir::homePath() : lastDirectory,
+                                                    tr("PDF document (*.pdf)"));
+    if (fileName.isEmpty())
+    {
+        return;
+    }
+    if (! fileName.endsWith(QLatin1String(".pdf"), Qt::CaseInsensitive))
+    {
+        fileName += QStringLiteral(".pdf");
+    }
+
+    QPrinter printer(QPrinter::HighResolution);
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setOutputFileName(fileName);
+    ui->textEditor->print(&printer);
+
+    lastDirectory = QFileInfo(fileName).absolutePath();
 }
 
 QString MainWindow::chooseFileWithDialog(QFileDialog::AcceptMode acceptMode)
