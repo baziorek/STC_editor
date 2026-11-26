@@ -37,6 +37,7 @@
 #include "widgets/DiffReviewDialog.h"
 #include "widgets/PastedTextDiffDialog.h"
 #include "widgets/FileDiffDialog.h"
+#include "widgets/ThreeWayDiffDialog.h"
 #include "widgets/MinimapWidget.h"
 #include "widgets/RenameFileDialog.h"
 using namespace std;
@@ -205,6 +206,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->actionNavigate_forward, &QAction::triggered, this, &MainWindow::onNavigateForwardPressed);
     connect(ui->actionCompare_with_file, &QAction::triggered, this, &MainWindow::onCompareWithFileRequested);
     connect(ui->actionCompare_files, &QAction::triggered, this, &MainWindow::onCompareFilesRequested);
+    connect(ui->actionCompare_three_files, &QAction::triggered, this, &MainWindow::onCompareThreeFilesRequested);
     connect(ui->actionMinimap, &QAction::toggled, this, &MainWindow::onMinimapChanged);
     connect(ui->actionZen_mode, &QAction::toggled, this, &MainWindow::onZenModeChanged);
 
@@ -961,6 +963,12 @@ void MainWindow::onCompareFilesRequested()
         return;
 
     FileDiffDialog dialog(oldPath, newPath, this);
+    dialog.exec();
+}
+
+void MainWindow::onCompareThreeFilesRequested()
+{
+    ThreeWayDiffDialog dialog(currentEditor(), this);
     dialog.exec();
 }
 

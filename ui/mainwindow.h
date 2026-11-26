@@ -76,6 +76,7 @@ public slots:
     void onNavigateForwardPressed();
     void onCompareWithFileRequested();
     void onCompareFilesRequested();
+    void onCompareThreeFilesRequested();
     void onEditorTabsTabBarContextMenu(const QPoint& pos);
     void onExitFromApplicationMenuPressed();
     void onRecentRecentFilesMenuOpened();

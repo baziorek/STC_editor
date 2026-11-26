@@ -221,6 +221,7 @@
     <addaction name="actionCompare_with_pasted_text"/>
     <addaction name="actionCompare_with_file"/>
     <addaction name="actionCompare_files"/>
+    <addaction name="actionCompare_three_files"/>
    </widget>
    <widget class="QMenu" name="menuCheck">
     <property name="title">
@@ -449,6 +450,17 @@
    </property>
    <property name="toolTip">
     <string>Choose two files and see the diff of their lines</string>
+   </property>
+  </action>
+  <action name="actionCompare_three_files">
+   <property name="icon">
+    <iconset theme="document-open"/>
+   </property>
+   <property name="text">
+    <string>Compare three files…</string>
+   </property>
+   <property name="toolTip">
+    <string>Choose a base file and two versions and see the three-way diff with conflicts marked</string>
    </property>
   </action>
   <action name="actionInsert_datetime">

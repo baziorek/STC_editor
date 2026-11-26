@@ -538,6 +538,16 @@ if(NOT WIN32)
     target_link_libraries(${PROJECT_NAME}DiffCalculationTests PRIVATE Qt${QT_VERSION_MAJOR}::Core ${GTEST_LIBRARIES} pthread gtest_main)
     add_test(NAME ${PROJECT_NAME}DiffCalculationTests COMMAND ${PROJECT_NAME}DiffCalculationTests)
 
+    # Three-way (diff3-style) alignment of a base text and two changed versions. Only QtCore.
+    add_executable(${PROJECT_NAME}ThreeWayDiffTests
+        tests/ThreeWayDiffTests.cpp
+        utils/ThreeWayDiff.cpp
+        utils/DiffCalculation.cpp
+    )
+    target_include_directories(${PROJECT_NAME}ThreeWayDiffTests PRIVATE ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/libs)
+    target_link_libraries(${PROJECT_NAME}ThreeWayDiffTests PRIVATE Qt${QT_VERSION_MAJOR}::Core ${GTEST_LIBRARIES} pthread gtest_main)
+    add_test(NAME ${PROJECT_NAME}ThreeWayDiffTests COMMAND ${PROJECT_NAME}ThreeWayDiffTests)
+
     # Side-by-side diff view (aligned panes, colors, gutter, scroll sync). Needs Qt Widgets; own main() with QApplication.
     add_executable(${PROJECT_NAME}SideBySideDiffTests
         tests/SideBySideDiffTests.cpp
