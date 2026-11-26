@@ -1672,12 +1672,12 @@ Double click to go to the line.</translation>
         <translation>No markup: spell checking and formatted links and e-mail addresses only</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1312"/>
+        <location filename="../ui/mainwindow.cpp" line="1371"/>
         <source>Source and data files (%1)</source>
         <translation>Source and data files (%1)</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1313"/>
+        <location filename="../ui/mainwindow.cpp" line="1372"/>
         <source>All files (*)</source>
         <translation>All files (*)</translation>
     </message>
@@ -1752,68 +1752,68 @@ Double click to go to the line.</translation>
         <translation>Treat the whole file as JSON</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="481"/>
+        <location filename="../ui/mainwindow.cpp" line="538"/>
         <source>File not found</source>
         <translation>File not found</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="481"/>
+        <location filename="../ui/mainwindow.cpp" line="538"/>
         <source>File does not exist:
 </source>
         <translation>File does not exist:
 </translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="507"/>
+        <location filename="../ui/mainwindow.cpp" line="564"/>
         <source>No recent files</source>
         <translation>No recent files</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="516"/>
+        <location filename="../ui/mainwindow.cpp" line="573"/>
         <source>Clear Recent Files</source>
         <translation>Clear Recent Files</translation>
     </message>
     <message>
         <location filename="../ui/mainwindow.ui" line="577"/>
-        <location filename="../ui/mainwindow.cpp" line="583"/>
+        <location filename="../ui/mainwindow.cpp" line="640"/>
         <source>File statistics</source>
         <translation>File statistics</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="194"/>
+        <location filename="../ui/mainwindow.cpp" line="195"/>
         <source>cpp0x.pl news</source>
         <translation>cpp0x.pl news</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="648"/>
-        <location filename="../ui/mainwindow.cpp" line="761"/>
+        <location filename="../ui/mainwindow.cpp" line="705"/>
+        <location filename="../ui/mainwindow.cpp" line="819"/>
         <source>Untitled</source>
         <translation>Untitled</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="872"/>
+        <location filename="../ui/mainwindow.cpp" line="930"/>
         <source>Close tab without saving?</source>
         <translation>Close tab without saving?</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="872"/>
+        <location filename="../ui/mainwindow.cpp" line="930"/>
         <source>Do You really want to close this tab without saving unsaved changes?</source>
         <translation>Do You really want to close this tab without saving unsaved changes?</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="996"/>
-        <location filename="../ui/mainwindow.cpp" line="1142"/>
+        <location filename="../ui/mainwindow.cpp" line="1054"/>
+        <location filename="../ui/mainwindow.cpp" line="1200"/>
         <source>Close tab</source>
         <translation>Close tab</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1284"/>
+        <location filename="../ui/mainwindow.cpp" line="1342"/>
         <source>PDF document (*.pdf)</source>
         <translation>PDF document (*.pdf)</translation>
     </message>
     <message>
         <location filename="../ui/mainwindow.ui" line="340"/>
-        <location filename="../ui/mainwindow.cpp" line="1273"/>
+        <location filename="../ui/mainwindow.cpp" line="1331"/>
         <source>Print</source>
         <translation>Print</translation>
     </message>
@@ -1824,81 +1824,81 @@ Double click to go to the line.</translation>
     </message>
     <message>
         <location filename="../ui/mainwindow.ui" line="351"/>
-        <location filename="../ui/mainwindow.cpp" line="1282"/>
+        <location filename="../ui/mainwindow.cpp" line="1340"/>
         <source>Export to PDF</source>
         <translation>Export to PDF</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1408"/>
+        <location filename="../ui/mainwindow.cpp" line="1467"/>
         <source>Confirm reloading and loosing unsaved content</source>
         <translation>Confirm reloading and loosing unsaved content</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1408"/>
+        <location filename="../ui/mainwindow.cpp" line="1467"/>
         <source>Do You really want to reload the currently opened file?
 Currently unsaved changes would be declined.</source>
         <translation>Do You really want to reload the currently opened file?
 Currently unsaved changes would be declined.</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1432"/>
+        <location filename="../ui/mainwindow.cpp" line="1491"/>
         <source>Success</source>
         <translation>Success</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1432"/>
+        <location filename="../ui/mainwindow.cpp" line="1491"/>
         <source>Successfull rename of file from:
 </source>
         <translation>Successfull rename of file from:
 </translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1457"/>
+        <location filename="../ui/mainwindow.cpp" line="1516"/>
         <source>Error opening file</source>
         <translation>Error opening file</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1457"/>
+        <location filename="../ui/mainwindow.cpp" line="1516"/>
         <source>File &apos;</source>
         <translation>File &apos;</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1457"/>
+        <location filename="../ui/mainwindow.cpp" line="1516"/>
         <source>&apos; failed to be opened from commandline!</source>
         <translation>&apos; failed to be opened from commandline!</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1464"/>
+        <location filename="../ui/mainwindow.cpp" line="1523"/>
         <source>TODOs (</source>
         <translation>TODOs (</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2063"/>
+        <location filename="../ui/mainwindow.cpp" line="2125"/>
         <source>Encoding</source>
         <translation>Encoding</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2067"/>
+        <location filename="../ui/mainwindow.cpp" line="2129"/>
         <source>Save in encoding</source>
         <translation>Save in encoding</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2068"/>
+        <location filename="../ui/mainwindow.cpp" line="2130"/>
         <source>Reload with encoding</source>
         <translation>Reload with encoding</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2088"/>
+        <location filename="../ui/mainwindow.cpp" line="2150"/>
         <source>Current encoding: %1</source>
         <translation>Current encoding: %1</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2136"/>
+        <location filename="../ui/mainwindow.cpp" line="2198"/>
         <source>Change encoding</source>
         <translation>Change encoding</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2137"/>
+        <location filename="../ui/mainwindow.cpp" line="2199"/>
         <source>Change the encoding of the file from %1 to %2?
 
 The text is converted and the file is saved in %2 when you save it.</source>
@@ -1907,17 +1907,17 @@ The text is converted and the file is saved in %2 when you save it.</source>
 The text is converted and the file is saved in %2 when you save it.</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2150"/>
+        <location filename="../ui/mainwindow.cpp" line="2212"/>
         <source>Reload the file?</source>
         <translation>Reload the file?</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2151"/>
+        <location filename="../ui/mainwindow.cpp" line="2213"/>
         <source>Do You really want to read the file again in the encoding %1 and lose the unsaved changes?</source>
         <translation>Do You really want to read the file again in the encoding %1 and lose the unsaved changes?</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2335"/>
+        <location filename="../ui/mainwindow.cpp" line="2397"/>
         <source>Login error</source>
         <translation>Login error</translation>
     </message>
@@ -2292,35 +2292,40 @@ The text is converted and the file is saved in %2 when you save it.</translation
         <translation>Zen mode ☐</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="997"/>
+        <location filename="../ui/mainwindow.cpp" line="1055"/>
         <source>Close other tabs</source>
         <translation>Close other tabs</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="998"/>
+        <location filename="../ui/mainwindow.cpp" line="1056"/>
         <source>Close all tabs</source>
         <translation>Close all tabs</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1561"/>
+        <location filename="../ui/mainwindow.cpp" line="1370"/>
+        <source>Markdown files (*.md *.markdown *.mdown *.mkd)</source>
+        <translation>Markdown files (*.md *.markdown *.mdown *.mkd)</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.cpp" line="1620"/>
         <source>Editor font</source>
         <translation>Editor font</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="818"/>
+        <location filename="../ui/mainwindow.cpp" line="876"/>
         <source>%1 words · %2 chars</source>
         <translation>%1 words · %2 chars</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="128"/>
-        <location filename="../ui/mainwindow.cpp" line="221"/>
-        <location filename="../ui/mainwindow.cpp" line="2035"/>
-        <location filename="../ui/mainwindow.cpp" line="2036"/>
+        <location filename="../ui/mainwindow.cpp" line="129"/>
+        <location filename="../ui/mainwindow.cpp" line="222"/>
+        <location filename="../ui/mainwindow.cpp" line="2094"/>
+        <location filename="../ui/mainwindow.cpp" line="2095"/>
         <source>Console</source>
         <translation>Console</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="845"/>
+        <location filename="../ui/mainwindow.cpp" line="903"/>
         <source>Ln %1, Col %2</source>
         <translation>Ln %1, Col %2</translation>
     </message>
@@ -2444,7 +2449,7 @@ The text is converted and the file is saved in %2 when you save it.</translation
 <context>
     <name>QWidget</name>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1311"/>
+        <location filename="../ui/mainwindow.cpp" line="1369"/>
         <source>Text file (*.txt)</source>
         <translation>Text file (*.txt)</translation>
     </message>

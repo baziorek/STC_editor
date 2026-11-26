@@ -133,4 +133,36 @@ void StcTagsButtons::setMarkdownMode(bool enabled)
 
     for (QAbstractButton* button : stcOnly)
         button->setVisible(!enabled);
+
+    // the labels of the remaining buttons show the markdown syntax they produce
+    const QList<QPair<QAbstractButton*, QString>> markdownLabels = {
+        { ui->button_bold, QStringLiteral("**B**") },
+        { ui->button_italic, QStringLiteral("*I*") },
+        { ui->button_stroke, QStringLiteral("~~S~~") },
+        { ui->button_h1, QStringLiteral("#") },
+        { ui->button_h2, QStringLiteral("##") },
+        { ui->button_h3, QStringLiteral("###") },
+        { ui->button_h4, QStringLiteral("####") },
+        { ui->button_cytat, QStringLiteral(">") },
+        { ui->button_href, QStringLiteral("[text](url)") },
+        { ui->button_img, QStringLiteral("![alt](src)") },
+        { ui->button_code, QStringLiteral("```") },
+        { ui->button_cpp, QStringLiteral("```cpp") },
+        { ui->button_py, QStringLiteral("```python") },
+    };
+
+    if (enabled)
+    {
+        if (m_originalButtonTexts.isEmpty())
+            for (const auto& [button, label] : markdownLabels)
+                m_originalButtonTexts.insert(button, button->text());
+
+        for (const auto& [button, label] : markdownLabels)
+            button->setText(label);
+    }
+    else if (!m_originalButtonTexts.isEmpty())
+    {
+        for (const auto& [button, label] : markdownLabels)
+            button->setText(m_originalButtonTexts.value(button));
+    }
 }

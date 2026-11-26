@@ -1,10 +1,12 @@
 #pragma once
 #include <QFrame>
+#include <QMap>
 #include "types/stcTags.h"
 
 namespace Ui {
 class StcTagsButtons;
 }
+class QAbstractButton;
 
 class StcTagsButtons : public QFrame
 {
@@ -31,4 +33,6 @@ signals:
 
 private:
     Ui::StcTagsButtons *ui;
+    /// The STC texts of the buttons, kept so setMarkdownMode() can put them back.
+    QMap<QAbstractButton*, QString> m_originalButtonTexts;
 };

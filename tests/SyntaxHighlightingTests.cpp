@@ -1099,6 +1099,21 @@ TEST(MarkdownMode, AtxHeadingIsColoredAndBold)
     })) << "the next line is not a heading";
 }
 
+TEST(MarkdownMode, HeadingFontSizeDecreasesWithLevel)
+{
+    HighlightedDocument d("# Big\n## Mid\n### Small\nplain", SyntaxMode::Markdown);
+    const qreal base = d.document.defaultFont().pointSizeF();
+    ASSERT_GT(base, 0);
+
+    const qreal h1 = formatAt(blockAt(d.document, 0), 2).fontPointSize();
+    const qreal h2 = formatAt(blockAt(d.document, 1), 3).fontPointSize();
+    const qreal h3 = formatAt(blockAt(d.document, 2), 4).fontPointSize();
+
+    EXPECT_GT(h1, h2) << "h1 is larger than h2";
+    EXPECT_GT(h2, h3) << "h2 is larger than h3";
+    EXPECT_GT(h3, base) << "even h3 stays larger than the body text";
+}
+
 TEST(MarkdownMode, FencedCodeBlockIsFormattedAndTheStateEnds)
 {
     HighlightedDocument d("```\nplain code\n```\n# After", SyntaxMode::Markdown);

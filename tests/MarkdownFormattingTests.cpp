@@ -191,6 +191,28 @@ TEST_F(MarkdownFormattingTests, CodeBlockWrapsSelection)
               QStringLiteral("```python\nint a;\nint b;\n```\nend"));
 }
 
+TEST_F(MarkdownFormattingTests, InsertCodeSingleLineBecomesInline)
+{
+    setTextAndSelection(QStringLiteral("int a;"), 0, 6);
+    markdownedit::insertCode(&editor, QStringLiteral("cpp"));
+    EXPECT_EQ(editor.toPlainText(), QStringLiteral("`int a;`"));
+}
+
+TEST_F(MarkdownFormattingTests, InsertCodeMultiLineBecomesFence)
+{
+    setTextAndSelection(QStringLiteral("int a;\nint b;"), 0, 13);
+    markdownedit::insertCode(&editor, QStringLiteral("cpp"));
+    EXPECT_EQ(editor.toPlainText(),
+              QStringLiteral("```cpp\nint a;\nint b;\n```"));
+}
+
+TEST_F(MarkdownFormattingTests, InsertCodeNoSelectionBecomesEmptyFence)
+{
+    setTextAndSelection(QStringLiteral("text"), 4);
+    markdownedit::insertCode(&editor, QString());
+    EXPECT_EQ(editor.toPlainText(), QStringLiteral("text\n```\n\n```"));
+}
+
 } // namespace
 
 int main(int argc, char** argv)

@@ -411,13 +411,13 @@ void MainWindow::applyMarkdownTag(StcTags stcTag)
         markdownedit::insertImage(editor);
         break;
     case StcTags::CODE:
-        markdownedit::toggleInline(editor, QStringLiteral("`"));
+        markdownedit::insertCode(editor, QString());
         break;
     case StcTags::CPP:
-        markdownedit::insertCodeBlock(editor, QStringLiteral("cpp"));
+        markdownedit::insertCode(editor, QStringLiteral("cpp"));
         break;
     case StcTags::PY:
-        markdownedit::insertCodeBlock(editor, QStringLiteral("python"));
+        markdownedit::insertCode(editor, QStringLiteral("python"));
         break;
     default:
         // the remaining tags have no markdown equivalent; their buttons are hidden in this mode
@@ -1367,6 +1367,7 @@ QString MainWindow::chooseFileWithDialog(QFileDialog::AcceptMode acceptMode)
     QFileDialog dialog(this);
     QStringList nameFilters;
     nameFilters << QWidget::tr("Text file (*.txt)")
+                << tr("Markdown files (*.md *.markdown *.mdown *.mkd)")
                 << tr("Source and data files (%1)").arg(syntaxmode::knownSourceFileWildcards().join(' '))
                 << tr("All files (*)");
     dialog.setNameFilters(nameFilters);

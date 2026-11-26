@@ -541,15 +541,26 @@ int STCSyntaxHighlighter::highlightMarkdownBlock(const QString &text)
         return 0;
     }
 
-    // ATX heading: "#"*1-6 then the text
+    // ATX heading: "#"*1-6 then the text; the higher the level the larger the font
+    // (relative to the editor font, so the font zoom scales the headings as well)
     static const QRegularExpression atxRe(QStringLiteral(R"(^ {0,3}(#{1,6})(?:[ \t]+(.*))?$)"));
+    static const qreal headingSizeFactors[] = { 0.0, 1.7, 1.45, 1.25, 1.12, 1.05, 1.0 };
     const auto headingMatch = atxRe.match(text);
     if (headingMatch.hasMatch())
     {
         setFormat(headingMatch.capturedStart(1), headingMatch.capturedLength(1), markerFormat);
         const int headingStart = headingMatch.capturedStart(2);
         if (headingStart >= 0)
-            setFormat(headingStart, headingMatch.capturedLength(2), headingFormat);
+        {
+            QTextCharFormat fmt = headingFormat;
+            const qreal basePt = document()->defaultFont().pointSizeF();
+            if (basePt > 0)
+            {
+                const int level = qBound(1, headingMatch.captured(1).size(), 6);
+                fmt.setFontPointSize(qRound(basePt * headingSizeFactors[level]));
+            }
+            setFormat(headingStart, headingMatch.capturedLength(2), fmt);
+        }
     }
 
     // a block quote line: the ">" marker, the rest in italics

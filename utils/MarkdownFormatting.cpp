@@ -361,3 +361,21 @@ void markdownedit::insertCodeBlock(QPlainTextEdit* editor, const QString& langua
                        + QLatin1Char('\n') + closeFence);
     editor->setFocus();
 }
+
+void markdownedit::insertCode(QPlainTextEdit* editor, const QString& language)
+{
+    QTextCursor cursor = editor->textCursor();
+    if (cursor.hasSelection())
+    {
+        const int firstBlock = cursor.document()->findBlock(cursor.selectionStart()).blockNumber();
+        const int lastBlock = cursor.document()
+                                  ->findBlock(qMax(cursor.selectionStart(), cursor.selectionEnd() - 1))
+                                  .blockNumber();
+        if (firstBlock == lastBlock)
+        {
+            toggleInline(editor, QStringLiteral("`"));
+            return;
+        }
+    }
+    insertCodeBlock(editor, language);
+}

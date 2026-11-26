@@ -33,4 +33,8 @@ void insertImage(QPlainTextEdit* editor);
 /// (```language ... ```). With no selection an empty block is inserted.
 void insertCodeBlock(QPlainTextEdit* editor, const QString& language);
 
+/// The code button: a selection inside a single line becomes inline `` `code` ``, a selection
+/// spanning several lines (or no selection at all) becomes a fenced block with `language`.
+void insertCode(QPlainTextEdit* editor, const QString& language);
+
 } // namespace markdownedit
