@@ -247,6 +247,8 @@
     <addaction name="actionStop_watch_uptime_and_working_time"/>
     <addaction name="separator"/>
     <addaction name="actionWord_wrap"/>
+    <addaction name="actionAuto_indent"/>
+    <addaction name="actionEditor_font"/>
    </widget>
    <widget class="QMenu" name="menuSyntax">
     <property name="title">
@@ -646,6 +648,28 @@
    </property>
    <property name="text">
     <string>Word wrap ☑</string>
+   </property>
+  </action>
+  <action name="actionAuto_indent">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="format-indent-more"/>
+   </property>
+   <property name="text">
+    <string>Auto-indent ☑</string>
+   </property>
+  </action>
+  <action name="actionEditor_font">
+   <property name="icon">
+    <iconset theme="preferences-desktop-font"/>
+   </property>
+   <property name="text">
+    <string>Editor font…</string>
    </property>
   </action>
   <action name="actionRight_panel">

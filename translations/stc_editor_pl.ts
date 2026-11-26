@@ -1912,6 +1912,28 @@ Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy na
         <translation>Zawijanie wierszy ☑</translation>
     </message>
     <message>
+        <location filename="../ui/mainwindow.ui" line="664"/>
+        <source>Auto-indent ☑</source>
+        <translation>Auto-wcinanie ☑</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="672"/>
+        <source>Editor font…</source>
+        <translation>Czcionka edytora…</translation>
+    </message>
+    <message>
+        <source>Editor font</source>
+        <translation>Czcionka edytora</translation>
+    </message>
+    <message>
+        <source>%1 words · %2 chars</source>
+        <translation>%1 słów · %2 znaków</translation>
+    </message>
+    <message>
+        <source>Ln %1, Col %2</source>
+        <translation>Wiersz %1, kolumna %2</translation>
+    </message>
+    <message>
         <location filename="../ui/mainwindow.ui" line="624"/>
         <source>Right panel ☑</source>
         <translation>Prawy panel ☑</translation>

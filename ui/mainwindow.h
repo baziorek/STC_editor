@@ -2,6 +2,7 @@
 
 #include <QMainWindow>
 #include <QFileDialog>
+#include <QFont>
 #include <QTranslator>
 #include "utils/SyntaxMode.h"
 
@@ -15,6 +16,7 @@ QT_END_NAMESPACE
 class ConsoleWidget;
 class CodeEditor;
 class QDockWidget;
+class QLabel;
 
 class QTextCursor;
 
@@ -87,6 +89,8 @@ public slots:
     void onGoToLineShowChanged(bool visible);
     void onBreadcrumbVisibilityChanged(bool visible);
     void onWordWrapChanged(bool enabled);
+    void onAutoIndentChanged(bool enabled);
+    void onEditorFontClicked();
     void onRightPanelVisibilityChanged(bool visible);
     void onStopWatchVisibilityChanged(bool visible);
     /// View menu: the console (a dock at the bottom), shown with Ctrl+`
@@ -147,6 +151,9 @@ protected:
     bool confirmAndCloseCurrentTab(bool ensureAtLeastOneTab = true);
     void updateTabTitle(CodeEditor* editor);
     void refreshEditorDependentWidgets(CodeEditor* editor);
+    /// the counts and the cursor position of the status bar, of the document of the current tab
+    void updateStatusBarCounts(CodeEditor* editor);
+    void updateStatusBarPosition(CodeEditor* editor);
     /// opens the file in a tab: activates the tab if it is already open, reuses a pristine empty tab or adds a new one
     int findTabIndexForFile(const QString& fileName) const;
     bool closeApplicationReturningIfClosed();
@@ -175,6 +182,16 @@ private: // members
 
     /// word wrap of the document editors, kept in the settings (View menu → Word wrap)
     bool wordWrapEnabled = true;
+
+    /// auto-indent inside code blocks (View menu → Auto-indent), kept in the settings
+    bool autoIndentEnabled = true;
+
+    /// the font of every document editor, kept in the settings (View menu → Editor font…)
+    QFont editorFont;
+
+    /// the right side of the status bar: the counts of the document and the position of the cursor
+    QLabel* statusCountsLabel = nullptr;
+    QLabel* statusPositionLabel = nullptr;
 
     CppNewsWidget* cppNewsWidget = nullptr;
     int cppNewsTabIndex = -1;

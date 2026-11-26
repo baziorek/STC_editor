@@ -1897,6 +1897,28 @@ The text is converted and the file is saved in %2 when you save it.</source>
         <translation>Word wrap ☑</translation>
     </message>
     <message>
+        <location filename="../ui/mainwindow.ui" line="664"/>
+        <source>Auto-indent ☑</source>
+        <translation>Auto-indent ☑</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="672"/>
+        <source>Editor font…</source>
+        <translation>Editor font…</translation>
+    </message>
+    <message>
+        <source>Editor font</source>
+        <translation>Editor font</translation>
+    </message>
+    <message>
+        <source>%1 words · %2 chars</source>
+        <translation>%1 words · %2 chars</translation>
+    </message>
+    <message>
+        <source>Ln %1, Col %2</source>
+        <translation>Ln %1, Col %2</translation>
+    </message>
+    <message>
         <location filename="../ui/mainwindow.ui" line="624"/>
         <source>Right panel ☑</source>
         <translation>Right panel ☑</translation>

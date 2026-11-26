@@ -14,6 +14,9 @@
 #include <QPrintDialog>
 #include <QAction>
 #include <QActionGroup>
+#include <QFontDialog>
+#include <QFontDatabase>
+#include <QLabel>
 #include <QMenu>
 #include <QMenuBar>
 #include <algorithm>
@@ -129,9 +132,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->editorTabs, &QTabWidget::tabCloseRequested, this, &MainWindow::onEditorTabCloseRequested);
 
     // the first document tab; further ones are created by File > New / Open
+    editorFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    editorFont.setPointSize(14);
     createEditorTab();
 
     loadSettings();
+
+    updateStatusBarCounts(currentEditor());
+    updateStatusBarPosition(currentEditor());
 
     setDisabledMenuActionsDependingOnOpenedFile(/*disabled=*/true);
 
@@ -157,7 +165,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->actionPrint, &QAction::triggered, this, &MainWindow::onPrintPressed);
     connect(ui->actionExport_pdf, &QAction::triggered, this, &MainWindow::onExportPdfPressed);
     connect(ui->actionWord_wrap, &QAction::toggled, this, &MainWindow::onWordWrapChanged);
+    connect(ui->actionAuto_indent, &QAction::toggled, this, &MainWindow::onAutoIndentChanged);
+    connect(ui->actionEditor_font, &QAction::triggered, this, &MainWindow::onEditorFontClicked);
     connect(ui->actionInsert_datetime, &QAction::triggered, this, &MainWindow::onInsertDatetimePressed);
+
+    // the counts of the document and the position of the cursor, on the right of the status bar
+    statusCountsLabel = new QLabel(this);
+    statusPositionLabel = new QLabel(this);
+    ui->statusbar->addPermanentWidget(statusCountsLabel);
+    ui->statusbar->addPermanentWidget(statusPositionLabel);
 
     // the console: View menu entry (the dock keeps its state), Ctrl+` shows it, Esc in its line goes back to the editor
     QAction* consoleAction = consoleDockWidget->toggleViewAction();
@@ -580,15 +596,13 @@ CodeEditor* MainWindow::createEditorTab()
     auto* editor = new CodeEditor(ui->editorTabs);
 
     // the same look the editor had as a single widget in mainwindow.ui
-    QFont font = editor->font();
-    font.setPointSize(14);
-    editor->setFont(font);
+    editor->setFont(editorFont);
     editor->setStyleSheet(QStringLiteral("QPlainText {\n"
                                          "\tbackground-color: rgb(255, 255, 255);\n"
                                          "\tcolor: rgb(0, 0, 0);\n"
-                                         "    font-family: monospace;\n"
                                          "}\n"));
     editor->setLineWrapMode(wordWrapEnabled ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);
+    editor->setAutoIndentEnabled(autoIndentEnabled);
 
     const int index = ui->editorTabs->addTab(editor, tr("Untitled"));
     connectEditorSignals(editor);
@@ -605,6 +619,19 @@ void MainWindow::connectEditorSignals(CodeEditor* editor)
             ui->goToLineGroupBox->setMaxLine(lines);
     });
     connect(editor, &QPlainTextEdit::cursorPositionChanged, this, &MainWindow::onUpdateBreadcrumb);
+
+    // the counts and the cursor position of the status bar follow the document of the current tab
+    connect(editor, &QPlainTextEdit::cursorPositionChanged, this, [this, editor]() {
+        if (editor == currentEditor())
+            updateStatusBarPosition(editor);
+    });
+    connect(editor, &QPlainTextEdit::textChanged, this, [this, editor]() {
+        if (editor == currentEditor())
+        {
+            updateStatusBarCounts(editor);
+            updateStatusBarPosition(editor);
+        }
+    });
 
     // The preview follows the editor (the user scrolls only the editor)
     connect(editor->verticalScrollBar(), &QScrollBar::valueChanged, this, &MainWindow::onEditorViewportMoved);
@@ -704,6 +731,37 @@ void MainWindow::onEditorTabsCurrentChanged(int index)
 
     if (ui->stcPreviewWidget->isVisible())
         ui->stcPreviewWidget->updateText(editor->toPlainText());
+
+    updateStatusBarCounts(editor);
+    updateStatusBarPosition(editor);
+}
+
+void MainWindow::updateStatusBarCounts(CodeEditor* editor)
+{
+    if (!statusCountsLabel)
+        return;
+    if (!editor)
+    {
+        statusCountsLabel->clear();
+        return;
+    }
+
+    const int words = editor->toPlainText().split(QRegularExpression(QStringLiteral("\\s+")), Qt::SkipEmptyParts).count();
+    statusCountsLabel->setText(tr("%1 words · %2 chars").arg(words).arg(editor->document()->characterCount()));
+}
+
+void MainWindow::updateStatusBarPosition(CodeEditor* editor)
+{
+    if (!statusPositionLabel)
+        return;
+    if (!editor)
+    {
+        statusPositionLabel->clear();
+        return;
+    }
+
+    const QTextCursor cursor = editor->textCursor();
+    statusPositionLabel->setText(tr("Ln %1, Col %2").arg(cursor.blockNumber() + 1).arg(cursor.columnNumber() + 1));
 }
 
 void MainWindow::refreshEditorDependentWidgets(CodeEditor* editor)
@@ -1223,6 +1281,37 @@ void MainWindow::onWordWrapChanged(bool enabled)
     QSettings().setValue(QStringLiteral("view/wordWrap"), enabled);
 }
 
+void MainWindow::onAutoIndentChanged(bool enabled)
+{
+    autoIndentEnabled = enabled;
+
+    // the setting is a property of every document tab, not only of the current one
+    for (int i = 0; i < ui->editorTabs->count(); ++i)
+    {
+        if (auto* editor = qobject_cast<CodeEditor*>(ui->editorTabs->widget(i)))
+            editor->setAutoIndentEnabled(enabled);
+    }
+
+    QSettings().setValue(QStringLiteral("view/autoIndent"), enabled);
+}
+
+void MainWindow::onEditorFontClicked()
+{
+    bool accepted = false;
+    const QFont font = QFontDialog::getFont(&accepted, editorFont, this, tr("Editor font"));
+    if (!accepted)
+        return;
+
+    editorFont = font;
+    QSettings().setValue(QStringLiteral("editor/font"), font);
+
+    for (int i = 0; i < ui->editorTabs->count(); ++i)
+    {
+        if (auto* editor = qobject_cast<CodeEditor*>(ui->editorTabs->widget(i)))
+            editor->setFont(font);
+    }
+}
+
 void MainWindow::onStopWatchVisibilityChanged(bool visible)
 {
     ui->stopwatchGroupBox->setVisible(visible);
@@ -1282,6 +1371,7 @@ void MainWindow::onViewMenuAboutToShow()
     changeCheckedState(ui->actionStc_Preview_account_at_Cpp0x_pl_required);
     changeCheckedState(ui->actionStop_watch_uptime_and_working_time);
     changeCheckedState(ui->actionWord_wrap);
+    changeCheckedState(ui->actionAuto_indent);
 }
 
 void MainWindow::surroundSelectedTextWithTag(QString divClass, QString textBase, QString extraAttributes, bool closable)
@@ -1465,6 +1555,26 @@ void MainWindow::loadSettings()
     }
     QSignalBlocker wrapBlocker(ui->actionWord_wrap);
     ui->actionWord_wrap->setChecked(wordWrapEnabled);
+
+    autoIndentEnabled = settings.value(QStringLiteral("view/autoIndent"), true).toBool();
+    for (int i = 0; i < ui->editorTabs->count(); ++i)
+    {
+        if (auto* editor = qobject_cast<CodeEditor*>(ui->editorTabs->widget(i)))
+            editor->setAutoIndentEnabled(autoIndentEnabled);
+    }
+    QSignalBlocker autoIndentBlocker(ui->actionAuto_indent);
+    ui->actionAuto_indent->setChecked(autoIndentEnabled);
+
+    const QFont savedFont = settings.value(QStringLiteral("editor/font")).value<QFont>();
+    if (!savedFont.family().isEmpty())
+    {
+        editorFont = savedFont;
+        for (int i = 0; i < ui->editorTabs->count(); ++i)
+        {
+            if (auto* editor = qobject_cast<CodeEditor*>(ui->editorTabs->widget(i)))
+                editor->setFont(editorFont);
+        }
+    }
 
     ui->stcPreviewWidget->setScrollSyncEnabled(settings.value(GeometryNames::PREVIEW_SCROLL_SYNC, true).toBool());
     ui->stcPreviewWidget->setClickSyncEnabled(settings.value(GeometryNames::PREVIEW_CLICK_SYNC, true).toBool());

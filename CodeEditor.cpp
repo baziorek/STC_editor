@@ -2690,7 +2690,7 @@ void CodeEditor::handleTabUnindent()
 
 bool CodeEditor::handleAutoIndent()
 {
-    if (isReadOnly())
+    if (!autoIndentEnabled_ || isReadOnly())
         return false;
 
     QTextCursor cursor = textCursor();

@@ -73,6 +73,9 @@ public:
     /// so it is the same after the file is opened again (`.txt` can be an STC article or a plain note).
     void setSyntaxModeChosenByUser(SyntaxMode mode);
 
+    /// Whether Enter inside a code block indents the new line (View menu → Auto-indent)
+    void setAutoIndentEnabled(bool enabled) { autoIndentEnabled_ = enabled; }
+
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
     /// The whole text exactly as the user has it (see exactPlainText()): this is what is saved to the file and compared
@@ -431,6 +434,9 @@ private:
     QVector<QPair<QRect, int>> foldLabels_; ///< where the "... N lines" labels were drawn (viewport coordinates) and the first line of their regions
     int lastFoldColumnWidth_ = 0;
     bool overFoldLabel_ = false;
+
+    /// Enter inside a code block indents the new line (see handleAutoIndent); the View menu turns it off
+    bool autoIndentEnabled_ = true;
 
     // The margin with line numbers, one row at a time
     QFont lineNumberFont() const;
