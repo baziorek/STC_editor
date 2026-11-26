@@ -96,6 +96,8 @@ private:
                    const QString &oldNumbers, const QString &newNumbers);
     void applyLineFormats(QTextEdit *edit, bool oldSide);
     void syncScrollBars();
+    /// Aligns every pane to the row at the top of `pane` (used on scrollbar changes)
+    void syncScrollFrom(QTextEdit *pane);
     void updateChangeLabel();
     void scrollToRegion(int regionIndex);
     void nextChange();

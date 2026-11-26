@@ -215,6 +215,54 @@ TEST(SideBySideDiffWidget, ScrollBarRangesHaveNoDeadZone)
     }
 }
 
+TEST(SideBySideDiffWidget, PreviewThenDiffKeepsRowsSynced)
+{
+    // DiffReviewDialog flow: setPlainLines shows the saved/current files side by side
+    // (different line counts -> different document heights), then the async diff replaces
+    // them with aligned rows. Scrolling must keep the same row at the top of every pane.
+    SideBySideDiffWidget widget;
+    QStringList oldLines, newLines;
+    for (int i = 1; i <= 120; ++i) oldLines << QStringLiteral("old %1").arg(i);
+    for (int i = 1; i <= 200; ++i) newLines << QStringLiteral("new %1").arg(i);
+
+    const auto firstVisible = [](QTextEdit *edit) {
+        return edit->cursorForPosition(QPoint(10, 2)).blockNumber();
+    };
+    const auto expectSynced = [&]() {
+        const int row = firstVisible(pane(widget, QStringLiteral("oldEdit")));
+        for (const QString &name : {QStringLiteral("newEdit"),
+                                    QStringLiteral("numberOldEdit"), QStringLiteral("numberNewEdit")})
+        {
+            ASSERT_EQ(firstVisible(pane(widget, name)), row) << name.toStdString();
+        }
+    };
+
+    widget.setPlainLines(oldLines, newLines);
+    widget.resize(900, 400);
+    widget.show();
+    QApplication::processEvents();
+    QTest::qWait(20);
+    QApplication::processEvents();
+
+    auto *oldBar = pane(widget, QStringLiteral("oldEdit"))->verticalScrollBar();
+    oldBar->setValue(oldBar->maximum() / 2);
+    QApplication::processEvents();
+    expectSynced();
+
+    const auto diff = diffOf(oldLines, newLines);
+    widget.setDiffData(diff, DiffCalculation::computeAllLineDiffs(diff));
+    QApplication::processEvents();
+    QTest::qWait(20);
+    QApplication::processEvents();
+
+    for (int value : {0, oldBar->maximum() / 3, oldBar->maximum()})
+    {
+        oldBar->setValue(value);
+        QApplication::processEvents();
+        expectSynced();
+    }
+}
+
 TEST(SideBySideDiffWidget, NextAndPreviousButtonsMoveBetweenChanges)
 {
     SideBySideDiffWidget widget;

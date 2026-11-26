@@ -54,6 +54,8 @@ private:
                    const QString &theirsNumbers);
     void applyRowFormats();
     void syncScrollBars();
+    /// Aligns every pane to the row at the top of `pane` (used on scrollbar changes)
+    void syncScrollFrom(QTextEdit *pane);
     void updateConflictLabel();
     void scrollToRegion(int regionIndex);
     void nextConflict();

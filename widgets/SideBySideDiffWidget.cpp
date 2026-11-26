@@ -264,20 +264,45 @@ void SideBySideDiffWidget::syncScrollBars()
     const auto panes = {numberOldEdit_, oldEdit_, numberNewEdit_, newEdit_};
     for (QTextEdit *pane : panes)
     {
-        connect(pane->verticalScrollBar(), &QScrollBar::valueChanged, this, [this, pane](int value) {
-            const auto others = {numberOldEdit_, oldEdit_, numberNewEdit_, newEdit_};
-            for (QTextEdit *other : others)
-            {
-                if (other == pane)
-                    continue;
-                QSignalBlocker blocker(other->verticalScrollBar());
-                other->verticalScrollBar()->setValue(value);
-            }
-            auto *gutter = static_cast<ChangeGutterWidget *>(gutter_);
-            gutter->scrollOffset = value;
-            gutter->update();
-        });
+        connect(pane->verticalScrollBar(), &QScrollBar::valueChanged, this,
+                [this, pane](int) { syncScrollFrom(pane); });
     }
+}
+
+void SideBySideDiffWidget::syncScrollFrom(QTextEdit *pane)
+{
+    // sync by the row at the top of the pane that initiated the scroll, not by the raw
+    // scrollbar value: a scrollbar can report a range larger than the pane can actually
+    // scroll (stale QTextEdit layout), and copying that value would leave the other
+    // panes' text frozen while their thumbs still move
+    const int value = pane->verticalScrollBar()->value();
+    const int firstRow = pane->cursorForPosition(QPoint(2, 1)).blockNumber();
+    if (firstRow < 0)
+        return;
+    const auto blockTop = [](QTextEdit *edit, int row) {
+        const QTextBlock block = edit->document()->findBlockByNumber(row);
+        return block.isValid()
+            ? edit->document()->documentLayout()->blockBoundingRect(block).top()
+            : -1.0;
+    };
+    const qreal rowTop = blockTop(pane, firstRow);
+    const int subLine = qMax(0, value - int(rowTop));
+
+    const auto others = {numberOldEdit_, oldEdit_, numberNewEdit_, newEdit_};
+    for (QTextEdit *other : others)
+    {
+        if (other == pane)
+            continue;
+        const int targetRow = qMin(firstRow, other->document()->blockCount() - 1);
+        const qreal otherTop = blockTop(other, targetRow);
+        if (otherTop < 0)
+            continue;
+        QSignalBlocker blocker(other->verticalScrollBar());
+        other->verticalScrollBar()->setValue(int(otherTop) + subLine);
+    }
+    auto *gutter = static_cast<ChangeGutterWidget *>(gutter_);
+    gutter->scrollOffset = oldEdit_->verticalScrollBar()->value();
+    gutter->update();
 }
 
 int SideBySideDiffWidget::scrollValue() const
@@ -366,6 +391,7 @@ void SideBySideDiffWidget::scheduleScrollBarsFix()
         updateScrollBarRanges();
         // clamping during the range fix may have moved the panes apart - re-sync them
         setScrollValue(scrollValue());
+        syncScrollFrom(oldEdit_);
     });
 }
 

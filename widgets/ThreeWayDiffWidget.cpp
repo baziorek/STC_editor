@@ -235,17 +235,42 @@ void ThreeWayDiffWidget::syncScrollBars()
                         theirsNumbersEdit_, theirsEdit_};
     for (QTextEdit *pane : panes)
     {
-        connect(pane->verticalScrollBar(), &QScrollBar::valueChanged, this, [this, pane](int value) {
-            const auto all = {baseNumbersEdit_, baseEdit_, oursNumbersEdit_, oursEdit_,
-                              theirsNumbersEdit_, theirsEdit_};
-            for (QTextEdit *other : all)
-            {
-                if (other == pane)
-                    continue;
-                QSignalBlocker blocker(other->verticalScrollBar());
-                other->verticalScrollBar()->setValue(value);
-            }
-        });
+        connect(pane->verticalScrollBar(), &QScrollBar::valueChanged, this,
+                [this, pane](int) { syncScrollFrom(pane); });
+    }
+}
+
+void ThreeWayDiffWidget::syncScrollFrom(QTextEdit *pane)
+{
+    // sync by the row at the top of the pane that initiated the scroll, not by the raw
+    // scrollbar value: a scrollbar can report a range larger than the pane can actually
+    // scroll (stale QTextEdit layout), and copying that value would leave the other
+    // panes' text frozen while their thumbs still move
+    const int value = pane->verticalScrollBar()->value();
+    const int firstRow = pane->cursorForPosition(QPoint(2, 1)).blockNumber();
+    if (firstRow < 0)
+        return;
+    const auto blockTop = [](QTextEdit *edit, int row) {
+        const QTextBlock block = edit->document()->findBlockByNumber(row);
+        return block.isValid()
+            ? edit->document()->documentLayout()->blockBoundingRect(block).top()
+            : -1.0;
+    };
+    const qreal rowTop = blockTop(pane, firstRow);
+    const int subLine = qMax(0, value - int(rowTop));
+
+    const auto all = {baseNumbersEdit_, baseEdit_, oursNumbersEdit_, oursEdit_,
+                      theirsNumbersEdit_, theirsEdit_};
+    for (QTextEdit *other : all)
+    {
+        if (other == pane)
+            continue;
+        const int targetRow = qMin(firstRow, other->document()->blockCount() - 1);
+        const qreal otherTop = blockTop(other, targetRow);
+        if (otherTop < 0)
+            continue;
+        QSignalBlocker blocker(other->verticalScrollBar());
+        other->verticalScrollBar()->setValue(int(otherTop) + subLine);
     }
 }
 
@@ -268,6 +293,7 @@ void ThreeWayDiffWidget::scheduleScrollBarsFix()
         updateScrollBarRanges();
         // clamping during the range fix may have moved the panes apart - re-sync them
         syncScrollValue(baseEdit_->verticalScrollBar()->value());
+        syncScrollFrom(baseEdit_);
     });
 }
 
