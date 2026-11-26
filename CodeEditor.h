@@ -76,6 +76,14 @@ public:
     /// Whether Enter inside a code block indents the new line (View menu → Auto-indent)
     void setAutoIndentEnabled(bool enabled) { autoIndentEnabled_ = enabled; }
 
+    // ---- Back / forward navigation (Alt+Left / Alt+Right) ----
+    // The places where the cursor rested are remembered; a jump (a click far away, "go to line",
+    // a search result, page up/down) becomes a step of the history. Typing and small moves are not steps.
+    bool navigateBack();
+    bool navigateForward();
+    bool canNavigateBack() const { return !navBack_.isEmpty(); }
+    bool canNavigateForward() const { return !navForward_.isEmpty(); }
+
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
     /// The whole text exactly as the user has it (see exactPlainText()): this is what is saved to the file and compared
@@ -437,6 +445,16 @@ private:
 
     /// Enter inside a code block indents the new line (see handleAutoIndent); the View menu turns it off
     bool autoIndentEnabled_ = true;
+
+    // Back / forward navigation: the places where the cursor rested (see navigateBack)
+    void recordNavigationRestPoint();
+    void scheduleNavigationRecord();
+    void setCursorToNavigationPoint(int position);
+    static constexpr int MaxNavigationSteps = 100;
+    QVector<int> navBack_;       ///< positions to go back to, the nearest at the back
+    QVector<int> navForward_;    ///< positions to go forward to, the nearest at the back
+    int navCurrentPos_ = -1;     ///< the last recorded rest point (-1: none yet)
+    QTimer* navRecordTimer_ = nullptr;
 
     // The margin with line numbers, one row at a time
     QFont lineNumberFont() const;

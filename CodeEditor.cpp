@@ -538,6 +538,7 @@ void CodeEditor::connectSignalsWithSlots()
         }
     });
     connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::onCursorPositionChanged);
+    connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::scheduleNavigationRecord);
     connect(document(), &QTextDocument::contentsChange, this, &CodeEditor::onContentsChange);
 }
 
@@ -3935,4 +3936,81 @@ void CodeEditor::lineNumberAreaMouseMove(QMouseEvent* event)
     if (marker == EditHistory::LineMarker::UndoneOnly)
         tip += QStringLiteral("\n") + tr("(all the changes are undone now; Ctrl+Shift+Z brings them back)");
     lineNumberArea->setToolTip(tip);
+}
+
+// ---- Back / forward navigation (Alt+Left / Alt+Right) ----
+
+void CodeEditor::scheduleNavigationRecord()
+{
+    if (!navRecordTimer_)
+    {
+        navRecordTimer_ = new QTimer(this);
+        navRecordTimer_->setSingleShot(true);
+        connect(navRecordTimer_, &QTimer::timeout, this, &CodeEditor::recordNavigationRestPoint);
+    }
+    navRecordTimer_->start(400);
+}
+
+void CodeEditor::recordNavigationRestPoint()
+{
+    const int position = textCursor().position();
+    if (navCurrentPos_ < 0)
+    {
+        navCurrentPos_ = position;
+        return;
+    }
+    if (position == navCurrentPos_)
+        return;
+
+    // only a jump is a step of the history: typing, deleting and moving with the arrows
+    // change the position by little between two rests, so they never reach this distance
+    const int charDistance = qAbs(position - navCurrentPos_);
+    const int lineDistance = qAbs(textCursor().blockNumber() - document()->findBlock(navCurrentPos_).blockNumber());
+    const bool isJump = charDistance > 400 || lineDistance > 12;
+
+    if (isJump)
+    {
+        navBack_.append(navCurrentPos_);
+        while (navBack_.size() > MaxNavigationSteps)
+            navBack_.removeFirst();
+        navForward_.clear();
+    }
+    navCurrentPos_ = position;
+}
+
+void CodeEditor::setCursorToNavigationPoint(int position)
+{
+    position = qBound(0, position, document()->characterCount() - 1);
+    QTextCursor cursor = textCursor();
+    cursor.setPosition(position);
+    setTextCursor(cursor);
+    ensureCursorVisible();
+}
+
+bool CodeEditor::navigateBack()
+{
+    if (navBack_.isEmpty() || navCurrentPos_ < 0)
+        return false;
+
+    navForward_.append(navCurrentPos_);
+    while (navForward_.size() > MaxNavigationSteps)
+        navForward_.removeFirst();
+
+    navCurrentPos_ = navBack_.takeLast();
+    setCursorToNavigationPoint(navCurrentPos_);
+    return true;
+}
+
+bool CodeEditor::navigateForward()
+{
+    if (navForward_.isEmpty())
+        return false;
+
+    navBack_.append(navCurrentPos_);
+    while (navBack_.size() > MaxNavigationSteps)
+        navBack_.removeFirst();
+
+    navCurrentPos_ = navForward_.takeLast();
+    setCursorToNavigationPoint(navCurrentPos_);
+    return true;
 }

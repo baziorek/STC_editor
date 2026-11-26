@@ -200,6 +200,7 @@
     <addaction name="actionPrint"/>
     <addaction name="actionExport_pdf"/>
     <addaction name="menuOpen_recent"/>
+    <addaction name="actionReopen_closed_tab"/>
     <addaction name="actionExit"/>
     <addaction name="actionCopy_basename"/>
     <addaction name="actionCopy_absolute_path"/>
@@ -214,8 +215,11 @@
     <addaction name="actionFind"/>
     <addaction name="actionFind_replace"/>
     <addaction name="actionInsert_datetime"/>
+    <addaction name="actionNavigate_back"/>
+    <addaction name="actionNavigate_forward"/>
     <addaction name="separator"/>
     <addaction name="actionCompare_with_pasted_text"/>
+    <addaction name="actionCompare_with_file"/>
    </widget>
    <widget class="QMenu" name="menuCheck">
     <property name="title">
@@ -390,6 +394,47 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="actionReopen_closed_tab">
+   <property name="icon">
+    <iconset theme="document-revert"/>
+   </property>
+   <property name="text">
+    <string>Reopen closed tab</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+T</string>
+   </property>
+  </action>
+  <action name="actionNavigate_back">
+   <property name="icon">
+    <iconset theme="go-previous"/>
+   </property>
+   <property name="text">
+    <string>Navigate back</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+[</string>
+   </property>
+  </action>
+  <action name="actionNavigate_forward">
+   <property name="icon">
+    <iconset theme="go-next"/>
+   </property>
+   <property name="text">
+    <string>Navigate forward</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+]</string>
+   </property>
+  </action>
+  <action name="actionCompare_with_file">
+   <property name="text">
+    <string>Compare with file…</string>
+   </property>
+   <property name="toolTip">
+    <string>Choose a file and see the diff of its lines against the editor content</string>
    </property>
   </action>
   <action name="actionInsert_datetime">

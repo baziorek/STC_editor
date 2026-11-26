@@ -19,6 +19,8 @@
 #include <QLabel>
 #include <QMenu>
 #include <QMenuBar>
+#include <QMouseEvent>
+#include <QTabBar>
 #include <algorithm>
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
@@ -33,6 +35,7 @@
 #include "widgets/CppNewsWidget.h"
 #include "widgets/DiffReviewDialog.h"
 #include "widgets/PastedTextDiffDialog.h"
+#include "widgets/FileDiffDialog.h"
 #include "widgets/RenameFileDialog.h"
 using namespace std;
 
@@ -131,6 +134,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->editorTabs, &QTabWidget::currentChanged, this, &MainWindow::onEditorTabsCurrentChanged);
     connect(ui->editorTabs, &QTabWidget::tabCloseRequested, this, &MainWindow::onEditorTabCloseRequested);
 
+    // the tabs can be reordered by dragging; a right click on the tab bar offers closing,
+    // a middle click on a tab closes it (see eventFilter)
+    ui->editorTabs->setMovable(true);
+    QTabBar* tabBar = ui->editorTabs->tabBar();
+    tabBar->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(tabBar, &QTabBar::customContextMenuRequested, this, &MainWindow::onEditorTabsTabBarContextMenu);
+    tabBar->installEventFilter(this);
+
     // the first document tab; further ones are created by File > New / Open
     editorFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     editorFont.setPointSize(14);
@@ -168,6 +179,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->actionAuto_indent, &QAction::toggled, this, &MainWindow::onAutoIndentChanged);
     connect(ui->actionEditor_font, &QAction::triggered, this, &MainWindow::onEditorFontClicked);
     connect(ui->actionInsert_datetime, &QAction::triggered, this, &MainWindow::onInsertDatetimePressed);
+    connect(ui->actionReopen_closed_tab, &QAction::triggered, this, &MainWindow::onReopenClosedTabPressed);
+    connect(ui->actionNavigate_back, &QAction::triggered, this, &MainWindow::onNavigateBackPressed);
+    connect(ui->actionNavigate_forward, &QAction::triggered, this, &MainWindow::onNavigateForwardPressed);
+    connect(ui->actionCompare_with_file, &QAction::triggered, this, &MainWindow::onCompareWithFileRequested);
 
     // the counts of the document and the position of the cursor, on the right of the status bar
     statusCountsLabel = new QLabel(this);
@@ -819,6 +834,8 @@ bool MainWindow::confirmAndCloseCurrentTab(bool ensureAtLeastOneTab)
         return false;
     }
 
+    rememberClosedTab(editor);
+
     const int index = ui->editorTabs->indexOf(editor);
     ui->editorTabs->removeTab(index);
     editor->deleteLater();
@@ -828,6 +845,161 @@ bool MainWindow::confirmAndCloseCurrentTab(bool ensureAtLeastOneTab)
 
     // removing the current tab fires currentChanged(), which refreshes the title for the tab shown next
     return true;
+}
+
+void MainWindow::rememberClosedTab(CodeEditor* editor)
+{
+    const QString fileName = editor->getFileName();
+    // the content is kept only for a document without a name: a named one is read from the disk again
+    const QString untitledText = fileName.isEmpty() ? editor->exactText() : QString();
+    if (fileName.isEmpty() && untitledText.isEmpty())
+        return; // an untouched "Untitled" tab is not worth reopening
+
+    ClosedTabInfo info;
+    info.fileName = fileName;
+    info.untitledText = untitledText;
+    info.cursorPosition = editor->textCursor().position();
+    info.scrollValue = editor->verticalScrollBar()->value();
+
+    closedTabs.append(info);
+    while (closedTabs.size() > 10)
+        closedTabs.removeFirst();
+}
+
+void MainWindow::restoreClosedTabPosition(CodeEditor* editor, int cursorPosition, int scrollValue)
+{
+    // after the event loop, so the tab is shown and the scrollbar has its range
+    QTimer::singleShot(0, editor, [editor, cursorPosition, scrollValue]() {
+        QTextCursor cursor = editor->textCursor();
+        cursor.setPosition(qBound(0, cursorPosition, editor->document()->characterCount() - 1));
+        editor->setTextCursor(cursor);
+        editor->ensureCursorVisible();
+        editor->verticalScrollBar()->setValue(qMax(0, scrollValue));
+    });
+}
+
+void MainWindow::onReopenClosedTabPressed()
+{
+    if (closedTabs.isEmpty())
+        return;
+
+    const ClosedTabInfo info = closedTabs.takeLast();
+    CodeEditor* editor = nullptr;
+
+    if (!info.fileName.isEmpty())
+    {
+        openFileInTab(info.fileName);
+        editor = currentEditor();
+    }
+    else
+    {
+        editor = createEditorTab();
+        if (!info.untitledText.isEmpty())
+            editor->setPlainText(info.untitledText);
+    }
+
+    if (editor)
+        restoreClosedTabPosition(editor, info.cursorPosition, info.scrollValue);
+}
+
+void MainWindow::onNavigateBackPressed()
+{
+    if (auto* editor = currentEditor())
+        editor->navigateBack();
+}
+
+void MainWindow::onNavigateForwardPressed()
+{
+    if (auto* editor = currentEditor())
+        editor->navigateForward();
+}
+
+void MainWindow::onCompareWithFileRequested()
+{
+    const QString filePath = chooseFileWithDialog(QFileDialog::AcceptOpen);
+    if (filePath.isEmpty())
+        return;
+
+    FileDiffDialog dialog(currentEditor(), filePath, this);
+    dialog.exec();
+}
+
+void MainWindow::onEditorTabsTabBarContextMenu(const QPoint& pos)
+{
+    QTabBar* tabBar = ui->editorTabs->tabBar();
+    const int index = tabBar->tabAt(pos);
+    if (index < 0)
+        return;
+
+    QMenu menu(this);
+    QAction* closeAction = menu.addAction(tr("Close tab"));
+    QAction* closeOthersAction = menu.addAction(tr("Close other tabs"));
+    QAction* closeAllAction = menu.addAction(tr("Close all tabs"));
+
+    const QAction* chosen = menu.exec(tabBar->mapToGlobal(pos));
+    if (chosen == closeAction)
+    {
+        ui->editorTabs->setCurrentIndex(index);
+        confirmAndCloseCurrentTab();
+    }
+    else if (chosen == closeOthersAction)
+    {
+        closeOtherTabsThan(index);
+    }
+    else if (chosen == closeAllAction)
+    {
+        closeAllTabs();
+    }
+}
+
+void MainWindow::closeOtherTabsThan(int keepIndex)
+{
+    CodeEditor* keepEditor = qobject_cast<CodeEditor*>(ui->editorTabs->widget(keepIndex));
+
+    // from the last tab down, so the removal does not shift the indexes still to be visited
+    for (int i = ui->editorTabs->count() - 1; i >= 0; --i)
+    {
+        if (ui->editorTabs->widget(i) == keepEditor)
+            continue;
+        ui->editorTabs->setCurrentIndex(i);
+        if (!confirmAndCloseCurrentTab(/*ensureAtLeastOneTab=*/false))
+            break; // the user cancelled: the remaining tabs stay open
+    }
+
+    const int restoredIndex = keepEditor ? ui->editorTabs->indexOf(keepEditor) : -1;
+    if (restoredIndex >= 0)
+        ui->editorTabs->setCurrentIndex(restoredIndex);
+}
+
+void MainWindow::closeAllTabs()
+{
+    while (ui->editorTabs->count() > 0)
+    {
+        ui->editorTabs->setCurrentIndex(0);
+        if (!confirmAndCloseCurrentTab(/*ensureAtLeastOneTab=*/false))
+            break;
+    }
+    if (ui->editorTabs->count() == 0)
+        createEditorTab();
+}
+
+bool MainWindow::eventFilter(QObject* watched, QEvent* event)
+{
+    if (watched == ui->editorTabs->tabBar() && event->type() == QEvent::MouseButtonRelease)
+    {
+        const auto* mouseEvent = static_cast<QMouseEvent*>(event);
+        if (mouseEvent->button() == Qt::MiddleButton)
+        {
+            const int index = ui->editorTabs->tabBar()->tabAt(mouseEvent->position().toPoint());
+            if (index >= 0)
+            {
+                ui->editorTabs->setCurrentIndex(index);
+                confirmAndCloseCurrentTab();
+            }
+            return true;
+        }
+    }
+    return QMainWindow::eventFilter(watched, event);
 }
 
 int MainWindow::findTabIndexForFile(const QString& fileName) const

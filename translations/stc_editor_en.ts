@@ -1907,6 +1907,39 @@ The text is converted and the file is saved in %2 when you save it.</source>
         <translation>Editor font…</translation>
     </message>
     <message>
+        <location filename="../ui/mainwindow.ui" line="404"/>
+        <source>Reopen closed tab</source>
+        <translation>Reopen closed tab</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="415"/>
+        <source>Navigate back</source>
+        <translation>Navigate back</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="426"/>
+        <source>Navigate forward</source>
+        <translation>Navigate forward</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="434"/>
+        <source>Compare with file…</source>
+        <translation>Compare with file…</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="437"/>
+        <source>Choose a file and see the diff of its lines against the editor content</source>
+        <translation>Choose a file and see the diff of its lines against the editor content</translation>
+    </message>
+    <message>
+        <source>Close other tabs</source>
+        <translation>Close other tabs</translation>
+    </message>
+    <message>
+        <source>Close all tabs</source>
+        <translation>Close all tabs</translation>
+    </message>
+    <message>
         <source>Editor font</source>
         <translation>Editor font</translation>
     </message>
@@ -2687,6 +2720,21 @@ The text is converted and the file is saved in %2 when you save it.</source>
         <location filename="../widgets/LinkPreviewPopup.cpp" line="132"/>
         <source>Loading…</source>
         <translation>Loading…</translation>
+    </message>
+</context>
+<context>
+    <name>FileDiffDialog</name>
+    <message>
+        <source>Compare with %1</source>
+        <translation>Compare with %1</translation>
+    </message>
+    <message>
+        <source>No differences - the files are identical.</source>
+        <translation>No differences - the files are identical.</translation>
+    </message>
+    <message>
+        <source>Modified lines: %1 | Added: %2 | Removed: %3</source>
+        <translation>Modified lines: %1 | Added: %2 | Removed: %3</translation>
     </message>
 </context>
 </TS>

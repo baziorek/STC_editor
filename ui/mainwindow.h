@@ -66,6 +66,11 @@ public slots:
     void onPrintPressed();
     void onExportPdfPressed();
     void onInsertDatetimePressed();
+    void onReopenClosedTabPressed();
+    void onNavigateBackPressed();
+    void onNavigateForwardPressed();
+    void onCompareWithFileRequested();
+    void onEditorTabsTabBarContextMenu(const QPoint& pos);
     void onExitFromApplicationMenuPressed();
     void onRecentRecentFilesMenuOpened();
     void onCopyFileAbsoluteNamePressed();
@@ -121,6 +126,9 @@ public slots:
 protected:
     void setDisabledMenuActionsDependingOnOpenedFile(bool disabled=true);
 
+    /// middle click on a document tab closes it
+    bool eventFilter(QObject* watched, QEvent* event) override;
+
     void connectSignals2Slots();
 
     /// every entry of the "Syntax" menu with the mode it selects
@@ -157,6 +165,20 @@ protected:
     void updateStatusBarPosition(CodeEditor* editor);
     /// restarts the short delay after which the counts are counted again (they are expensive on long documents)
     void scheduleStatusBarCountsUpdate();
+
+    /// closed document tabs, for "Reopen closed tab" (Ctrl+Shift+T); the newest is at the back
+    struct ClosedTabInfo
+    {
+        QString fileName;        ///< empty for a document which never got a name
+        QString untitledText;    ///< the content of a nameless document (empty for named ones: they are read again)
+        int cursorPosition = 0;
+        int scrollValue = 0;
+    };
+    void rememberClosedTab(CodeEditor* editor);
+    void restoreClosedTabPosition(CodeEditor* editor, int cursorPosition, int scrollValue);
+    /// the context menu of the tab bar: close the tab under the click, the other tabs or all of them
+    void closeOtherTabsThan(int keepIndex);
+    void closeAllTabs();
     /// opens the file in a tab: activates the tab if it is already open, reuses a pristine empty tab or adds a new one
     int findTabIndexForFile(const QString& fileName) const;
     bool closeApplicationReturningIfClosed();
@@ -197,6 +219,9 @@ private: // members
     QLabel* statusPositionLabel = nullptr;
     /// delays the recount of the words and the characters after the last change of the text
     QTimer* statusCountsTimer = nullptr;
+
+    /// the last closed document tabs, the most recently closed at the back (Ctrl+Shift+T)
+    QVector<ClosedTabInfo> closedTabs;
 
     CppNewsWidget* cppNewsWidget = nullptr;
     int cppNewsTabIndex = -1;
