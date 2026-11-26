@@ -1662,12 +1662,12 @@ Double click to go to the line.</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../ui/mainwindow.ui" line="828"/>
+        <location filename="../ui/mainwindow.ui" line="829"/>
         <source>Plain text</source>
         <translation>Plain text</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="831"/>
+        <location filename="../ui/mainwindow.ui" line="832"/>
         <source>No markup: spell checking and formatted links and e-mail addresses only</source>
         <translation>No markup: spell checking and formatted links and e-mail addresses only</translation>
     </message>
@@ -1687,57 +1687,67 @@ Double click to go to the line.</translation>
         <translation>Syntax</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="771"/>
+        <location filename="../ui/mainwindow.ui" line="772"/>
         <source>F11</source>
         <translation>F11</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="817"/>
+        <location filename="../ui/mainwindow.ui" line="818"/>
         <source>STC (cpp0x.pl markup)</source>
         <translation>STC (cpp0x.pl markup)</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="839"/>
+        <location filename="../ui/mainwindow.ui" line="840"/>
+        <source>Markdown</source>
+        <translation>Markdown</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="843"/>
+        <source>Treat the whole file as Markdown: headings, emphasis, links and fenced code blocks</source>
+        <translation>Treat the whole file as Markdown: headings, emphasis, links and fenced code blocks</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="851"/>
         <source>C++</source>
         <translation>C++</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="850"/>
+        <location filename="../ui/mainwindow.ui" line="862"/>
         <source>Python</source>
         <translation>Python</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="861"/>
+        <location filename="../ui/mainwindow.ui" line="873"/>
         <source>XML</source>
         <translation>XML</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="872"/>
+        <location filename="../ui/mainwindow.ui" line="884"/>
         <source>JSON</source>
         <translation>JSON</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="820"/>
+        <location filename="../ui/mainwindow.ui" line="821"/>
         <source>Highlight the STC markup; code inside [cpp] and [py] tags is highlighted too</source>
         <translation>Highlight the STC markup; code inside [cpp] and [py] tags is highlighted too</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="842"/>
+        <location filename="../ui/mainwindow.ui" line="854"/>
         <source>Treat the whole file as C++ source code</source>
         <translation>Treat the whole file as C++ source code</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="853"/>
+        <location filename="../ui/mainwindow.ui" line="865"/>
         <source>Treat the whole file as Python source code</source>
         <translation>Treat the whole file as Python source code</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="864"/>
+        <location filename="../ui/mainwindow.ui" line="876"/>
         <source>Treat the whole file as XML</source>
         <translation>Treat the whole file as XML</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="875"/>
+        <location filename="../ui/mainwindow.ui" line="887"/>
         <source>Treat the whole file as JSON</source>
         <translation>Treat the whole file as JSON</translation>
     </message>
@@ -1764,7 +1774,7 @@ Double click to go to the line.</translation>
         <translation>Clear Recent Files</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="576"/>
+        <location filename="../ui/mainwindow.ui" line="577"/>
         <location filename="../ui/mainwindow.cpp" line="583"/>
         <source>File statistics</source>
         <translation>File statistics</translation>
@@ -1802,18 +1812,18 @@ Double click to go to the line.</translation>
         <translation>PDF document (*.pdf)</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="339"/>
+        <location filename="../ui/mainwindow.ui" line="340"/>
         <location filename="../ui/mainwindow.cpp" line="1273"/>
         <source>Print</source>
         <translation>Print</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="342"/>
+        <location filename="../ui/mainwindow.ui" line="343"/>
         <source>Ctrl+P</source>
         <translation>Ctrl+P</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="350"/>
+        <location filename="../ui/mainwindow.ui" line="351"/>
         <location filename="../ui/mainwindow.cpp" line="1282"/>
         <source>Export to PDF</source>
         <translation>Export to PDF</translation>
@@ -1863,32 +1873,32 @@ Currently unsaved changes would be declined.</translation>
         <translation>TODOs (</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2062"/>
+        <location filename="../ui/mainwindow.cpp" line="2063"/>
         <source>Encoding</source>
         <translation>Encoding</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2066"/>
+        <location filename="../ui/mainwindow.cpp" line="2067"/>
         <source>Save in encoding</source>
         <translation>Save in encoding</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2067"/>
+        <location filename="../ui/mainwindow.cpp" line="2068"/>
         <source>Reload with encoding</source>
         <translation>Reload with encoding</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2087"/>
+        <location filename="../ui/mainwindow.cpp" line="2088"/>
         <source>Current encoding: %1</source>
         <translation>Current encoding: %1</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2135"/>
+        <location filename="../ui/mainwindow.cpp" line="2136"/>
         <source>Change encoding</source>
         <translation>Change encoding</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2136"/>
+        <location filename="../ui/mainwindow.cpp" line="2137"/>
         <source>Change the encoding of the file from %1 to %2?
 
 The text is converted and the file is saved in %2 when you save it.</source>
@@ -1897,17 +1907,17 @@ The text is converted and the file is saved in %2 when you save it.</source>
 The text is converted and the file is saved in %2 when you save it.</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2149"/>
+        <location filename="../ui/mainwindow.cpp" line="2150"/>
         <source>Reload the file?</source>
         <translation>Reload the file?</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2150"/>
+        <location filename="../ui/mainwindow.cpp" line="2151"/>
         <source>Do You really want to read the file again in the encoding %1 and lose the unsaved changes?</source>
         <translation>Do You really want to read the file again in the encoding %1 and lose the unsaved changes?</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2334"/>
+        <location filename="../ui/mainwindow.cpp" line="2335"/>
         <source>Login error</source>
         <translation>Login error</translation>
     </message>
@@ -1977,307 +1987,307 @@ The text is converted and the file is saved in %2 when you save it.</translation
         <translation>View</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="274"/>
+        <location filename="../ui/mainwindow.ui" line="275"/>
         <source>Language</source>
         <translation>Language</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="317"/>
+        <location filename="../ui/mainwindow.ui" line="318"/>
         <source>Open file</source>
         <translation>Open file</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="320"/>
+        <location filename="../ui/mainwindow.ui" line="321"/>
         <source>Ctrl+O</source>
         <translation>Ctrl+O</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="328"/>
+        <location filename="../ui/mainwindow.ui" line="329"/>
         <source>Save file as</source>
         <translation>Save file as</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="331"/>
+        <location filename="../ui/mainwindow.ui" line="332"/>
         <source>Ctrl+Shift+S</source>
         <translation>Ctrl+Shift+S</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="358"/>
+        <location filename="../ui/mainwindow.ui" line="359"/>
         <source>Save file</source>
         <translation>Save file</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="361"/>
+        <location filename="../ui/mainwindow.ui" line="362"/>
         <source>Ctrl+S</source>
         <translation>Ctrl+S</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="372"/>
+        <location filename="../ui/mainwindow.ui" line="373"/>
         <source>Find</source>
         <translation>Find</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="375"/>
+        <location filename="../ui/mainwindow.ui" line="376"/>
         <source>Ctrl+F</source>
         <translation>Ctrl+F</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="380"/>
+        <location filename="../ui/mainwindow.ui" line="381"/>
         <source>Compare with pasted text...</source>
         <translation>Compare with pasted text...</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="471"/>
+        <location filename="../ui/mainwindow.ui" line="472"/>
         <source>Insert date and time</source>
         <translation>Insert date and time</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="383"/>
+        <location filename="../ui/mainwindow.ui" line="384"/>
         <source>Paste a new version of the text and see the diff against the editor content</source>
         <translation>Paste a new version of the text and see the diff against the editor content</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="386"/>
+        <location filename="../ui/mainwindow.ui" line="387"/>
         <source>Ctrl+Shift+D</source>
         <translation>Ctrl+Shift+D</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="397"/>
+        <location filename="../ui/mainwindow.ui" line="398"/>
         <source>Find and replace</source>
         <translation>Find and replace</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="400"/>
+        <location filename="../ui/mainwindow.ui" line="401"/>
         <source>Ctrl+R</source>
         <translation>Ctrl+R</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="411"/>
+        <location filename="../ui/mainwindow.ui" line="412"/>
         <source>Ctrl+Shift+T</source>
         <translation>Ctrl+Shift+T</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="422"/>
+        <location filename="../ui/mainwindow.ui" line="423"/>
         <source>Alt+[</source>
         <translation>Alt+[</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="433"/>
+        <location filename="../ui/mainwindow.ui" line="434"/>
         <source>Alt+]</source>
         <translation>Alt+]</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="460"/>
+        <location filename="../ui/mainwindow.ui" line="461"/>
         <source>Compare three files…</source>
         <translation>Compare three files…</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="463"/>
+        <location filename="../ui/mainwindow.ui" line="464"/>
         <source>Choose a base file and two versions and see the three-way diff with conflicts marked</source>
         <translation>Choose a base file and two versions and see the three-way diff with conflicts marked</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="474"/>
+        <location filename="../ui/mainwindow.ui" line="475"/>
         <source>Ctrl+Alt+D</source>
         <translation>Ctrl+Alt+D</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="482"/>
+        <location filename="../ui/mainwindow.ui" line="483"/>
         <source>check if tags are closed</source>
         <translation>check if tags are closed</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="487"/>
+        <location filename="../ui/mainwindow.ui" line="488"/>
         <source>Open</source>
         <translation>Open</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="492"/>
+        <location filename="../ui/mainwindow.ui" line="493"/>
         <source>last</source>
         <translation>last</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="500"/>
+        <location filename="../ui/mainwindow.ui" line="501"/>
         <source>Exit</source>
         <translation>Exit</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="508"/>
+        <location filename="../ui/mainwindow.ui" line="509"/>
         <source>New</source>
         <translation>New</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="511"/>
+        <location filename="../ui/mainwindow.ui" line="512"/>
         <source>Ctrl+N</source>
         <translation>Ctrl+N</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="519"/>
+        <location filename="../ui/mainwindow.ui" line="520"/>
         <source>Go to project repository</source>
         <translation>Go to project repository</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="527"/>
+        <location filename="../ui/mainwindow.ui" line="528"/>
         <source>Kurs STC</source>
         <translation>Kurs STC</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="535"/>
+        <location filename="../ui/mainwindow.ui" line="536"/>
         <source>Go to cpp0x.pl</source>
         <translation>Go to cpp0x.pl</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="543"/>
+        <location filename="../ui/mainwindow.ui" line="544"/>
         <source>Shortcut list</source>
         <translation>Shortcut list</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="551"/>
+        <location filename="../ui/mainwindow.ui" line="552"/>
         <source>Copy basename</source>
         <translation>Copy basename</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="559"/>
+        <location filename="../ui/mainwindow.ui" line="560"/>
         <source>Copy absolute path</source>
         <translation>Copy absolute path</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="567"/>
+        <location filename="../ui/mainwindow.ui" line="568"/>
         <source>Open parent directory</source>
         <translation>Open parent directory</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="587"/>
+        <location filename="../ui/mainwindow.ui" line="588"/>
         <source>cpp0x.pl news ☐</source>
         <translation>cpp0x.pl news ☐</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="601"/>
+        <location filename="../ui/mainwindow.ui" line="602"/>
         <source>Short conspect ☑</source>
         <translation>Short conspect ☑</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="615"/>
+        <location filename="../ui/mainwindow.ui" line="616"/>
         <source>Go to line ☑</source>
         <translation>Go to line ☑</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="629"/>
+        <location filename="../ui/mainwindow.ui" line="630"/>
         <source>Breadcrumb ☑</source>
         <translation>Breadcrumb ☑</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="640"/>
+        <location filename="../ui/mainwindow.ui" line="641"/>
         <source>Stc Preview (account at Cpp0x.pl required) ☐</source>
         <translation>Stc Preview (account at Cpp0x.pl required) ☐</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="643"/>
+        <location filename="../ui/mainwindow.ui" line="644"/>
         <source>F6</source>
         <translation>F6</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="648"/>
+        <location filename="../ui/mainwindow.ui" line="649"/>
         <source>Copy preview HTML to clipboard</source>
         <translation>Copy preview HTML to clipboard</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="651"/>
+        <location filename="../ui/mainwindow.ui" line="652"/>
         <source>Copies the HTML rendered by cpp0x.pl for the current text</source>
         <translation>Copies the HTML rendered by cpp0x.pl for the current text</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="654"/>
+        <location filename="../ui/mainwindow.ui" line="655"/>
         <source>Ctrl+Shift+H</source>
         <translation>Ctrl+Shift+H</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="665"/>
+        <location filename="../ui/mainwindow.ui" line="666"/>
         <source>Reload file</source>
         <translation>Reload file</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="668"/>
+        <location filename="../ui/mainwindow.ui" line="669"/>
         <source>F5</source>
         <translation>F5</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="682"/>
+        <location filename="../ui/mainwindow.ui" line="683"/>
         <source>STC Tags buttons ☑</source>
         <translation>STC Tags buttons ☑</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="685"/>
+        <location filename="../ui/mainwindow.ui" line="686"/>
         <source>STC Tags buttons (shortcuts are not working when hidden)</source>
         <translation>STC Tags buttons (shortcuts are not working when hidden)</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="696"/>
+        <location filename="../ui/mainwindow.ui" line="697"/>
         <source>Rename file</source>
         <translation>Rename file</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="707"/>
+        <location filename="../ui/mainwindow.ui" line="708"/>
         <source>Stop watch (uptime and working time) ☐</source>
         <translation>Stop watch (uptime and working time) ☐</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="721"/>
+        <location filename="../ui/mainwindow.ui" line="722"/>
         <source>Word wrap ☑</source>
         <translation>Word wrap ☑</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="735"/>
+        <location filename="../ui/mainwindow.ui" line="736"/>
         <source>Auto-indent ☑</source>
         <translation>Auto-indent ☑</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="743"/>
+        <location filename="../ui/mainwindow.ui" line="744"/>
         <source>Editor font…</source>
         <translation>Editor font…</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="408"/>
+        <location filename="../ui/mainwindow.ui" line="409"/>
         <source>Reopen closed tab</source>
         <translation>Reopen closed tab</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="419"/>
+        <location filename="../ui/mainwindow.ui" line="420"/>
         <source>Navigate back</source>
         <translation>Navigate back</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="430"/>
+        <location filename="../ui/mainwindow.ui" line="431"/>
         <source>Navigate forward</source>
         <translation>Navigate forward</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="438"/>
+        <location filename="../ui/mainwindow.ui" line="439"/>
         <source>Compare with file…</source>
         <translation>Compare with file…</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="441"/>
+        <location filename="../ui/mainwindow.ui" line="442"/>
         <source>Choose a file and see the diff of its lines against the editor content</source>
         <translation>Choose a file and see the diff of its lines against the editor content</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="449"/>
+        <location filename="../ui/mainwindow.ui" line="450"/>
         <source>Compare files…</source>
         <translation>Compare files…</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="452"/>
+        <location filename="../ui/mainwindow.ui" line="453"/>
         <source>Choose two files and see the diff of their lines</source>
         <translation>Choose two files and see the diff of their lines</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="757"/>
+        <location filename="../ui/mainwindow.ui" line="758"/>
         <source>Minimap ☑</source>
         <translation>Minimap ☑</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="768"/>
+        <location filename="../ui/mainwindow.ui" line="769"/>
         <source>Zen mode ☐</source>
         <translation>Zen mode ☐</translation>
     </message>
@@ -2315,27 +2325,27 @@ The text is converted and the file is saved in %2 when you save it.</translation
         <translation>Ln %1, Col %2</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="785"/>
+        <location filename="../ui/mainwindow.ui" line="786"/>
         <source>Right panel ☑</source>
         <translation>Right panel ☑</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="788"/>
+        <location filename="../ui/mainwindow.ui" line="789"/>
         <source>F3</source>
         <translation>F3</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="799"/>
+        <location filename="../ui/mainwindow.ui" line="800"/>
         <source>Resume last session on startup</source>
         <translation>Resume last session on startup</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="804"/>
+        <location filename="../ui/mainwindow.ui" line="805"/>
         <source>English</source>
         <translation>English</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.ui" line="809"/>
+        <location filename="../ui/mainwindow.ui" line="810"/>
         <source>Polski</source>
         <translation>Polski</translation>
     </message>

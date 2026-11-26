@@ -79,6 +79,39 @@ static_assert((stc::codehl::XML_STATE_IN_TAG << XML_STATE_SHIFT) == STATE_XML_IN
 constexpr int LANGUAGE_STATE_MASK = STATE_CODE_CPP_COMMENT | STATE_PY_TRIPLE_DQ | STATE_PY_TRIPLE_SQ
                                     | STATE_XML_COMMENT | STATE_XML_IN_TAG;
 
+// Markdown mode (`SyntaxMode::Markdown`): what a fenced code block leaves for the next lines.
+// These bits are only used while the mode is Markdown - the STC markup states above are not.
+constexpr int MD_FENCE           = 0x1000000; // inside a ``` or ~~~ fenced code block
+constexpr int MD_FENCE_TILDE     = 0x2000000; // the fence is made of '~' (otherwise '`')
+constexpr int MD_FENCE_LEN_SHIFT = 26;
+constexpr int MD_FENCE_LEN_MASK  = 0x3 << MD_FENCE_LEN_SHIFT; // (fence length - 3), saturated at 3
+constexpr int MD_LANG_SHIFT      = 28;
+constexpr int MD_LANG_MASK       = 0x7;
+
+enum MdFenceLang : int
+{
+    MD_LANG_PLAIN  = 0, // no (or unknown) language: uniform code style
+    MD_LANG_CPP    = 1,
+    MD_LANG_PYTHON = 2,
+    MD_LANG_XML    = 3,
+    MD_LANG_JSON   = 4,
+};
+
+/// The language of a fenced code block from its info string (the word right after the fence).
+int markdownFenceLanguage(const QString &info)
+{
+    const QString word = info.trimmed().section(QLatin1Char(' '), 0, 0).toLower();
+    if (word == "cpp" || word == "c++" || word == "cxx" || word == "cc" || word == "c")
+        return MD_LANG_CPP;
+    if (word == "python" || word == "py")
+        return MD_LANG_PYTHON;
+    if (word == "xml" || word == "html" || word == "xhtml" || word == "svg")
+        return MD_LANG_XML;
+    if (word == "json")
+        return MD_LANG_JSON;
+    return MD_LANG_PLAIN;
+}
+
 constexpr bool PRINT_DEBUG = false; // TODO: Remove when formatting fully works
 #define DEBUG(condition, text) if (PRINT_DEBUG && condition) qDebug() << "\t " << #text << " changes" << __LINE__ << currentBlockState()
 
@@ -327,6 +360,9 @@ void STCSyntaxHighlighter::highlightSourceFileBlock(const QString &text)
         stc::codehl::highlightJson(text, 0, text.length(),
                                    [this](int start, int length, const QTextCharFormat &format) { setFormat(start, length, format); });
         break;
+    case SyntaxMode::Markdown:
+        stateOut = highlightMarkdownBlock(text);
+        break;
     case SyntaxMode::PlainText:
         highlightPlainTextBlock(text);
         break;
@@ -356,6 +392,298 @@ void STCSyntaxHighlighter::highlightPlainTextBlock(const QString &text)
     }
 
     applySpellcheckToTextRange(text, 0, text.length(), QTextCharFormat());
+}
+
+int STCSyntaxHighlighter::highlightMarkdownBlock(const QString &text)
+{
+    static const QTextCharFormat markerFormat = [] {
+        QTextCharFormat fmt;
+        fmt.setForeground(QColor(120, 120, 120));
+        fmt.setFontPointSize(8);
+        return fmt;
+    }();
+    static const QTextCharFormat headingFormat = [] {
+        QTextCharFormat fmt;
+        fmt.setForeground(QColor("#a33"));
+        fmt.setFontWeight(QFont::Bold);
+        return fmt;
+    }();
+    static const QTextCharFormat quoteFormat = [] {
+        QTextCharFormat fmt;
+        fmt.setForeground(QColor("#57606a"));
+        fmt.setFontItalic(true);
+        return fmt;
+    }();
+    static const QTextCharFormat listMarkerFormat = [] {
+        QTextCharFormat fmt;
+        fmt.setForeground(QColor("#bc4c00"));
+        fmt.setFontWeight(QFont::Bold);
+        return fmt;
+    }();
+    static const QTextCharFormat codeFormat = [] {
+        QTextCharFormat fmt;
+        fmt.setBackground(QColor(240, 240, 240));
+        fmt.setFontFixedPitch(true);
+        return fmt;
+    }();
+    static const QTextCharFormat linkFormat = [] {
+        QTextCharFormat fmt;
+        fmt.setForeground(QColor("blue"));
+        fmt.setFontUnderline(true);
+        return fmt;
+    }();
+    static const QTextCharFormat urlFormat = [] {
+        QTextCharFormat fmt;
+        fmt.setForeground(QColor(120, 120, 120));
+        return fmt;
+    }();
+    static const QTextCharFormat hrFormat = [] {
+        QTextCharFormat fmt;
+        fmt.setForeground(QColor(120, 120, 120));
+        fmt.setFontStrikeOut(true);
+        return fmt;
+    }();
+
+    const int length = text.length();
+    _codeRangesThisLine.clear();
+    _noFormatRangesThisLine.clear();
+
+    const int stateIn = languageStateFromPreviousBlock();
+
+    // ================= a line inside a fenced code block =================
+    if (stateIn & MD_FENCE)
+    {
+        const QChar fenceChar = (stateIn & MD_FENCE_TILDE) ? QLatin1Char('~') : QLatin1Char('`');
+        const int fenceLen = ((stateIn & MD_FENCE_LEN_MASK) >> MD_FENCE_LEN_SHIFT) + 3;
+        const int lang = (stateIn >> MD_LANG_SHIFT) & MD_LANG_MASK;
+
+        // a closing fence: up to 3 spaces, at least `fenceLen` fence chars, nothing else on the line
+        int pos = 0;
+        while (pos < length && text[pos] == QLatin1Char(' '))
+            ++pos;
+        if (pos <= 3)
+        {
+            const int runStart = pos;
+            while (pos < length && text[pos] == fenceChar)
+                ++pos;
+            const int runLen = pos - runStart;
+            bool onlyBlanks = runLen >= fenceLen;
+            for (int i = pos; onlyBlanks && i < length; ++i)
+                onlyBlanks = text[i] == QLatin1Char(' ') || text[i] == QLatin1Char('\t');
+            if (onlyBlanks)
+            {
+                setFormat(0, length, markerFormat);
+                return 0;
+            }
+        }
+
+        // a line of code: the language of the fence decides the highlighting
+        if (lang == MD_LANG_PLAIN)
+        {
+            setFormat(0, length, codeFormat);
+        }
+        else
+        {
+            int innerState = 0;
+            switch (lang)
+            {
+            case MD_LANG_CPP:
+                innerState = applyCppHighlighting(text, 0, length, stateIn);
+                break;
+            case MD_LANG_PYTHON:
+                innerState = applyPythonHighlighting(text, 0, length, stateIn);
+                break;
+            case MD_LANG_XML:
+                innerState = stc::codehl::highlightXml(text, 0, length,
+                                                       (stateIn >> XML_STATE_SHIFT) & stc::codehl::XML_STATE_MASK,
+                                                       [this](int start, int len, const QTextCharFormat &format) { setFormat(start, len, format); })
+                           << XML_STATE_SHIFT;
+                break;
+            case MD_LANG_JSON:
+                stc::codehl::highlightJson(text, 0, length,
+                                           [this](int start, int len, const QTextCharFormat &format) { setFormat(start, len, format); });
+                break;
+            default:
+                break;
+            }
+            return MD_FENCE | (stateIn & MD_FENCE_TILDE) | (stateIn & MD_FENCE_LEN_MASK)
+                   | (lang << MD_LANG_SHIFT) | innerState;
+        }
+        return MD_FENCE | (stateIn & MD_FENCE_TILDE) | (stateIn & MD_FENCE_LEN_MASK) | (lang << MD_LANG_SHIFT);
+    }
+
+    // ================= opening of a fenced code block =================
+    static const QRegularExpression fenceOpenRe(QStringLiteral(R"(^ {0,3}(`{3,}|~{3,})([^\n]*)$)"));
+    const auto fenceMatch = fenceOpenRe.match(text);
+    if (fenceMatch.hasMatch())
+    {
+        const QString fence = fenceMatch.captured(1);
+        const int fenceLen = std::min<int>(static_cast<int>(fence.size()), 6);
+        const int lang = markdownFenceLanguage(fenceMatch.captured(2));
+
+        setFormat(0, length, markerFormat);
+        _noFormatRangesThisLine.append({ 0, length });
+
+        int state = MD_FENCE | ((fenceLen - 3) << MD_FENCE_LEN_SHIFT) | (lang << MD_LANG_SHIFT);
+        if (fence.startsWith(QLatin1Char('~')))
+            state |= MD_FENCE_TILDE;
+        return state;
+    }
+
+    // ================= block structure =================
+
+    // a thematic break (---, ***, ___, also with spaces) - before the list, "- - -" is a line, not a list
+    static const QRegularExpression hrRe(QStringLiteral(R"(^ {0,3}((\*[ \t]*){3,}|(_[ \t]*){3,}|(-[ \t]*){3,})$)"));
+    if (hrRe.match(text).hasMatch())
+    {
+        setFormat(0, length, hrFormat);
+        highlightPlainTextContent(text, /*excludeBracketTags=*/false);
+        return 0;
+    }
+
+    // ATX heading: "#"*1-6 then the text
+    static const QRegularExpression atxRe(QStringLiteral(R"(^ {0,3}(#{1,6})(?:[ \t]+(.*))?$)"));
+    const auto headingMatch = atxRe.match(text);
+    if (headingMatch.hasMatch())
+    {
+        setFormat(headingMatch.capturedStart(1), headingMatch.capturedLength(1), markerFormat);
+        const int headingStart = headingMatch.capturedStart(2);
+        if (headingStart >= 0)
+            setFormat(headingStart, headingMatch.capturedLength(2), headingFormat);
+    }
+
+    // a block quote line: the ">" marker, the rest in italics
+    static const QRegularExpression quoteRe(QStringLiteral(R"(^ {0,3}>[ \t]?)"));
+    const auto quoteMatch = quoteRe.match(text);
+    if (quoteMatch.hasMatch())
+    {
+        setFormat(0, quoteMatch.capturedLength(), markerFormat);
+        const int contentStart = quoteMatch.capturedEnd();
+        if (contentStart < length)
+            setFormat(contentStart, length - contentStart, quoteFormat);
+    }
+
+    // a list item marker (also nested ones)
+    static const QRegularExpression listRe(QStringLiteral(R"(^([ \t]*)([-*+]|\d{1,9}[.)])([ \t]+|$))"));
+    const auto listMatch = listRe.match(text);
+    if (listMatch.hasMatch())
+        setFormat(listMatch.capturedStart(2), listMatch.capturedLength(2), listMarkerFormat);
+
+    // ================= inline =================
+
+    // code spans first: their content is protected from the other patterns
+    static const QRegularExpression codeSpanRe(QStringLiteral(R"(``([^`\n]+)``|`([^`\n]+)`)"));
+    {
+        QRegularExpressionMatchIterator it = codeSpanRe.globalMatch(text);
+        while (it.hasNext())
+        {
+            const auto match = it.next();
+            const int start = match.capturedStart(0);
+            const int len = match.capturedLength(0);
+            setFormat(start, len, codeFormat);
+            _codeRangesThisLine.append({ start, len });
+        }
+    }
+
+    // links and images: "[text](url)", "![alt](src)", reference style "[text][ref]"
+    static const QRegularExpression linkRe(QStringLiteral(R"(!?\[[^\]\n]*\]\((?:[^()\n]|\([^()\n]*\))*\))"));
+    static const QRegularExpression refLinkRe(QStringLiteral(R"(!?\[[^\]\n]*\]\[[^\]\n]*\])"));
+    const auto formatLink = [this, &linkFormat, &urlFormat](int matchStart, const QString &whole) {
+        // "[" of the text part (after a possible '!'), "](" or "][" separates text from the reference
+        int bracket = whole.startsWith(QLatin1Char('!')) ? 1 : 0;
+        int sep = whole.indexOf(QStringLiteral("]("), bracket);
+        if (sep < 0)
+            sep = whole.indexOf(QStringLiteral("]["), bracket);
+        if (sep < 0)
+            return;
+        // the "[text]" part is the link, what follows (the url or the reference) is gray
+        setFormat(matchStart + bracket, sep + 1 - bracket, linkFormat);
+        const int tailStart = sep + 2;
+        if (tailStart < whole.size() - 1)
+            setFormat(matchStart + tailStart, whole.size() - 1 - tailStart, urlFormat);
+        _noFormatRangesThisLine.append({ matchStart + tailStart, whole.size() - 1 - tailStart });
+    };
+    {
+        QRegularExpressionMatchIterator it = linkRe.globalMatch(text);
+        while (it.hasNext())
+        {
+            const auto match = it.next();
+            if (overlapsWithCode(match.capturedStart(), match.capturedLength()))
+                continue;
+            formatLink(match.capturedStart(), match.captured(0));
+        }
+        it = refLinkRe.globalMatch(text);
+        while (it.hasNext())
+        {
+            const auto match = it.next();
+            if (overlapsWithCode(match.capturedStart(), match.capturedLength()))
+                continue;
+            formatLink(match.capturedStart(), match.captured(0));
+        }
+    }
+
+    // autolinks and e-mail addresses in angle brackets
+    static const QRegularExpression autoLinkRe(
+        QStringLiteral(R"(<(?:[a-zA-Z][a-zA-Z0-9+.-]{1,31}:[^<>\n]*|[^\s<>()@]+@[^\s<>()@]+\.[^\s<>()@]+)>)"));
+    {
+        QRegularExpressionMatchIterator it = autoLinkRe.globalMatch(text);
+        while (it.hasNext())
+        {
+            const auto match = it.next();
+            if (overlapsWithCode(match.capturedStart(), match.capturedLength()))
+                continue;
+            setFormat(match.capturedStart(), match.capturedLength(), linkFormat);
+            _noFormatRangesThisLine.append({ match.capturedStart(), match.capturedLength() });
+        }
+    }
+
+    // inline HTML: comments and tags are markup, not prose
+    static const QRegularExpression htmlRe(QStringLiteral(R"(<!--.*?-->|</?[a-zA-Z][^<>\n]*>)"));
+    {
+        QRegularExpressionMatchIterator it = htmlRe.globalMatch(text);
+        while (it.hasNext())
+        {
+            const auto match = it.next();
+            if (overlapsWithCode(match.capturedStart(), match.capturedLength()))
+                continue;
+            setFormat(match.capturedStart(), match.capturedLength(), markerFormat);
+            _noFormatRangesThisLine.append({ match.capturedStart(), match.capturedLength() });
+        }
+    }
+
+    // emphasis: **bold**, __bold__, *italic*, _italic_, ~~strike~~
+    // the "_" forms get word guards so snake_case stays plain text
+    static const QTextCharFormat boldFormat = [] { QTextCharFormat f; f.setFontWeight(QFont::Bold); return f; }();
+    static const QTextCharFormat italicFormat = [] { QTextCharFormat f; f.setFontItalic(true); return f; }();
+    static const QTextCharFormat strikeFormat = [] { QTextCharFormat f; f.setFontStrikeOut(true); return f; }();
+    static const struct
+    {
+        QRegularExpression pattern;
+        QTextCharFormat format;
+    } emphasis[] = {
+        { QRegularExpression(QStringLiteral(R"((?<!\*)\*\*([^*\n]+)\*\*(?!\*))")), boldFormat },
+        { QRegularExpression(QStringLiteral(R"((?<![\w*])__([^_\n]+)__(?![\w*]))")), boldFormat },
+        { QRegularExpression(QStringLiteral(R"(~~([^~\n]+)~~)")), strikeFormat },
+        { QRegularExpression(QStringLiteral(R"((?<!\*)\*([^*\n]+)\*(?!\*))")), italicFormat },
+        { QRegularExpression(QStringLiteral(R"((?<![\w_])_([^_\n]+)_(?![\w_]))")), italicFormat },
+    };
+    for (const auto &rule : emphasis)
+    {
+        QRegularExpressionMatchIterator it = rule.pattern.globalMatch(text);
+        while (it.hasNext())
+        {
+            const auto match = it.next();
+            if (overlapsWithCode(match.capturedStart(), match.capturedLength()))
+                continue;
+            // only the content between the markers is formatted
+            setFormat(match.capturedStart(1), match.capturedLength(1), rule.format);
+        }
+    }
+
+    // ================= spell checking =================
+    // "[text]" of a link is prose and stays checked; code spans, urls and markup are not
+    highlightPlainTextContent(text, /*excludeBracketTags=*/false);
+    return 0;
 }
 
 bool STCSyntaxHighlighter::highlightHeading(const QString &text)
@@ -545,7 +873,10 @@ void STCSyntaxHighlighter::applySpellcheckToTextRange(const QString& text, int s
 
         if (!spellChecker.isCorrect(word))
         {
+            // the squiggle keeps the colors the highlighter already put on the word
+            // (e.g. a misspelled word inside a heading stays heading-colored)
             QTextCharFormat errFmt = baseFormat;
+            errFmt.merge(format(wordStart));
             errFmt.setUnderlineColor(Qt::red);
             errFmt.setUnderlineStyle(QTextCharFormat::SpellCheckUnderline);
             setFormat(wordStart, wordLen, errFmt);
@@ -1275,18 +1606,21 @@ bool STCSyntaxHighlighter::highlightTagsWithAttributes(const QString& text)
     return found;
 }
 
-void STCSyntaxHighlighter::highlightPlainTextContent(const QString& text)
+void STCSyntaxHighlighter::highlightPlainTextContent(const QString& text, bool excludeBracketTags)
 {
     const int length = text.length();
     QVector<QPair<int, int>> excludedRanges = _codeRangesThisLine + _noFormatRangesThisLine;
 
     // Exclude also tag-like segments: [tag] or [/tag]
-    static const QRegularExpression tagRe(R"(\[\/?\w+.*?\])");
-    QRegularExpressionMatchIterator tagIt = tagRe.globalMatch(text);
-    while (tagIt.hasNext())
+    if (excludeBracketTags)
     {
-        auto m = tagIt.next();
-        excludedRanges.append({ m.capturedStart(), m.capturedLength() });
+        static const QRegularExpression tagRe(R"(\[\/?\w+.*?\])");
+        QRegularExpressionMatchIterator tagIt = tagRe.globalMatch(text);
+        while (tagIt.hasNext())
+        {
+            auto m = tagIt.next();
+            excludedRanges.append({ m.capturedStart(), m.capturedLength() });
+        }
     }
 
     // Sort and merge excluded ranges to avoid overlap

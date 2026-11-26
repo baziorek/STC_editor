@@ -52,7 +52,8 @@ protected:
     bool highlightCodeBlock(const QString &text);
     bool highlightTextStyleTags(const QString& text);
     bool highlightTagsWithAttributes(const QString& text);
-    void highlightPlainTextContent(const QString &text);
+    /// Spell checking of the text parts; `[tag]`-like segments are excluded unless `excludeBracketTags` is false (Markdown links).
+    void highlightPlainTextContent(const QString &text, bool excludeBracketTags = true);
 
     /// Highlighting of the code in `[0, to)`; it is the state of the previous line what says whether
     /// a construct (`/* ... */`, `"""..."""`) is continued. All of them return the bits of the state which
@@ -63,6 +64,9 @@ protected:
 
     /// Used when the syntax mode is not `Stc`: the whole block is a line of a source file (or of a plain text).
     void highlightSourceFileBlock(const QString &text);
+    /// `SyntaxMode::Markdown`: headings, quotes, lists, emphasis, links and fenced code blocks.
+    /// Returns the block state for the next line (what a fence left open).
+    int highlightMarkdownBlock(const QString &text);
     /// `SyntaxMode::PlainText`: links and e-mail addresses are formatted, the rest is only spell checked.
     void highlightPlainTextBlock(const QString &text);
     int languageStateFromPreviousBlock() const;

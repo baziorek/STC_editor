@@ -11,6 +11,7 @@ enum class SyntaxMode
 {
     Stc,       ///< cpp0x.pl markup; `[cpp]`, `[py]` blocks get their own highlighting inside of it
     PlainText, ///< no markup at all: spell checking plus formatted links and e-mail addresses
+    Markdown,  ///< Markdown prose: headings, emphasis, links and fenced code blocks
     Cpp,       ///< the whole file is C++ code
     Python,    ///< the whole file is Python code
     Xml,       ///< the whole file is XML

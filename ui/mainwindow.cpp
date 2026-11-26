@@ -2041,6 +2041,7 @@ QList<std::pair<QAction*, SyntaxMode>> MainWindow::syntaxMenuActions() const
     return {
         { ui->actionSyntaxStc, SyntaxMode::Stc },
         { ui->actionSyntaxPlainText, SyntaxMode::PlainText },
+        { ui->actionSyntaxMarkdown, SyntaxMode::Markdown },
         { ui->actionSyntaxCpp, SyntaxMode::Cpp },
         { ui->actionSyntaxPython, SyntaxMode::Python },
         { ui->actionSyntaxXml, SyntaxMode::Xml },

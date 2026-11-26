@@ -4,6 +4,7 @@
 
 #include <QApplication>
 #include <QColor>
+#include <QFont>
 #include <QPlainTextDocumentLayout>
 #include <QSyntaxStyle>
 #include <QTextBlock>
@@ -156,11 +157,19 @@ TEST(SyntaxModeDetection, IsCaseInsensitiveAndIgnoresDirectories)
     EXPECT_EQ(detectFromFileName("C:\\dir.with.dots\\Main.CPP"), SyntaxMode::Cpp);
 }
 
-TEST(SyntaxModeDetection, MarkdownAndProseAreAPlainText)
+TEST(SyntaxModeDetection, MarkdownFilesGetTheMarkdownMode)
 {
     using syntaxmode::detectFromFileName;
-    EXPECT_EQ(detectFromFileName("README.md"), SyntaxMode::PlainText);
+    EXPECT_EQ(detectFromFileName("README.md"), SyntaxMode::Markdown);
+    EXPECT_EQ(detectFromFileName("notes.markdown"), SyntaxMode::Markdown);
+    EXPECT_EQ(detectFromFileName("doc.mdown"), SyntaxMode::Markdown);
+}
+
+TEST(SyntaxModeDetection, OtherProseIsAPlainText)
+{
+    using syntaxmode::detectFromFileName;
     EXPECT_EQ(detectFromFileName("notes.text"), SyntaxMode::PlainText);
+    EXPECT_EQ(detectFromFileName("article.rst"), SyntaxMode::PlainText);
 }
 
 TEST(SyntaxModeDetection, TxtIsNotDetected_ItIsWhatTheStcArticlesAreSavedAs)
@@ -602,8 +611,8 @@ TEST(HighlighterModes, EditingARestOfTheFileUpdatesFollowingLines)
 
 TEST(SyntaxModeNames, EveryModeSurvivesAConversionToTextAndBack)
 {
-    for (auto mode : { SyntaxMode::Stc, SyntaxMode::PlainText, SyntaxMode::Cpp, SyntaxMode::Python, SyntaxMode::Xml,
-                       SyntaxMode::Json })
+    for (auto mode : { SyntaxMode::Stc, SyntaxMode::PlainText, SyntaxMode::Markdown, SyntaxMode::Cpp,
+                       SyntaxMode::Python, SyntaxMode::Xml, SyntaxMode::Json })
     {
         const auto back = syntaxmode::fromString(syntaxmode::toString(mode));
         ASSERT_TRUE(back.has_value());
@@ -619,6 +628,7 @@ TEST(SyntaxModePredicates, PlainTextIsNeitherSourceCodeNorStc)
     EXPECT_FALSE(syntaxmode::usesStcMarkup(SyntaxMode::PlainText));
     EXPECT_FALSE(syntaxmode::isSourceCodeMode(SyntaxMode::PlainText)); // keeps the font and the spell checking
     EXPECT_FALSE(syntaxmode::isSourceCodeMode(SyntaxMode::Stc));
+    EXPECT_FALSE(syntaxmode::isSourceCodeMode(SyntaxMode::Markdown)); // prose: keeps the font and the spell checking
     EXPECT_TRUE(syntaxmode::isSourceCodeMode(SyntaxMode::Python));
 }
 
@@ -1056,6 +1066,143 @@ TEST(PlainTextMode, SwitchingBackAndForthRehighlights)
 
     d.highlighter->setSyntaxMode(SyntaxMode::Stc);
     EXPECT_FALSE(isLinkFormat(formatAt(blockAt(d.document, 0), 10)));
+}
+
+// ------------------------------------------------------------------ STCSyntaxHighlighter: Markdown
+
+namespace
+{
+/// True when any format range covering `column` satisfies `pred` (overlapping formats are all checked).
+template <typename Pred>
+bool anyFormatAt(const QTextBlock& block, int column, Pred pred)
+{
+    for (const auto& range : block.layout()->formats())
+        if (column >= range.start && column < range.start + range.length && pred(range.format))
+            return true;
+    return false;
+}
+} // namespace
+
+TEST(MarkdownMode, AtxHeadingIsColoredAndBold)
+{
+    HighlightedDocument d("# Title\nplain", SyntaxMode::Markdown);
+    const auto heading = blockAt(d.document, 0);
+
+    EXPECT_TRUE(anyFormatAt(heading, 2, [](const QTextCharFormat& f) {
+        return f.foreground().color() == QColor("#a33") && f.fontWeight() == QFont::Bold;
+    })) << "the heading text is bold and colored";
+    EXPECT_TRUE(anyFormatAt(heading, 0, [](const QTextCharFormat& f) {
+        return f.foreground().color() == QColor(120, 120, 120);
+    })) << "the '#' marker is gray";
+    EXPECT_FALSE(anyFormatAt(blockAt(d.document, 1), 1, [](const QTextCharFormat& f) {
+        return f.foreground().color() == QColor("#a33");
+    })) << "the next line is not a heading";
+}
+
+TEST(MarkdownMode, FencedCodeBlockIsFormattedAndTheStateEnds)
+{
+    HighlightedDocument d("```\nplain code\n```\n# After", SyntaxMode::Markdown);
+
+    EXPECT_TRUE(anyFormatAt(blockAt(d.document, 1), 3, [](const QTextCharFormat& f) {
+        return f.background().color() == QColor(240, 240, 240);
+    })) << "the code line has the code background";
+    EXPECT_TRUE(anyFormatAt(blockAt(d.document, 0), 0, [](const QTextCharFormat& f) {
+        return f.foreground().color() == QColor(120, 120, 120);
+    })) << "the opening fence is gray";
+    EXPECT_TRUE(anyFormatAt(blockAt(d.document, 2), 0, [](const QTextCharFormat& f) {
+        return f.foreground().color() == QColor(120, 120, 120);
+    })) << "the closing fence is gray";
+    EXPECT_TRUE(anyFormatAt(blockAt(d.document, 3), 2, [](const QTextCharFormat& f) {
+        return f.foreground().color() == QColor("#a33") && f.fontWeight() == QFont::Bold;
+    })) << "markdown continues after the fence";
+}
+
+TEST(MarkdownMode, UnclosedFenceContinuesOnTheNextLines)
+{
+    HighlightedDocument d("```\nline one\nline two", SyntaxMode::Markdown);
+    for (int line = 1; line <= 2; ++line)
+        EXPECT_TRUE(anyFormatAt(blockAt(d.document, line), 2, [](const QTextCharFormat& f) {
+            return f.background().color() == QColor(240, 240, 240);
+        })) << "line " << line << " is still inside the fence";
+}
+
+TEST(MarkdownMode, TildeFenceWorksToo)
+{
+    HighlightedDocument d("~~~\ncode\n~~~", SyntaxMode::Markdown);
+    EXPECT_TRUE(anyFormatAt(blockAt(d.document, 1), 1, [](const QTextCharFormat& f) {
+        return f.background().color() == QColor(240, 240, 240);
+    }));
+    EXPECT_TRUE(anyFormatAt(blockAt(d.document, 2), 0, [](const QTextCharFormat& f) {
+        return f.foreground().color() == QColor(120, 120, 120);
+    }));
+}
+
+TEST(MarkdownMode, FenceWithPythonLanguageHighlightsTheCode)
+{
+    HighlightedDocument d("```python\nx = 1\n```", SyntaxMode::Markdown);
+    EXPECT_TRUE(blockHasColor(blockAt(d.document, 1), "Number")) << "`1` is a number";
+}
+
+TEST(MarkdownMode, FenceWithCppLanguageHighlightsTheCode)
+{
+    HighlightedDocument d("```cpp\nint x;\n```", SyntaxMode::Markdown);
+    EXPECT_TRUE(blockHasColor(blockAt(d.document, 1), "Keyword")) << "`int` is a keyword";
+}
+
+TEST(MarkdownMode, InlineCodeSpanHasBackground)
+{
+    HighlightedDocument d("a `b` c", SyntaxMode::Markdown);
+    const auto block = blockAt(d.document, 0);
+    EXPECT_TRUE(anyFormatAt(block, 3, [](const QTextCharFormat& f) {
+        return f.background().color() == QColor(240, 240, 240);
+    })) << "the `b` span has the code background";
+    EXPECT_FALSE(anyFormatAt(block, 0, [](const QTextCharFormat& f) {
+        return f.background().color() == QColor(240, 240, 240);
+    })) << "the surrounding text does not";
+}
+
+TEST(MarkdownMode, LinkTextAndUrlAreFormattedDifferently)
+{
+    HighlightedDocument d("see [txt](https://e.com) now", SyntaxMode::Markdown);
+    const auto block = blockAt(d.document, 0);
+    const int urlStart = QString("see [txt](").size();
+
+    EXPECT_TRUE(anyFormatAt(block, 6, [](const QTextCharFormat& f) {
+        return f.foreground().color() == QColor("blue") && f.fontUnderline();
+    })) << "the link text is blue and underlined";
+    EXPECT_TRUE(anyFormatAt(block, urlStart + 2, [](const QTextCharFormat& f) {
+        return f.foreground().color() == QColor(120, 120, 120);
+    })) << "the url is gray";
+}
+
+TEST(MarkdownMode, EmphasisIsFormatted_AndSnakeCaseStaysPlain)
+{
+    HighlightedDocument d("**b** *i* ~~s~~ _u_\nfoo_bar_baz", SyntaxMode::Markdown);
+    const auto first = blockAt(d.document, 0);
+
+    EXPECT_TRUE(anyFormatAt(first, 2, [](const QTextCharFormat& f) { return f.fontWeight() == QFont::Bold; }));
+    EXPECT_TRUE(anyFormatAt(first, 7, [](const QTextCharFormat& f) { return f.fontItalic(); }));
+    EXPECT_TRUE(anyFormatAt(first, 12, [](const QTextCharFormat& f) { return f.fontStrikeOut(); }));
+    EXPECT_TRUE(anyFormatAt(first, 17, [](const QTextCharFormat& f) { return f.fontItalic(); }));
+
+    const auto snake = blockAt(d.document, 1);
+    EXPECT_FALSE(anyFormatAt(snake, 5, [](const QTextCharFormat& f) { return f.fontItalic(); }))
+        << "`bar` inside snake_case is not italic";
+}
+
+TEST(MarkdownMode, QuoteListAndHorizontalRule)
+{
+    HighlightedDocument d("> quote\n- item\n---", SyntaxMode::Markdown);
+
+    EXPECT_TRUE(anyFormatAt(blockAt(d.document, 0), 2, [](const QTextCharFormat& f) {
+        return f.fontItalic() && f.foreground().color() == QColor("#57606a");
+    })) << "the quote text is italic and gray-blue";
+    EXPECT_TRUE(anyFormatAt(blockAt(d.document, 1), 0, [](const QTextCharFormat& f) {
+        return f.fontWeight() == QFont::Bold && f.foreground().color() == QColor("#bc4c00");
+    })) << "the list marker is bold and orange";
+    EXPECT_TRUE(anyFormatAt(blockAt(d.document, 2), 1, [](const QTextCharFormat& f) {
+        return f.fontStrikeOut();
+    })) << "--- is a horizontal rule";
 }
 
 int main(int argc, char** argv)

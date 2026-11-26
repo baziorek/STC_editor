@@ -28,8 +28,10 @@ const QMap<QString, SyntaxMode>& extensionTable()
 
         { "json", SyntaxMode::Json }, { "geojson", SyntaxMode::Json },
 
+        { "md", SyntaxMode::Markdown }, { "markdown", SyntaxMode::Markdown },
+        { "mdown", SyntaxMode::Markdown }, { "mkd", SyntaxMode::Markdown },
+
         // prose which has no STC tags
-        { "md", SyntaxMode::PlainText }, { "markdown", SyntaxMode::PlainText },
         { "rst", SyntaxMode::PlainText }, { "text", SyntaxMode::PlainText },
     };
     return byExtension;
@@ -41,8 +43,9 @@ struct ModeName
     const char* name;
 };
 constexpr ModeName modeNames[] = {
-    { SyntaxMode::Stc, "stc" },       { SyntaxMode::PlainText, "plaintext" }, { SyntaxMode::Cpp, "cpp" },
-    { SyntaxMode::Python, "python" }, { SyntaxMode::Xml, "xml" },             { SyntaxMode::Json, "json" },
+    { SyntaxMode::Stc, "stc" },       { SyntaxMode::PlainText, "plaintext" }, { SyntaxMode::Markdown, "markdown" },
+    { SyntaxMode::Cpp, "cpp" },       { SyntaxMode::Python, "python" },       { SyntaxMode::Xml, "xml" },
+    { SyntaxMode::Json, "json" },
 };
 } // namespace
 

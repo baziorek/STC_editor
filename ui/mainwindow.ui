@@ -264,6 +264,7 @@
     </property>
     <addaction name="actionSyntaxStc"/>
     <addaction name="actionSyntaxPlainText"/>
+    <addaction name="actionSyntaxMarkdown"/>
     <addaction name="actionSyntaxCpp"/>
     <addaction name="actionSyntaxPython"/>
     <addaction name="actionSyntaxXml"/>
@@ -829,6 +830,17 @@
    </property>
    <property name="toolTip">
     <string>No markup: spell checking and formatted links and e-mail addresses only</string>
+   </property>
+  </action>
+  <action name="actionSyntaxMarkdown">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Markdown</string>
+   </property>
+   <property name="toolTip">
+    <string>Treat the whole file as Markdown: headings, emphasis, links and fenced code blocks</string>
    </property>
   </action>
   <action name="actionSyntaxCpp">
