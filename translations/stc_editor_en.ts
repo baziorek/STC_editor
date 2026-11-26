@@ -1727,6 +1727,11 @@ The text is converted and the file is saved in %2 when you save it.</source>
         <translation>Compare with pasted text...</translation>
     </message>
     <message>
+        <location filename="../ui/mainwindow.ui" line="398"/>
+        <source>Insert date and time</source>
+        <translation>Insert date and time</translation>
+    </message>
+    <message>
         <location filename="../ui/mainwindow.ui" line="360"/>
         <source>Paste a new version of the text and see the diff against the editor content</source>
         <translation>Paste a new version of the text and see the diff against the editor content</translation>

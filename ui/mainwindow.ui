@@ -213,6 +213,7 @@
     </property>
     <addaction name="actionFind"/>
     <addaction name="actionFind_replace"/>
+    <addaction name="actionInsert_datetime"/>
     <addaction name="separator"/>
     <addaction name="actionCompare_with_pasted_text"/>
    </widget>
@@ -387,6 +388,17 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="actionInsert_datetime">
+   <property name="icon">
+    <iconset theme="appointment-new"/>
+   </property>
+   <property name="text">
+    <string>Insert date and time</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+D</string>
    </property>
   </action>
   <action name="actioncheck_if_tags_are_closed">

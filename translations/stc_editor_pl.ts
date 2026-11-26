@@ -1742,6 +1742,11 @@ Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy na
         <translation>Porównaj z wklejonym tekstem...</translation>
     </message>
     <message>
+        <location filename="../ui/mainwindow.ui" line="398"/>
+        <source>Insert date and time</source>
+        <translation>Wstaw datę i godzinę</translation>
+    </message>
+    <message>
         <location filename="../ui/mainwindow.ui" line="360"/>
         <source>Paste a new version of the text and see the diff against the editor content</source>
         <translation>Wklej nową wersję tekstu i zobacz różnice względem zawartości edytora</translation>

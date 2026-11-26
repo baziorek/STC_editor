@@ -157,6 +157,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->actionPrint, &QAction::triggered, this, &MainWindow::onPrintPressed);
     connect(ui->actionExport_pdf, &QAction::triggered, this, &MainWindow::onExportPdfPressed);
     connect(ui->actionWord_wrap, &QAction::toggled, this, &MainWindow::onWordWrapChanged);
+    connect(ui->actionInsert_datetime, &QAction::triggered, this, &MainWindow::onInsertDatetimePressed);
 
     // the console: View menu entry (the dock keeps its state), Ctrl+` shows it, Esc in its line goes back to the editor
     QAction* consoleAction = consoleDockWidget->toggleViewAction();
@@ -978,6 +979,11 @@ void MainWindow::onExportPdfPressed()
     currentEditor()->print(&printer);
 
     lastDirectory = QFileInfo(fileName).absolutePath();
+}
+
+void MainWindow::onInsertDatetimePressed()
+{
+    currentEditor()->textCursor().insertText(QDateTime::currentDateTime().toString(QStringLiteral("dd.MM.yyyy HH:mm")));
 }
 
 QString MainWindow::chooseFileWithDialog(QFileDialog::AcceptMode acceptMode)
