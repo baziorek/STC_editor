@@ -150,6 +150,9 @@ Edytor też nadaje sie do innych celów - do ogólnej edycji dokumentu, oto wyb
 26. **Zaawansowane zarządzanie kartami**: karty można przeciągać, by zmienić ich kolejność, zamykać środkowym przyciskiem myszy, a prawy przycisk na pasku kart oferuje *Zamknij kartę / Zamknij pozostałe karty / Zamknij wszystkie karty*. `Plik → Otwórz ponownie zamkniętą kartę` (`Ctrl+Shift+T`) przywraca ostatnio zamknięte karty (do 10) z pozycją kursora i scrolla.
 27. **Nawigacja wstecz/dalej**: `Edycja → Wstecz` (`Alt+[`) i `Edycja → Dalej` (`Alt+]`) przeskakują między miejscami, w których kursor dłużej się zatrzymywał — skoki (kliknięcie, „idź do linii”, wynik wyszukiwania) stają się krokami historii, a pisanie i strzałki nie zaśmiecają jej.
 28. **Porównywanie z plikiem**: `Edycja → Porównaj z plikiem…` pokazuje diff linii bieżącego dokumentu względem wybranego pliku (kodowanie wykrywane automatycznie, widok tylko do odczytu).
+29. **Porównywanie dwóch plików**: `Edycja → Porównaj pliki…` pozwala wybrać dwa pliki z dysku i zobaczyć diff ich linii — bez otwierania ich w edytorze.
+30. **Minimapa**: `Widok → Minimapa ☑` pokazuje po prawej stronie edytora miniaturowy podgląd całego dokumentu (jak w VS Code). Zmiana dokumentu odświeża ją po krótkiej chwili, a kliknięcie lub przeciągnięcie na minimapce przewija edytor do klikniętego miejsca; kółko myszy nad minimapką przewija dokument. Stan jest zapamiętywany.
+31. **Tryb zen**: `Widok → Tryb zen` (`F11`) ukrywa pasek menu, pasek statusu, panel boczny, zakładki kontekstowe, podgląd i konsolę oraz przechodzi w tryb pełnoekranowy — zostaje sam tekst. Powtórne `F11` przywraca wszystko dokładnie tak, jak było. Stan nie jest zapisywany między uruchomieniami.
 
 ## ⬇️ Pobieranie (najnowsza wersja zbudowana automatycznie)
 

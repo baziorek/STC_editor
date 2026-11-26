@@ -1947,6 +1947,26 @@ Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy na
         <translation>Wybierz plik i zobacz różnice jego linii względem zawartości edytora</translation>
     </message>
     <message>
+        <location filename="../ui/mainwindow.ui" line="448"/>
+        <source>Compare files…</source>
+        <translation>Porównaj pliki…</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="451"/>
+        <source>Choose two files and see the diff of their lines</source>
+        <translation>Wybierz dwa pliki i zobacz różnice ich linii</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="745"/>
+        <source>Minimap ☑</source>
+        <translation>Minimapa ☑</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="756"/>
+        <source>Zen mode ☐</source>
+        <translation>Tryb zen ☐</translation>
+    </message>
+    <message>
         <source>Close other tabs</source>
         <translation>Zamknij pozostałe karty</translation>
     </message>
@@ -2742,6 +2762,10 @@ Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy na
     <message>
         <source>Compare with %1</source>
         <translation>Porównaj z %1</translation>
+    </message>
+    <message>
+        <source>Compare %1 with %2</source>
+        <translation>Porównaj %1 z %2</translation>
     </message>
     <message>
         <source>No differences - the files are identical.</source>

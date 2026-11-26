@@ -220,6 +220,7 @@
     <addaction name="separator"/>
     <addaction name="actionCompare_with_pasted_text"/>
     <addaction name="actionCompare_with_file"/>
+    <addaction name="actionCompare_files"/>
    </widget>
    <widget class="QMenu" name="menuCheck">
     <property name="title">
@@ -249,6 +250,8 @@
     <addaction name="actionStc_Preview_account_at_Cpp0x_pl_required"/>
     <addaction name="actionCopy_preview_html"/>
     <addaction name="actionStop_watch_uptime_and_working_time"/>
+    <addaction name="actionMinimap"/>
+    <addaction name="actionZen_mode"/>
     <addaction name="separator"/>
     <addaction name="actionWord_wrap"/>
     <addaction name="actionAuto_indent"/>
@@ -435,6 +438,17 @@
    </property>
    <property name="toolTip">
     <string>Choose a file and see the diff of its lines against the editor content</string>
+   </property>
+  </action>
+  <action name="actionCompare_files">
+   <property name="icon">
+    <iconset theme="document-open"/>
+   </property>
+   <property name="text">
+    <string>Compare files…</string>
+   </property>
+   <property name="toolTip">
+    <string>Choose two files and see the diff of their lines</string>
    </property>
   </action>
   <action name="actionInsert_datetime">
@@ -715,6 +729,34 @@
    </property>
    <property name="text">
     <string>Editor font…</string>
+   </property>
+  </action>
+  <action name="actionMinimap">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="view-right-new"/>
+   </property>
+   <property name="text">
+    <string>Minimap ☑</string>
+   </property>
+  </action>
+  <action name="actionZen_mode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="view-fullscreen"/>
+   </property>
+   <property name="text">
+    <string>Zen mode ☐</string>
+   </property>
+   <property name="shortcut">
+    <string>F11</string>
    </property>
   </action>
   <action name="actionRight_panel">

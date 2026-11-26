@@ -1932,6 +1932,26 @@ The text is converted and the file is saved in %2 when you save it.</source>
         <translation>Choose a file and see the diff of its lines against the editor content</translation>
     </message>
     <message>
+        <location filename="../ui/mainwindow.ui" line="448"/>
+        <source>Compare files…</source>
+        <translation>Compare files…</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="451"/>
+        <source>Choose two files and see the diff of their lines</source>
+        <translation>Choose two files and see the diff of their lines</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="745"/>
+        <source>Minimap ☑</source>
+        <translation>Minimap ☑</translation>
+    </message>
+    <message>
+        <location filename="../ui/mainwindow.ui" line="756"/>
+        <source>Zen mode ☐</source>
+        <translation>Zen mode ☐</translation>
+    </message>
+    <message>
         <source>Close other tabs</source>
         <translation>Close other tabs</translation>
     </message>
@@ -2727,6 +2747,10 @@ The text is converted and the file is saved in %2 when you save it.</source>
     <message>
         <source>Compare with %1</source>
         <translation>Compare with %1</translation>
+    </message>
+    <message>
+        <source>Compare %1 with %2</source>
+        <translation>Compare %1 with %2</translation>
     </message>
     <message>
         <source>No differences - the files are identical.</source>

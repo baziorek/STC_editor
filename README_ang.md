@@ -130,6 +130,9 @@ The editor is also suitable for general document editing. Here are some standout
 25. **Advanced tab management**: tabs can be dragged to reorder them, closed with the middle mouse button, and right-clicking the tab bar offers *Close tab / Close other tabs / Close all tabs*. `File → Reopen closed tab` (`Ctrl+Shift+T`) restores the most recently closed tabs (up to 10) with cursor position and scroll.
 26. **Back/forward navigation**: `Edit → Navigate back` (`Alt+[`) and `Edit → Navigate forward` (`Alt+]`) jump between the places where the cursor rested — jumps (clicks, "go to line", search results) become history steps, while typing and arrow keys do not pollute it.
 27. **Compare with file**: `Edit → Compare with file…` shows the line diff of the current document against a chosen file (encoding auto-detected, read-only view).
+28. **Compare two files**: `Edit → Compare files…` lets you pick two files from the disk and see the diff of their lines - without opening them in the editor.
+29. **Minimap**: `View → Minimap ☑` shows a miniature preview of the whole document on the right side of the editor (like in VS Code). The document refreshes it after a short delay, and clicking or dragging on the minimap scrolls the editor to the clicked place; the mouse wheel over the minimap scrolls the document. The state is remembered.
+30. **Zen mode**: `View → Zen mode` (`F11`) hides the menu bar, the status bar, the side panel, the context tabs, the preview and the console, and goes fullscreen - only the text remains. Pressing `F11` again restores everything exactly as it was. The state is not saved between runs.
 
 ## ⬇️ Downloads (Latest Automatically Built Version)
 

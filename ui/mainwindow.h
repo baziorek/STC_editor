@@ -6,6 +6,10 @@
 #include <QTranslator>
 #include "utils/SyntaxMode.h"
 
+#include <QMap>
+#include <QPair>
+#include <QVector>
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 class QActionGroup;
@@ -18,6 +22,7 @@ class CodeEditor;
 class QDockWidget;
 class QLabel;
 class QTimer;
+class MinimapWidget;
 
 class QTextCursor;
 
@@ -70,6 +75,7 @@ public slots:
     void onNavigateBackPressed();
     void onNavigateForwardPressed();
     void onCompareWithFileRequested();
+    void onCompareFilesRequested();
     void onEditorTabsTabBarContextMenu(const QPoint& pos);
     void onExitFromApplicationMenuPressed();
     void onRecentRecentFilesMenuOpened();
@@ -97,6 +103,10 @@ public slots:
     void onWordWrapChanged(bool enabled);
     void onAutoIndentChanged(bool enabled);
     void onEditorFontClicked();
+    void onMinimapChanged(bool enabled);
+    /// zen mode (F11): hides every panel, bar and dock and goes fullscreen; the previous
+    /// visibility of each widget is remembered and put back on the way out
+    void onZenModeChanged(bool zen);
     void onRightPanelVisibilityChanged(bool visible);
     void onStopWatchVisibilityChanged(bool visible);
     /// View menu: the console (a dock at the bottom), shown with Ctrl+`
@@ -222,6 +232,14 @@ private: // members
 
     /// the last closed document tabs, the most recently closed at the back (Ctrl+Shift+T)
     QVector<ClosedTabInfo> closedTabs;
+
+    /// the miniature of the document on the right of the editor tabs (View menu → Minimap)
+    MinimapWidget* minimapWidget = nullptr;
+
+    /// zen mode (F11): the window is fullscreen and every panel, bar and dock is hidden
+    bool zenModeActive = false;
+    /// what was visible when zen mode was entered, restored when it is left
+    QVector<QPair<QWidget*, bool>> zenWidgetStates;
 
     CppNewsWidget* cppNewsWidget = nullptr;
     int cppNewsTabIndex = -1;

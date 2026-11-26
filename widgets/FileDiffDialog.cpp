@@ -12,10 +12,23 @@
 
 FileDiffDialog::FileDiffDialog(CodeEditor* editor, const QString& otherFilePath, QWidget* parent)
     : QDialog(parent)
-    , editor(editor)
-    , otherFilePath(otherFilePath)
 {
-    setWindowTitle(tr("Compare with %1").arg(QFileInfo(otherFilePath).fileName()));
+    init(editor->exactLines(),
+         FileEncodingHandler::readFile(otherFilePath).split('\n'),
+         tr("Compare with %1").arg(QFileInfo(otherFilePath).fileName()));
+}
+
+FileDiffDialog::FileDiffDialog(const QString& oldFilePath, const QString& newFilePath, QWidget* parent)
+    : QDialog(parent)
+{
+    init(FileEncodingHandler::readFile(oldFilePath).split('\n'),
+         FileEncodingHandler::readFile(newFilePath).split('\n'),
+         tr("Compare %1 with %2").arg(QFileInfo(oldFilePath).fileName(), QFileInfo(newFilePath).fileName()));
+}
+
+void FileDiffDialog::init(const QStringList& oldLines, const QStringList& newLines, const QString& title)
+{
+    setWindowTitle(title);
     setMinimumSize(900, 600);
 
     auto* layout = new QVBoxLayout(this);
@@ -30,10 +43,6 @@ FileDiffDialog::FileDiffDialog(CodeEditor* editor, const QString& otherFilePath,
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Close, this);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
     layout->addWidget(buttons);
-
-    const QString otherText = FileEncodingHandler::readFile(otherFilePath);
-    const QStringList oldLines = editor->exactLines();
-    const QStringList newLines = otherText.split('\n');
 
     const auto fullDiff = DiffCalculation::computeDiff(oldLines, newLines);
     const auto diffs = DiffCalculation::computeModifiedLineDiffs(fullDiff);

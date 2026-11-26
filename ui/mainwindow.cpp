@@ -16,6 +16,7 @@
 #include <QActionGroup>
 #include <QFontDialog>
 #include <QFontDatabase>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QMenu>
 #include <QMenuBar>
@@ -36,6 +37,7 @@
 #include "widgets/DiffReviewDialog.h"
 #include "widgets/PastedTextDiffDialog.h"
 #include "widgets/FileDiffDialog.h"
+#include "widgets/MinimapWidget.h"
 #include "widgets/RenameFileDialog.h"
 using namespace std;
 
@@ -147,6 +149,25 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     editorFont.setPointSize(14);
     createEditorTab();
 
+    // the minimap: a miniature of the document on the right of the editor tabs, following the current one
+    auto* editorRow = new QWidget(this);
+    auto* editorRowLayout = new QHBoxLayout(editorRow);
+    editorRowLayout->setContentsMargins(0, 0, 0, 0);
+    editorRowLayout->setSpacing(0);
+
+    auto* containerLayout = qobject_cast<QVBoxLayout*>(ui->containerForCodeEditorAndBreadcromb->layout());
+    containerLayout->removeWidget(ui->editorTabs);
+    editorRowLayout->addWidget(ui->editorTabs);
+
+    minimapWidget = new MinimapWidget(editorRow);
+    minimapWidget->setStyleSheet(QStringLiteral("QPlainText {\n"
+                                                "\tbackground-color: rgb(255, 255, 255);\n"
+                                                "\tcolor: rgb(0, 0, 0);\n"
+                                                "}\n"));
+    editorRowLayout->addWidget(minimapWidget);
+    containerLayout->addWidget(editorRow);
+    minimapWidget->setEditor(currentEditor());
+
     loadSettings();
 
     updateStatusBarCounts(currentEditor());
@@ -183,6 +204,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->actionNavigate_back, &QAction::triggered, this, &MainWindow::onNavigateBackPressed);
     connect(ui->actionNavigate_forward, &QAction::triggered, this, &MainWindow::onNavigateForwardPressed);
     connect(ui->actionCompare_with_file, &QAction::triggered, this, &MainWindow::onCompareWithFileRequested);
+    connect(ui->actionCompare_files, &QAction::triggered, this, &MainWindow::onCompareFilesRequested);
+    connect(ui->actionMinimap, &QAction::toggled, this, &MainWindow::onMinimapChanged);
+    connect(ui->actionZen_mode, &QAction::toggled, this, &MainWindow::onZenModeChanged);
 
     // the counts of the document and the position of the cursor, on the right of the status bar
     statusCountsLabel = new QLabel(this);
@@ -813,6 +837,8 @@ void MainWindow::refreshEditorDependentWidgets(CodeEditor* editor)
     ui->todosTableWidget->setTextEditor(editor);
     ui->breadcrumbTextBrowser->setTextEditor(editor);
     ui->findWidget->setCodeEditor(editor);
+    if (minimapWidget) // it is made after the first editor tab
+        minimapWidget->setEditor(editor);
 }
 
 void MainWindow::onEditorTabCloseRequested(int index)
@@ -921,6 +947,20 @@ void MainWindow::onCompareWithFileRequested()
         return;
 
     FileDiffDialog dialog(currentEditor(), filePath, this);
+    dialog.exec();
+}
+
+void MainWindow::onCompareFilesRequested()
+{
+    const QString oldPath = chooseFileWithDialog(QFileDialog::AcceptOpen);
+    if (oldPath.isEmpty())
+        return;
+
+    const QString newPath = chooseFileWithDialog(QFileDialog::AcceptOpen);
+    if (newPath.isEmpty())
+        return;
+
+    FileDiffDialog dialog(oldPath, newPath, this);
     dialog.exec();
 }
 
@@ -1509,6 +1549,55 @@ void MainWindow::onEditorFontClicked()
         if (auto* editor = qobject_cast<CodeEditor*>(ui->editorTabs->widget(i)))
             editor->setFont(font);
     }
+    minimapWidget->setBaseFont(font);
+}
+
+void MainWindow::onMinimapChanged(bool enabled)
+{
+    minimapWidget->setVisible(enabled);
+    QSettings().setValue(QStringLiteral("view/minimap"), enabled);
+}
+
+void MainWindow::onZenModeChanged(bool zen)
+{
+    if (zen == zenModeActive)
+        return;
+    zenModeActive = zen;
+
+    if (zen)
+    {
+        // remember what was visible, hide all the chrome and go fullscreen;
+        // the previous state is put back on the way out
+        zenWidgetStates.clear();
+        const auto remember = [this](QWidget* widget) {
+            zenWidgetStates.append(qMakePair(widget, widget->isVisible()));
+        };
+        remember(ui->menubar);
+        remember(ui->statusbar);
+        remember(ui->findDockWidget);
+        remember(ui->stcPreviewDockWidget);
+        remember(consoleDockWidget);
+        remember(ui->buttonsEmittingStc);
+        remember(ui->contextsTabWidget);
+        remember(ui->goToLineGroupBox);
+        remember(ui->stopwatchGroupBox);
+        remember(ui->breadcrumbTextBrowser);
+        if (minimapWidget)
+            remember(minimapWidget);
+
+        for (const auto& state : zenWidgetStates)
+            state.first->setVisible(false);
+
+        setWindowState(windowState() | Qt::WindowFullScreen);
+    }
+    else
+    {
+        for (const auto& state : zenWidgetStates)
+            state.first->setVisible(state.second);
+        zenWidgetStates.clear();
+
+        setWindowState(windowState() & ~Qt::WindowFullScreen);
+    }
 }
 
 void MainWindow::onStopWatchVisibilityChanged(bool visible)
@@ -1571,6 +1660,8 @@ void MainWindow::onViewMenuAboutToShow()
     changeCheckedState(ui->actionStop_watch_uptime_and_working_time);
     changeCheckedState(ui->actionWord_wrap);
     changeCheckedState(ui->actionAuto_indent);
+    changeCheckedState(ui->actionMinimap);
+    changeCheckedState(ui->actionZen_mode);
 }
 
 void MainWindow::surroundSelectedTextWithTag(QString divClass, QString textBase, QString extraAttributes, bool closable)
@@ -1773,7 +1864,15 @@ void MainWindow::loadSettings()
             if (auto* editor = qobject_cast<CodeEditor*>(ui->editorTabs->widget(i)))
                 editor->setFont(editorFont);
         }
+        minimapWidget->setBaseFont(editorFont);
     }
+
+    const bool minimapEnabled = settings.value(QStringLiteral("view/minimap"), true).toBool();
+    {
+        QSignalBlocker minimapBlocker(ui->actionMinimap);
+        ui->actionMinimap->setChecked(minimapEnabled);
+    }
+    minimapWidget->setVisible(minimapEnabled);
 
     ui->stcPreviewWidget->setScrollSyncEnabled(settings.value(GeometryNames::PREVIEW_SCROLL_SYNC, true).toBool());
     ui->stcPreviewWidget->setClickSyncEnabled(settings.value(GeometryNames::PREVIEW_CLICK_SYNC, true).toBool());
@@ -1802,6 +1901,10 @@ void MainWindow::loadSettings()
 void MainWindow::saveSettings()
 {
     QSettings settings;
+
+    // zen mode is a runtime state, not a setting: do not save the fullscreen window state
+    if (zenModeActive)
+        setWindowState(windowState() & ~Qt::WindowFullScreen);
 
     settings.setValue(GeometryNames::GEOMETRY, saveGeometry());
     settings.setValue(GeometryNames::SETTINGS_WINDOW_STATE, saveState());
