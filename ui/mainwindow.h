@@ -17,6 +17,7 @@ class ConsoleWidget;
 class CodeEditor;
 class QDockWidget;
 class QLabel;
+class QTimer;
 
 class QTextCursor;
 
@@ -154,6 +155,8 @@ protected:
     /// the counts and the cursor position of the status bar, of the document of the current tab
     void updateStatusBarCounts(CodeEditor* editor);
     void updateStatusBarPosition(CodeEditor* editor);
+    /// restarts the short delay after which the counts are counted again (they are expensive on long documents)
+    void scheduleStatusBarCountsUpdate();
     /// opens the file in a tab: activates the tab if it is already open, reuses a pristine empty tab or adds a new one
     int findTabIndexForFile(const QString& fileName) const;
     bool closeApplicationReturningIfClosed();
@@ -192,6 +195,8 @@ private: // members
     /// the right side of the status bar: the counts of the document and the position of the cursor
     QLabel* statusCountsLabel = nullptr;
     QLabel* statusPositionLabel = nullptr;
+    /// delays the recount of the words and the characters after the last change of the text
+    QTimer* statusCountsTimer = nullptr;
 
     CppNewsWidget* cppNewsWidget = nullptr;
     int cppNewsTabIndex = -1;

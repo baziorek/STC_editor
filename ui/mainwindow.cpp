@@ -628,7 +628,7 @@ void MainWindow::connectEditorSignals(CodeEditor* editor)
     connect(editor, &QPlainTextEdit::textChanged, this, [this, editor]() {
         if (editor == currentEditor())
         {
-            updateStatusBarCounts(editor);
+            scheduleStatusBarCountsUpdate();
             updateStatusBarPosition(editor);
         }
     });
@@ -746,8 +746,35 @@ void MainWindow::updateStatusBarCounts(CodeEditor* editor)
         return;
     }
 
-    const int words = editor->toPlainText().split(QRegularExpression(QStringLiteral("\\s+")), Qt::SkipEmptyParts).count();
+    // count the words without splitting the text into a list of them: the documents can be long
+    int words = 0;
+    bool insideWord = false;
+    const QString text = editor->toPlainText();
+    for (const QChar ch : text)
+    {
+        if (ch.isSpace())
+            insideWord = false;
+        else if (!insideWord)
+        {
+            insideWord = true;
+            ++words;
+        }
+    }
+
     statusCountsLabel->setText(tr("%1 words · %2 chars").arg(words).arg(editor->document()->characterCount()));
+}
+
+void MainWindow::scheduleStatusBarCountsUpdate()
+{
+    if (!statusCountsTimer)
+    {
+        statusCountsTimer = new QTimer(this);
+        statusCountsTimer->setSingleShot(true);
+        connect(statusCountsTimer, &QTimer::timeout, this, [this]() {
+            updateStatusBarCounts(currentEditor());
+        });
+    }
+    statusCountsTimer->start(250);
 }
 
 void MainWindow::updateStatusBarPosition(CodeEditor* editor)
