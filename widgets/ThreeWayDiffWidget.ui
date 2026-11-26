@@ -68,9 +68,6 @@
      </item>
      <item>
       <widget class="QLabel" name="baseTitleLabel">
-       <property name="styleSheet">
-        <string>font-weight: bold</string>
-       </property>
        <property name="text">
         <string/>
        </property>
@@ -94,9 +91,6 @@
      </item>
      <item>
       <widget class="QLabel" name="oursTitleLabel">
-       <property name="styleSheet">
-        <string>font-weight: bold</string>
-       </property>
        <property name="text">
         <string/>
        </property>
@@ -120,9 +114,6 @@
      </item>
      <item>
       <widget class="QLabel" name="theirsTitleLabel">
-       <property name="styleSheet">
-        <string>font-weight: bold</string>
-       </property>
        <property name="text">
         <string/>
        </property>

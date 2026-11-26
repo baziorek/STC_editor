@@ -331,27 +331,27 @@ Do you want to reload it?</source>
 Czy chcesz wczytać go ponownie?</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="3375"/>
+        <location filename="../CodeEditor.cpp" line="3377"/>
         <source>Convert to [%1]</source>
         <translation>Zamień na [%1]</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="3418"/>
+        <location filename="../CodeEditor.cpp" line="3420"/>
         <source>Spelling suggestions</source>
         <translation>Propozycje pisowni</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="3834"/>
+        <location filename="../CodeEditor.cpp" line="3836"/>
         <source>Edit history…</source>
         <translation>Historia edycji…</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="3840"/>
+        <location filename="../CodeEditor.cpp" line="3842"/>
         <source>History of line %1…</source>
         <translation>Historia linii %1…</translation>
     </message>
     <message numerus="yes">
-        <location filename="../CodeEditor.cpp" line="3935"/>
+        <location filename="../CodeEditor.cpp" line="3937"/>
         <source>This line was changed %n time(s) in this session - click to see its history</source>
         <translation>
             <numerusform>Ta linia została zmieniona %n raz w tej sesji – kliknij, aby zobaczyć jej historię</numerusform>
@@ -360,7 +360,7 @@ Czy chcesz wczytać go ponownie?</translation>
         </translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="3937"/>
+        <location filename="../CodeEditor.cpp" line="3939"/>
         <source>(all the changes are undone now; Ctrl+Shift+Z brings them back)</source>
         <translation>(wszystkie zmiany są teraz cofnięte; Ctrl+Shift+Z je przywraca)</translation>
     </message>
@@ -375,12 +375,12 @@ Czy chcesz wczytać go ponownie?</translation>
         </translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="3923"/>
+        <location filename="../CodeEditor.cpp" line="3925"/>
         <source>Click to fold</source>
         <translation>Kliknij, aby zwinąć</translation>
     </message>
     <message>
-        <location filename="../CodeEditor.cpp" line="3923"/>
+        <location filename="../CodeEditor.cpp" line="3925"/>
         <source>Click to unfold</source>
         <translation>Kliknij, aby rozwinąć</translation>
     </message>
@@ -839,10 +839,6 @@ start: %4</translation>
         <location filename="../widgets/CppNewsWidget.cpp" line="128"/>
         <source>No news found in the feed. Structure: %1</source>
         <translation>W kanale nie znaleziono aktualności. Struktura: %1</translation>
-    </message>
-    <message>
-        <source>The news feed could not be read</source>
-        <translation type="vanished">Nie udało się odczytać kanału aktualności</translation>
     </message>
     <message>
         <location filename="../widgets/CppNewsWidget.cpp" line="140"/>
@@ -1679,12 +1675,12 @@ Dwuklik przenosi do linii.</translation>
         <translation>Bez znaczników: tylko sprawdzanie pisowni oraz formatowanie linków i adresów e-mail</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1299"/>
+        <location filename="../ui/mainwindow.cpp" line="1312"/>
         <source>Source and data files (%1)</source>
         <translation>Pliki kodu źródłowego i danych (%1)</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1300"/>
+        <location filename="../ui/mainwindow.cpp" line="1313"/>
         <source>All files (*)</source>
         <translation>Wszystkie pliki (*)</translation>
     </message>
@@ -1749,14 +1745,6 @@ Dwuklik przenosi do linii.</translation>
         <translation>Traktuj cały plik jako JSON</translation>
     </message>
     <message>
-        <source>Language Changed</source>
-        <translation type="vanished">Zmieniono język</translation>
-    </message>
-    <message>
-        <source>The language has been changed. Please restart the application for the changes to take effect.</source>
-        <translation type="vanished">Język został zmieniony. Proszę uruchomić ponownie aplikację, aby zmiany weszły w życie.</translation>
-    </message>
-    <message>
         <location filename="../ui/mainwindow.cpp" line="481"/>
         <source>File not found</source>
         <translation>File not found</translation>
@@ -1790,43 +1778,35 @@ Dwuklik przenosi do linii.</translation>
         <translation>Aktualności cpp0x.pl</translation>
     </message>
     <message>
-        <source>Close without saving?</source>
-        <translation type="vanished">Close without saving?</translation>
-    </message>
-    <message>
-        <source>Do You really want to close the editor without saving unsaved changes?</source>
-        <translation type="vanished">Do You really want to close the editor without saving unsaved changes?</translation>
-    </message>
-    <message>
         <location filename="../ui/mainwindow.cpp" line="648"/>
-        <location filename="../ui/mainwindow.cpp" line="748"/>
+        <location filename="../ui/mainwindow.cpp" line="761"/>
         <source>Untitled</source>
         <translation>Bez tytułu</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="859"/>
+        <location filename="../ui/mainwindow.cpp" line="872"/>
         <source>Close tab without saving?</source>
         <translation>Zamknąć kartę bez zapisu?</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="859"/>
+        <location filename="../ui/mainwindow.cpp" line="872"/>
         <source>Do You really want to close this tab without saving unsaved changes?</source>
         <translation>Czy na pewno chcesz zamknąć tę kartę bez zapisywania niezapisanych zmian?</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="983"/>
-        <location filename="../ui/mainwindow.cpp" line="1129"/>
+        <location filename="../ui/mainwindow.cpp" line="996"/>
+        <location filename="../ui/mainwindow.cpp" line="1142"/>
         <source>Close tab</source>
         <translation>Zamknij kartę</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1271"/>
+        <location filename="../ui/mainwindow.cpp" line="1284"/>
         <source>PDF document (*.pdf)</source>
         <translation>Dokument PDF (*.pdf)</translation>
     </message>
     <message>
         <location filename="../ui/mainwindow.ui" line="339"/>
-        <location filename="../ui/mainwindow.cpp" line="1260"/>
+        <location filename="../ui/mainwindow.cpp" line="1273"/>
         <source>Print</source>
         <translation>Drukuj</translation>
     </message>
@@ -1837,97 +1817,81 @@ Dwuklik przenosi do linii.</translation>
     </message>
     <message>
         <location filename="../ui/mainwindow.ui" line="350"/>
-        <location filename="../ui/mainwindow.cpp" line="1269"/>
+        <location filename="../ui/mainwindow.cpp" line="1282"/>
         <source>Export to PDF</source>
         <translation>Eksportuj do PDF</translation>
     </message>
     <message>
-        <source>Confirm discarding current file content?</source>
-        <translation type="vanished">Confirm discarding current file content?</translation>
-    </message>
-    <message>
-        <source>Do You really want to lose currently unsaved changes and create new file</source>
-        <translation type="vanished">Do You really want to lose currently unsaved changes and create new file</translation>
-    </message>
-    <message>
-        <source>Decline currently unsaved changes?</source>
-        <translation type="vanished">Decline currently unsaved changes?</translation>
-    </message>
-    <message>
-        <source>Do You really want to decline currently unsaved changes and open new file?</source>
-        <translation type="vanished">Do You really want to decline currently unsaved changes and open new file?</translation>
-    </message>
-    <message>
-        <location filename="../ui/mainwindow.cpp" line="1395"/>
+        <location filename="../ui/mainwindow.cpp" line="1408"/>
         <source>Confirm reloading and loosing unsaved content</source>
         <translation>Confirm reloading and loosing unsaved content</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1395"/>
+        <location filename="../ui/mainwindow.cpp" line="1408"/>
         <source>Do You really want to reload the currently opened file?
 Currently unsaved changes would be declined.</source>
         <translation>Do You really want to reload the currently opened file?
 Currently unsaved changes would be declined.</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1419"/>
+        <location filename="../ui/mainwindow.cpp" line="1432"/>
         <source>Success</source>
         <translation>Success</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1419"/>
+        <location filename="../ui/mainwindow.cpp" line="1432"/>
         <source>Successfull rename of file from:
 </source>
         <translation>Successfull rename of file from:
 </translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1444"/>
+        <location filename="../ui/mainwindow.cpp" line="1457"/>
         <source>Error opening file</source>
         <translation>Error opening file</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1444"/>
+        <location filename="../ui/mainwindow.cpp" line="1457"/>
         <source>File &apos;</source>
         <translation>File &apos;</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1444"/>
+        <location filename="../ui/mainwindow.cpp" line="1457"/>
         <source>&apos; failed to be opened from commandline!</source>
         <translation>&apos; failed to be opened from commandline!</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1451"/>
+        <location filename="../ui/mainwindow.cpp" line="1464"/>
         <source>TODOs (</source>
         <translation>TODOs (</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2049"/>
+        <location filename="../ui/mainwindow.cpp" line="2062"/>
         <source>Encoding</source>
         <translation>Kodowanie</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2053"/>
+        <location filename="../ui/mainwindow.cpp" line="2066"/>
         <source>Save in encoding</source>
         <translation>Zapisz w kodowaniu</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2054"/>
+        <location filename="../ui/mainwindow.cpp" line="2067"/>
         <source>Reload with encoding</source>
         <translation>Przeładuj z kodowaniem</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2074"/>
+        <location filename="../ui/mainwindow.cpp" line="2087"/>
         <source>Current encoding: %1</source>
         <translation>Aktualne kodowanie: %1</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2122"/>
+        <location filename="../ui/mainwindow.cpp" line="2135"/>
         <source>Change encoding</source>
         <translation>Zmiana kodowania</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2123"/>
+        <location filename="../ui/mainwindow.cpp" line="2136"/>
         <source>Change the encoding of the file from %1 to %2?
 
 The text is converted and the file is saved in %2 when you save it.</source>
@@ -1936,17 +1900,17 @@ The text is converted and the file is saved in %2 when you save it.</source>
 Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy najbliższym zapisie.</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2136"/>
+        <location filename="../ui/mainwindow.cpp" line="2149"/>
         <source>Reload the file?</source>
         <translation>Przeładować plik?</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2137"/>
+        <location filename="../ui/mainwindow.cpp" line="2150"/>
         <source>Do You really want to read the file again in the encoding %1 and lose the unsaved changes?</source>
         <translation>Czy na pewno wczytać plik ponownie w kodowaniu %1 i stracić niezapisane zmiany?</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="2321"/>
+        <location filename="../ui/mainwindow.cpp" line="2334"/>
         <source>Login error</source>
         <translation>Login error</translation>
     </message>
@@ -2321,35 +2285,35 @@ Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy na
         <translation>Tryb zen ☐</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="984"/>
+        <location filename="../ui/mainwindow.cpp" line="997"/>
         <source>Close other tabs</source>
         <translation>Zamknij pozostałe karty</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="985"/>
+        <location filename="../ui/mainwindow.cpp" line="998"/>
         <source>Close all tabs</source>
         <translation>Zamknij wszystkie karty</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1548"/>
+        <location filename="../ui/mainwindow.cpp" line="1561"/>
         <source>Editor font</source>
         <translation>Czcionka edytora</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="805"/>
+        <location filename="../ui/mainwindow.cpp" line="818"/>
         <source>%1 words · %2 chars</source>
         <translation>%1 słów · %2 znaków</translation>
     </message>
     <message>
         <location filename="../ui/mainwindow.cpp" line="128"/>
         <location filename="../ui/mainwindow.cpp" line="221"/>
-        <location filename="../ui/mainwindow.cpp" line="2022"/>
-        <location filename="../ui/mainwindow.cpp" line="2023"/>
+        <location filename="../ui/mainwindow.cpp" line="2035"/>
+        <location filename="../ui/mainwindow.cpp" line="2036"/>
         <source>Console</source>
         <translation>Konsola</translation>
     </message>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="832"/>
+        <location filename="../ui/mainwindow.cpp" line="845"/>
         <source>Ln %1, Col %2</source>
         <translation>Wiersz %1, kolumna %2</translation>
     </message>
@@ -2380,185 +2344,6 @@ Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy na
     </message>
 </context>
 <context>
-    <name>MainWindowClass</name>
-    <message>
-        <source>Cpp0x tags editor</source>
-        <translation type="vanished">Edytor tagów Cpp0x</translation>
-    </message>
-    <message>
-        <source>Go to line</source>
-        <translation type="vanished">Przejdź do linii</translation>
-    </message>
-    <message>
-        <source>Conspect</source>
-        <translation type="vanished">Konspekt</translation>
-    </message>
-    <message>
-        <source>Codes</source>
-        <translation type="vanished">Kody</translation>
-    </message>
-    <message>
-        <source>TODOs</source>
-        <translation type="vanished">TODOs</translation>
-    </message>
-    <message>
-        <source>Error list</source>
-        <translation type="vanished">Lista błędów</translation>
-    </message>
-    <message>
-        <source>Stopwatch (uptime and working  time)</source>
-        <translation type="vanished">Stoper (czas działania i pracy)</translation>
-    </message>
-    <message>
-        <source>File</source>
-        <translation type="vanished">Plik</translation>
-    </message>
-    <message>
-        <source>Open recent</source>
-        <translation type="vanished">Otwórz ostatnie</translation>
-    </message>
-    <message>
-        <source>Edit</source>
-        <translation type="vanished">Edycja</translation>
-    </message>
-    <message>
-        <source>Check</source>
-        <translation type="vanished">Sprawdź</translation>
-    </message>
-    <message>
-        <source>Help</source>
-        <translation type="vanished">Pomoc</translation>
-    </message>
-    <message>
-        <source>View</source>
-        <translation type="vanished">Widok</translation>
-    </message>
-    <message>
-        <source>Language</source>
-        <translation type="vanished">Język</translation>
-    </message>
-    <message>
-        <source>Open file</source>
-        <translation type="vanished">Otwórz plik</translation>
-    </message>
-    <message>
-        <source>Save file as</source>
-        <translation type="vanished">Zapisz plik jako</translation>
-    </message>
-    <message>
-        <source>Save file</source>
-        <translation type="vanished">Zapisz plik</translation>
-    </message>
-    <message>
-        <source>Find</source>
-        <translation type="vanished">Znajdź</translation>
-    </message>
-    <message>
-        <source>Find and replace</source>
-        <translation type="vanished">Znajdź i zamień</translation>
-    </message>
-    <message>
-        <source>check if tags are closed</source>
-        <translation type="vanished">sprawdź czy tagi są zamknięte</translation>
-    </message>
-    <message>
-        <source>Open</source>
-        <translation type="vanished">Otwórz</translation>
-    </message>
-    <message>
-        <source>last</source>
-        <translation type="vanished">ostatni</translation>
-    </message>
-    <message>
-        <source>Exit</source>
-        <translation type="vanished">Wyjdź</translation>
-    </message>
-    <message>
-        <source>New</source>
-        <translation type="vanished">Nowy</translation>
-    </message>
-    <message>
-        <source>Go to project repository</source>
-        <translation type="vanished">Przejdź do repozytorium projektu</translation>
-    </message>
-    <message>
-        <source>Kurs STC</source>
-        <translation type="vanished">Kurs STC</translation>
-    </message>
-    <message>
-        <source>Go to cpp0x.pl</source>
-        <translation type="vanished">Przejdź do cpp0x.pl</translation>
-    </message>
-    <message>
-        <source>Shortcut list</source>
-        <translation type="vanished">Lista skrótów</translation>
-    </message>
-    <message>
-        <source>Copy basename</source>
-        <translation type="vanished">Kopiuj nazwę pliku</translation>
-    </message>
-    <message>
-        <source>Copy absolute path</source>
-        <translation type="vanished">Kopiuj ścieżkę absolutną</translation>
-    </message>
-    <message>
-        <source>Open parent directory</source>
-        <translation type="vanished">Otwórz katalog nadrzędny</translation>
-    </message>
-    <message>
-        <source>File statistics</source>
-        <translation type="vanished">Statystyki pliku</translation>
-    </message>
-    <message>
-        <source>Short conspect ☑</source>
-        <translation type="vanished">Krótki konspekt ☑</translation>
-    </message>
-    <message>
-        <source>Go to line ☑</source>
-        <translation type="vanished">Przejdź do linii ☑</translation>
-    </message>
-    <message>
-        <source>Breadcrumb ☑</source>
-        <translation type="vanished">Breadcrumb ☑</translation>
-    </message>
-    <message>
-        <source>Stc Preview (account at Cpp0x.pl required) ☐</source>
-        <translation type="vanished">Podgląd STC (wymaga konto na Cpp0x.pl) ☐</translation>
-    </message>
-    <message>
-        <source>Reload file</source>
-        <translation type="vanished">Przeładuj plik</translation>
-    </message>
-    <message>
-        <source>STC Tags buttons ☑</source>
-        <translation type="vanished">Przyciski tagów STC ☑</translation>
-    </message>
-    <message>
-        <source>STC Tags buttons (shortcuts are not working when hidden)</source>
-        <translation type="vanished">Przyciski tagów STC (skróty nie działają gdy ukryte)</translation>
-    </message>
-    <message>
-        <source>Rename file</source>
-        <translation type="vanished">Zmień nazwę pliku</translation>
-    </message>
-    <message>
-        <source>Stop watch (uptime and working time) ☐</source>
-        <translation type="vanished">Stoper (czas działania i pracy) ☐</translation>
-    </message>
-    <message>
-        <source>Resume last session on startup</source>
-        <translation type="vanished">Przywróć ostatnią sesję przy uruchamianiu</translation>
-    </message>
-    <message>
-        <source>English</source>
-        <translation type="vanished">Angielski</translation>
-    </message>
-    <message>
-        <source>Polski</source>
-        <translation type="vanished">Polski</translation>
-    </message>
-</context>
-<context>
     <name>PastedTextDiffDialog</name>
     <message>
         <location filename="../widgets/PastedTextDiffDialog.cpp" line="45"/>
@@ -2579,42 +2364,6 @@ Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy na
         <location filename="../widgets/PastedTextDiffDialog.cpp" line="67"/>
         <source>Ctrl+V - the diff against the current editor content appears below</source>
         <translation>Ctrl+V - różnice względem bieżącej zawartości edytora pojawią się poniżej</translation>
-    </message>
-    <message>
-        <source>← apply to the editor    → discard (keep the editor&apos;s line)    - per line, or per block of consecutive changed lines (blue header)</source>
-        <translation type="vanished">← zastosuj w edytorze    → odrzuć (zostaw linię z edytora)    - osobno dla linii lub dla bloku kolejnych zmienionych linii (niebieski nagłówek)</translation>
-    </message>
-    <message>
-        <source>Editor #</source>
-        <translation type="vanished">Edytor nr</translation>
-    </message>
-    <message>
-        <source>Editor line</source>
-        <translation type="vanished">Linia edytora</translation>
-    </message>
-    <message>
-        <source>Pasted #</source>
-        <translation type="vanished">Wklejone nr</translation>
-    </message>
-    <message>
-        <source>Pasted line</source>
-        <translation type="vanished">Linia wklejona</translation>
-    </message>
-    <message>
-        <source>Line number in the editor</source>
-        <translation type="vanished">Numer linii w edytorze</translation>
-    </message>
-    <message>
-        <source>Line content in the editor (current)</source>
-        <translation type="vanished">Zawartość linii w edytorze (bieżąca)</translation>
-    </message>
-    <message>
-        <source>Line number in the pasted text</source>
-        <translation type="vanished">Numer linii we wklejonym tekście</translation>
-    </message>
-    <message>
-        <source>Line content in the pasted text</source>
-        <translation type="vanished">Zawartość linii we wklejonym tekście</translation>
     </message>
     <message>
         <location filename="../widgets/PastedTextDiffDialog.cpp" line="78"/>
@@ -2666,14 +2415,6 @@ Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy na
         <source>Modified lines: %1 | Added: %2 | Removed: %3</source>
         <translation>Zmienione linie: %1 | dodane: %2 | usunięte: %3</translation>
     </message>
-    <message>
-        <source>none</source>
-        <translation type="vanished">brak</translation>
-    </message>
-    <message>
-        <source>Block of %1 changes  |  editor %2  ↔  pasted %3</source>
-        <translation type="vanished">Blok %1 zmian  |  edytor %2  ↔  wklejone %3</translation>
-    </message>
 </context>
 <context>
     <name>QObject</name>
@@ -2696,7 +2437,7 @@ Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy na
 <context>
     <name>QWidget</name>
     <message>
-        <location filename="../ui/mainwindow.cpp" line="1298"/>
+        <location filename="../ui/mainwindow.cpp" line="1311"/>
         <source>Text file (*.txt)</source>
         <translation>Text file (*.txt)</translation>
     </message>
@@ -2788,27 +2529,27 @@ Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy na
 <context>
     <name>SideBySideDiffWidget</name>
     <message>
-        <location filename="../widgets/SideBySideDiffWidget.cpp" line="178"/>
+        <location filename="../widgets/SideBySideDiffWidget.ui" line="38"/>
         <source>◀ Prev change</source>
         <translation>◀ Poprzednia zmiana</translation>
     </message>
     <message>
-        <location filename="../widgets/SideBySideDiffWidget.cpp" line="179"/>
+        <location filename="../widgets/SideBySideDiffWidget.ui" line="45"/>
         <source>Next change ▶</source>
         <translation>Następna zmiana ▶</translation>
     </message>
     <message>
-        <location filename="../widgets/SideBySideDiffWidget.cpp" line="284"/>
+        <location filename="../widgets/SideBySideDiffWidget.cpp" line="117"/>
         <source>Computing diff…</source>
         <translation>Obliczanie różnic…</translation>
     </message>
     <message>
-        <location filename="../widgets/SideBySideDiffWidget.cpp" line="480"/>
+        <location filename="../widgets/SideBySideDiffWidget.cpp" line="347"/>
         <source>No differences</source>
         <translation>Brak różnic</translation>
     </message>
     <message>
-        <location filename="../widgets/SideBySideDiffWidget.cpp" line="488"/>
+        <location filename="../widgets/SideBySideDiffWidget.cpp" line="355"/>
         <source>Change %1 of %2</source>
         <translation>Zmiana %1 z %2</translation>
     </message>
@@ -2858,22 +2599,6 @@ Tekst zostanie przekonwertowany, a plik zostanie zapisany w kodowaniu %2 przy na
         <location filename="../widgets/StcTablesCreator.cpp" line="59"/>
         <source>Table Editor</source>
         <translation>Table Editor</translation>
-    </message>
-    <message>
-        <source>Edycja nagłówka kolumny</source>
-        <translation type="vanished">Edycja nagłówka kolumny</translation>
-    </message>
-    <message>
-        <source>Wprowadź nowy tekst nagłówka:</source>
-        <translation type="vanished">Wprowadź nowy tekst nagłówka:</translation>
-    </message>
-    <message>
-        <source>Błąd</source>
-        <translation type="vanished">Błąd</translation>
-    </message>
-    <message>
-        <source>Nagłówek nie może być pusty!</source>
-        <translation type="vanished">Nagłówek nie może być pusty!</translation>
     </message>
     <message>
         <location filename="../widgets/StcTablesCreator.cpp" line="261"/>
@@ -3277,114 +3002,114 @@ To samo co pole wyboru w komórce.</translation>
 <context>
     <name>ThreeWayDiffDialog</name>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="44"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="24"/>
         <source>Compare three files</source>
         <translation>Porównaj trzy pliki</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="51"/>
+        <location filename="../widgets/ThreeWayDiffDialog.ui" line="30"/>
         <source>Base (common):</source>
         <translation>Baza (wspólna):</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="51"/>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="53"/>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="58"/>
+        <location filename="../widgets/ThreeWayDiffDialog.ui" line="40"/>
+        <location filename="../widgets/ThreeWayDiffDialog.ui" line="81"/>
+        <location filename="../widgets/ThreeWayDiffDialog.ui" line="129"/>
         <source>Browse…</source>
         <translation>Przeglądaj…</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="53"/>
+        <location filename="../widgets/ThreeWayDiffDialog.ui" line="71"/>
         <source>Ours:</source>
         <translation>Nasza:</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="54"/>
+        <location filename="../widgets/ThreeWayDiffDialog.ui" line="88"/>
         <source>Use the current editor content (including unsaved changes)</source>
         <translation>Użyj bieżącej zawartości edytora (w tym niezapisanych zmian)</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="58"/>
+        <location filename="../widgets/ThreeWayDiffDialog.ui" line="119"/>
         <source>Theirs:</source>
         <translation>Ich:</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="61"/>
+        <location filename="../widgets/ThreeWayDiffDialog.ui" line="166"/>
         <source>Compare</source>
         <translation>Porównaj</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="62"/>
+        <location filename="../widgets/ThreeWayDiffDialog.ui" line="176"/>
         <source>Save merged result…</source>
         <translation>Zapisz wynik scalania…</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="64"/>
+        <location filename="../widgets/ThreeWayDiffDialog.ui" line="183"/>
         <source>Close</source>
         <translation>Zamknij</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="75"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="36"/>
         <source>Base</source>
         <translation>Baza</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="75"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="36"/>
         <source>Ours</source>
         <translation>Nasza</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="75"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="36"/>
         <source>Theirs</source>
         <translation>Ich</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="114"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="79"/>
         <source>Choose the base file</source>
         <translation>Wybierz plik bazowy</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="121"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="86"/>
         <source>Choose the &quot;ours&quot; file</source>
         <translation>Wybierz plik &quot;nasz&quot;</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="128"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="93"/>
         <source>Choose the &quot;theirs&quot; file</source>
         <translation>Wybierz plik &quot;ich&quot;</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="156"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="121"/>
         <source>Editor</source>
         <translation>Edytor</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="159"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="124"/>
         <source>Computing diff…</source>
         <translation>Obliczanie różnic…</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="187"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="152"/>
         <source>No differences - all three versions are identical.</source>
         <translation>Brak różnic - wszystkie trzy wersje są identyczne.</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="189"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="154"/>
         <source>Changes: ours %1 | theirs %2 | same %3 | conflicts %4</source>
         <translation>Zmiany: nasze %1 | ich %2 | takie same %3 | konflikty %4</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="201"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="166"/>
         <source>Save the merged result</source>
         <translation>Zapisz wynik scalania</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="208"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="173"/>
         <source>Could not write %1</source>
         <translation>Nie można zapisać %1</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="217"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="182"/>
         <source>Merged result saved to %1</source>
         <translation>Wynik scalania zapisany do %1</translation>
     </message>
@@ -3392,27 +3117,27 @@ To samo co pole wyboru w komórce.</translation>
 <context>
     <name>ThreeWayDiffWidget</name>
     <message>
-        <location filename="../widgets/ThreeWayDiffWidget.cpp" line="68"/>
+        <location filename="../widgets/ThreeWayDiffWidget.ui" line="38"/>
         <source>◀ Prev conflict</source>
         <translation>◀ Poprzedni konflikt</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffWidget.cpp" line="69"/>
+        <location filename="../widgets/ThreeWayDiffWidget.ui" line="45"/>
         <source>Next conflict ▶</source>
         <translation>Następny konflikt ▶</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffWidget.cpp" line="210"/>
+        <location filename="../widgets/ThreeWayDiffWidget.cpp" line="180"/>
         <source>Computing diff…</source>
         <translation>Obliczanie różnic…</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffWidget.cpp" line="286"/>
+        <location filename="../widgets/ThreeWayDiffWidget.cpp" line="256"/>
         <source>No conflicts</source>
         <translation>Brak konfliktów</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffWidget.cpp" line="295"/>
+        <location filename="../widgets/ThreeWayDiffWidget.cpp" line="265"/>
         <source>Conflict %1 of %2</source>
         <translation>Konflikt %1 z %2</translation>
     </message>

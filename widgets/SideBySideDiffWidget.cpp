@@ -38,6 +38,14 @@ SideBySideDiffWidget::SideBySideDiffWidget(QWidget *parent)
         edit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
     }
 
+    // the titles of the two sides are bold
+    for (QLabel *label : {oldTitleLabel_, newTitleLabel_})
+    {
+        QFont font = label->font();
+        font.setBold(true);
+        label->setFont(font);
+    }
+
     auto *gutter = ui->gutter;
     gutter->actions = actionMode_;
     gutter->onTakeLeft = [this](int region) { emit regionDiscarded(region); };

@@ -71,6 +71,14 @@ ThreeWayDiffWidget::ThreeWayDiffWidget(QWidget *parent)
         numbers->setTextInteractionFlags(Qt::NoTextInteraction);
     }
 
+    // the titles of the three sides are bold
+    for (QLabel *label : {baseTitleLabel_, oursTitleLabel_, theirsTitleLabel_})
+    {
+        QFont font = label->font();
+        font.setBold(true);
+        label->setFont(font);
+    }
+
     syncScrollBars();
 
     connect(previousButton_, &QPushButton::clicked, this, &ThreeWayDiffWidget::previousConflict);
