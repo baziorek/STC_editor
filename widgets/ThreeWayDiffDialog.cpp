@@ -1,89 +1,49 @@
 #include "ThreeWayDiffDialog.h"
 
+#include "ui_ThreeWayDiffDialog.h"
+
 #include <QCheckBox>
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
-#include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QTextStream>
-#include <QVBoxLayout>
 
 #include "CodeEditor.h"
 #include "ThreeWayDiffWidget.h"
 #include "utils/DiffCalculator.h"
 #include "utils/FileEncodingHandler.h"
 
-namespace
-{
-QWidget *fileRow(const QString &label, QLineEdit *&edit, QPushButton *&browse,
-                 const QString &browseText, QWidget *parent)
-{
-    auto *row = new QWidget(parent);
-    auto *layout = new QHBoxLayout(row);
-    layout->setContentsMargins(0, 0, 0, 0);
-
-    auto *labelWidget = new QLabel(label, row);
-    labelWidget->setMinimumWidth(90);
-    edit = new QLineEdit(row);
-    browse = new QPushButton(browseText, row);
-
-    layout->addWidget(labelWidget);
-    layout->addWidget(edit, 1);
-    layout->addWidget(browse);
-    return row;
-}
-} // namespace
-
 
 ThreeWayDiffDialog::ThreeWayDiffDialog(CodeEditor *editor, QWidget *parent)
-    : QDialog(parent), editor(editor), mainLayout(new QVBoxLayout(this))
+    : QDialog(parent), editor(editor), ui(new Ui::ThreeWayDiffDialog)
 {
+    ui->setupUi(this);
     setWindowTitle(tr("Compare three files"));
     resize(1200, 750);
 
-    QPushButton *browseBaseButton = nullptr;
-    QPushButton *browseOursButton = nullptr;
-    QPushButton *browseTheirsButton = nullptr;
+    baseEdit = ui->baseEdit;
+    oursEdit = ui->oursEdit;
+    theirsEdit = ui->theirsEdit;
+    useEditorCheck = ui->useEditorCheck;
+    compareButton = ui->compareButton;
+    saveMergedButton = ui->saveMergedButton;
+    statsLabel = ui->statsLabel;
+    diffWidget = ui->diffWidget;
 
-    mainLayout->addWidget(fileRow(tr("Base (common):"), baseEdit, browseBaseButton, tr("Browse…"), this));
-
-    auto *oursRow = fileRow(tr("Ours:"), oursEdit, browseOursButton, tr("Browse…"), this);
-    useEditorCheck = new QCheckBox(tr("Use the current editor content (including unsaved changes)"), oursRow);
-    oursRow->layout()->addWidget(useEditorCheck);
-    mainLayout->addWidget(oursRow);
-
-    mainLayout->addWidget(fileRow(tr("Theirs:"), theirsEdit, browseTheirsButton, tr("Browse…"), this));
-
-    auto *buttonRow = new QHBoxLayout();
-    compareButton = new QPushButton(tr("Compare"), this);
-    saveMergedButton = new QPushButton(tr("Save merged result…"), this);
-    saveMergedButton->setEnabled(false);
-    auto *closeButton = new QPushButton(tr("Close"), this);
-    buttonRow->addStretch();
-    buttonRow->addWidget(compareButton);
-    buttonRow->addWidget(saveMergedButton);
-    buttonRow->addWidget(closeButton);
-    mainLayout->addLayout(buttonRow);
-
-    statsLabel = new QLabel(this);
-    mainLayout->addWidget(statsLabel);
-
-    diffWidget = new ThreeWayDiffWidget(this);
     diffWidget->setTitles(tr("Base"), tr("Ours"), tr("Theirs"));
-    mainLayout->addWidget(diffWidget, 1);
 
-    connect(browseBaseButton, &QPushButton::clicked, this, &ThreeWayDiffDialog::browseBase);
-    connect(browseOursButton, &QPushButton::clicked, this, &ThreeWayDiffDialog::browseOurs);
-    connect(browseTheirsButton, &QPushButton::clicked, this, &ThreeWayDiffDialog::browseTheirs);
+    connect(ui->baseBrowseButton, &QPushButton::clicked, this, &ThreeWayDiffDialog::browseBase);
+    connect(ui->oursBrowseButton, &QPushButton::clicked, this, &ThreeWayDiffDialog::browseOurs);
+    connect(ui->theirsBrowseButton, &QPushButton::clicked, this, &ThreeWayDiffDialog::browseTheirs);
     connect(compareButton, &QPushButton::clicked, this, &ThreeWayDiffDialog::compare);
     connect(saveMergedButton, &QPushButton::clicked, this, &ThreeWayDiffDialog::saveMerged);
-    connect(closeButton, &QPushButton::clicked, this, &QDialog::reject);
-    connect(useEditorCheck, &QCheckBox::toggled, this, [this, browseOursButton](bool checked) {
+    connect(ui->closeButton, &QPushButton::clicked, this, &QDialog::reject);
+    connect(useEditorCheck, &QCheckBox::toggled, this, [this](bool checked) {
         oursEdit->setEnabled(!checked);
-        browseOursButton->setEnabled(!checked);
+        ui->oursBrowseButton->setEnabled(!checked);
         updateButtons();
     });
     connect(baseEdit, &QLineEdit::textChanged, this, &ThreeWayDiffDialog::updateButtons);
@@ -95,6 +55,11 @@ ThreeWayDiffDialog::ThreeWayDiffDialog(CodeEditor *editor, QWidget *parent)
         oursEdit->setText(editor->getFileName());
 
     updateButtons();
+}
+
+ThreeWayDiffDialog::~ThreeWayDiffDialog()
+{
+    delete ui;
 }
 
 QStringList ThreeWayDiffDialog::linesOf(const QString &filePath) const

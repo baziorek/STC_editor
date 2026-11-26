@@ -1,9 +1,9 @@
 #include "ThreeWayDiffWidget.h"
 
-#include <QFrame>
+#include "ui_ThreeWayDiffWidget.h"
+
 #include <QFont>
 #include <QFontDatabase>
-#include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
 #include <QScrollBar>
@@ -11,26 +11,10 @@
 #include <QTextCursor>
 #include <QTextDocument>
 #include <QTextEdit>
-#include <QVBoxLayout>
+#include <Qt>
 
 namespace
 {
-
-QTextEdit *makePane(QWidget *parent, int width = 0)
-{
-    auto *edit = new QTextEdit(parent);
-    edit->setReadOnly(true);
-    edit->setLineWrapMode(QTextEdit::NoWrap);
-    edit->setFrameShape(QFrame::NoFrame);
-    edit->document()->setDocumentMargin(0);
-    edit->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    edit->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    edit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    edit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-    if (width > 0)
-        edit->setFixedWidth(width);
-    return edit;
-}
 
 /// The background of a row on one side, by the kind of the row.
 QColor backgroundFor(ThreeWayDiff::RowKind kind, int side)
@@ -55,69 +39,47 @@ QColor backgroundFor(ThreeWayDiff::RowKind kind, int side)
 } // namespace
 
 
-ThreeWayDiffWidget::ThreeWayDiffWidget(QWidget *parent) : QWidget(parent)
+ThreeWayDiffWidget::ThreeWayDiffWidget(QWidget *parent)
+    : QWidget(parent), ui(new Ui::ThreeWayDiffWidget)
 {
-    auto *mainLayout = new QVBoxLayout(this);
-    mainLayout->setContentsMargins(0, 0, 0, 0);
-    mainLayout->setSpacing(0);
+    ui->setupUi(this);
 
-    // --- header ---
-    auto *headerLayout = new QHBoxLayout();
-    headerLayout->setContentsMargins(6, 4, 6, 4);
+    baseTitleLabel_ = ui->baseTitleLabel;
+    oursTitleLabel_ = ui->oursTitleLabel;
+    theirsTitleLabel_ = ui->theirsTitleLabel;
+    conflictLabel_ = ui->conflictLabel;
+    previousButton_ = ui->previousButton;
+    nextButton_ = ui->nextButton;
 
-    previousButton_ = new QPushButton(tr("◀ Prev conflict"), this);
-    nextButton_ = new QPushButton(tr("Next conflict ▶"), this);
-    conflictLabel_ = new QLabel(this);
+    baseNumbersEdit_ = ui->baseNumbersEdit;
+    baseEdit_ = ui->baseEdit;
+    oursNumbersEdit_ = ui->oursNumbersEdit;
+    oursEdit_ = ui->oursEdit;
+    theirsNumbersEdit_ = ui->theirsNumbersEdit;
+    theirsEdit_ = ui->theirsEdit;
 
-    headerLayout->addWidget(previousButton_);
-    headerLayout->addWidget(nextButton_);
-    headerLayout->addWidget(conflictLabel_);
-    headerLayout->addStretch();
-
-    baseTitleLabel_ = new QLabel(this);
-    baseTitleLabel_->setStyleSheet("font-weight: bold");
-    headerLayout->addWidget(baseTitleLabel_);
-    headerLayout->addSpacing(16);
-    oursTitleLabel_ = new QLabel(this);
-    oursTitleLabel_->setStyleSheet("font-weight: bold");
-    headerLayout->addWidget(oursTitleLabel_);
-    headerLayout->addSpacing(16);
-    theirsTitleLabel_ = new QLabel(this);
-    theirsTitleLabel_->setStyleSheet("font-weight: bold");
-    headerLayout->addWidget(theirsTitleLabel_);
-
-    mainLayout->addLayout(headerLayout);
-
-    // --- panes: numbers + text for each of the three sides ---
-    auto *panesLayout = new QHBoxLayout();
-    panesLayout->setContentsMargins(0, 0, 0, 0);
-    panesLayout->setSpacing(0);
-
-    baseNumbersEdit_ = makePane(this, 48);
-    baseNumbersEdit_->setTextInteractionFlags(Qt::NoTextInteraction);
-    baseEdit_ = makePane(this);
-
-    oursNumbersEdit_ = makePane(this, 48);
-    oursNumbersEdit_->setTextInteractionFlags(Qt::NoTextInteraction);
-    oursEdit_ = makePane(this);
-
-    theirsNumbersEdit_ = makePane(this, 48);
-    theirsNumbersEdit_->setTextInteractionFlags(Qt::NoTextInteraction);
-    theirsEdit_ = makePane(this);
-
-    panesLayout->addWidget(baseNumbersEdit_);
-    panesLayout->addWidget(baseEdit_, 1);
-    panesLayout->addWidget(oursNumbersEdit_);
-    panesLayout->addWidget(oursEdit_, 1);
-    panesLayout->addWidget(theirsNumbersEdit_);
-    panesLayout->addWidget(theirsEdit_, 1);
-
-    mainLayout->addLayout(panesLayout, 1);
+    // the panes share one fixed font and have no document margin; the numbers columns are narrow
+    for (QTextEdit *edit : {baseNumbersEdit_, baseEdit_, oursNumbersEdit_, oursEdit_,
+                            theirsNumbersEdit_, theirsEdit_})
+    {
+        edit->document()->setDocumentMargin(0);
+        edit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    }
+    for (QTextEdit *numbers : {baseNumbersEdit_, oursNumbersEdit_, theirsNumbersEdit_})
+    {
+        numbers->setFixedWidth(48);
+        numbers->setTextInteractionFlags(Qt::NoTextInteraction);
+    }
 
     syncScrollBars();
 
     connect(previousButton_, &QPushButton::clicked, this, &ThreeWayDiffWidget::previousConflict);
     connect(nextButton_, &QPushButton::clicked, this, &ThreeWayDiffWidget::nextConflict);
+}
+
+ThreeWayDiffWidget::~ThreeWayDiffWidget()
+{
+    delete ui;
 }
 
 void ThreeWayDiffWidget::setResult(const ThreeWayDiff::Result &result)

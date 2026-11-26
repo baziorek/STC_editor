@@ -10,6 +10,11 @@ class QLabel;
 class QPushButton;
 class QTextEdit;
 
+namespace Ui
+{
+class ThreeWayDiffWidget;
+}
+
 /**
  * @class ThreeWayDiffWidget
  * @brief A read-only diff3-style view: base, ours and theirs side by side.
@@ -26,6 +31,7 @@ class ThreeWayDiffWidget : public QWidget
 
 public:
     explicit ThreeWayDiffWidget(QWidget *parent = nullptr);
+    ~ThreeWayDiffWidget() override;
 
     void setResult(const ThreeWayDiff::Result &result);
     /// Shows the three texts right away, before the diff is computed (no colors).
@@ -49,6 +55,8 @@ private:
 
     ThreeWayDiff::Result result_;
     int currentConflict_ = -1;
+
+    Ui::ThreeWayDiffWidget *ui = nullptr;
 
     QLabel *baseTitleLabel_ = nullptr;
     QLabel *oursTitleLabel_ = nullptr;

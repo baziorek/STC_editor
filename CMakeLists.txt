@@ -552,6 +552,7 @@ if(NOT WIN32)
     add_executable(${PROJECT_NAME}SideBySideDiffTests
         tests/SideBySideDiffTests.cpp
         widgets/SideBySideDiffWidget.cpp
+        widgets/ChangeGutterWidget.cpp
         utils/DiffCalculation.cpp
     )
     target_include_directories(${PROJECT_NAME}SideBySideDiffTests PRIVATE ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/libs)

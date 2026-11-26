@@ -1,230 +1,47 @@
 #include "SideBySideDiffWidget.h"
 
-#include <QAbstractTextDocumentLayout>
-#include <QFrame>
+#include "ChangeGutterWidget.h"
+#include "ui_SideBySideDiffWidget.h"
+
 #include <QFont>
 #include <QFontDatabase>
-#include <QHBoxLayout>
 #include <QLabel>
-#include <QMouseEvent>
-#include <QPainter>
 #include <QPushButton>
 #include <QScrollBar>
 #include <QTextBlock>
 #include <QTextCursor>
 #include <QTextDocument>
 #include <QTextEdit>
-#include <QVBoxLayout>
 #include <Qt>
 
-#include <functional>
-
-namespace
+SideBySideDiffWidget::SideBySideDiffWidget(QWidget *parent)
+    : QWidget(parent), ui(new Ui::SideBySideDiffWidget)
 {
+    ui->setupUi(this);
 
-/// The column between the panes with the "take left" / "take right" buttons of every change run.
-/// It does not scroll itself: it is as high as the viewport and the arrows are painted at the
-/// place of their run, translated by the scroll offset of the panes.
-class ChangeGutterWidget : public QWidget
-{
-public:
-    const QVector<SideBySideDiffWidget::ChangeRegion> *regions = nullptr;
-    const std::vector<DiffCalculation::DiffLine> *diffLines = nullptr;
-    QTextDocument *document = nullptr; ///< the document of the left pane (both have the same rows)
-    int scrollOffset = 0;
-    SideBySideDiffWidget::Actions actions = SideBySideDiffWidget::Actions::None;
-    std::function<void(int)> onTakeLeft;   ///< region index
-    std::function<void(int)> onTakeRight;
+    oldTitleLabel_ = ui->oldTitleLabel;
+    newTitleLabel_ = ui->newTitleLabel;
+    changeLabel_ = ui->changeLabel;
+    previousButton_ = ui->previousButton;
+    nextButton_ = ui->nextButton;
 
-    explicit ChangeGutterWidget(QWidget *parent = nullptr) : QWidget(parent)
+    numberOldEdit_ = ui->numberOldEdit;
+    oldEdit_ = ui->oldEdit;
+    gutter_ = ui->gutter;
+    numberNewEdit_ = ui->numberNewEdit;
+    newEdit_ = ui->newEdit;
+
+    // the panes share one fixed font and have no document margin
+    for (QTextEdit *edit : {numberOldEdit_, oldEdit_, numberNewEdit_, newEdit_})
     {
-        setFixedWidth(52);
-        setMouseTracking(true);
+        edit->document()->setDocumentMargin(0);
+        edit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
     }
 
-    /// The vertical center of a change run in gutter coordinates, or -1 when it is not visible
-    qreal regionCenterY(const SideBySideDiffWidget::ChangeRegion &region) const
-    {
-        if (!document)
-            return -1;
-        const auto *layout = document->documentLayout();
-        const QTextBlock first = document->findBlockByNumber(region.firstEntry);
-        const QTextBlock last = document->findBlockByNumber(region.lastEntry);
-        if (!first.isValid() || !last.isValid())
-            return -1;
-
-        const qreal y1 = layout->blockBoundingRect(first).top() - scrollOffset;
-        const qreal y2 = layout->blockBoundingRect(last).bottom() - scrollOffset;
-        return (y1 + y2) / 2;
-    }
-
-    /// Which button of the region is under the point: 0 = none, 1 = left ("take left"), 2 = right ("take right"), 3 = restore
-    int hitTest(const QPoint &pos, int *regionIndex = nullptr) const
-    {
-        if (!regions || actions == SideBySideDiffWidget::Actions::None)
-            return 0;
-
-        for (int i = 0; i < regions->size(); ++i)
-        {
-            const qreal yc = regionCenterY((*regions)[i]);
-            if (yc < -12 || yc > height() + 12)
-                continue;
-
-            const QRect button = buttonRect(yc);
-            if (button.contains(pos))
-            {
-                if (regionIndex)
-                    *regionIndex = i;
-                if (actions == SideBySideDiffWidget::Actions::RestoreOnly)
-                    return 3;
-                return pos.x() < width() / 2 ? 1 : 2;
-            }
-        }
-        return 0;
-    }
-
-    QRect buttonRect(qreal yc) const
-    {
-        if (actions == SideBySideDiffWidget::Actions::RestoreOnly)
-            return QRect(width() / 2 - 11, int(yc) - 9, 22, 18);
-        return QRect(3, int(yc) - 9, width() - 6, 18);
-    }
-
-protected:
-    void paintEvent(QPaintEvent *) override
-    {
-        QPainter painter(this);
-        painter.setRenderHint(QPainter::Antialiasing);
-
-        if (!regions || actions == SideBySideDiffWidget::Actions::None)
-            return;
-
-        const QPen gridPen(QColor(200, 200, 200));
-        painter.setPen(gridPen);
-        painter.drawLine(0, 0, 0, height());
-
-        for (int i = 0; i < regions->size(); ++i)
-        {
-            const qreal yc = regionCenterY((*regions)[i]);
-            if (yc < -12 || yc > height() + 12)
-                continue;
-
-            const QRect rect = buttonRect(yc);
-            painter.setBrush(QColor(240, 244, 250));
-            painter.setPen(QColor(120, 130, 145));
-            painter.drawRoundedRect(rect, 4, 4);
-
-            painter.setPen(QColor(40, 45, 55));
-            if (actions == SideBySideDiffWidget::Actions::RestoreOnly)
-            {
-                painter.drawText(rect, Qt::AlignCenter, QStringLiteral("↩"));
-            }
-            else
-            {
-                // left button takes the left-hand version, right button the right-hand one
-                const int mid = width() / 2;
-                painter.drawText(QRect(3, rect.top(), mid - 3, rect.height()), Qt::AlignCenter, QStringLiteral("←"));
-                painter.drawText(QRect(mid, rect.top(), width() - mid - 3, rect.height()), Qt::AlignCenter, QStringLiteral("→"));
-            }
-        }
-    }
-
-    void mousePressEvent(QMouseEvent *event) override
-    {
-        int regionIndex = -1;
-        const int hit = hitTest(event->position().toPoint(), &regionIndex);
-        if (hit == 1 && onTakeLeft && regionIndex >= 0)
-            onTakeLeft(regionIndex);
-        else if (hit == 2 && onTakeRight && regionIndex >= 0)
-            onTakeRight(regionIndex);
-        else if (hit == 3 && onTakeLeft && regionIndex >= 0)
-            onTakeLeft(regionIndex);
-    }
-
-    void mouseMoveEvent(QMouseEvent *event) override
-    {
-        setCursor(hitTest(event->position().toPoint()) ? Qt::PointingHandCursor : Qt::ArrowCursor);
-    }
-};
-
-QTextEdit *makeDiffPane(QWidget *parent, const QString &objectName)
-{
-    auto *edit = new QTextEdit(parent);
-    edit->setObjectName(objectName);
-    edit->setReadOnly(true);
-    edit->setLineWrapMode(QTextEdit::NoWrap);
-    edit->setFrameShape(QFrame::NoFrame);
-    edit->document()->setDocumentMargin(0);
-    edit->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    edit->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    edit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    edit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-    return edit;
-}
-
-} // namespace
-
-
-SideBySideDiffWidget::SideBySideDiffWidget(QWidget *parent) : QWidget(parent)
-{
-    auto *mainLayout = new QVBoxLayout(this);
-    mainLayout->setContentsMargins(0, 0, 0, 0);
-    mainLayout->setSpacing(0);
-
-    // --- header: change navigation and the titles of the two sides ---
-    auto *headerLayout = new QHBoxLayout();
-    headerLayout->setContentsMargins(6, 4, 6, 4);
-
-    previousButton_ = new QPushButton(tr("◀ Prev change"), this);
-    nextButton_ = new QPushButton(tr("Next change ▶"), this);
-    changeLabel_ = new QLabel(this);
-
-    headerLayout->addWidget(previousButton_);
-    headerLayout->addWidget(nextButton_);
-    headerLayout->addWidget(changeLabel_);
-    headerLayout->addStretch();
-
-    oldTitleLabel_ = new QLabel(this);
-    oldTitleLabel_->setStyleSheet("font-weight: bold");
-    headerLayout->addWidget(oldTitleLabel_);
-    headerLayout->addSpacing(24);
-    newTitleLabel_ = new QLabel(this);
-    newTitleLabel_->setStyleSheet("font-weight: bold");
-    headerLayout->addWidget(newTitleLabel_);
-
-    mainLayout->addLayout(headerLayout);
-
-    // --- panes: line numbers, texts, the gutter with the buttons ---
-    auto *panesLayout = new QHBoxLayout();
-    panesLayout->setContentsMargins(0, 0, 0, 0);
-    panesLayout->setSpacing(0);
-
-    numberOldEdit_ = makeDiffPane(this, QStringLiteral("numbersOld"));
-    numberOldEdit_->setFixedWidth(52);
-    numberOldEdit_->setTextInteractionFlags(Qt::NoTextInteraction);
-
-    oldEdit_ = makeDiffPane(this, QStringLiteral("old"));
-
-    gutter_ = new ChangeGutterWidget(this);
-    gutter_->setObjectName(QStringLiteral("gutter"));
-    auto *gutter = static_cast<ChangeGutterWidget *>(gutter_);
+    auto *gutter = ui->gutter;
     gutter->actions = actionMode_;
     gutter->onTakeLeft = [this](int region) { emit regionDiscarded(region); };
     gutter->onTakeRight = [this](int region) { emit regionAccepted(region); };
-
-    numberNewEdit_ = makeDiffPane(this, QStringLiteral("numbersNew"));
-    numberNewEdit_->setFixedWidth(52);
-    numberNewEdit_->setTextInteractionFlags(Qt::NoTextInteraction);
-
-    newEdit_ = makeDiffPane(this, QStringLiteral("new"));
-
-    panesLayout->addWidget(numberOldEdit_);
-    panesLayout->addWidget(oldEdit_, 1);
-    panesLayout->addWidget(gutter_);
-    panesLayout->addWidget(numberNewEdit_);
-    panesLayout->addWidget(newEdit_, 1);
-
-    mainLayout->addLayout(panesLayout, 1);
 
     syncScrollBars();
 
@@ -237,6 +54,11 @@ SideBySideDiffWidget::SideBySideDiffWidget(QWidget *parent) : QWidget(parent)
         if (row >= 0 && row < static_cast<int>(diffLines_.size()) && diffLines_[row].newIndex >= 0)
             emit jumpToLineInEditor(diffLines_[row].newIndex);
     });
+}
+
+SideBySideDiffWidget::~SideBySideDiffWidget()
+{
+    delete ui;
 }
 
 void SideBySideDiffWidget::setDiffLines(const std::vector<DiffCalculation::DiffLine> &diffLines)

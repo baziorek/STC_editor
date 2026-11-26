@@ -52,13 +52,13 @@ TEST(SideBySideDiffWidget, PanesHaveTheSameNumberOfLines)
 
     widget.setDiffLines(diff);
 
-    ASSERT_EQ(pane(widget, QStringLiteral("old"))->document()->blockCount(),
+    ASSERT_EQ(pane(widget, QStringLiteral("oldEdit"))->document()->blockCount(),
               static_cast<int>(diff.size()));
-    ASSERT_EQ(pane(widget, QStringLiteral("new"))->document()->blockCount(),
+    ASSERT_EQ(pane(widget, QStringLiteral("newEdit"))->document()->blockCount(),
               static_cast<int>(diff.size()));
-    ASSERT_EQ(pane(widget, QStringLiteral("numbersOld"))->document()->blockCount(),
+    ASSERT_EQ(pane(widget, QStringLiteral("numberOldEdit"))->document()->blockCount(),
               static_cast<int>(diff.size()));
-    ASSERT_EQ(pane(widget, QStringLiteral("numbersNew"))->document()->blockCount(),
+    ASSERT_EQ(pane(widget, QStringLiteral("numberNewEdit"))->document()->blockCount(),
               static_cast<int>(diff.size()));
 }
 
@@ -71,8 +71,8 @@ TEST(SideBySideDiffWidget, MissingLinesBecomeEmptyPlaceholders)
 
     widget.setDiffLines(diff);
 
-    const QString oldText = pane(widget, QStringLiteral("old"))->toPlainText();
-    const QString newText = pane(widget, QStringLiteral("new"))->toPlainText();
+    const QString oldText = pane(widget, QStringLiteral("oldEdit"))->toPlainText();
+    const QString newText = pane(widget, QStringLiteral("newEdit"))->toPlainText();
 
     // both documents have three rows; the placeholders are empty lines
     ASSERT_EQ(oldText.split('\n').size(), 3);
@@ -106,9 +106,9 @@ TEST(SideBySideDiffWidget, ChangedLinesAreColored)
 
     widget.setDiffLines(diff);
 
-    const QTextBlock modifiedOld = pane(widget, QStringLiteral("old"))->document()->findBlockByNumber(1);
-    const QTextBlock modifiedNew = pane(widget, QStringLiteral("new"))->document()->findBlockByNumber(1);
-    const QTextBlock unchangedOld = pane(widget, QStringLiteral("old"))->document()->findBlockByNumber(0);
+    const QTextBlock modifiedOld = pane(widget, QStringLiteral("oldEdit"))->document()->findBlockByNumber(1);
+    const QTextBlock modifiedNew = pane(widget, QStringLiteral("newEdit"))->document()->findBlockByNumber(1);
+    const QTextBlock unchangedOld = pane(widget, QStringLiteral("oldEdit"))->document()->findBlockByNumber(0);
 
     ASSERT_TRUE(modifiedOld.isValid());
     ASSERT_TRUE(modifiedNew.isValid());
@@ -125,7 +125,7 @@ TEST(SideBySideDiffWidget, ChangedCharactersAreHighlighted)
     widget.setDiffLines(diff);
 
     // the deleted "world" must carry a character background on the left pane
-    const QTextBlock block = pane(widget, QStringLiteral("old"))->document()->findBlockByNumber(0);
+    const QTextBlock block = pane(widget, QStringLiteral("oldEdit"))->document()->findBlockByNumber(0);
     ASSERT_TRUE(block.isValid());
 
     bool foundHighlighted = false;
@@ -161,11 +161,11 @@ TEST(SideBySideDiffWidget, ScrollBarsStayInSync)
     }
     ASSERT_EQ(verticalBars, 4);
 
-    pane(widget, QStringLiteral("old"))->verticalScrollBar()->setValue(500);
+    pane(widget, QStringLiteral("oldEdit"))->verticalScrollBar()->setValue(500);
     QApplication::processEvents();
 
-    for (const QString &name : {QStringLiteral("old"), QStringLiteral("new"),
-                                QStringLiteral("numbersOld"), QStringLiteral("numbersNew")})
+    for (const QString &name : {QStringLiteral("oldEdit"), QStringLiteral("newEdit"),
+                                QStringLiteral("numberOldEdit"), QStringLiteral("numberNewEdit")})
     {
         ASSERT_EQ(pane(widget, name)->verticalScrollBar()->value(), 500);
     }
@@ -220,7 +220,7 @@ TEST(SideBySideDiffWidget, EmptyDiffShowsNoChanges)
     widget.setDiffLines(diff);
 
     ASSERT_TRUE(widget.changeRegions().isEmpty());
-    ASSERT_EQ(pane(widget, QStringLiteral("old"))->document()->blockCount(), 2);
+    ASSERT_EQ(pane(widget, QStringLiteral("oldEdit"))->document()->blockCount(), 2);
 }
 
 int main(int argc, char **argv)

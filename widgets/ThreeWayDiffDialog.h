@@ -10,10 +10,14 @@ class QCheckBox;
 class QLineEdit;
 class QLabel;
 class QPushButton;
-class QVBoxLayout;
 class CodeEditor;
 class ThreeWayDiffWidget;
 class QWidget;
+
+namespace Ui
+{
+class ThreeWayDiffDialog;
+}
 
 /**
  * @class ThreeWayDiffDialog
@@ -30,6 +34,7 @@ class ThreeWayDiffDialog : public QDialog
 
 public:
     explicit ThreeWayDiffDialog(CodeEditor *editor, QWidget *parent = nullptr);
+    ~ThreeWayDiffDialog() override;
 
 private slots:
     void browseBase();
@@ -42,6 +47,8 @@ private:
     QStringList linesOf(const QString &filePath) const;
     void updateButtons();
 
+    Ui::ThreeWayDiffDialog *ui = nullptr;
+
     CodeEditor *editor = nullptr;
 
     QLineEdit *baseEdit = nullptr;
@@ -52,7 +59,6 @@ private:
     QPushButton *saveMergedButton = nullptr;
     QLabel *statsLabel = nullptr;
     ThreeWayDiffWidget *diffWidget = nullptr;
-    QVBoxLayout *mainLayout = nullptr;
     DiffCalculator *calculator = nullptr;
     quint64 pendingGeneration_ = 0;
 

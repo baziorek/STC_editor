@@ -11,6 +11,11 @@ class QPlainTextEdit;
 class QPushButton;
 class QTextEdit;
 
+namespace Ui
+{
+class SideBySideDiffWidget;
+}
+
 /**
  * @class SideBySideDiffWidget
  * @brief A meld-like view of a line diff: both documents side by side, fully aligned.
@@ -48,6 +53,7 @@ public:
     };
 
     explicit SideBySideDiffWidget(QWidget *parent = nullptr);
+    ~SideBySideDiffWidget() override;
 
     /// Rebuilds the whole view from the aligned diff (see DiffCalculation::computeDiff).
     void setDiffLines(const std::vector<DiffCalculation::DiffLine> &diffLines);
@@ -99,6 +105,8 @@ private:
     int currentRegion_ = -1;
     int highlightedFirst_ = -1; // rows of the numbers column painted for currentRegion_
     int highlightedLast_ = -1;
+
+    Ui::SideBySideDiffWidget *ui = nullptr;
 
     QLabel *oldTitleLabel_ = nullptr;
     QLabel *newTitleLabel_ = nullptr;
