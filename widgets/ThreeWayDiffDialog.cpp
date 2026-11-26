@@ -13,6 +13,7 @@
 
 #include "CodeEditor.h"
 #include "ThreeWayDiffWidget.h"
+#include "utils/DiffCalculator.h"
 #include "utils/FileEncodingHandler.h"
 
 namespace
@@ -144,8 +145,8 @@ void ThreeWayDiffDialog::compare()
     baseLines = linesOf(baseEdit->text().trimmed());
     theirsLines = linesOf(theirsEdit->text().trimmed());
 
-    result_ = ThreeWayDiff::compute(baseLines, oursLines, theirsLines);
-    diffWidget->setResult(result_);
+    // plain text appears right away; the aligned, colored diff replaces it when ready
+    diffWidget->setPlainLines(baseLines, oursLines, theirsLines);
 
     // titles with file names where known
     const auto nameOf = [](const QString &path) {
@@ -155,26 +156,44 @@ void ThreeWayDiffDialog::compare()
                           useEditorCheck->isChecked() ? tr("Editor") : nameOf(oursEdit->text()),
                           nameOf(theirsEdit->text()));
 
-    int conflicts = 0, oursChanges = 0, theirsChanges = 0, same = 0;
-    for (const auto &region : result_.regions)
+    statsLabel->setText(tr("Computing diff…"));
+    saveMergedButton->setEnabled(false);
+
+    if (!calculator)
     {
-        switch (region.kind)
-        {
-        case ThreeWayDiff::RowKind::Conflict: ++conflicts; break;
-        case ThreeWayDiff::RowKind::ChangedOurs: ++oursChanges; break;
-        case ThreeWayDiff::RowKind::ChangedTheirs: ++theirsChanges; break;
-        case ThreeWayDiff::RowKind::SameChange: ++same; break;
-        case ThreeWayDiff::RowKind::Unchanged: break;
-        }
+        calculator = new DiffCalculator(this);
+        connect(calculator, &DiffCalculator::threeWayReady, this,
+                [this](quint64 generation, ThreeWayDiff::Result result) {
+            if (generation != pendingGeneration_)
+                return; // a newer compare was requested meanwhile
+
+            result_ = std::move(result);
+            diffWidget->setResult(result_);
+
+            int conflicts = 0, oursChanges = 0, theirsChanges = 0, same = 0;
+            for (const auto &region : result_.regions)
+            {
+                switch (region.kind)
+                {
+                case ThreeWayDiff::RowKind::Conflict: ++conflicts; break;
+                case ThreeWayDiff::RowKind::ChangedOurs: ++oursChanges; break;
+                case ThreeWayDiff::RowKind::ChangedTheirs: ++theirsChanges; break;
+                case ThreeWayDiff::RowKind::SameChange: ++same; break;
+                case ThreeWayDiff::RowKind::Unchanged: break;
+                }
+            }
+
+            if (result_.regions.isEmpty())
+                statsLabel->setText(tr("No differences - all three versions are identical."));
+            else
+                statsLabel->setText(tr("Changes: ours %1 | theirs %2 | same %3 | conflicts %4")
+                                        .arg(oursChanges).arg(theirsChanges).arg(same).arg(conflicts));
+
+            saveMergedButton->setEnabled(true);
+        });
     }
 
-    if (result_.regions.isEmpty())
-        statsLabel->setText(tr("No differences - all three versions are identical."));
-    else
-        statsLabel->setText(tr("Changes: ours %1 | theirs %2 | same %3 | conflicts %4")
-                                .arg(oursChanges).arg(theirsChanges).arg(same).arg(conflicts));
-
-    saveMergedButton->setEnabled(true);
+    pendingGeneration_ = calculator->computeThreeWay(baseLines, oursLines, theirsLines);
 }
 
 void ThreeWayDiffDialog::saveMerged()

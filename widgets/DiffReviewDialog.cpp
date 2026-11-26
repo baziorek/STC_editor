@@ -14,6 +14,7 @@
 #include "DiffLineEdit.h"
 #include "CodeEditor.h"
 #include "utils/DiffCalculation.h"
+#include "utils/DiffCalculator.h"
 
 class QWidget;
 
@@ -155,7 +156,7 @@ void DiffReviewDialog::setupEditorConnections(CodeEditor* editor)
 
 void DiffReviewDialog::refreshDiff(CodeEditor* editor)
 {
-    const int keptScroll = diffWidget ? diffWidget->scrollValue() : 0;
+    pendingScroll_ = diffWidget ? diffWidget->scrollValue() : 0;
 
     QStringList oldLines, newLines;
     if (dialogMode == ExternalFileChange)
@@ -169,16 +170,27 @@ void DiffReviewDialog::refreshDiff(CodeEditor* editor)
         newLines = editor->exactLines();
     }
 
-    fullDiff = DiffCalculation::computeDiff(oldLines, newLines);
-    const auto diffs = DiffCalculation::computeModifiedLineDiffs(fullDiff);
+    // plain text appears right away; the aligned, colored diff replaces it when ready
+    diffWidget->setPlainLines(oldLines, newLines);
+    modifiedStatsLabel->setText(tr("Computing diff…"));
 
-    diffWidget->setDiffLines(fullDiff);
-    diffWidget->setScrollValue(keptScroll);
+    if (!calculator)
+    {
+        calculator = new DiffCalculator(this);
+        connect(calculator, &DiffCalculator::twoWayReady, this,
+                [this](quint64 generation, std::vector<DiffCalculation::DiffLine> diff,
+                       QList<DiffCalculation::LineDiffResult> lineDiffs) {
+            if (generation != pendingGeneration_)
+                return; // a newer recompute was requested meanwhile
 
-    populateMetadata(oldLines, newLines, editor->getFileName(),
-                     editor->getFileModificationTime(),
-                     editor->getLastChangeTime(),
-                     diffs);
+            fullDiff = std::move(diff);
+            diffWidget->setDiffData(fullDiff, lineDiffs);
+            diffWidget->setScrollValue(pendingScroll_);
+            populateMetadata(fullDiff);
+        });
+    }
+
+    pendingGeneration_ = calculator->computeTwoWay(oldLines, newLines);
 }
 
 /// "↩" on a run of changes puts the old side's lines back into the editor.
@@ -264,22 +276,19 @@ DiffReviewDialog::Result DiffReviewDialog::userChoice() const
     return selectedResult;
 }
 
-void DiffReviewDialog::populateMetadata(const QStringList& oldLines, const QStringList& newLines,
-                                        const QString& filePath,
-                                        const QDateTime& fileTime,
-                                        const QDateTime& lastEditTime,
-                                        const QList<DiffCalculation::LineDiffResult> &diffs)
+void DiffReviewDialog::populateMetadata(const std::vector<DiffCalculation::DiffLine>& diffLines)
 {
     int added = 0, removed = 0, modified = 0;
 
-    for (const auto& diff : diffs)
+    for (const auto& line : diffLines)
     {
-        if (diff.oldLineIndex == -1)
-            ++added;
-        else if (diff.newLineIndex == -1)
-            ++removed;
-        else
-            ++modified;
+        switch (line.type)
+        {
+        case DiffCalculation::DiffType::Added: ++added; break;
+        case DiffCalculation::DiffType::Removed: ++removed; break;
+        case DiffCalculation::DiffType::Modified: ++modified; break;
+        case DiffCalculation::DiffType::Unchanged: break;
+        }
     }
 
     modifiedStatsLabel->setText(tr("Modified lines: %1 | Added: %2 | Removed: %3")
@@ -287,6 +296,8 @@ void DiffReviewDialog::populateMetadata(const QStringList& oldLines, const QStri
                                     .arg(added)
                                     .arg(removed));
 
+    const QDateTime fileTime = editor ? editor->getFileModificationTime() : QDateTime();
+    const QDateTime lastEditTime = editor ? editor->getLastChangeTime() : QDateTime();
     QString timestampText = tr("File last modified: %1 | Last edit in session: %2")
                                 .arg(fileTime.toString("yyyy-MM-dd hh:mm:ss"))
                                 .arg(lastEditTime.toString("yyyy-MM-dd hh:mm:ss"));

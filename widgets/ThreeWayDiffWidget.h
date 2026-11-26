@@ -28,12 +28,18 @@ public:
     explicit ThreeWayDiffWidget(QWidget *parent = nullptr);
 
     void setResult(const ThreeWayDiff::Result &result);
+    /// Shows the three texts right away, before the diff is computed (no colors).
+    /// Replaced by setResult() when the computation is ready.
+    void setPlainLines(const QStringList &baseLines, const QStringList &oursLines,
+                       const QStringList &theirsLines);
     void setTitles(const QString &baseTitle, const QString &oursTitle, const QString &theirsTitle);
 
     const ThreeWayDiff::Result &result() const { return result_; }
 
 private:
-    void buildPanes();
+    void fillPanes(const QString &baseText, const QString &oursText, const QString &theirsText,
+                   const QString &baseNumbers, const QString &oursNumbers,
+                   const QString &theirsNumbers);
     void applyRowFormats();
     void syncScrollBars();
     void updateConflictLabel();

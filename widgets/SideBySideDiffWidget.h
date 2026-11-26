@@ -51,6 +51,12 @@ public:
 
     /// Rebuilds the whole view from the aligned diff (see DiffCalculation::computeDiff).
     void setDiffLines(const std::vector<DiffCalculation::DiffLine> &diffLines);
+    /// Same, but with the character-level diffs already computed (e.g. on a worker thread).
+    void setDiffData(const std::vector<DiffCalculation::DiffLine> &diffLines,
+                     const QList<DiffCalculation::LineDiffResult> &lineDiffs);
+    /// Shows the two texts right away, before the diff is computed: no alignment, no colors,
+    /// just the real line numbers. Replaced by setDiffData()/setDiffLines() when the diff is ready.
+    void setPlainLines(const QStringList &oldLines, const QStringList &newLines);
 
     void setActions(Actions actions);
     void setTitles(const QString &oldTitle, const QString &newTitle);
@@ -73,6 +79,9 @@ signals:
 
 private:
     void buildPanes();
+    void buildPlainPanes(const QStringList &oldLines, const QStringList &newLines);
+    void fillPanes(const QString &oldText, const QString &newText,
+                   const QString &oldNumbers, const QString &newNumbers);
     void applyLineFormats(QTextEdit *edit, bool oldSide);
     void syncScrollBars();
     void updateChangeLabel();

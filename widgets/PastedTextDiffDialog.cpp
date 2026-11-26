@@ -18,6 +18,7 @@
 #include "CodeEditor.h"
 #include "utils/ExactText.h"
 #include "utils/DiffCalculation.h"
+#include "utils/DiffCalculator.h"
 
 
 namespace
@@ -107,6 +108,39 @@ PastedTextDiffDialog::PastedTextDiffDialog(CodeEditor *editor, QWidget *parent)
 
     connect(&recomputeTimer, &QTimer::timeout, this, &PastedTextDiffDialog::recomputeDiff);
     connect(pasteEdit, &QPlainTextEdit::textChanged, &recomputeTimer, qOverload<>(&QTimer::start));
+
+    calculator = new DiffCalculator(this);
+    connect(calculator, &DiffCalculator::twoWayReady, this,
+            [this](quint64 generation, std::vector<DiffCalculation::DiffLine> diff,
+                   QList<DiffCalculation::LineDiffResult> lineDiffs) {
+        if (generation != pendingGeneration_)
+            return; // a newer recompute was requested meanwhile
+
+        fullDiff = std::move(diff);
+        diffWidget->setDiffData(fullDiff, lineDiffs);
+        diffWidget->setScrollValue(pendingScroll_); // stay where the user was
+
+        int added = 0, removed = 0, modified = 0;
+        for (const auto &line : fullDiff)
+        {
+            switch (line.type)
+            {
+            case DiffCalculation::DiffType::Added: ++added; break;
+            case DiffCalculation::DiffType::Removed: ++removed; break;
+            case DiffCalculation::DiffType::Modified: ++modified; break;
+            case DiffCalculation::DiffType::Unchanged: break;
+            }
+        }
+
+        const int changed = added + removed + modified;
+        if (changed == 0)
+            statsLabel->setText(tr("No differences - the pasted text is identical to the editor content."));
+        else
+            statsLabel->setText(tr("Modified lines: %1 | Added: %2 | Removed: %3")
+                                    .arg(modified).arg(added).arg(removed));
+
+        applyButton->setEnabled(changed > 0);
+    });
     connect(pasteFromClipboardButton, &QPushButton::clicked, this, &PastedTextDiffDialog::pasteFromClipboard);
     connect(applyButton, &QPushButton::clicked, this, &PastedTextDiffDialog::applyPastedText);
     connect(closeButton, &QPushButton::clicked, this, &QDialog::reject);
@@ -142,36 +176,21 @@ void PastedTextDiffDialog::recomputeDiff()
         diffWidget->setDiffLines({});
         statsLabel->setText(tr("Paste the new version of the text above."));
         applyButton->setEnabled(false);
+        // invalidate a diff that may still be computing in the background
+        pendingGeneration_ = calculator->nextGeneration();
         return;
     }
 
     const QStringList oldLines = editor->exactLines();
     const QStringList newLines = pastedTextMatchingEditorEnding().split('\n');
 
-    fullDiff = DiffCalculation::computeDiff(oldLines, newLines);
-    const auto diffs = DiffCalculation::computeModifiedLineDiffs(fullDiff);
+    // plain text appears right away; the aligned, colored diff replaces it when ready
+    diffWidget->setPlainLines(oldLines, newLines);
+    statsLabel->setText(tr("Computing diff…"));
+    applyButton->setEnabled(false);
 
-    int added = 0, removed = 0, modified = 0;
-    for (const auto &diff : diffs)
-    {
-        if (diff.oldLineIndex == -1)
-            ++added;
-        else if (diff.newLineIndex == -1)
-            ++removed;
-        else
-            ++modified;
-    }
-
-    diffWidget->setDiffLines(fullDiff);
-    diffWidget->setScrollValue(keptScroll); // stay where the user was after accepting/discarding a change
-
-    if (diffs.isEmpty())
-        statsLabel->setText(tr("No differences - the pasted text is identical to the editor content."));
-    else
-        statsLabel->setText(tr("Modified lines: %1 | Added: %2 | Removed: %3")
-                                .arg(modified).arg(added).arg(removed));
-
-    applyButton->setEnabled(!diffs.isEmpty());
+    pendingScroll_ = keptScroll;
+    pendingGeneration_ = calculator->computeTwoWay(oldLines, newLines);
 }
 
 /// "→" on a run of changes: the pasted lines replace the editor's lines of that run.

@@ -7,6 +7,7 @@
 
 #include "CodeEditor.h"
 #include "utils/DiffCalculation.h"
+#include "utils/DiffCalculator.h"
 #include "utils/FileEncodingHandler.h"
 #include "SideBySideDiffWidget.h"
 
@@ -49,25 +50,38 @@ void FileDiffDialog::init(const QStringList& oldLines, const QStringList& newLin
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
     layout->addWidget(buttons);
 
-    const auto fullDiff = DiffCalculation::computeDiff(oldLines, newLines);
-    const auto diffs = DiffCalculation::computeModifiedLineDiffs(fullDiff);
+    // show both texts right away; the aligned, colored diff appears when the
+    // worker thread finishes computing it
+    diffWidget->setPlainLines(oldLines, newLines);
+    statsLabel->setText(tr("Computing diff…"));
 
-    int added = 0, removed = 0, modified = 0;
-    for (const auto& diff : diffs)
-    {
-        if (diff.oldLineIndex == -1)
-            ++added;
-        else if (diff.newLineIndex == -1)
-            ++removed;
+    calculator = new DiffCalculator(this);
+    connect(calculator, &DiffCalculator::twoWayReady, this,
+            [this](quint64 generation, std::vector<DiffCalculation::DiffLine> diff,
+                   QList<DiffCalculation::LineDiffResult> lineDiffs) {
+        if (generation != pendingGeneration_)
+            return;
+
+        diffWidget->setDiffData(diff, lineDiffs);
+
+        int added = 0, removed = 0, modified = 0;
+        for (const auto& line : diff)
+        {
+            switch (line.type)
+            {
+            case DiffCalculation::DiffType::Added: ++added; break;
+            case DiffCalculation::DiffType::Removed: ++removed; break;
+            case DiffCalculation::DiffType::Modified: ++modified; break;
+            case DiffCalculation::DiffType::Unchanged: break;
+            }
+        }
+
+        if (added + removed + modified == 0)
+            statsLabel->setText(tr("No differences - the files are identical."));
         else
-            ++modified;
-    }
+            statsLabel->setText(tr("Modified lines: %1 | Added: %2 | Removed: %3")
+                                    .arg(modified).arg(added).arg(removed));
+    });
 
-    diffWidget->setDiffLines(fullDiff);
-
-    if (diffs.isEmpty())
-        statsLabel->setText(tr("No differences - the files are identical."));
-    else
-        statsLabel->setText(tr("Modified lines: %1 | Added: %2 | Removed: %3")
-                                .arg(modified).arg(added).arg(removed));
+    pendingGeneration_ = calculator->computeTwoWay(oldLines, newLines);
 }

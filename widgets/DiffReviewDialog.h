@@ -10,10 +10,10 @@
 #include "utils/DiffCalculation.h"
 #include "SideBySideDiffWidget.h"
 
+class DiffCalculator;
 class QLabel;
 class QVBoxLayout;
 class CodeEditor;
-class QDateTime;
 class QWidget;
 
 class DiffReviewDialog : public QDialog
@@ -42,9 +42,7 @@ public:
     Result userChoice() const;
 
 protected:
-    void populateMetadata(const QStringList& oldLines, const QStringList& newLines, const QString& filePath,
-                          const QDateTime& fileTime, const QDateTime& lastEditTime,
-                          const QList<DiffCalculation::LineDiffResult>& diffs);
+    void populateMetadata(const std::vector<DiffCalculation::DiffLine>& diffLines);
 
     void setupDialogTitleAndLayout(const QString& dialogTitle);
     void addDialogMessage(const QString& message);
@@ -73,4 +71,7 @@ private:
     QLabel* timestampLabel = {};
     SideBySideDiffWidget* diffWidget = {};
     std::vector<DiffCalculation::DiffLine> fullDiff;
+    DiffCalculator* calculator = nullptr;
+    quint64 pendingGeneration_ = 0;
+    int pendingScroll_ = 0;
 };

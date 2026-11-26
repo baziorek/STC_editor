@@ -14,6 +14,7 @@ class QLabel;
 class QPlainTextEdit;
 class QPushButton;
 class CodeEditor;
+class DiffCalculator;
 class QWidget;
 
 /**
@@ -56,5 +57,8 @@ private:
     SideBySideDiffWidget *diffWidget = nullptr;
     QPushButton *applyButton = nullptr;
     QTimer recomputeTimer;
-    std::vector<DiffCalculation::DiffLine> fullDiff; // of the last recomputeDiff(), including unchanged lines
+    std::vector<DiffCalculation::DiffLine> fullDiff; // of the last finished recompute, including unchanged lines
+    DiffCalculator *calculator = nullptr;
+    quint64 pendingGeneration_ = 0;
+    int pendingScroll_ = 0;
 };

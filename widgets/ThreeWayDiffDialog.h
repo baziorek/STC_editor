@@ -5,6 +5,7 @@
 
 #include "utils/ThreeWayDiff.h"
 
+class DiffCalculator;
 class QCheckBox;
 class QLineEdit;
 class QLabel;
@@ -52,6 +53,8 @@ private:
     QLabel *statsLabel = nullptr;
     ThreeWayDiffWidget *diffWidget = nullptr;
     QVBoxLayout *mainLayout = nullptr;
+    DiffCalculator *calculator = nullptr;
+    quint64 pendingGeneration_ = 0;
 
     ThreeWayDiff::Result result_;
 };

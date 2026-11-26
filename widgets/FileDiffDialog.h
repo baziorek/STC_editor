@@ -4,6 +4,7 @@
 #include <QStringList>
 
 class CodeEditor;
+class DiffCalculator;
 class QLabel;
 class SideBySideDiffWidget;
 
@@ -30,4 +31,6 @@ private:
     CodeEditor* editor = nullptr;
     QLabel* statsLabel = nullptr;
     SideBySideDiffWidget* diffWidget = nullptr;
+    DiffCalculator* calculator = nullptr;
+    quint64 pendingGeneration_ = 0;
 };

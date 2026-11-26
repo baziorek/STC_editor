@@ -852,68 +852,73 @@ started in %4</translation>
 <context>
     <name>DiffReviewDialog</name>
     <message>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="71"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="72"/>
         <source>Unsaved Changes Detected</source>
         <translation>Unsaved Changes Detected</translation>
     </message>
     <message>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="89"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="90"/>
         <source>This file has not been saved yet — no diff available.</source>
         <translation>This file has not been saved yet — no diff available.</translation>
     </message>
     <message>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="131"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="132"/>
         <source>Saved version</source>
         <translation>Saved version</translation>
     </message>
     <message>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="131"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="132"/>
         <source>Current version</source>
         <translation>Current version</translation>
     </message>
     <message>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="141"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="142"/>
         <source>Editor</source>
         <translation>Editor</translation>
     </message>
     <message>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="141"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="142"/>
         <source>File on disk</source>
         <translation>File on disk</translation>
     </message>
     <message>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="211"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="175"/>
+        <source>Computing diff…</source>
+        <translation>Computing diff…</translation>
+    </message>
+    <message>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="223"/>
         <source>Save</source>
         <translation>Save</translation>
     </message>
     <message>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="212"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="224"/>
         <source>Discard Changes</source>
         <translation>Discard Changes</translation>
     </message>
     <message>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="213"/>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="240"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="225"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="252"/>
         <source>Cancel</source>
         <translation>Cancel</translation>
     </message>
     <message>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="238"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="250"/>
         <source>Reload</source>
         <translation>Reload</translation>
     </message>
     <message>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="239"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="251"/>
         <source>Discard External Changes</source>
         <translation>Discard External Changes</translation>
     </message>
     <message>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="285"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="294"/>
         <source>Modified lines: %1 | Added: %2 | Removed: %3</source>
         <translation>Modified lines: %1 | Added: %2 | Removed: %3</translation>
     </message>
     <message>
-        <location filename="../widgets/DiffReviewDialog.cpp" line="290"/>
+        <location filename="../widgets/DiffReviewDialog.cpp" line="301"/>
         <source>File last modified: %1 | Last edit in session: %2</source>
         <translation>File last modified: %1 | Last edit in session: %2</translation>
     </message>
@@ -982,8 +987,9 @@ started in %4</translation>
 <context>
     <name>EditHistoryDialog</name>
     <message>
+        <location filename="../widgets/EditHistoryDialog.ui" line="14"/>
         <source>Edit history</source>
-        <translation type="vanished">Edit history</translation>
+        <translation>Edit history</translation>
     </message>
     <message>
         <location filename="../widgets/EditHistoryDialog.cpp" line="378"/>
@@ -1227,32 +1233,37 @@ Double click to go to the line.</translation>
 <context>
     <name>FileDiffDialog</name>
     <message>
-        <location filename="../widgets/FileDiffDialog.cpp" line="18"/>
+        <location filename="../widgets/FileDiffDialog.cpp" line="19"/>
         <source>Compare with %1</source>
         <translation>Compare with %1</translation>
     </message>
     <message>
-        <location filename="../widgets/FileDiffDialog.cpp" line="26"/>
+        <location filename="../widgets/FileDiffDialog.cpp" line="27"/>
         <source>Compare %1 with %2</source>
         <translation>Compare %1 with %2</translation>
     </message>
     <message>
-        <location filename="../widgets/FileDiffDialog.cpp" line="41"/>
+        <location filename="../widgets/FileDiffDialog.cpp" line="42"/>
         <source>Old version</source>
         <translation>Old version</translation>
     </message>
     <message>
-        <location filename="../widgets/FileDiffDialog.cpp" line="41"/>
+        <location filename="../widgets/FileDiffDialog.cpp" line="42"/>
         <source>New version</source>
         <translation>New version</translation>
     </message>
     <message>
-        <location filename="../widgets/FileDiffDialog.cpp" line="69"/>
+        <location filename="../widgets/FileDiffDialog.cpp" line="56"/>
+        <source>Computing diff…</source>
+        <translation>Computing diff…</translation>
+    </message>
+    <message>
+        <location filename="../widgets/FileDiffDialog.cpp" line="80"/>
         <source>No differences - the files are identical.</source>
         <translation>No differences - the files are identical.</translation>
     </message>
     <message>
-        <location filename="../widgets/FileDiffDialog.cpp" line="71"/>
+        <location filename="../widgets/FileDiffDialog.cpp" line="82"/>
         <source>Modified lines: %1 | Added: %2 | Removed: %3</source>
         <translation>Modified lines: %1 | Added: %2 | Removed: %3</translation>
     </message>
@@ -1502,16 +1513,19 @@ Double click to go to the line.</translation>
 <context>
     <name>LineHistoryDialog</name>
     <message>
+        <location filename="../widgets/LineHistoryDialog.ui" line="63"/>
         <source>added</source>
-        <translation type="vanished">added</translation>
+        <translation>added</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.ui" line="79"/>
         <source>removed</source>
-        <translation type="vanished">removed</translation>
+        <translation>removed</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.ui" line="86"/>
         <source>Greyed entries are undone (Ctrl+Shift+Z brings them back); they disappear when you edit after an undo.</source>
-        <translation type="vanished">Greyed entries are undone (Ctrl+Shift+Z brings them back); they disappear when you edit after an undo.</translation>
+        <translation>Greyed entries are undone (Ctrl+Shift+Z brings them back); they disappear when you edit after an undo.</translation>
     </message>
     <message>
         <location filename="../widgets/LineHistoryDialog.cpp" line="275"/>
@@ -1524,6 +1538,7 @@ Double click to go to the line.</translation>
         <translation>Line &lt;b&gt;%1&lt;/b&gt;</translation>
     </message>
     <message>
+        <location filename="../widgets/LineHistoryDialog.ui" line="14"/>
         <location filename="../widgets/LineHistoryDialog.cpp" line="275"/>
         <source>History of a line</source>
         <translation>History of a line</translation>
@@ -2539,22 +2554,22 @@ The text is converted and the file is saved in %2 when you save it.</translation
 <context>
     <name>PastedTextDiffDialog</name>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="44"/>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="45"/>
         <source>Compare with pasted text</source>
         <translation>Compare with pasted text</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="58"/>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="59"/>
         <source>Paste the new version of the whole text here:</source>
         <translation>Paste the new version of the whole text here:</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="60"/>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="61"/>
         <source>Paste from clipboard</source>
         <translation>Paste from clipboard</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="66"/>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="67"/>
         <source>Ctrl+V - the diff against the current editor content appears below</source>
         <translation>Ctrl+V - the diff against the current editor content appears below</translation>
     </message>
@@ -2595,47 +2610,52 @@ The text is converted and the file is saved in %2 when you save it.</translation
         <translation type="vanished">Line content in the pasted text</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="77"/>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="78"/>
         <source>← keep the editor&apos;s lines    → take the pasted lines - for each run of consecutive changes</source>
         <translation>← keep the editor&apos;s lines    → take the pasted lines - for each run of consecutive changes</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="83"/>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="84"/>
         <source>Editor</source>
         <translation>Editor</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="83"/>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="84"/>
         <source>Pasted text</source>
         <translation>Pasted text</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="97"/>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="98"/>
         <source>Apply pasted text to editor</source>
         <translation>Apply pasted text to editor</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="98"/>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="99"/>
         <source>Replaces the whole editor content with the pasted text (can be undone with Ctrl+Z)</source>
         <translation>Replaces the whole editor content with the pasted text (can be undone with Ctrl+Z)</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="99"/>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="100"/>
         <source>Close</source>
         <translation>Close</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="143"/>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="177"/>
         <source>Paste the new version of the text above.</source>
         <translation>Paste the new version of the text above.</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="169"/>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="189"/>
+        <source>Computing diff…</source>
+        <translation>Computing diff…</translation>
+    </message>
+    <message>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="137"/>
         <source>No differences - the pasted text is identical to the editor content.</source>
         <translation>No differences - the pasted text is identical to the editor content.</translation>
     </message>
     <message>
-        <location filename="../widgets/PastedTextDiffDialog.cpp" line="171"/>
+        <location filename="../widgets/PastedTextDiffDialog.cpp" line="139"/>
         <source>Modified lines: %1 | Added: %2 | Removed: %3</source>
         <translation>Modified lines: %1 | Added: %2 | Removed: %3</translation>
     </message>
@@ -2677,6 +2697,7 @@ The text is converted and the file is saved in %2 when you save it.</translation
 <context>
     <name>RenameFileDialog</name>
     <message>
+        <location filename="../widgets/RenameFileDialog.ui" line="53"/>
         <location filename="../widgets/RenameFileDialog.cpp" line="29"/>
         <source>Rename file</source>
         <translation>Rename file</translation>
@@ -2727,28 +2748,34 @@ The text is converted and the file is saved in %2 when you save it.</translation
         <translation>Rename failed!</translation>
     </message>
     <message>
+        <location filename="../widgets/RenameFileDialog.ui" line="14"/>
         <source>Dialog</source>
-        <translation type="vanished">Dialog</translation>
+        <translation>Dialog</translation>
     </message>
     <message>
+        <location filename="../widgets/RenameFileDialog.ui" line="20"/>
         <source>Create directory if not exists</source>
-        <translation type="vanished">Create directory if not exists</translation>
+        <translation>Create directory if not exists</translation>
     </message>
     <message>
+        <location filename="../widgets/RenameFileDialog.ui" line="37"/>
         <source>Old file path</source>
-        <translation type="vanished">Old file path</translation>
+        <translation>Old file path</translation>
     </message>
     <message>
+        <location filename="../widgets/RenameFileDialog.ui" line="62"/>
         <source>File path</source>
-        <translation type="vanished">File path</translation>
+        <translation>File path</translation>
     </message>
     <message>
+        <location filename="../widgets/RenameFileDialog.ui" line="69"/>
         <source>Replace existing file</source>
-        <translation type="vanished">Replace existing file</translation>
+        <translation>Replace existing file</translation>
     </message>
     <message>
+        <location filename="../widgets/RenameFileDialog.ui" line="79"/>
         <source>Browse directory</source>
-        <translation type="vanished">Browse directory</translation>
+        <translation>Browse directory</translation>
     </message>
 </context>
 <context>
@@ -2764,12 +2791,17 @@ The text is converted and the file is saved in %2 when you save it.</translation
         <translation>Next change ▶</translation>
     </message>
     <message>
-        <location filename="../widgets/SideBySideDiffWidget.cpp" line="439"/>
+        <location filename="../widgets/SideBySideDiffWidget.cpp" line="284"/>
+        <source>Computing diff…</source>
+        <translation>Computing diff…</translation>
+    </message>
+    <message>
+        <location filename="../widgets/SideBySideDiffWidget.cpp" line="480"/>
         <source>No differences</source>
         <translation>No differences</translation>
     </message>
     <message>
-        <location filename="../widgets/SideBySideDiffWidget.cpp" line="447"/>
+        <location filename="../widgets/SideBySideDiffWidget.cpp" line="488"/>
         <source>Change %1 of %2</source>
         <translation>Change %1 of %2</translation>
     </message>
@@ -2815,6 +2847,7 @@ The text is converted and the file is saved in %2 when you save it.</translation
 <context>
     <name>StcTablesCreator</name>
     <message>
+        <location filename="../widgets/StcTablesCreator.ui" line="14"/>
         <location filename="../widgets/StcTablesCreator.cpp" line="59"/>
         <source>Table Editor</source>
         <translation>Table Editor</translation>
@@ -2976,28 +3009,34 @@ The same as the check box in the cell.</translation>
         <translation>There is &apos;;&apos; outside of a tag - it would split this cell in two.</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.ui" line="20"/>
         <source>with header</source>
-        <translation type="vanished">with header</translation>
+        <translation>with header</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.ui" line="46"/>
         <source>extended</source>
-        <translation type="vanished">extended</translation>
+        <translation>extended</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.ui" line="53"/>
         <source>Add row</source>
-        <translation type="vanished">Add row</translation>
+        <translation>Add row</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.ui" line="56"/>
         <source>+ Row</source>
-        <translation type="vanished">+ Row</translation>
+        <translation>+ Row</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.ui" line="73"/>
         <source>Add column</source>
-        <translation type="vanished">Add column</translation>
+        <translation>Add column</translation>
     </message>
     <message>
+        <location filename="../widgets/StcTablesCreator.ui" line="76"/>
         <source>+ Column</source>
-        <translation type="vanished">+ Column</translation>
+        <translation>+ Column</translation>
     </message>
 </context>
 <context>
@@ -3231,109 +3270,114 @@ The same as the check box in the cell.</translation>
 <context>
     <name>ThreeWayDiffDialog</name>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="43"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="44"/>
         <source>Compare three files</source>
         <translation>Compare three files</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="50"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="51"/>
         <source>Base (common):</source>
         <translation>Base (common):</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="50"/>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="52"/>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="57"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="51"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="53"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="58"/>
         <source>Browse…</source>
         <translation>Browse…</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="52"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="53"/>
         <source>Ours:</source>
         <translation>Ours:</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="53"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="54"/>
         <source>Use the current editor content (including unsaved changes)</source>
         <translation>Use the current editor content (including unsaved changes)</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="57"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="58"/>
         <source>Theirs:</source>
         <translation>Theirs:</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="60"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="61"/>
         <source>Compare</source>
         <translation>Compare</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="61"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="62"/>
         <source>Save merged result…</source>
         <translation>Save merged result…</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="63"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="64"/>
         <source>Close</source>
         <translation>Close</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="74"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="75"/>
         <source>Base</source>
         <translation>Base</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="74"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="75"/>
         <source>Ours</source>
         <translation>Ours</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="74"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="75"/>
         <source>Theirs</source>
         <translation>Theirs</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="113"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="114"/>
         <source>Choose the base file</source>
         <translation>Choose the base file</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="120"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="121"/>
         <source>Choose the &quot;ours&quot; file</source>
         <translation>Choose the &quot;ours&quot; file</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="127"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="128"/>
         <source>Choose the &quot;theirs&quot; file</source>
         <translation>Choose the &quot;theirs&quot; file</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="155"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="156"/>
         <source>Editor</source>
         <translation>Editor</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="172"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="159"/>
+        <source>Computing diff…</source>
+        <translation>Computing diff…</translation>
+    </message>
+    <message>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="187"/>
         <source>No differences - all three versions are identical.</source>
         <translation>No differences - all three versions are identical.</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="174"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="189"/>
         <source>Changes: ours %1 | theirs %2 | same %3 | conflicts %4</source>
         <translation>Changes: ours %1 | theirs %2 | same %3 | conflicts %4</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="182"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="201"/>
         <source>Save the merged result</source>
         <translation>Save the merged result</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="189"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="208"/>
         <source>Could not write %1</source>
         <translation>Could not write %1</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="198"/>
+        <location filename="../widgets/ThreeWayDiffDialog.cpp" line="217"/>
         <source>Merged result saved to %1</source>
         <translation>Merged result saved to %1</translation>
     </message>
@@ -3351,12 +3395,17 @@ The same as the check box in the cell.</translation>
         <translation>Next conflict ▶</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffWidget.cpp" line="257"/>
+        <location filename="../widgets/ThreeWayDiffWidget.cpp" line="210"/>
+        <source>Computing diff…</source>
+        <translation>Computing diff…</translation>
+    </message>
+    <message>
+        <location filename="../widgets/ThreeWayDiffWidget.cpp" line="286"/>
         <source>No conflicts</source>
         <translation>No conflicts</translation>
     </message>
     <message>
-        <location filename="../widgets/ThreeWayDiffWidget.cpp" line="266"/>
+        <location filename="../widgets/ThreeWayDiffWidget.cpp" line="295"/>
         <source>Conflict %1 of %2</source>
         <translation>Conflict %1 of %2</translation>
     </message>

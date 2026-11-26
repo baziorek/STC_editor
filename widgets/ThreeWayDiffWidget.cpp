@@ -144,31 +144,8 @@ void ThreeWayDiffWidget::setResult(const ThreeWayDiff::Result &result)
         theirsNumbers << (row.theirsNumber >= 0 ? QString::number(row.theirsNumber + 1) : QString());
     }
 
-    baseNumbersEdit_->setPlainText(baseNumbers.join('\n'));
-    oursNumbersEdit_->setPlainText(oursNumbers.join('\n'));
-    theirsNumbersEdit_->setPlainText(theirsNumbers.join('\n'));
-    baseEdit_->setPlainText(baseLines.join('\n'));
-    oursEdit_->setPlainText(oursLines.join('\n'));
-    theirsEdit_->setPlainText(theirsLines.join('\n'));
-
-    // gray, right-aligned numbers
-    for (QTextEdit *numbers : {baseNumbersEdit_, oursNumbersEdit_, theirsNumbersEdit_})
-    {
-        QTextCursor cursor(numbers->document());
-        cursor.select(QTextCursor::Document);
-        QTextCharFormat format;
-        format.setForeground(QColor(120, 120, 120));
-        cursor.mergeCharFormat(format);
-        cursor.clearSelection();
-
-        for (QTextBlock block = numbers->document()->begin(); block.isValid(); block = block.next())
-        {
-            QTextBlockFormat blockFormat = block.blockFormat();
-            blockFormat.setAlignment(Qt::AlignRight);
-            QTextCursor blockCursor(block);
-            blockCursor.setBlockFormat(blockFormat);
-        }
-    }
+    fillPanes(baseLines.join('\n'), oursLines.join('\n'), theirsLines.join('\n'),
+              baseNumbers.join('\n'), oursNumbers.join('\n'), theirsNumbers.join('\n'));
 
     applyRowFormats();
 
@@ -214,6 +191,58 @@ void ThreeWayDiffWidget::applyRowFormats()
     apply(baseEdit_, 0);
     apply(oursEdit_, 1);
     apply(theirsEdit_, 2);
+}
+
+void ThreeWayDiffWidget::setPlainLines(const QStringList &baseLines, const QStringList &oursLines,
+                                       const QStringList &theirsLines)
+{
+    result_ = ThreeWayDiff::Result();
+    currentConflict_ = -1;
+
+    QStringList baseNumbers, oursNumbers, theirsNumbers;
+    for (int i = 1; i <= baseLines.size(); ++i) baseNumbers << QString::number(i);
+    for (int i = 1; i <= oursLines.size(); ++i) oursNumbers << QString::number(i);
+    for (int i = 1; i <= theirsLines.size(); ++i) theirsNumbers << QString::number(i);
+
+    fillPanes(baseLines.join('\n'), oursLines.join('\n'), theirsLines.join('\n'),
+              baseNumbers.join('\n'), oursNumbers.join('\n'), theirsNumbers.join('\n'));
+
+    conflictLabel_->setText(tr("Computing diff…"));
+    previousButton_->setEnabled(false);
+    nextButton_->setEnabled(false);
+}
+
+void ThreeWayDiffWidget::fillPanes(const QString &baseText, const QString &oursText, const QString &theirsText,
+                                   const QString &baseNumbers, const QString &oursNumbers,
+                                   const QString &theirsNumbers)
+{
+    baseNumbersEdit_->setPlainText(baseNumbers);
+    oursNumbersEdit_->setPlainText(oursNumbers);
+    theirsNumbersEdit_->setPlainText(theirsNumbers);
+    baseEdit_->setPlainText(baseText);
+    oursEdit_->setPlainText(oursText);
+    theirsEdit_->setPlainText(theirsText);
+
+    // gray, right-aligned numbers
+    for (QTextEdit *numbers : {baseNumbersEdit_, oursNumbersEdit_, theirsNumbersEdit_})
+    {
+        QTextCursor cursor(numbers->document());
+        cursor.select(QTextCursor::Document);
+        QTextCharFormat format;
+        format.setForeground(QColor(120, 120, 120));
+        cursor.mergeCharFormat(format);
+        cursor.clearSelection();
+
+        for (QTextBlock block = numbers->document()->begin(); block.isValid(); block = block.next())
+        {
+            QTextBlockFormat blockFormat = block.blockFormat();
+            blockFormat.setAlignment(Qt::AlignRight);
+            QTextCursor blockCursor(block);
+            blockCursor.setBlockFormat(blockFormat);
+        }
+    }
+
+    baseEdit_->verticalScrollBar()->setValue(0);
 }
 
 void ThreeWayDiffWidget::setTitles(const QString &baseTitle, const QString &oursTitle, const QString &theirsTitle)

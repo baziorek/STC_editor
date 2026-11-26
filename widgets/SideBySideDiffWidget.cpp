@@ -241,8 +241,14 @@ SideBySideDiffWidget::SideBySideDiffWidget(QWidget *parent) : QWidget(parent)
 
 void SideBySideDiffWidget::setDiffLines(const std::vector<DiffCalculation::DiffLine> &diffLines)
 {
+    setDiffData(diffLines, DiffCalculation::computeAllLineDiffs(diffLines));
+}
+
+void SideBySideDiffWidget::setDiffData(const std::vector<DiffCalculation::DiffLine> &diffLines,
+                                       const QList<DiffCalculation::LineDiffResult> &lineDiffs)
+{
     diffLines_ = diffLines;
-    lineDiffs_ = DiffCalculation::computeAllLineDiffs(diffLines_);
+    lineDiffs_ = lineDiffs;
 
     // the runs of consecutive changed rows get the gutter buttons
     regions_.clear();
@@ -266,6 +272,21 @@ void SideBySideDiffWidget::setDiffLines(const std::vector<DiffCalculation::DiffL
     updateGutter();
 }
 
+void SideBySideDiffWidget::setPlainLines(const QStringList &oldLines, const QStringList &newLines)
+{
+    diffLines_.clear();
+    lineDiffs_.clear();
+    regions_.clear();
+    currentRegion_ = -1;
+
+    buildPlainPanes(oldLines, newLines);
+
+    changeLabel_->setText(tr("Computing diff…"));
+    previousButton_->setEnabled(false);
+    nextButton_->setEnabled(false);
+    updateGutter();
+}
+
 void SideBySideDiffWidget::buildPanes()
 {
     QStringList oldLines, newLines, oldNumbers, newNumbers;
@@ -284,11 +305,36 @@ void SideBySideDiffWidget::buildPanes()
         newNumbers << (line.newIndex >= 0 ? QString::number(line.newIndex + 1) : QString());
     }
 
-    const QString oldText = oldLines.join('\n');
-    const QString newText = newLines.join('\n');
+    fillPanes(oldLines.join('\n'), newLines.join('\n'),
+              oldNumbers.join('\n'), newNumbers.join('\n'));
 
-    numberOldEdit_->setPlainText(oldNumbers.join('\n'));
-    numberNewEdit_->setPlainText(newNumbers.join('\n'));
+    applyLineFormats(oldEdit_, /*oldSide=*/true);
+    applyLineFormats(newEdit_, /*oldSide=*/false);
+
+    setScrollValue(0);
+}
+
+void SideBySideDiffWidget::buildPlainPanes(const QStringList &oldLines, const QStringList &newLines)
+{
+    QStringList oldNumbers, newNumbers;
+    oldNumbers.reserve(oldLines.size());
+    newNumbers.reserve(newLines.size());
+    for (int i = 1; i <= oldLines.size(); ++i)
+        oldNumbers << QString::number(i);
+    for (int i = 1; i <= newLines.size(); ++i)
+        newNumbers << QString::number(i);
+
+    fillPanes(oldLines.join('\n'), newLines.join('\n'),
+              oldNumbers.join('\n'), newNumbers.join('\n'));
+
+    setScrollValue(0);
+}
+
+void SideBySideDiffWidget::fillPanes(const QString &oldText, const QString &newText,
+                                     const QString &oldNumbers, const QString &newNumbers)
+{
+    numberOldEdit_->setPlainText(oldNumbers);
+    numberNewEdit_->setPlainText(newNumbers);
     oldEdit_->setPlainText(oldText);
     newEdit_->setPlainText(newText);
 
@@ -310,11 +356,6 @@ void SideBySideDiffWidget::buildPanes()
             blockCursor.setBlockFormat(blockFormat);
         }
     }
-
-    applyLineFormats(oldEdit_, /*oldSide=*/true);
-    applyLineFormats(newEdit_, /*oldSide=*/false);
-
-    setScrollValue(0);
 }
 
 void SideBySideDiffWidget::applyLineFormats(QTextEdit *edit, bool oldSide)
