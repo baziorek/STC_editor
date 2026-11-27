@@ -502,7 +502,8 @@ void CodeEditor::registerShortcuts()
 
     // makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_B), &CodeEditor::shortcutPressed_bold,    "Bold selected text"); // nie dziala
     makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_U), &CodeEditor::shortcutPressed_run,     "Insert [run] tags");
-    makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_W), &CodeEditor::shortcutPressed_warning, "Insert [div class=\"uwaga\"] block");
+    // Ctrl+W is reserved for closing the editor tab (MainWindow); the uwaga block
+    // stays available from the tag buttons and the context menu
     makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_T), &CodeEditor::shortcutPressed_tip,     "Insert [div class=\"tip\"] block");
     makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_H), &CodeEditor::shortcutPressed_href,    "Insert hyperlink");
     makeShortcut(QKeySequence(Qt::CTRL | Qt::Key_1), &CodeEditor::shortcutPressed_h1,      "Header level 1");
