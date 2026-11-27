@@ -5,6 +5,7 @@
 
 #include <QAbstractTextDocumentLayout>
 #include <QApplication>
+#include <QMap>
 #include <QPushButton>
 #include <QScrollBar>
 #include <QTextBlock>
@@ -260,6 +261,121 @@ TEST(SideBySideDiffWidget, PreviewThenDiffKeepsRowsSynced)
         oldBar->setValue(value);
         QApplication::processEvents();
         expectSynced();
+    }
+}
+
+TEST(SideBySideDiffWidget, ScrollStaysRowSyncedWithRealisticContent)
+{
+    // lines long enough to show horizontal scrollbars, empty lines, unicode - like real files
+    QStringList oldLines, newLines;
+    for (int i = 1; i <= 400; ++i)
+    {
+        QString oldLine = QStringLiteral("line %1 ").arg(i);
+        if (i % 37 == 0)
+            oldLine += QString(500, QLatin1Char('x')); // forces a horizontal scrollbar
+        if (i % 11 == 0)
+            oldLine += QStringLiteral(" ąćęłńóśźż [tag] http://example.com/") ;
+        oldLines << oldLine;
+
+        QString newLine = oldLine;
+        if (i % 50 == 0)
+            newLine += QStringLiteral(" edited");
+        newLines << newLine;
+    }
+
+    SideBySideDiffWidget widget;
+    widget.setDiffLines(diffOf(oldLines, newLines));
+    widget.resize(1200, 600);
+    widget.show();
+    QApplication::processEvents();
+    QTest::qWait(30);
+    QApplication::processEvents();
+
+    const auto firstVisible = [](QTextEdit *edit) {
+        return edit->cursorForPosition(QPoint(10, 2)).blockNumber();
+    };
+    auto *oldBar = pane(widget, QStringLiteral("oldEdit"))->verticalScrollBar();
+    const int steps = 25;
+    for (int s = 0; s <= steps; ++s)
+    {
+        oldBar->setValue(oldBar->maximum() * s / steps);
+        QApplication::processEvents();
+        const int row = firstVisible(pane(widget, QStringLiteral("oldEdit")));
+        for (const QString &name : {QStringLiteral("newEdit"),
+                                    QStringLiteral("numberOldEdit"), QStringLiteral("numberNewEdit")})
+        {
+            // at the very bottom a pane without a horizontal scrollbar can be one row
+            // short of the others - their viewports are a few pixels shorter/taller
+            ASSERT_LE(qAbs(firstVisible(pane(widget, name)) - row), 1)
+                << "step" << s << name.toStdString();
+        }
+    }
+}
+
+TEST(SideBySideDiffWidget, ScrollingOnePaneRepaintsTheOtherPanes)
+{
+    // Regression: programmatic scrollbar writes must keep the valueChanged signal alive.
+    // QTextEdit scrolls and repaints its viewport from its own valueChanged handler - a
+    // QSignalBlocker around setValue() moves the thumb and the model position but the
+    // text stays frozen on screen (only the scrollbar thumb moves). Count real Paint
+    // events on the viewports: a synced pane that never repaints means the user sees
+    // a frozen pane.
+    struct PaintCounter : QObject
+    {
+        explicit PaintCounter(QObject *parent = nullptr) : QObject(parent) {}
+        int count = 0;
+        bool eventFilter(QObject *, QEvent *event) override
+        {
+            if (event->type() == QEvent::Paint)
+                ++count;
+            return false;
+        }
+    };
+
+    SideBySideDiffWidget widget;
+    const auto [oldLines, newLines] = numberedLines(300, {100}, {200});
+    widget.setDiffLines(diffOf(oldLines, newLines));
+
+    widget.resize(900, 250);
+    widget.show();
+    QApplication::processEvents();
+    QTest::qWait(20);
+    QApplication::processEvents();
+
+    const QStringList names = {QStringLiteral("oldEdit"), QStringLiteral("newEdit"),
+                               QStringLiteral("numberOldEdit"), QStringLiteral("numberNewEdit")};
+    QMap<QString, PaintCounter *> counters;
+    for (const QString &name : names)
+    {
+        auto *counter = new PaintCounter(&widget);
+        pane(widget, name)->viewport()->installEventFilter(counter);
+        counters.insert(name, counter);
+    }
+
+    auto *oldBar = pane(widget, QStringLiteral("oldEdit"))->verticalScrollBar();
+    const int target = oldBar->maximum() / 2;
+    ASSERT_GT(target, 0);
+    oldBar->setValue(target);
+    QApplication::processEvents();
+    QTest::qWait(50);
+    QApplication::processEvents();
+
+    // the initiating pane repaints for sure; the synced panes must repaint too
+    for (const QString &name : names)
+    {
+        ASSERT_GT(counters.value(name)->count, 0) << name.toStdString();
+    }
+
+    // and scrolling back must repaint as well
+    for (auto *counter : counters)
+        counter->count = 0;
+    oldBar->setValue(0);
+    QApplication::processEvents();
+    QTest::qWait(50);
+    QApplication::processEvents();
+    for (const QString &name : names)
+    {
+        ASSERT_GT(counters.value(name)->count, 0) << name.toStdString();
     }
 }
 

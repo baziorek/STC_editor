@@ -11,7 +11,6 @@
 #include <QResizeEvent>
 #include <QScrollBar>
 #include <QShowEvent>
-#include <QSignalBlocker>
 #include <QTextBlock>
 #include <QTextCursor>
 #include <QTextDocument>
@@ -271,6 +270,10 @@ void SideBySideDiffWidget::syncScrollBars()
 
 void SideBySideDiffWidget::syncScrollFrom(QTextEdit *pane)
 {
+    // re-entrant call from a pane we just scrolled ourselves - its position is already right
+    if (syncingScroll_)
+        return;
+
     // sync by the row at the top of the pane that initiated the scroll, not by the raw
     // scrollbar value: a scrollbar can report a range larger than the pane can actually
     // scroll (stale QTextEdit layout), and copying that value would leave the other
@@ -289,6 +292,10 @@ void SideBySideDiffWidget::syncScrollFrom(QTextEdit *pane)
     const int subLine = qMax(0, value - int(rowTop));
 
     const auto others = {numberOldEdit_, oldEdit_, numberNewEdit_, newEdit_};
+    // do NOT block the scrollbar signals: QTextEdit scrolls its viewport from its own
+    // valueChanged handler, and a blocked setValue moves the thumb while the text
+    // stays put. The syncingScroll_ flag keeps our lambda from reacting to the echoes.
+    syncingScroll_ = true;
     for (QTextEdit *other : others)
     {
         if (other == pane)
@@ -297,9 +304,9 @@ void SideBySideDiffWidget::syncScrollFrom(QTextEdit *pane)
         const qreal otherTop = blockTop(other, targetRow);
         if (otherTop < 0)
             continue;
-        QSignalBlocker blocker(other->verticalScrollBar());
         other->verticalScrollBar()->setValue(int(otherTop) + subLine);
     }
+    syncingScroll_ = false;
     auto *gutter = static_cast<ChangeGutterWidget *>(gutter_);
     gutter->scrollOffset = oldEdit_->verticalScrollBar()->value();
     gutter->update();
@@ -313,12 +320,13 @@ int SideBySideDiffWidget::scrollValue() const
 void SideBySideDiffWidget::setScrollValue(int value)
 {
     // set every pane directly: if oldEdit_ already sits at `value` its scrollbar emits nothing
-    // and the valueChanged-based sync would leave the other panes behind
+    // and the valueChanged-based sync would leave the other panes behind. The signals must
+    // reach QTextEdit's own handlers (they do the actual scrolling) - syncingScroll_ only
+    // keeps our sync lambda from reacting to the echoes.
+    syncingScroll_ = true;
     for (QTextEdit *edit : {numberOldEdit_, oldEdit_, numberNewEdit_, newEdit_})
-    {
-        QSignalBlocker blocker(edit->verticalScrollBar());
         edit->verticalScrollBar()->setValue(value);
-    }
+    syncingScroll_ = false;
     auto *gutter = static_cast<ChangeGutterWidget *>(gutter_);
     gutter->scrollOffset = scrollValue();
     gutter->update();
@@ -407,10 +415,7 @@ void SideBySideDiffWidget::updateScrollBarRanges()
         const int maxScroll = qMax(0, documentHeight - viewportHeight);
         QScrollBar *bar = edit->verticalScrollBar();
         if (bar->maximum() != maxScroll)
-        {
-            QSignalBlocker blocker(bar);
             bar->setMaximum(maxScroll);
-        }
     }
 }
 

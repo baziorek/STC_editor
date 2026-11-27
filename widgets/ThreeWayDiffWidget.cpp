@@ -10,7 +10,6 @@
 #include <QResizeEvent>
 #include <QScrollBar>
 #include <QShowEvent>
-#include <QSignalBlocker>
 #include <QTextBlock>
 #include <QTextCursor>
 #include <QTextDocument>
@@ -242,6 +241,10 @@ void ThreeWayDiffWidget::syncScrollBars()
 
 void ThreeWayDiffWidget::syncScrollFrom(QTextEdit *pane)
 {
+    // re-entrant call from a pane we just scrolled ourselves - its position is already right
+    if (syncingScroll_)
+        return;
+
     // sync by the row at the top of the pane that initiated the scroll, not by the raw
     // scrollbar value: a scrollbar can report a range larger than the pane can actually
     // scroll (stale QTextEdit layout), and copying that value would leave the other
@@ -261,6 +264,10 @@ void ThreeWayDiffWidget::syncScrollFrom(QTextEdit *pane)
 
     const auto all = {baseNumbersEdit_, baseEdit_, oursNumbersEdit_, oursEdit_,
                       theirsNumbersEdit_, theirsEdit_};
+    // do NOT block the scrollbar signals: QTextEdit scrolls its viewport from its own
+    // valueChanged handler, and a blocked setValue moves the thumb while the text
+    // stays put. The syncingScroll_ flag keeps our lambda from reacting to the echoes.
+    syncingScroll_ = true;
     for (QTextEdit *other : all)
     {
         if (other == pane)
@@ -269,9 +276,9 @@ void ThreeWayDiffWidget::syncScrollFrom(QTextEdit *pane)
         const qreal otherTop = blockTop(other, targetRow);
         if (otherTop < 0)
             continue;
-        QSignalBlocker blocker(other->verticalScrollBar());
         other->verticalScrollBar()->setValue(int(otherTop) + subLine);
     }
+    syncingScroll_ = false;
 }
 
 void ThreeWayDiffWidget::resizeEvent(QResizeEvent *event)
@@ -299,12 +306,13 @@ void ThreeWayDiffWidget::scheduleScrollBarsFix()
 
 void ThreeWayDiffWidget::syncScrollValue(int value)
 {
+    // the signals must reach QTextEdit's own handlers (they do the actual scrolling) -
+    // syncingScroll_ only keeps our sync lambda from reacting to the echoes
+    syncingScroll_ = true;
     for (QTextEdit *edit : {baseNumbersEdit_, baseEdit_, oursNumbersEdit_, oursEdit_,
                             theirsNumbersEdit_, theirsEdit_})
-    {
-        QSignalBlocker blocker(edit->verticalScrollBar());
         edit->verticalScrollBar()->setValue(value);
-    }
+    syncingScroll_ = false;
 }
 
 void ThreeWayDiffWidget::updateScrollBarRanges()
@@ -320,10 +328,7 @@ void ThreeWayDiffWidget::updateScrollBarRanges()
         const int maxScroll = qMax(0, documentHeight - viewportHeight);
         QScrollBar *bar = edit->verticalScrollBar();
         if (bar->maximum() != maxScroll)
-        {
-            QSignalBlocker blocker(bar);
             bar->setMaximum(maxScroll);
-        }
     }
 }
 
